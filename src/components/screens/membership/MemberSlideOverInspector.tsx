@@ -34,6 +34,9 @@ import {
 } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion } from '../../ui/kinetic/KineticEmptyStateMotion';
 import { buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic/branchUtils';
+import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
@@ -52,11 +55,7 @@ export interface MemberSlideOverInspectorProps {
   showToast: (msg: string) => void;
 }
 
-const TABS: Array<{ id: 'overview' | 'access' | 'billing'; label: string }> = [
-  { id: 'overview', label: 'Aperçu & Forfait' },
-  { id: 'access', label: 'Accès & Séances' },
-  { id: 'billing', label: 'Ventes & Factures' },
-];
+
 
 export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> = React.memo(({
   isOpen,
@@ -90,6 +89,11 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   );
   const esLocale =
     branchState.language === 'ar' ? 'ar' : branchState.language === 'en' ? 'en' : 'fr';
+  const L = useCallback(
+    (en: string, fr: string, ar: string) =>
+      esLocale === 'ar' ? ar : esLocale === 'en' ? en : fr,
+    [esLocale]
+  );
 
   // Retain the last displayed member during close bounce so content stays visible until settled
   const retainedMemberRef = useRef<Member | null>(member);
@@ -134,10 +138,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   // DOM refs for direct rAF style writes (zero per-frame React state updates)
   const scrimRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
-  const ptabsRef = useRef<HTMLDivElement | null>(null);
-  const ptabsWidthRef = useRef<number>(500);
-  const pindRef = useRef<HTMLElement | null>(null);
-  const tabBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
   const barFillRef = useRef<HTMLElement | null>(null);
   const holdFillRef = useRef<HTMLSpanElement | null>(null);
@@ -151,14 +151,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
   // Panel springs on shared loop
   const ppRef = useRef<Sp | null>(null);
-  const ixRef = useRef<Sp | null>(null);
-  const iwRef = useRef<Sp | null>(null);
   const holdRef = useRef<Sp | null>(null);
 
   if (!ppRef.current) {
     ppRef.current = new Sp(0, TUNES.panel);
-    ixRef.current = new Sp(0, TUNES.tabIndicator);
-    iwRef.current = new Sp(0, TUNES.tabIndicator);
     holdRef.current = new Sp(0, 22);
   }
 
@@ -208,18 +204,14 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const sessionPct = clamp((remainingSessions / Math.max(1, totalPlanSessions)) * 100, 0, 100);
 
   const lastPanelKeyRef = useRef<string>('');
-  const lastIndKeyRef = useRef<string>('');
   const lastHoldQRef = useRef<number>(-1);
   const panelWillChangeRef = useRef<boolean>(false);
-  const indWillChangeRef = useRef<boolean>(false);
 
-  // Draw panel, scrim, tab indicator, and hold-to-delete fill inside shared rAF loop
+  // Draw panel, scrim, and hold-to-delete fill inside shared rAF loop
   const drawPanel = useCallback(() => {
     const pp = ppRef.current;
-    const ix = ixRef.current;
-    const iw = iwRef.current;
     const hold = holdRef.current;
-    if (!pp || !ix || !iw || !hold) return;
+    if (!pp || !hold) return;
 
     // 1. Panel + Scrim (only when pp moves or target changes)
     const pm = computePanelMetrics(pp.x, pp.t);
@@ -227,7 +219,11 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     const opQ = Math.round(pm.scrimOpacity * 100) / 100;
     const vis = pm.visible ? 'visible' : 'hidden';
     const ptr = pp.t > 0 ? 'auto' : 'none';
-    const panelKey = `${vis}|${txQ}|${opQ}|${ptr}`;
+    const isRtl =
+      typeof document !== 'undefined' &&
+      (document.documentElement.dir === 'rtl' || document.documentElement.getAttribute('dir') === 'rtl');
+    const signedTx = isRtl ? -txQ : txQ;
+    const panelKey = `${vis}|${signedTx}|${opQ}|${ptr}`;
 
     const isPanelMoving = !pp.rest();
     if (isPanelMoving !== panelWillChangeRef.current) {
@@ -240,7 +236,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       lastPanelKeyRef.current = panelKey;
       if (panelRef.current) {
         panelRef.current.style.visibility = vis;
-        panelRef.current.style.transform = `translate3d(${txQ}px, 0, 0)`;
+        panelRef.current.style.transform = `translate3d(${signedTx}px, 0, 0)`;
       }
       if (scrimRef.current) {
         scrimRef.current.style.visibility = vis;
@@ -249,28 +245,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       }
     }
 
-    // 2. Tab indicator (compositor clip-path, zero per-frame width reflow)
-    const ixQ = Math.round(ix.x * 2) / 2;
-    const iwQ = Math.round(Math.max(0, iw.x) * 2) / 2;
-    const tabsW = ptabsWidthRef.current || 500;
-    const leftClip = Math.max(0, ixQ);
-    const rightClip = Math.max(0, tabsW - (ixQ + iwQ));
-    const indKey = `${leftClip}|${rightClip}`;
-    const isIndMoving = !ix.rest() || !iw.rest();
-    if (isIndMoving !== indWillChangeRef.current) {
-      indWillChangeRef.current = isIndMoving;
-      if (pindRef.current) {
-        pindRef.current.style.willChange = isIndMoving ? 'clip-path' : '';
-      }
-    }
-    if (indKey !== lastIndKeyRef.current) {
-      lastIndKeyRef.current = indKey;
-      if (pindRef.current) {
-        pindRef.current.style.clipPath = `inset(0 ${rightClip}px 0 ${leftClip}px round 10px)`;
-      }
-    }
-
-    // 3. Hold-to-delete spring fill (only when hold moves)
+    // 2. Hold-to-delete spring fill (only when hold moves)
     const hp = clamp(hold.x / 100, 0, 1);
     const holdQ = Math.round(hp * 100);
     if (holdQ !== lastHoldQRef.current) {
@@ -282,7 +257,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         holdTextWrapRef.current.style.color = hp > 0.4 ? '#FFFFFF' : '';
       }
       if (holdLabelRef.current) {
-        const nextText = hp > 0.1 ? 'Maintenez…' : 'Maintenir pour supprimer';
+        const nextText =
+          hp > 0.1
+            ? L('Keep holding…', 'Maintenez…', 'استمر بالضغط…')
+            : L('Hold to delete', 'Maintenir pour supprimer', 'اضغط مطولاً للحذف');
         if (holdLabelRef.current.textContent !== nextText) {
           holdLabelRef.current.textContent = nextText;
         }
@@ -297,7 +275,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       onDelete(activeMember);
       onClose();
     }
-  }, [activeMember, onClose, onDelete]);
+  }, [activeMember, onClose, onDelete, L]);
 
   useLayoutEffect(() => {
     const unsub = subscribeFrame(drawPanel);
@@ -310,31 +288,13 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   // Open / close orchestration matching Section B exact order (pre-paint for <17ms frame-0)
   useLayoutEffect(() => {
     const pp = ppRef.current;
-    const ix = ixRef.current;
-    const iw = iwRef.current;
-    if (!pp || !ix || !iw) return;
+    if (!pp) return;
 
     if (isOpen && activeMember) {
       openerRef.current = openerElement || (document.activeElement as HTMLElement | null);
 
       if (panelRef.current) {
         panelRef.current.setAttribute('aria-hidden', 'false');
-      }
-
-      if (ptabsRef.current && ptabsRef.current.clientWidth > 0) {
-        ptabsWidthRef.current = ptabsRef.current.clientWidth;
-      }
-
-      // Snap tab indicator when opening from closed state
-      const resolvedTab = initialTab || activeTab;
-      const activeBtn = tabBtnRefs.current[resolvedTab];
-      if (activeBtn) {
-        ix.t = activeBtn.offsetLeft;
-        iw.t = activeBtn.offsetWidth;
-        if (pp.x < 1) {
-          ix.snap();
-          iw.snap();
-        }
       }
 
       pp.setTarget(100);
@@ -359,29 +319,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       }
     }
   }, [isOpen, activeMember?.id]);
-
-  // Sync tab indicator springs on tab changes & resize
-  useLayoutEffect(() => {
-    const pp = ppRef.current;
-    const ix = ixRef.current;
-    const iw = iwRef.current;
-    if (!pp || !ix || !iw) return;
-
-    if (ptabsRef.current && ptabsRef.current.clientWidth > 0) {
-      ptabsWidthRef.current = ptabsRef.current.clientWidth;
-    }
-    const btn = tabBtnRefs.current[activeTab];
-    if (btn) {
-      ix.setTarget(btn.offsetLeft);
-      iw.setTarget(btn.offsetWidth);
-      if (pp.x < 1) {
-        ix.snap();
-        iw.snap();
-      }
-      drawPanel();
-      wake();
-    }
-  }, [activeTab, isOpen, drawPanel]);
 
   // Progress bar .bar2 pre-paint reset + single-rAF GPU scaleX fill
   useLayoutEffect(() => {
@@ -517,19 +454,15 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   useEffect(() => {
     return () => {
       ppRef.current?.destroy();
-      ixRef.current?.destroy();
-      iwRef.current?.destroy();
       holdRef.current?.destroy();
       ppRef.current = null;
-      ixRef.current = null;
-      iwRef.current = null;
       holdRef.current = null;
     };
   }, []);
 
   if (typeof document === 'undefined') return null;
 
-  const memberName = activeMember?.fullName || (activeMember as any)?.name || 'Adhérent';
+  const memberName = activeMember?.fullName || (activeMember as any)?.name || L('Member', 'Adhérent', 'عضو');
   const memberPhone = activeMember?.phoneNumber || (activeMember as any)?.phone || '';
   const memberEmail = activeMember?.email || '';
   const memberExp = activeMember?.expirationDate || (activeMember as any)?.expiryDate || '';
@@ -540,10 +473,15 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         activeMember.status === 'Banned' ||
         (activeMember as any).isBlocked)
   );
-  const statusLabel = isBlocked ? 'Bloqué' : daysRemaining <= 0 || activeMember?.status === 'Expired' ? 'Expiré' : 'Actif';
+  const isExpired = daysRemaining <= 0 || activeMember?.status === 'Expired';
+  const statusLabel = isBlocked
+    ? L('Blocked', 'Bloqué', 'محظور')
+    : isExpired
+    ? L('Expired', 'Expiré', 'منتهي')
+    : L('Active', 'Actif', 'نشط');
   const statusPillCls = isBlocked
     ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
-    : statusLabel === 'Expiré'
+    : isExpired
     ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
     : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 
@@ -564,7 +502,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       // ignore clipboard errors
     }
     setCopiedField(fieldKey);
-    showToast(`Copié : ${text}`);
+    showToast(`${L('Copied', 'Copié', 'تم النسخ')}: ${text}`);
     setTimeout(() => setCopiedField(null), 1800);
   };
 
@@ -587,7 +525,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         aria-labelledby="member-drawer-title"
         data-sq="panel"
         data-sq-border="solid"
-        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] text-[var(--atr-ink,#000000)] dark:text-white flex flex-col overflow-hidden font-sans select-none"
+        className="pnl pnl-inspector fixed end-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] text-[var(--atr-ink,#000000)] dark:text-white flex flex-col overflow-hidden font-sans select-none"
       >
         {activeMember && (
           <>
@@ -625,7 +563,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   {!isBlocked && (
                     <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full t-small font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]">
                       <ShieldCheck className="w-3 h-3" />
-                      Vérifié
+                      {L('Verified', 'Vérifié', 'موثق')}
                     </span>
                   )}
                 </div>
@@ -640,8 +578,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   data-no-liquid="true"
                   disabled={!hasPrev}
                   onClick={() => handleStep(-1)}
-                  aria-label="Adhérent précédent"
-                  title="Adhérent précédent"
+                  aria-label={L('Previous member', 'Adhérent précédent', 'العضو السابق')}
+                  title={L('Previous member', 'Adhérent précédent', 'العضو السابق')}
                   className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center p-0 text-[var(--atr-ink,#000000)] dark:text-white hover:not-disabled:bg-[var(--atr-hl,rgba(212,82,47,0.12))] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 >
                   <ChevronUp className="w-4 h-4" />
@@ -651,8 +589,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   data-no-liquid="true"
                   disabled={!hasNext}
                   onClick={() => handleStep(1)}
-                  aria-label="Adhérent suivant"
-                  title="Adhérent suivant"
+                  aria-label={L('Next member', 'Adhérent suivant', 'العضو التالي')}
+                  title={L('Next member', 'Adhérent suivant', 'العضو التالي')}
                   className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center p-0 text-[var(--atr-ink,#000000)] dark:text-white hover:not-disabled:bg-[var(--atr-hl,rgba(212,82,47,0.12))] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 >
                   <ChevronDown className="w-4 h-4" />
@@ -662,8 +600,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   type="button"
                   data-no-liquid="true"
                   onClick={onClose}
-                  aria-label="Fermer la fiche"
-                  title="Fermer"
+                  aria-label={L('Close drawer', 'Fermer la fiche', 'إغلاق اللوحة')}
+                  title={L('Close', 'Fermer', 'إغلاق')}
                   className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center p-0 text-[var(--atr-ink,#000000)] dark:text-white hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] cursor-pointer transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -671,44 +609,20 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               </div>
             </div>
 
-            {/* TABS WITH DUAL-SPRING CLIP-PATH INDICATOR (.ptabs) */}
-            <div
-              ref={ptabsRef}
-              data-sq="ctl"
-              data-sq-border="none"
-              className="ptabs relative flex mx-[26px] p-[3px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#191716]"
-              role="tablist"
-              aria-label="Sections du dossier adhérent"
-            >
-              <i
-                ref={pindRef}
-                aria-hidden="true"
-                className="absolute top-[3px] bottom-[3px] left-0 right-0 rounded-[var(--r-thumb,9px)] bg-[var(--atr-acc,#d4522f)] z-0 pointer-events-none"
-                style={{ clipPath: 'inset(0 100% 0 3px round 9px)' }}
+            {/* Branded Segmented Tabs */}
+            <div className="mx-[26px] mb-2">
+              <LiveSegmentedControl
+                size="md"
+                fullWidth
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val as 'overview' | 'access' | 'billing')}
+                aria-label={L('Member sections', 'Sections du dossier adhérent', 'أقسام ملف العضو')}
+                options={[
+                  { value: 'overview', label: L('Overview & Plan', 'Aperçu & Forfait', 'نظرة عامة والاشتراك') },
+                  { value: 'access', label: L('Access & Sessions', 'Accès & Séances', 'الدخول والحصص') },
+                  { value: 'billing', label: L('Sales & Invoices', 'Ventes & Factures', 'المبيعات والفواتير') },
+                ]}
               />
-              {TABS.map((tab) => {
-                const isSelected = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    ref={(el) => {
-                      tabBtnRefs.current[tab.id] = el;
-                    }}
-                    type="button"
-                    role="tab"
-                    data-t={tab.id}
-                    aria-selected={isSelected}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold t-label rounded-[var(--r-thumb,9px)] transition-colors duration-160 cursor-pointer ${
-                      isSelected
-                        ? 'text-white'
-                        : 'text-[var(--atr-ink,#000000)] dark:text-white/88'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
             </div>
 
             {/* SCROLLABLE BODY (.pb) WITH REPLAYABLE SECTION ENTRANCES (toggles data-anim without remounting DOM) */}
@@ -720,8 +634,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               {activeTab === 'overview' && (
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
-                    <h3>Actions rapides</h3>
-                    <div className="qa grid grid-cols-4 gap-2">
+                    <h3>{L('Quick actions', 'Actions rapides', 'إجراءات سريعة')}</h3>
+                    <div className="qa grid grid-cols-2 sm:grid-cols-4 gap-2">
                       <button
                         type="button"
                         data-no-liquid="true"
@@ -733,7 +647,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                         <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-white dark:bg-[#22201E] grid place-items-center">
                           <UserCheck className="w-[18px] h-[18px]" />
                         </span>
-                        <span>Enregistrer présence</span>
+                        <span>{L('Check in', 'Enregistrer présence', 'تسجيل الحضور')}</span>
                       </button>
 
                       <button
@@ -747,7 +661,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                         <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-white dark:bg-[#22201E] grid place-items-center">
                           <Pencil className="w-[18px] h-[18px]" />
                         </span>
-                        <span>Modifier</span>
+                        <span>{L('Edit', 'Modifier', 'تعديل')}</span>
                       </button>
 
                       <button
@@ -765,7 +679,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                             <Lock className="w-[18px] h-[18px] text-amber-500" />
                           )}
                         </span>
-                        <span>{isBlocked ? 'Débloquer badge' : 'Bloquer badge'}</span>
+                        <span>{isBlocked ? L('Unblock card', 'Débloquer badge', 'إلغاء الحظر') : L('Block card', 'Bloquer badge', 'حظر البطاقة')}</span>
                       </button>
 
                       <button
@@ -779,7 +693,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                         <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-white dark:bg-[#22201E] grid place-items-center">
                           <RotateCcw className="w-[18px] h-[18px]" />
                         </span>
-                        <span>Renouveler abonnement</span>
+                        <span>{L('Renew plan', 'Renouveler abonnement', 'تجديد الاشتراك')}</span>
                       </button>
                     </div>
                   </section>
@@ -787,17 +701,17 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Formule d’abonnement</span>
-                        <b className="tabular-nums t-body text-right">{planName}</b>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Membership plan', 'Formule d’abonnement', 'باقة الاشتراك')}</span>
+                        <b className="tabular-nums t-body text-end">{planName}</b>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Date d’échéance</span>
-                        <b className="tabular-nums t-body text-right">{memberExp || 'Non spécifiée'}</b>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Expiration date', 'Date d’échéance', 'تاريخ الانتهاء')}</span>
+                        <b className="tabular-nums t-body text-end">{memberExp || L('Not specified', 'Non spécifiée', 'غير محدد')}</b>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Jours restants</span>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Days remaining', 'Jours restants', 'الأيام المتبقية')}</span>
                         <b
-                          className="tabular-nums t-body text-right"
+                          className="tabular-nums t-body text-end"
                           style={{
                             color:
                               daysRemaining < 0
@@ -807,13 +721,15 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                                 : 'var(--atr-ok, #096b40)',
                           }}
                         >
-                          {daysRemaining < 0 ? `Expiré (${-daysRemaining}j)` : `${daysRemaining} jours`}
+                          {daysRemaining < 0
+                            ? L(`Expired (${-daysRemaining}d)`, `Expiré (${-daysRemaining}j)`, `منتهي (${-daysRemaining} ي)`)
+                            : L(`${daysRemaining} days`, `${daysRemaining} jours`, `${daysRemaining} يوم`)}
                         </b>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Séances restantes</span>
-                        <b className="tabular-nums t-body text-right text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
-                          {remainingSessions} séances
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Remaining sessions', 'Séances restantes', 'الحصص المتبقية')}</span>
+                        <b className="tabular-nums t-body text-end text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
+                          {remainingSessions} {L('sessions', 'séances', 'حصص')}
                         </b>
                       </div>
                       <div className="bar2 h-[8px] rounded-full bg-[var(--atr-divider)] overflow-hidden mt-0.5 mb-3">
@@ -827,15 +743,15 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   </section>
 
                   <section style={{ '--k': 2 } as React.CSSProperties}>
-                    <h3>Contact &amp; accès</h3>
+                    <h3>{L('Contact & access', 'Contact & accès', 'الاتصال والدخول')}</h3>
                     <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 flex items-center gap-2">
                           <Phone className="w-[15px] h-[15px]" />
-                          Téléphone
+                          {L('Phone', 'Téléphone', 'الهاتف')}
                         </span>
                         <span className="flex items-center gap-2">
-                          <b className="tabular-nums t-body">{memberPhone || 'Non renseigné'}</b>
+                          <b className="tabular-nums t-body">{memberPhone || L('Not provided', 'Non renseigné', 'غير مسجل')}</b>
                           {memberPhone && (
                             <button
                               type="button"
@@ -843,7 +759,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                               data-sq-border="none"
                               onClick={() => handleCopy(memberPhone, 'phone')}
                               className="w-7 h-7 border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
-                              aria-label="Copier le téléphone"
+                              aria-label={L('Copy phone', 'Copier le téléphone', 'نسخ الهاتف')}
                             >
                               {copiedField === 'phone' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
@@ -853,7 +769,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <div className="kv flex justify-between items-center gap-3 py-[11px] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 flex items-center gap-2">
                           <Mail className="w-[15px] h-[15px]" />
-                          E-mail
+                          {L('Email', 'E-mail', 'البريد الإلكتروني')}
                         </span>
                         <span className="flex items-center gap-2 min-w-0">
                           <b className="tabular-nums t-body truncate">{memberEmail || '—'}</b>
@@ -864,7 +780,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                               data-sq-border="none"
                               onClick={() => handleCopy(memberEmail, 'email')}
                               className="w-7 h-7 border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
-                              aria-label="Copier l'e-mail"
+                              aria-label={L('Copy email', "Copier l'e-mail", 'نسخ البريد')}
                             >
                               {copiedField === 'email' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
@@ -875,18 +791,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   </section>
 
                   <section style={{ '--k': 3 } as React.CSSProperties}>
-                    <h3>Notes du personnel</h3>
-                    <textarea
-                      aria-label="Notes du personnel"
+                    <LabelTextarea
+                      field="memberStaffNotes"
+                      label={L('Staff Notes', 'Notes du personnel', 'ملاحظات الموظفين')}
                       value={notesText}
-                      onChange={(e) => setNotesText(e.target.value)}
+                      onChange={setNotesText}
                       onBlur={() => {
                         if (activeMember && notesText.trim() !== (activeMember.notes || '').trim()) {
                           onUpdateNotes(activeMember.id, notesText.trim());
                         }
                       }}
-                      placeholder="Ajouter une note relative à cet adhérent…"
-                      className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus:bg-white dark:focus:bg-[#312D2A] focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 px-4 py-3 t-body text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y transition-all"
+                      rows={3}
+                      corner={12}
                     />
                   </section>
                 </>
@@ -895,38 +811,38 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               {activeTab === 'access' && (
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
-                    <h3>Badge &amp; portique</h3>
+                    <h3>{L('Badge & turnstile', 'Badge & portique', 'البطاقة والبوابة')}</h3>
                     <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Badge</span>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Badge', 'Badge', 'البطاقة')}</span>
                         <b className="tabular-nums t-body">RFID-{activeMember.id.slice(0, 8).toUpperCase()}</b>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Statut</span>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Status', 'Statut', 'الحالة')}</span>
                         <span className={`pill inline-flex items-center gap-2 px-2.5 py-[3px] rounded-full t-small font-medium ${statusPillCls}`}>
                           <i className="w-1.5 h-1.5 rounded-full bg-current" />
                           {statusLabel}
                         </span>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] t-body">
-                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Séances restantes</span>
+                        <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Remaining sessions', 'Séances restantes', 'الحصص المتبقية')}</span>
                         <b className="tabular-nums t-body">{remainingSessions}</b>
                       </div>
                     </div>
                     <div className="h-2.5" />
-                    <button
+                    <Button
                       type="button"
-                      data-sq="ctl"
-                      data-sq-border="none"
+                      tone="soft"
+                      size={40}
+                      className="w-full"
                       onClick={() => onToggleBlock(activeMember)}
-                      className="wide w-full h-[42px] border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black font-semibold t-label cursor-pointer"
                     >
-                      {isBlocked ? 'Débloquer le badge' : 'Bloquer le badge'}
-                    </button>
+                      {isBlocked ? L('Unblock card', 'Débloquer le badge', 'إلغاء حظر البطاقة') : L('Block card', 'Bloquer le badge', 'حظر البطاقة')}
+                    </Button>
                   </section>
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
-                    <h3>Passages récents</h3>
+                    <h3>{L('Recent check-ins', 'Passages récents', 'سجل الدخول الأخير')}</h3>
                     {memberCheckInHistory.length > 0 ? (
                       <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                         {memberCheckInHistory.slice(0, 8).map((log) => {
@@ -951,10 +867,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                               <span>
                                 <span className="font-medium block">
                                   {log.checkInMethod === 'nfc_card'
-                                    ? 'Portique RFID'
+                                    ? L('RFID Turnstile', 'Portique RFID', 'بوابة RFID')
                                     : log.checkInMethod === 'barcode_scanner'
-                                    ? 'Scanner Accueil'
-                                    : 'Validation Accueil'}
+                                    ? L('Front Desk Scanner', 'Scanner Accueil', 'ماسح الاستقبال')
+                                    : L('Desk Check-in', 'Validation Accueil', 'تأكيد الاستقبال')}
                                 </span>
                                 <small className="tabular-nums t-cap text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">
                                   {tsLabel}
@@ -967,7 +883,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                                     : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]'
                                 }`}
                               >
-                                {ok ? 'Accepté' : 'Refusé'}
+                                {ok ? L('Granted', 'Accepté', 'مقبول') : L('Denied', 'Refusé', 'مرفوض')}
                               </span>
                             </div>
                           );
@@ -988,15 +904,15 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                   {memberCheckInHistory.length > 0 && (
                     <section style={{ '--k': 2 } as React.CSSProperties}>
-                      <button
+                      <Button
                         type="button"
-                        data-sq="ctl"
-                        data-sq-border="none"
+                        tone="accent"
+                        size={40}
+                        className="w-full"
                         onClick={() => onCheckIn(activeMember)}
-                        className="wide w-full h-[42px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold t-label cursor-pointer"
                       >
-                        Enregistrer une présence
-                      </button>
+                        {L('Record check-in', 'Enregistrer une présence', 'تسجيل الحضور')}
+                      </Button>
                     </section>
                   )}
                 </>
@@ -1005,7 +921,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               {activeTab === 'billing' && (
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
-                    <h3>Solde à régler</h3>
+                    <h3>{L('Balance due', 'Solde à régler', 'الرصيد المستحق')}</h3>
                     <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-4 border-0">
                       <div
                         className="big tabular-nums t-kpi-m uppercase my-1"
@@ -1013,36 +929,35 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           color: balanceAmount > 0 ? 'var(--atr-acc, #d4522f)' : 'var(--atr-ok, #096b40)',
                         }}
                       >
-                        {balanceAmount > 0 ? `${balanceAmount.toLocaleString('en-US')} DZD` : 'Soldé'}
+                        {balanceAmount > 0 ? `${balanceAmount.toLocaleString('en-US')} DZD` : L('Settled', 'Soldé', 'مسدد')}
                       </div>
                       {balanceAmount > 0 && (
-                        <button
+                        <Button
                           type="button"
-                          data-sq="ctl"
-                          data-sq-border="none"
-                          onClick={() => showToast(`Solde encaissé pour ${memberName}`)}
-                          className="wide mt-2 w-full h-[42px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold t-label cursor-pointer"
+                          tone="accent"
+                          size={40}
+                          className="mt-2 w-full"
+                          onClick={() => showToast(`${L('Balance collected for', 'Solde encaissé pour', 'تم تحصيل الرصيد لـ')} ${memberName}`)}
                         >
-                          Encaisser le solde
-                        </button>
+                          {L('Collect balance', 'Encaisser le solde', 'تحصيل الرصيد')}
+                        </Button>
                       )}
                     </div>
                   </section>
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <div className="flex justify-between items-center mb-2">
-                      <h3 className="!m-0">Factures</h3>
+                      <h3 className="!m-0">{L('Invoices', 'Factures', 'الفواتير')}</h3>
                       {memberInvoiceHistory.length > 0 && (
-                        <button
+                        <Button
                           type="button"
-                          data-sq="ctl-sm"
-                          data-sq-border="none"
-                          onClick={() => showToast(`Nouvelle facture pour ${memberName}`)}
-                          className="h-8 px-3 border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold t-small flex items-center gap-1 cursor-pointer"
+                          tone="accent"
+                          size={32}
+                          leading={<Plus className="w-3.5 h-3.5" />}
+                          onClick={() => showToast(`${L('New invoice for', 'Nouvelle facture pour', 'فاتورة جديدة لـ')} ${memberName}`)}
                         >
-                          <Plus className="w-3.5 h-3.5" />
-                          Nouvelle
-                        </button>
+                          {L('New', 'Nouvelle', 'جديدة')}
+                        </Button>
                       )}
                     </div>
                     {memberInvoiceHistory.length > 0 ? (
@@ -1075,7 +990,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                                       : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
                                   }`}
                                 >
-                                  {paid ? 'Payée' : 'À régler'}
+                                  {paid ? L('Paid', 'Payée', 'مدفوعة') : L('Due', 'À régler', 'مستحقة')}
                                 </span>
                               </span>
                             </div>
@@ -1086,7 +1001,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <KineticEmptyStateMotion motionKey={`member-billing-empty-${activeMember.id}-${esLocale}`}>
                         <EmptyState
                           {...resolveCompactInvoicesEmptyState({
-                            onAction: () => showToast(`Nouvelle vente pour ${memberName}`),
+                            onAction: () => showToast(`${L('New sale for', 'Nouvelle vente pour', 'عملية جديدة لـ')} ${memberName}`),
                             locale: esLocale,
                           })}
                         />
@@ -1127,7 +1042,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     onClose();
                   }
                 }}
-                aria-label="Maintenir pour supprimer l'adhérent"
+                aria-label={L('Hold to delete member', "Maintenir pour supprimer l'adhérent", 'اضغط مطولاً لحذف العضو')}
                 data-no-liquid="true"
                 data-sq="ctl"
                 data-sq-border="none"
@@ -1140,19 +1055,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 />
                 <span ref={holdTextWrapRef} className="relative z-10 flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
-                  <span ref={holdLabelRef}>Maintenir pour supprimer</span>
+                  <span ref={holdLabelRef}>{L('Hold to delete', 'Maintenir pour supprimer', 'اضغط مطولاً للحذف')}</span>
                 </span>
               </button>
 
-              <button
+              <Button
                 type="button"
-                data-sq="ctl"
-                data-sq-border="none"
+                tone="accent"
+                size={40}
                 onClick={onClose}
-                className="fer h-[44px] px-7 border-0 bg-[var(--atr-acc,#d4522f)] hover:opacity-95 text-white font-semibold t-label cursor-pointer"
               >
-                Fermer
-              </button>
+                {L('Close', 'Fermer', 'إغلاق')}
+              </Button>
             </div>
           </>
         )}

@@ -24,7 +24,11 @@ import {
 } from '../../../services/store';
 import { MedicalPrescription, DoctorOrdonnanceConfig } from '../../../types';
 import { useMedicalData, NGAP_ACTS } from './medicalData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { MedicalOrdonnancePersonalizerModal } from './MedicalOrdonnancePersonalizerModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -1387,7 +1391,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
+          className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-y-auto"
         >
               <div className="p-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-[#22201E]">
                 <div className="flex items-center gap-2">
@@ -1398,14 +1402,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   >
                     <Pill size={18} />
                   </div>
-                  <div>
-                    <h3 className="font-semibold t-label text-black dark:text-white">
-                      Nouvelle Prescription Médicale Sécurisée
-                    </h3>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      Contrôle automatique des contre-indications et posologies Chifa
-                    </p>
-                  </div>
+                  <h3 className="font-semibold t-label text-black dark:text-white">
+                    Nouvelle Prescription Médicale Sécurisée
+                  </h3>
                 </div>
                 <button
                   type="button"
@@ -1416,55 +1415,37 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <X size={16} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 t-cap">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
-                      Médecin Prescripteur
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="solid"
-                      className="bg-[#F5F1EC] dark:bg-[#292624]"
-                    >
-                      <select
-                        value={compDoctorId}
-                        onChange={(e) => setCompDoctorId(e.target.value)}
-                        className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white"
-                      >
-                        {practitioners.map((doc) => (
-                          <option key={doc.id} value={doc.id}>
-                            {doc.fullName || doc.name} ({doc.specialty})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
-                      Patient Destinataire
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="solid"
-                      className="bg-[#F5F1EC] dark:bg-[#292624]"
-                    >
-                      <select
-                        value={compPatientId}
-                        onChange={(e) => {
-                          setCompPatientId(e.target.value);
-                          setOverrideConfirmed(false);
-                        }}
-                        className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white"
-                      >
-                        {patients.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.fullName} (NSS: {p.nationalId || 'Chifa OK'})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+              <div className="p-5 space-y-4 t-cap">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <LabelSelect
+                    field="compDoctorId"
+                    width="100%"
+                    height={40}
+                    corner={12}
+                    label="Médecin Prescripteur"
+                    value={compDoctorId}
+                    onChange={setCompDoctorId}
+                    options={practitioners.map((doc) => ({
+                      value: doc.id,
+                      label: `${doc.fullName || doc.name} (${doc.specialty})`,
+                    }))}
+                  />
+                  <LabelSelect
+                    field="compPatientId"
+                    width="100%"
+                    height={40}
+                    corner={12}
+                    label="Patient Destinataire"
+                    value={compPatientId}
+                    onChange={(val) => {
+                      setCompPatientId(val);
+                      setOverrideConfirmed(false);
+                    }}
+                    options={patients.map((p) => ({
+                      value: p.id,
+                      label: `${p.fullName} (NSS: ${p.nationalId || 'Chifa OK'})`,
+                    }))}
+                  />
                 </div>
 
               {selectedPatientForComp && (
@@ -1516,18 +1497,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       </li>
                     ))}
                   </ul>
-                  <label className="flex items-center gap-2 pt-1 font-semibold t-small cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={overrideConfirmed}
-                      onChange={(e) => setOverrideConfirmed(e.target.checked)}
-                      className="rounded-[var(--r-check,6px)] text-rose-600 focus:ring-rose-500"
-                    />
+                  <div className="flex items-center justify-between gap-3 pt-1 font-semibold t-small">
                     <span>
                       Je confirme en tant que médecin responsable avoir évalué le bénéfice/risque et
                       autorise la délivrance.
                     </span>
-                  </label>
+                    <LiveSwitch
+                      checked={overrideConfirmed}
+                      onCheckedChange={setOverrideConfirmed}
+                      ariaLabel="Confirmation médecin"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -1536,11 +1516,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <label className="t-small font-semibold text-black/55 dark:text-white/55">
                     Lignes de Prescription ({compItems.length})
                   </label>
-                  <button
+                  <Button
                     type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl-sm"
-                    data-sq-border="none"
+                    tone="accent"
+                    size={36}
+                    leading={<Plus size={12} />}
                     onClick={() =>
                       setCompItems((prev) => [
                         ...prev,
@@ -1554,11 +1534,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         },
                       ])
                     }
-                    className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-1 cursor-pointer"
                   >
-                    <Plus size={11} />
-                    <span>Ajouter Médicament</span>
-                  </button>
+                    Ajouter Médicament
+                  </Button>
                 </div>
 
                 {compItems.map((item, idx) => (
@@ -1566,156 +1544,122 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     key={idx}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3 bg-neutral-50 dark:bg-[#22201E] space-y-2"
+                    className="p-3 bg-neutral-50 dark:bg-[#22201E] space-y-3"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-black/55 dark:text-white/55 t-small w-4">
+                      <span className="font-semibold text-black/55 dark:text-white/55 t-small w-4 shrink-0">
                         {idx + 1}.
                       </span>
-                      <div
-                        data-sq="ctl-sm"
-                        data-sq-border="solid"
-                        className="flex-1 bg-white dark:bg-[#292624]"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Nom de spécialité / DCI (ex: Augmentin 1g, Inexium 20mg)..."
+                      <div className="flex-1">
+                        <LabelInput
+                          field={`drugName-${idx}`}
+                          width="100%"
+                          height={40}
+                          corner={12}
+                          label="Spécialité / DCI"
+                          placeholder="ex: Augmentin 1g, Inexium 20mg..."
                           value={item.drugName}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const updated = [...compItems];
-                            updated[idx] = { ...updated[idx], drugName: e.target.value };
+                            updated[idx] = { ...updated[idx], drugName: val };
                             setCompItems(updated);
                           }}
-                          className="lbi-field w-full px-2.5 py-2 bg-transparent border-0 t-small font-semibold"
                         />
                       </div>
                       {compItems.length > 1 && (
                         <button
                           type="button"
                           onClick={() => setCompItems(compItems.filter((_, i) => i !== idx))}
-                          className="p-1 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
+                          className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer shrink-0"
                           aria-label="Supprimer ligne"
                         >
                           <Trash2 size={14} />
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="t-cap text-black/55 dark:text-white/55">
-                          Dosage
-                        </label>
-                        <div
-                          data-sq="ctl-sm"
-                          data-sq-border="solid"
-                          className="bg-white dark:bg-[#292624]"
-                        >
-                          <input
-                            type="text"
-                            value={item.dosage}
-                            onChange={(e) => {
-                              const updated = [...compItems];
-                              updated[idx] = { ...updated[idx], dosage: e.target.value };
-                              setCompItems(updated);
-                            }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="t-cap text-black/55 dark:text-white/55">
-                          Fréquence / Prise
-                        </label>
-                        <div
-                          data-sq="ctl-sm"
-                          data-sq-border="solid"
-                          className="bg-white dark:bg-[#292624]"
-                        >
-                          <input
-                            type="text"
-                            value={item.frequency}
-                            onChange={(e) => {
-                              const updated = [...compItems];
-                              updated[idx] = { ...updated[idx], frequency: e.target.value };
-                              setCompItems(updated);
-                            }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="t-cap text-black/55 dark:text-white/55">
-                          Durée (Jours)
-                        </label>
-                        <div
-                          data-sq="ctl-sm"
-                          data-sq-border="solid"
-                          className="bg-white dark:bg-[#292624]"
-                        >
-                          <input
-                            type="number"
-                            value={item.durationDays}
-                            onChange={(e) => {
-                              const updated = [...compItems];
-                              updated[idx] = {
-                                ...updated[idx],
-                                durationDays: parseInt(e.target.value, 10) || 1,
-                              };
-                              setCompItems(updated);
-                            }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
-                          />
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <LabelInput
+                        field={`dosage-${idx}`}
+                        width="100%"
+                        height={40}
+                        corner={12}
+                        label="Dosage"
+                        value={item.dosage}
+                        onChange={(val) => {
+                          const updated = [...compItems];
+                          updated[idx] = { ...updated[idx], dosage: val };
+                          setCompItems(updated);
+                        }}
+                      />
+                      <LabelInput
+                        field={`frequency-${idx}`}
+                        width="100%"
+                        height={40}
+                        corner={12}
+                        label="Fréquence / Prise"
+                        value={item.frequency}
+                        onChange={(val) => {
+                          const updated = [...compItems];
+                          updated[idx] = { ...updated[idx], frequency: val };
+                          setCompItems(updated);
+                        }}
+                      />
+                      <LabelInput
+                        field={`durationDays-${idx}`}
+                        width="100%"
+                        height={40}
+                        corner={12}
+                        label="Durée (Jours)"
+                        type="number"
+                        value={String(item.durationDays)}
+                        onChange={(val) => {
+                          const updated = [...compItems];
+                          updated[idx] = {
+                            ...updated[idx],
+                            durationDays: parseInt(val, 10) || 1,
+                          };
+                          setCompItems(updated);
+                        }}
+                      />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div>
-                <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
-                  Recommandations au Patient
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-[#F5F1EC] dark:bg-[#292624]"
-                >
-                  <textarea
-                    value={compNotes}
-                    onChange={(e) => setCompNotes(e.target.value)}
-                    rows={2}
-                    placeholder="Conseils hygiéno-diététiques, hydratation, repos..."
-                    className="lbi-field w-full p-3 bg-transparent border-0 t-cap"
-                  />
-                </div>
-              </div>
+              <LabelTextarea
+                field="compNotes"
+                width="100%"
+                corner={12}
+                label="Recommandations au Patient"
+                value={compNotes}
+                onChange={setCompNotes}
+                rows={2}
+                placeholder="Conseils hygiéno-diététiques, hydratation, repos..."
+              />
             </div>
 
-            <div className="p-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-[#22201E]">
+            <div className="p-4 border-t border-[var(--atr-divider)] flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-neutral-50 dark:bg-[#22201E]">
               <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Code QR sécurisé généré automatiquement
               </span>
-              <div className="flex gap-2">
-                <button
+              <div className="flex items-center justify-end gap-2">
+                <Button
                   type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl-sm"
-                  data-sq-border="solid"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsComposerOpen(false)}
-                  className="px-3 py-2 text-black/70 dark:text-white/75 t-small font-semibold cursor-pointer"
                 >
                   Annuler
-                </button>
-                <AtriumButton
+                </Button>
+                <Button
                   type="button"
-                  variant="primary"
-                  size="md"
-                  icon={<ShieldCheck size={14} />}
+                  tone="accent"
+                  size={40}
+                  leading={<ShieldCheck size={14} />}
                   onClick={handleSaveComposer}
                 >
-                  <span>Signer &amp; Valider l&apos;Ordonnance</span>
-                </AtriumButton>
+                  Signer &amp; Valider l&apos;Ordonnance
+                </Button>
               </div>
             </div>
         </div>

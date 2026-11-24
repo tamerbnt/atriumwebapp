@@ -41,7 +41,7 @@ export function LivePopoverPanel({
   onClosed,
   placement = 'bottom-end',
   width = 'menu',
-  header,
+  header: _deprecatedHeader,
   children,
   className,
   style,
@@ -127,6 +127,15 @@ export function LivePopoverPanel({
     };
   }, [anchor, updatePosition, handleClosed]);
 
+  // Re-measure height & placement when dynamic content (e.g. search filtering) changes while open
+  useEffect(() => {
+    if (!open) return;
+    const ctrl = controllerRef.current;
+    if (!ctrl) return;
+    ctrl.measure();
+    updatePosition();
+  }, [open, children, updatePosition]);
+
   // Handle open state transition
   useEffect(() => {
     const ctrl = controllerRef.current;
@@ -137,19 +146,20 @@ export function LivePopoverPanel({
       updatePosition();
       ctrl.setOpen(true);
 
-      // Focus management
-      requestAnimationFrame(() => {
-        const items = Array.from(
-          panel.querySelectorAll<HTMLButtonElement>('[data-atr-item]:not([disabled])')
-        );
-        if (items.length > 0) {
-          const target =
-            focus === 'selected'
-              ? items.find((el) => el.getAttribute('aria-selected') === 'true') || items[0]
-              : items[0];
-          target?.focus({ preventScroll: true });
-        }
-      });
+      if (focus !== null) {
+        requestAnimationFrame(() => {
+          const items = Array.from(
+            panel.querySelectorAll<HTMLButtonElement>('[data-atr-item]:not([disabled])')
+          );
+          if (items.length > 0) {
+            const target =
+              focus === 'selected'
+                ? items.find((el) => el.getAttribute('aria-selected') === 'true') || items[0]
+                : items[0];
+            target?.focus({ preventScroll: true });
+          }
+        });
+      }
     } else {
       ctrl.setOpen(false);
     }
@@ -171,6 +181,7 @@ export function LivePopoverPanel({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         closeRef.current?.('escape');
         anchor.focus?.();
         return;
@@ -179,13 +190,15 @@ export function LivePopoverPanel({
       const panel = panelRef.current;
       if (!panel) return;
 
+      const active = document.activeElement as HTMLElement | null;
+      const inInput = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA';
+
       const items = Array.from(
         panel.querySelectorAll<HTMLButtonElement>('[data-atr-item]:not([disabled])')
       );
       if (items.length === 0) return;
 
-      const active = document.activeElement as HTMLButtonElement | null;
-      const activeIdx = items.indexOf(active!);
+      const activeIdx = items.indexOf(active as HTMLButtonElement);
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -197,11 +210,11 @@ export function LivePopoverPanel({
         const prev = activeIdx > 0 ? activeIdx - 1 : items.length - 1;
         items[prev]?.focus({ preventScroll: true });
         controllerRef.current?.setHover(items[prev]);
-      } else if (e.key === 'Home') {
+      } else if (e.key === 'Home' && !inInput) {
         e.preventDefault();
         items[0]?.focus({ preventScroll: true });
         controllerRef.current?.setHover(items[0]);
-      } else if (e.key === 'End') {
+      } else if (e.key === 'End' && !inInput) {
         e.preventDefault();
         items[items.length - 1]?.focus({ preventScroll: true });
         controllerRef.current?.setHover(items[items.length - 1]);
@@ -236,8 +249,9 @@ export function LivePopoverPanel({
       aria-label={ariaLabel}
       className={`${popoverClasses.panel}${className ? ` ${className}` : ''}`}
       data-atrium-theme={currentTheme}
+      data-atr-popover-open={open ? 'true' : undefined}
       tabIndex={-1}
-      style={style}
+      style={{ zIndex: 'var(--atr-z-popover, 10050)', ...style }}
       onPointerOver={(e) => {
         const item = (e.target as HTMLElement)?.closest<HTMLElement>('[data-atr-item]:not([disabled])');
         controllerRef.current?.setHover(item || null);
@@ -255,8 +269,6 @@ export function LivePopoverPanel({
       }}
     >
       <div ref={hlRef} className={popoverClasses.hl} aria-hidden="true" />
-      {header && <div className={popoverClasses.header}>{header}</div>}
-      {header && <div className={popoverClasses.hr} />}
       {children}
     </div>,
     anchor.ownerDocument.body

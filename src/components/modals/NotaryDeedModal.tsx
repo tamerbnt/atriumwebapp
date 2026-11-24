@@ -171,7 +171,8 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
             label={isAr ? 'قيمة المعاملة' : isEn ? 'Deal Value' : 'Montant (DZD)'}
             type="number"
             value={String(transactionValueDzd)}
-            onChange={(e) => setTransactionValueDzd(Number(e.target.value) || 0)}
+            onChange={(val) => setTransactionValueDzd(Number(val) || 0)}
+            height={40}
             required
           />
 
@@ -190,15 +191,16 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           <LabelInput
             label={isAr ? 'العنوان (فرنسية)' : isEn ? 'Title (French)' : 'Titre (FR)'}
             value={titleFr}
-            onChange={(e) => setTitleFr(e.target.value)}
+            onChange={setTitleFr}
+            height={40}
             required
           />
           <LabelInput
             label={isAr ? 'العنوان (عربية)' : isEn ? 'Title (Arabic)' : 'Titre (AR)'}
             value={titleAr}
-            onChange={(e) => setTitleAr(e.target.value)}
+            onChange={setTitleAr}
+            height={40}
             required
-            className="text-right"
           />
         </div>
 
@@ -211,25 +213,29 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
             <LabelInput
               label={isAr ? 'البائع / المانح' : isEn ? 'Seller / Donor' : 'Vendeur'}
               value={vendorName}
-              onChange={(e) => setVendorName(e.target.value)}
+              onChange={setVendorName}
+              height={40}
               required
             />
             <LabelInput
               label={isAr ? 'الهوية الوطنية' : isEn ? 'National ID' : 'ID National'}
               value={vendorNin}
-              onChange={(e) => setVendorNin(e.target.value)}
+              onChange={setVendorNin}
+              height={40}
               required
             />
             <LabelInput
               label={isAr ? 'المشتري / المستفيد' : isEn ? 'Buyer / Recipient' : 'Acquéreur'}
               value={purchaserName}
-              onChange={(e) => setPurchaserName(e.target.value)}
+              onChange={setPurchaserName}
+              height={40}
               required
             />
             <LabelInput
               label={isAr ? 'الهوية الوطنية' : isEn ? 'National ID' : 'ID National'}
               value={purchaserNin}
-              onChange={(e) => setPurchaserNin(e.target.value)}
+              onChange={setPurchaserNin}
+              height={40}
               required
             />
           </div>
@@ -241,13 +247,13 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
             <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
               {isAr ? 'المراجع العقارية' : isEn ? 'Land Registry' : 'Cadastre'}
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-[var(--s2,8px)]">
-              <LabelInput label={isAr ? 'الولاية' : isEn ? 'Province' : 'Wilaya'} value={wilaya} onChange={(e) => setWilaya(e.target.value)} />
-              <LabelInput label={isAr ? 'البلدية' : isEn ? 'District' : 'Commune'} value={commune} onChange={(e) => setCommune(e.target.value)} />
-              <LabelInput label={isAr ? 'القسم' : isEn ? 'Section' : 'Section'} value={section} onChange={(e) => setSection(e.target.value)} />
-              <LabelInput label={isAr ? 'الجزيرة' : isEn ? 'Block' : 'Îlot'} value={ilot} onChange={(e) => setIlot(e.target.value)} />
-              <LabelInput label={isAr ? 'الحصة' : isEn ? 'Lot No.' : 'N° Lot'} value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} />
-              <LabelInput label={isAr ? 'الدفتر العقاري' : isEn ? 'Title Book' : 'Livret Foncier'} value={livretFoncierNumber} onChange={(e) => setLivretFoncierNumber(e.target.value)} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[var(--s3,12px)]">
+              <LabelInput label={isAr ? 'الولاية' : isEn ? 'Province' : 'Wilaya'} value={wilaya} onChange={setWilaya} height={40} />
+              <LabelInput label={isAr ? 'البلدية' : isEn ? 'District' : 'Commune'} value={commune} onChange={setCommune} height={40} />
+              <LabelInput label={isAr ? 'القسم' : isEn ? 'Section' : 'Section'} value={section} onChange={setSection} height={40} />
+              <LabelInput label={isAr ? 'الجزيرة' : isEn ? 'Block' : 'Îlot'} value={ilot} onChange={setIlot} height={40} />
+              <LabelInput label={isAr ? 'الحصة' : isEn ? 'Lot No.' : 'N° Lot'} value={lotNumber} onChange={setLotNumber} height={40} />
+              <LabelInput label={isAr ? 'الدفتر العقاري' : isEn ? 'Title Book' : 'Livret Foncier'} value={livretFoncierNumber} onChange={setLivretFoncierNumber} height={40} />
             </div>
           </div>
         )}

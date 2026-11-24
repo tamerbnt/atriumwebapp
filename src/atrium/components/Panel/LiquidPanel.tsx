@@ -121,7 +121,7 @@ function readContext(anchor: HTMLElement) {
 }
 
 export function LiquidPanel(props: LiquidPanelProps) {
-  const { id, anchor, open, role, focus, onRequestClose, onClosed, placement = 'bottom-end', width = 'menu', header, children } = props;
+  const { id, anchor, open, role, focus, onRequestClose, onClosed, placement = 'bottom-end', width = 'menu', children } = props;
   const panelRef = useRef<HTMLDivElement>(null);
   const hlRef = useRef<HTMLSpanElement>(null);
   const bodyRef = useRef<PanelBody | null>(null);
@@ -293,6 +293,7 @@ export function LiquidPanel(props: LiquidPanelProps) {
       tabIndex={-1}
       className={s.panel}
       data-atrium-theme={ctx.theme}
+      data-atr-popover-open={open ? 'true' : undefined}
       data-side="down"
       style={style}
       onPointerOver={onPointerOver}
@@ -301,7 +302,6 @@ export function LiquidPanel(props: LiquidPanelProps) {
       onKeyDown={onKeyDown}
     >
       <span ref={hlRef} className={s.hl} aria-hidden="true" />
-      {header ? <div className={s.header}>{header}</div> : null}
       {children}
     </div>,
     anchor.ownerDocument.body,

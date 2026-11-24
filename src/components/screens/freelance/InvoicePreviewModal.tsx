@@ -18,6 +18,7 @@ import {
   selectCurrentBusinessFromState,
 } from '../../../services/store';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
@@ -144,14 +145,14 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               </p>
             </div>
 
-            <div className={`space-y-1 ${isRtl ? 'sm:text-left text-right' : 'sm:text-right text-left'}`}>
+            <div className="space-y-1 sm:text-end text-start">
               <span className="t-small font-semibold text-black/55 block">
                 {t('free_invoice_total', language)}
               </span>
               <span className="t-kpi-m uppercase text-black tabular-nums block text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
               </span>
-              <div className={`t-cap text-black/55 flex items-center gap-2 pt-1 ${isRtl ? 'sm:justify-start' : 'sm:justify-end'}`}>
+              <div className="t-cap text-black/55 flex items-center gap-2 pt-1 sm:justify-end">
                 <span>{t('free_inv_table_date', language)}: {invoice.issueDate}</span>
                 <span aria-hidden="true">·</span>
                 <span className="font-semibold text-black">
@@ -204,25 +205,25 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               <table className="w-full border-collapse t-cap">
                 <thead>
                   <tr className="bg-neutral-50 border-b border-black/[0.08] text-black/55 font-semibold">
-                    <th className={`py-2 px-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_item_desc', language)}</th>
-                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_qty', language)}</th>
-                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_rate', language)}</th>
-                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_total', language)}</th>
+                    <th className="py-2 px-4 text-start">{t('free_inv_item_desc', language)}</th>
+                    <th className="py-2 px-4 text-end">{t('free_inv_item_qty', language)}</th>
+                    <th className="py-2 px-4 text-end">{t('free_inv_item_rate', language)}</th>
+                    <th className="py-2 px-4 text-end">{t('free_inv_item_total', language)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.06] font-medium">
                   {invoice.items.map((item) => (
                     <tr key={item.id} className="hover:bg-neutral-50/50">
-                      <td className={`py-3 px-4 text-black ${isRtl ? 'text-right' : 'text-left'}`}>
+                      <td className="py-3 px-4 text-black text-start">
                         {item.description}
                       </td>
-                      <td className={`py-3 px-4 tabular-nums text-black/75 ${isRtl ? 'text-left' : 'text-right'}`}>
+                      <td className="py-3 px-4 tabular-nums text-black/75 text-end">
                         {item.quantity}
                       </td>
-                      <td className={`py-3 px-4 tabular-nums text-black/75 ${isRtl ? 'text-left' : 'text-right'}`}>
+                      <td className="py-3 px-4 tabular-nums text-black/75 text-end">
                         {formatCurrencyAmount(item.unitRate, invoice.currency)}
                       </td>
-                      <td className={`py-3 px-4 tabular-nums font-semibold text-black ${isRtl ? 'text-left' : 'text-right'}`}>
+                      <td className="py-3 px-4 tabular-nums font-semibold text-black text-end">
                         {formatCurrencyAmount(item.total, invoice.currency)}
                       </td>
                     </tr>
@@ -232,7 +233,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             </div>
 
             {/* Subtotal & Total Ledger */}
-            <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} pt-2`}>
+            <div className="flex justify-end pt-2">
               <div className="w-64 space-y-2 t-cap">
                 <div className="flex justify-between text-black/55">
                   <span>{t('free_inv_doc_subtotal', language)}</span>
@@ -309,33 +310,24 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#22201E] no-print">
-          <span className="t-cap text-black/55 dark:text-white/55">
-            {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
-          </span>
-          <div className="flex items-center gap-2">
-            {invoice.status !== 'Paid' && onMarkPaid && (
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                glow
-                className="bg-emerald-600 hover:bg-emerald-700 shadow-[0_2px_8px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.40)]"
-                onClick={() => {
-                  onMarkPaid(invoice.id);
-                  onClose();
-                }}
-              >
-                {t('free_inv_doc_mark_paid_btn', language)}
-              </AtriumButton>
-            )}
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3 bg-[#F5F1EC]/60 dark:bg-[#22201E] no-print">
+          <Button type="button" tone="soft" size={40} onClick={onClose}>
+            {t('free_clients_cancel', language)}
+          </Button>
+          {invoice.status !== 'Paid' && onMarkPaid && (
             <AtriumButton
-              variant="outline"
-              size="sm"
-              onClick={onClose}
+              variant="primary"
+              size="md"
+              glow
+              className="bg-emerald-600 hover:bg-emerald-700 shadow-[0_2px_8px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.40)]"
+              onClick={() => {
+                onMarkPaid(invoice.id);
+                onClose();
+              }}
             >
-              {t('free_clients_cancel', language)}
+              {t('free_inv_doc_mark_paid_btn', language)}
             </AtriumButton>
-          </div>
+          )}
         </div>
         </div>
       )}

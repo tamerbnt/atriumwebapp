@@ -45,6 +45,7 @@ import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -1265,9 +1266,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     field="Barcode"
                     label={t('shop_barcode_label')}
                     value={barcodeQuery}
-                    onChange={(val) => setBarcodeQuery(val?.target?.value ?? String(val))}
+                    onChange={setBarcodeQuery}
                     width="100%"
-                    height={44}
+                    height={40}
                     corner={14}
                     prefix={<Barcode size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
                   />
@@ -1463,7 +1464,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               field="Customer"
               label={t('pos_customer_attribution')}
               value={selectedCustomerId}
-              onChange={(val) => setSelectedCustomerId(typeof val === 'string' ? val : val.target?.value || val)}
+              onChange={setSelectedCustomerId}
               options={[
                 { value: '', label: t('pos_guest_walkin') },
                 ...members.map((m) => ({ value: m.id, label: `${m.fullName} (${m.phoneNumber})` })),
@@ -1494,7 +1495,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                             {formatMoney(item.product.price.amount)} {t('shop_per_unit')}
                           </div>
                         </div>
-                        <div className={`shrink-0 ${isRtl ? 'text-left' : 'text-right'}`}>
+                        <div className="shrink-0 text-end">
                           <div className="t-small font-semibold tabular-nums text-black dark:text-white">
                             {formatMoney(lineTotal)}
                           </div>
@@ -2431,78 +2432,31 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
         title={t('shop_modal_checkout_title')}
-        subtitle={t('shop_modal_checkout_subtitle', { amount: formatMoney(cartTotal) })}
       >
         <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-          <div
-            data-sq="ctl"
-            data-sq-border="none"
-            className="flex bg-[#EFE9E2] dark:bg-[#191716] p-1 t-small font-semibold"
-          >
-            <button
-              type="button"
-              onClick={() => setCheckoutMode('single')}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className={`flex-1 py-2 cursor-pointer transition-colors flex items-center justify-center gap-2 ${
-                checkoutMode === 'single'
-                  ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
-                  : 'text-black/55 dark:text-white/55'
-              }`}
-            >
-              <Banknote size={14} />
-              <span>{t('shop_mode_single')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCheckoutMode('split')}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className={`flex-1 py-2 cursor-pointer transition-colors flex items-center justify-center gap-2 ${
-                checkoutMode === 'split'
-                  ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
-                  : 'text-black/55 dark:text-white/55'
-              }`}
-            >
-              <Split size={14} />
-              <span>{t('shop_mode_split')}</span>
-            </button>
-          </div>
+          <LiveSegmentedControl<'single' | 'split'>
+            value={checkoutMode}
+            onChange={setCheckoutMode}
+            options={[
+              { value: 'single', label: t('shop_mode_single'), icon: <Banknote size={14} /> },
+              { value: 'split', label: t('shop_mode_split'), icon: <Split size={14} /> },
+            ]}
+            fullWidth
+          />
 
           {checkoutMode === 'single' && (
             <div className="space-y-3">
-              <label className="t-small font-semibold text-black/70 dark:text-white/75">{t('shop_tender_method_label')}</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Cash', 'Card', 'MemberBalance'].map((method) => {
-                  const isSelected = singlePaymentMethod === method;
-                  const label =
-                    method === 'Cash'
-                      ? t('pos_tender_cash')
-                      : method === 'Card'
-                      ? t('pos_tender_card')
-                      : t('shop_tender_member_bal');
-                  return (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => setSinglePaymentMethod(method)}
-                      data-sq="card"
-                      data-sq-border="solid"
-                      data-sq-stroke-w={isSelected ? '2' : '1'}
-                      className={`p-3 t-small font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                        isSelected
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/70 dark:text-white/75'
-                      }`}
-                    >
-                      {method === 'Cash' && <Banknote size={18} />}
-                      {method === 'Card' && <CreditCard size={18} />}
-                      {method === 'MemberBalance' && <User size={18} />}
-                      <span>{label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <div className="t-small font-semibold text-black/70 dark:text-white/75">{t('shop_tender_method_label')}</div>
+              <LiveSegmentedControl<string>
+                value={singlePaymentMethod}
+                onChange={setSinglePaymentMethod}
+                options={[
+                  { value: 'Cash', label: t('pos_tender_cash'), icon: <Banknote size={14} /> },
+                  { value: 'Card', label: t('pos_tender_card'), icon: <CreditCard size={14} /> },
+                  { value: 'MemberBalance', label: t('shop_tender_member_bal'), icon: <User size={14} /> },
+                ]}
+                fullWidth
+              />
               {singlePaymentMethod === 'Cash' && (
                 <div
                   data-sq="card"
@@ -2528,8 +2482,8 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     value={amountTenderedInput}
                     onChange={setAmountTenderedInput}
                     width="100%"
-                    height={48}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
                   <div className="flex items-center justify-between pt-1">
                     <span className="t-small font-semibold text-black/55 dark:text-white/55">
@@ -2561,11 +2515,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   <div key={idx} className="flex items-center gap-2">
                     <div className="w-36">
                       <LabelSelect
-                        field="Method"
+                        field={`Method-${idx}`}
                         label={t('shop_split_col_method')}
                         value={sp.method}
-                        onChange={(val) => {
-                          const v = typeof val === 'string' ? val : val.target?.value || val;
+                        onChange={(v) => {
                           const newArr = [...splitPayments];
                           newArr[idx].method = v;
                           setSplitPayments(newArr);
@@ -2582,13 +2535,13 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     </div>
                     <div className="flex-1">
                       <LabelInput
-                        field="Amount"
+                        field={`Amount-${idx}`}
                         label={t('shop_split_col_amount')}
                         type="number"
                         value={sp.amount || ''}
                         onChange={(val) => {
                           const newArr = [...splitPayments];
-                          newArr[idx].amount = parseFloat(val?.target?.value ?? val) || 0;
+                          newArr[idx].amount = parseFloat(val) || 0;
                           setSplitPayments(newArr);
                         }}
                         width="100%"
@@ -2621,15 +2574,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[var(--atr-divider)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[var(--atr-divider)]">
             <LabelSelect
               field="Cashier"
               label={t('shop_field_cashier')}
               value={selectedCashierName}
-              onChange={(val) => setSelectedCashierName(typeof val === 'string' ? val : val.target?.value || val)}
+              onChange={setSelectedCashierName}
               options={staff.map((s) => ({ value: s.fullName, label: `${s.fullName} (${s.role})` }))}
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="CustPhone"
@@ -2639,7 +2592,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               onChange={setCheckoutCustomerPhone}
               placeholder="+213 550..."
               width="100%"
-              height={42}
+              height={40}
               corner={12}
             />
           </div>
@@ -2650,25 +2603,22 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onChange={setCheckoutNotes}
             placeholder="e.g. Counter #1 - BaridiMob Ref #9812"
             width="100%"
-            height={42}
+            height={40}
             corner={12}
           />
-          <div className="flex items-center justify-end gap-3 pt-3">
-            <button
-              type="button"
-              onClick={() => setIsCheckoutModalOpen(false)}
-              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-            >
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsCheckoutModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              tone="accent"
+              size={40}
+              leading={<CheckCircle2 size={15} />}
               onClick={handleConfirmCheckout}
-              className="h-10 px-6 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full flex items-center gap-2 hover:opacity-90 cursor-pointer shadow-xs"
             >
-              <CheckCircle2 size={15} />
-              <span>{t('shop_btn_complete_sale')}</span>
-            </button>
+              {t('shop_btn_complete_sale')}
+            </Button>
           </div>
         </div>
       </Modal>
@@ -2677,11 +2627,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         isOpen={Boolean(completedSale)}
         onClose={() => setCompletedSale(null)}
         title={t('shop_sale_success_title')}
-        subtitle={
-          retainedCompletedSale
-            ? t('shop_receipt_number_sub', { id: retainedCompletedSale.id.slice(-6).toUpperCase() })
-            : ''
-        }
       >
         {retainedCompletedSale && (
           <div className="space-y-4" dir="ltr">
@@ -2735,22 +2680,24 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
                 type="button"
+                tone="soft"
+                size={40}
+                leading={<Printer size={14} />}
                 onClick={() => window.print()}
-                className="h-10 px-4 t-small font-semibold text-black/70 dark:text-white bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E6DFD6] dark:hover:bg-[#332F2B] rounded-full cursor-pointer flex items-center justify-center gap-2"
               >
-                <Printer size={14} />
-                <span>{t('shop_btn_print')}</span>
-              </button>
-              <button
+                {t('shop_btn_print')}
+              </Button>
+              <Button
                 type="button"
+                tone="accent"
+                size={40}
                 onClick={() => setCompletedSale(null)}
-                className="flex-1 h-10 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full cursor-pointer hover:opacity-90 shadow-xs"
               >
                 {t('shop_btn_new_order')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -2760,7 +2707,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         isOpen={isCustomItemModalOpen}
         onClose={() => setIsCustomItemModalOpen(false)}
         title={t('shop_custom_modal_title')}
-        subtitle={t('shop_custom_modal_subtitle')}
       >
         <form onSubmit={handleAddCustomItem} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
@@ -2771,10 +2717,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onChange={setCustomItemName}
             placeholder="e.g. Special Fresh Order"
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="CustomPrice"
               label={t('shop_custom_price')}
@@ -2783,8 +2729,8 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               value={customItemPrice ? String(customItemPrice) : ''}
               onChange={(v) => setCustomItemPrice(parseFloat(v) || 0)}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="CustomCategory"
@@ -2793,24 +2739,17 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               onChange={setCustomItemCategory}
               placeholder="General"
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
-          <div className="flex justify-end gap-3 pt-3">
-            <button
-              type="button"
-              onClick={() => setIsCustomItemModalOpen(false)}
-              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-            >
+          <div className="flex justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsCustomItemModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button
-              type="submit"
-              className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 shadow-xs cursor-pointer"
-            >
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
               {t('shop_custom_btn_add')}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>
@@ -2819,7 +2758,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         isOpen={isHoldOrderModalOpen}
         onClose={() => setIsHoldOrderModalOpen(false)}
         title={t('shop_hold_modal_title')}
-        subtitle={t('shop_hold_modal_subtitle')}
       >
         <form onSubmit={handleHoldOrder} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
@@ -2829,8 +2767,8 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onChange={setHoldOrderRefName}
             placeholder={t('shop_hold_ref_ph')}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
           <LabelInput
             field="HoldNotes"
@@ -2839,24 +2777,16 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onChange={setHoldOrderNotes}
             placeholder={t('shop_hold_notes_ph')}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
-          <div className="flex justify-end gap-3 pt-3">
-            <button
-              type="button"
-              onClick={() => setIsHoldOrderModalOpen(false)}
-              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-            >
+          <div className="flex justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsHoldOrderModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button
-              type="submit"
-              className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 shadow-xs flex items-center gap-2 cursor-pointer"
-            >
-              <PauseCircle size={14} />
-              <span>{t('shop_hold_confirm_btn')}</span>
-            </button>
+            </Button>
+            <Button type="submit" tone="accent" size={40} leading={<PauseCircle size={14} />}>
+              {t('shop_hold_confirm_btn')}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -2868,38 +2798,23 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           setSelectedProductForAdjust(null);
         }}
         title={t('shop_adjust_modal_title')}
-        subtitle={retainedProductForAdjust?.name || ''}
       >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setAdjustMode('add')}
-                data-sq="ctl"
-                data-sq-border="solid"
-                className={`p-3 t-small font-semibold cursor-pointer transition-colors ${adjustMode === 'add' ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300' : 'bg-[#F5F1EC] dark:bg-[#22201E] text-black dark:text-white hover:bg-[#FAF6F1] dark:hover:bg-[#2B2825]'}`}
-              >
-                {t('shop_adjust_restock')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdjustMode('remove')}
-                data-sq="ctl"
-                data-sq-border="solid"
-                className={`p-3 t-small font-semibold cursor-pointer transition-colors ${adjustMode === 'remove' ? '[--sq-stroke:#EF4444] bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300' : 'bg-[#F5F1EC] dark:bg-[#22201E] text-black dark:text-white hover:bg-[#FAF6F1] dark:hover:bg-[#2B2825]'}`}
-              >
-                {t('shop_adjust_damage')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdjustMode('set')}
-                data-sq="ctl"
-                data-sq-border="solid"
-                className={`p-3 t-small font-semibold cursor-pointer transition-colors ${adjustMode === 'set' ? '[--sq-stroke:#d4522f] bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]' : 'bg-[#F5F1EC] dark:bg-[#22201E] text-black dark:text-white hover:bg-[#FAF6F1] dark:hover:bg-[#2B2825]'}`}
-              >
-                {t('shop_adjust_audit')}
-              </button>
-            </div>
+            {retainedProductForAdjust && (
+              <div className="t-small text-black/65 dark:text-white/65">
+                {retainedProductForAdjust.name}
+              </div>
+            )}
+            <LiveSegmentedControl<'add' | 'remove' | 'set'>
+              value={adjustMode}
+              onChange={setAdjustMode}
+              options={[
+                { value: 'add', label: t('shop_adjust_restock') },
+                { value: 'remove', label: t('shop_adjust_damage') },
+                { value: 'set', label: t('shop_adjust_audit') },
+              ]}
+              fullWidth
+            />
             <LabelInput
               field="AdjustQuantity"
               label={adjustMode === 'set' ? t('shop_adjust_new_count') : t('shop_adjust_quantity')}
@@ -2907,10 +2822,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               min="0"
               required
               value={adjustQuantity}
-              onChange={(val) => setAdjustQuantity(Number(val?.target?.value || val || 0))}
+              onChange={(val) => setAdjustQuantity(Number(val || 0))}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="AdjustReason"
@@ -2919,16 +2834,16 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               onChange={setAdjustReason}
               placeholder={t('shop_adjust_reason_ph')}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
-            <div className="flex justify-end gap-3 pt-3">
-              <button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAdjustStockModalOpen(false)}>
                 {t('action_cancel')}
-              </button>
-              <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {t('shop_adjust_apply_btn')}
-              </button>
+              </Button>
             </div>
           </form>
       </Modal>
@@ -2940,7 +2855,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           setEditingProductId(null);
         }}
         title={editingProductId ? t('shop_product_modal_edit') : t('shop_product_modal_add')}
-        subtitle={t('shop_product_modal_sub', { branch: currentBranch.name })}
       >
         <form onSubmit={handleSaveProduct} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
@@ -2951,10 +2865,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onChange={setFormName}
             placeholder={t('shop_prod_name_ph')}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="Price"
               label={t('shop_prod_price')}
@@ -2963,8 +2877,8 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               value={formPrice ? String(formPrice) : ''}
               onChange={(v) => setFormPrice(parseFloat(v) || 0)}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="Stock"
@@ -2974,17 +2888,17 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               value={formStock !== undefined ? String(formStock) : ''}
               onChange={(v) => setFormStock(parseInt(v) || 0)}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
-          <div className="flex justify-end gap-3 pt-3">
-            <button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsProductFormModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button type="submit" className="h-10 px-6 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer">
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
               {editingProductId ? t('shop_prod_update') : t('shop_prod_save')}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

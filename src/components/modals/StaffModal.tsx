@@ -288,16 +288,9 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           ? 'New Staff'
           : 'Nouveau Membre'
       }
-      subtitle={
-        isAr
-          ? 'الهوية، الشارة والعقد'
-          : isEn
-          ? 'Identity, badge & contract'
-          : 'Identité, badge & contrat'
-      }
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="p-[var(--s6)] flex flex-col gap-[var(--s6)] overflow-y-auto max-h-[75vh]" dir={isAr ? 'rtl' : 'ltr'}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s5)]" dir={isAr ? 'rtl' : 'ltr'}>
         {errors.form && (
           <div
             data-sq="card"
@@ -400,7 +393,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
 
           {/* Access Badge */}
-          <div data-sq="card" data-sq-border="none" className="p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s1)]">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s2)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--s3)]">
               <div className="flex items-center gap-[var(--s3)]">
                 <div data-sq="tile" data-sq-border="none" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
@@ -417,24 +410,23 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               <div className="flex items-center gap-[var(--s2)] w-full sm:w-auto">
-                <div data-sq="ctl" data-sq-border="none" className="w-full sm:w-36 bg-[#EFE9E2] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30">
-                  <input
-                    type="text"
+                <div className="w-full sm:w-44">
+                  <LabelInput
+                    label={isAr ? 'رمز الشارة' : isEn ? 'Badge Code' : 'Code Badge'}
                     value={cardId}
-                    onChange={(e) => setCardId(e.target.value.toUpperCase())}
+                    onChange={(val) => setCardId(val.toUpperCase())}
                     placeholder="RFID-000000"
-                    className="t-cap tabular-nums px-[var(--s3)] h-[var(--btn-sm-h,32px)] w-full bg-transparent border-0 text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-hidden"
+                    height={40}
                   />
                 </div>
-                <button
+                <Button
                   type="button"
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
+                  tone="accent"
+                  size={40}
                   onClick={handleGenerateBadge}
-                  className="shrink-0 t-small h-[var(--btn-sm-h,32px)] px-[var(--s3)] bg-[var(--brand-fill)] text-white hover:bg-[#b0674b] transition-colors cursor-pointer"
                 >
                   {isAr ? 'توليد' : isEn ? 'Gen' : 'Générer'}
-                </button>
+                </Button>
               </div>
             </div>
             {errors.cardId && <p className="t-cap text-red-500">{errors.cardId}</p>}
@@ -442,13 +434,13 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         </div>
 
         {/* Collapsible Advanced Settings & Contractual Dossier */}
-        <div className="border-t border-[var(--color-border)] pt-[var(--s4)] flex flex-col gap-[var(--s4)]">
+        <div className="border-t border-[var(--atr-divider)] pt-[var(--s4)] flex flex-col gap-[var(--s4)]">
           <button
             type="button"
             data-sq="ctl"
             data-sq-border="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-[var(--s3)] bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#312D2A] text-left rtl:text-right transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-[var(--s3)] bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#312D2A] text-start transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-[var(--s3)]">
               <FileText size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
@@ -509,26 +501,34 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4)]">
-                  <LabelSelect
-                    field={isAr ? 'طريقة الدفع' : isEn ? 'Pay Method' : 'Mode Paiement'}
-                    value={paymentMethod}
-                    options={[
-                      { value: 'ccp', label: isAr ? 'حساب بريدي' : isEn ? 'Postal Account' : 'Compte Postal' },
-                      { value: 'bank_transfer', label: isAr ? 'تحويل بنكي' : isEn ? 'Bank Transfer' : 'Virement Bancaire' },
-                      { value: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
-                    ]}
-                    onChange={(val) => setPaymentMethod(val as StaffPaymentMethod)}
-                  />
+                <div className="flex flex-col gap-[var(--s4)]">
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <label className="t-small font-medium text-[var(--text-2)]">
+                      {isAr ? 'طريقة الدفع' : isEn ? 'Pay Method' : 'Mode Paiement'}
+                    </label>
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="md"
+                      value={paymentMethod}
+                      onValueChange={(val) => setPaymentMethod(val as StaffPaymentMethod)}
+                      aria-label={isAr ? 'طريقة الدفع' : isEn ? 'Pay Method' : 'Mode Paiement'}
+                      options={[
+                        { value: 'ccp', label: isAr ? 'حساب بريدي' : isEn ? 'Postal' : 'CCP Poste' },
+                        { value: 'bank_transfer', label: isAr ? 'تحويل بنكي' : isEn ? 'Bank' : 'Virement' },
+                        { value: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
+                      ]}
+                    />
+                  </div>
 
                   {paymentMethod === 'ccp' && (
-                    <div className="grid grid-cols-3 gap-[var(--s2)]">
-                      <div className="col-span-2 flex flex-col gap-[var(--s1)]">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)]">
+                      <div className="sm:col-span-2 flex flex-col gap-[var(--s1)]">
                         <LabelInput
                           field={isAr ? 'الحساب البريدي' : isEn ? 'Postal Account' : 'Compte Postal'}
                           value={ccpNumber}
                           onChange={(val) => handleCcpNumberChange(val)}
                           placeholder="0012345678"
+                          height={40}
                         />
                         {errors.ccpNumber && <p className="t-cap text-red-500">{errors.ccpNumber}</p>}
                       </div>
@@ -538,6 +538,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                           value={ccpKey}
                           onChange={(val) => setCcpKey(val)}
                           placeholder="00"
+                          height={40}
                         />
                         {errors.ccpKey && <p className="t-cap text-red-500">{errors.ccpKey}</p>}
                       </div>
@@ -550,59 +551,71 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       value={bankRib}
                       onChange={(val) => setBankRib(val)}
                       placeholder="002 00012 34567890 12"
+                      height={40}
                     />
                   )}
                 </div>
               </div>
 
               {/* Multi-Credential Authentication Toggles */}
-              <div data-sq="panel" data-sq-border="none" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-[#F5F1EC] dark:bg-[#22201E]">
+              <div data-sq="panel" data-sq-border="none" className="flex flex-col gap-[var(--s3)] p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#22201E]">
                 <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--text-1)]">
                   <KeyRound size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
                 </div>
-                <p className="t-cap text-[var(--text-2)]">
-                  {isAr
-                    ? 'طرق تسجيل الدخول المتاحة'
-                    : isEn
-                    ? 'Allowed sign-in methods'
-                    : 'Méthodes de connexion actives'}
-                </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)] pt-[var(--s2)]">
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
-                    <input
-                      type="checkbox"
-                      checked={canLoginEmail}
-                      onChange={(e) => setCanLoginEmail(e.target.checked)}
-                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)]">
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <span className="t-cap font-medium text-[var(--text-2)]">
+                      {isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
+                    </span>
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="sm"
+                      value={canLoginEmail ? 'on' : 'off'}
+                      onValueChange={(v) => setCanLoginEmail(v === 'on')}
+                      options={[
+                        { value: 'on', label: isAr ? 'مفعل' : isEn ? 'On' : 'Oui' },
+                        { value: 'off', label: isAr ? 'معطل' : isEn ? 'Off' : 'Non' },
+                      ]}
                     />
-                    <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
-                  </label>
+                  </div>
 
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
-                    <input
-                      type="checkbox"
-                      checked={canLoginPhone}
-                      onChange={(e) => setCanLoginPhone(e.target.checked)}
-                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <span className="t-cap font-medium text-[var(--text-2)]">
+                      {isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
+                    </span>
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="sm"
+                      value={canLoginPhone ? 'on' : 'off'}
+                      onValueChange={(v) => setCanLoginPhone(v === 'on')}
+                      options={[
+                        { value: 'on', label: isAr ? 'مفعل' : isEn ? 'On' : 'Oui' },
+                        { value: 'off', label: isAr ? 'معطل' : isEn ? 'Off' : 'Non' },
+                      ]}
                     />
-                    <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
-                  </label>
+                  </div>
 
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
-                    <input
-                      type="checkbox"
-                      checked={canLoginPin}
-                      onChange={(e) => setCanLoginPin(e.target.checked)}
-                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <span className="t-cap font-medium text-[var(--text-2)]">
+                      {isAr ? 'رمز سريع' : isEn ? 'Quick PIN' : 'Code PIN'}
+                    </span>
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="sm"
+                      value={canLoginPin ? 'on' : 'off'}
+                      onValueChange={(v) => setCanLoginPin(v === 'on')}
+                      options={[
+                        { value: 'on', label: isAr ? 'مفعل' : isEn ? 'On' : 'Oui' },
+                        { value: 'off', label: isAr ? 'معطل' : isEn ? 'Off' : 'Non' },
+                      ]}
                     />
-                    <span>{isAr ? 'رمز سريع' : isEn ? 'Quick PIN' : 'Code PIN'}</span>
-                  </label>
+                  </div>
                 </div>
 
                 {canLoginPin && (
-                  <div className="flex items-center gap-[var(--s3)] pt-[var(--s2)]">
+                  <div className="flex flex-wrap items-center gap-[var(--s3)] pt-[var(--s2)]">
                     <div className="w-36">
                       <LabelInput
                         field={isAr ? 'رمز PIN' : isEn ? 'PIN Code' : 'Code PIN'}
@@ -610,18 +623,18 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                         onChange={(val) => setPinCode(val.slice(0, 4))}
                         placeholder="1234"
                         type="text"
+                        height={40}
                       />
                     </div>
-                    <button
+                    <Button
                       type="button"
-                      data-sq="ctl"
-                      data-sq-border="none"
+                      tone="soft"
+                      size={40}
                       onClick={handleGeneratePin}
-                      className="t-small h-[var(--btn-h,40px)] px-[var(--s3)] bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#332F2B] transition-colors text-[var(--text-1)] flex items-center gap-[var(--s2)] cursor-pointer"
+                      leading={<Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />}
                     >
-                      <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
-                      <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>
-                    </button>
+                      {isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}
+                    </Button>
                     {errors.pinCode && <p className="t-cap text-red-500">{errors.pinCode}</p>}
                   </div>
                 )}
@@ -693,7 +706,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         </div>
 
         {/* Modal Actions */}
-        <div className="pt-[var(--s4)] border-t border-[var(--color-border)] flex items-center justify-end gap-[var(--s3)]">
+        <div className="pt-[var(--s4)] border-t border-[var(--atr-divider)] flex items-center justify-end gap-[var(--s3)]">
           <Button
             type="button"
             tone="soft"

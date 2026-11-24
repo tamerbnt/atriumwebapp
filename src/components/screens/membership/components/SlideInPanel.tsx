@@ -3,6 +3,10 @@ import { X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import { Sp, subscribeFrame, subscribeCleanup, wake } from '../motion/adherentsMotion';
 import { computePanelMetrics } from '../motion/adherentsMath';
 import { LiveSegmentedControl } from '../../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
+import { useAtriumSelector } from '../../../../services/store';
+import { Button } from '@/atrium/core';
+import { useAtriumSelector } from '../../../../services/store';
 
 export interface SlideInTab {
   id: string;
@@ -48,13 +52,21 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
   onNext,
   hasPrev = false,
   hasNext = false,
-  deleteLabel = 'Supprimer adhérent',
+  deleteLabel,
   onDelete,
-  closeLabel = 'Fermer',
+  closeLabel,
   originElement,
   children,
   className = '',
 }) => {
+  const language = useAtriumSelector((s) => s.language);
+  const resolvedDeleteLabel =
+    deleteLabel ?? (language === 'ar' ? 'حذف العضو' : language === 'en' ? 'Delete member' : 'Supprimer adhérent');
+  const resolvedCloseLabel =
+    closeLabel ?? (language === 'ar' ? 'إغلاق' : language === 'en' ? 'Close' : 'Fermer');
+  const prevLabel = language === 'ar' ? 'السابق' : language === 'en' ? 'Previous' : 'Précédent';
+  const nextLabel = language === 'ar' ? 'التالي' : language === 'en' ? 'Next' : 'Suivant';
+  const navLabel = language === 'ar' ? 'التنقل بين التبويبات' : language === 'en' ? 'Tab navigation' : 'Navigation onglets';
   // Panel Spring (pp: 0..100) — zero React re-renders per frame
   const ppRef = useRef<Sp | null>(null);
   const [rendered, setRendered] = useState<boolean>(isOpen);
@@ -94,9 +106,13 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
 
     if (key !== lastDrawKeyRef.current) {
       lastDrawKeyRef.current = key;
+      const isRtl =
+        typeof document !== 'undefined' &&
+        (document.documentElement.dir === 'rtl' || document.documentElement.getAttribute('dir') === 'rtl');
+      const signedTx = isRtl ? -txQ : txQ;
       if (panelRef.current) {
         panelRef.current.style.visibility = vis;
-        panelRef.current.style.transform = `translate3d(${txQ}px, 0, 0)`;
+        panelRef.current.style.transform = `translate3d(${signedTx}px, 0, 0)`;
       }
       if (scrimRef.current) {
         scrimRef.current.style.visibility = vis;
@@ -239,7 +255,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         aria-labelledby="pnl-title"
         data-sq="panel"
         data-sq-border="solid"
-        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden ${className}`}
+        className={`pnl fixed end-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden ${className}`}
         style={{
           visibility: 'hidden',
           transform: 'translate3d(620px, 0, 0)',
@@ -282,7 +298,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
                 type="button"
                 disabled={!hasPrev}
                 onClick={onPrev}
-                aria-label="Adhérent précédent"
+                aria-label={prevLabel}
                 className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
@@ -293,7 +309,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
                 type="button"
                 disabled={!hasNext}
                 onClick={onNext}
-                aria-label="Adhérent suivant"
+                aria-label={nextLabel}
                 className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
@@ -303,7 +319,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
               ref={closeBtnRef}
               type="button"
               onClick={onClose}
-              aria-label="Fermer la fiche"
+              aria-label={resolvedCloseLabel}
               className="w-[34px] h-[34px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-black dark:text-white hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -316,11 +332,11 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
           <div className="mx-6 my-2.5">
             <LiveSegmentedControl
               size="md"
-              className="w-full flex [&>button]:flex-1"
+              fullWidth
               options={tabs.map((tab) => ({ value: tab.id, label: tab.label }))}
               value={activeTab}
               onValueChange={(val) => onTabChange?.(val)}
-              aria-label="Navigation onglets"
+              aria-label={navLabel}
             />
           </div>
         )}
@@ -343,21 +359,20 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
               className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold t-label flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              <span>{deleteLabel}</span>
+              <span>{resolvedDeleteLabel}</span>
             </button>
           ) : (
             <div />
           )}
 
-          <button
+          <Button
             type="button"
-            data-sq="ctl"
-            data-sq-border="none"
+            tone="accent"
+            size={40}
             onClick={onClose}
-            className="h-[44px] px-7 border-0 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white font-semibold t-label cursor-pointer transition-colors"
           >
-            {closeLabel}
-          </button>
+            {resolvedCloseLabel}
+          </Button>
         </div>
       </aside>
     </>

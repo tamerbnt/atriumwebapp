@@ -14,7 +14,7 @@ export interface FilterSelectOption {
 
 export interface FilterSelectProps {
   value?: string | number;
-  onChange: (val: any) => void;
+  onChange: (val: string) => void;
   options: (FilterSelectOption | string)[];
   placeholder?: string;
   label?: string;
@@ -63,14 +63,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   });
 
   const handleValueChange = (val: string) => {
-    // Preserve backwards-compatible hybrid string/event object for legacy callers
-    const hybrid: any = new String(val);
-    hybrid.target = { value: val };
-    hybrid.currentTarget = { value: val };
-    hybrid.value = val;
-    hybrid.valueOf = () => val;
-    hybrid.toString = () => String(val);
-    onChange(hybrid);
+    onChange(val);
   };
 
   return (

@@ -22,6 +22,7 @@ import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -52,9 +53,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (eOrVal: any): string =>
-  eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
 
 const PART_CATEGORIES = [
   'Freinage',
@@ -1024,9 +1022,6 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                     ? 'إضافة صنف جديد للمخزن'
                     : 'Nouvelle Référence Magasin'}
                 </h2>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {isAr ? 'البيانات الفنية، المخزون، والأسعار' : 'Gestion du catalogue pièces et seuils d’alerte'}
-                </p>
               </div>
             </div>
             <button
@@ -1039,81 +1034,117 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             </button>
           </div>
           <form onSubmit={handleSaveModal} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="partSku"
                 label={isAr ? 'رمز SKU *' : 'Code SKU *'}
                 placeholder="PR-1029"
                 value={sku}
-                onChange={(e) => setSku(e.target.value)}
+                onChange={setSku}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelSelect
+                field="partCategory"
                 label={isAr ? 'الفئة' : 'Catégorie'}
                 value={category}
-                onChange={(v) => setCategory(extractStr(v))}
+                onChange={setCategory}
                 options={PART_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
+              field="partName"
               label={isAr ? 'اسم وتعيين القطعة *' : 'Désignation de la Pièce *'}
               placeholder="Ex: Jeu 4 Plaquettes de frein avant"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={setName}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="partStockQuantity"
                 label={isAr ? 'الكمية في المخزن' : 'Quantité Stock'}
                 type="number"
                 value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
+                onChange={setStockQuantity}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="partMinThreshold"
                 label={isAr ? 'حد الأمان الأدنى' : 'Seuil d’Alerte Min'}
                 type="number"
                 value={minThreshold}
-                onChange={(e) => setMinThreshold(e.target.value)}
+                onChange={setMinThreshold}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="partBuyingPrice"
                 label={isAr ? 'سعر الشراء (دج)' : 'Prix d’Achat (DZD)'}
                 type="number"
                 value={buyingPriceDzd}
-                onChange={(e) => setBuyingPriceDzd(e.target.value)}
+                onChange={setBuyingPriceDzd}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="partSellingPrice"
                 label={isAr ? 'سعر البيع (دج)' : 'Prix de Vente (DZD)'}
                 type="number"
                 value={sellingPriceDzd}
-                onChange={(e) => setSellingPriceDzd(e.target.value)}
+                onChange={setSellingPriceDzd}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="partLocationBin"
                 label={isAr ? 'موقع التخزين / الرف' : 'Emplacement / Rayon'}
                 placeholder="Ex: Rayon B-04"
                 value={locationBin}
-                onChange={(e) => setLocationBin(e.target.value)}
+                onChange={setLocationBin}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="partCompatibility"
                 label={isAr ? 'التوافق' : 'Compatibilité (marques)'}
                 placeholder="Ex: Renault Clio 4, Dacia Sandero"
                 value={compatibility}
-                onChange={(e) => setCompatibility(e.target.value)}
+                onChange={setCompatibility}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+              <Button type="button" tone="soft" size={40} onClick={() => setIsModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton variant="primary" size="sm" type="submit">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {partToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'تسجيل القطعة' : 'Ajouter au Stock'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>
@@ -1176,21 +1207,25 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             className="space-y-4"
           >
             <LabelSelect
+              field="poSupplier"
               label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
               value={poSupplier}
-              onChange={(v) => setPoSupplier(extractStr(v))}
+              onChange={setPoSupplier}
               options={[
                 { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
                 { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
                 { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
                 { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
               ]}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelSelect
+              field="poPartId"
               label={isAr ? 'القطعة المراد تموينها' : 'Référence Pièce à Réapprovisionner'}
               value={poPartId}
-              onChange={(v) => {
-                const nextId = extractStr(v);
+              onChange={(nextId) => {
                 setPoPartId(nextId);
                 const p = parts.find((item) => item.id === nextId);
                 if (p) setPoUnitCost(String(p.buyingPriceDzd));
@@ -1199,20 +1234,31 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 value: p.id,
                 label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`,
               }))}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="poQuantity"
                 label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
                 type="number"
                 value={poQuantity}
-                onChange={(e) => setPoQuantity(e.target.value)}
+                onChange={setPoQuantity}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="poUnitCost"
                 label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
                 type="number"
                 value={poUnitCost}
-                onChange={(e) => setPoUnitCost(e.target.value)}
+                onChange={setPoUnitCost}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
@@ -1228,13 +1274,13 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
               </span>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-              <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsPoModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+              </Button>
+              <Button type="submit" tone="accent" size={40} leading={<Check size={14} />}>
                 {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>

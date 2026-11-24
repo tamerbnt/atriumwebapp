@@ -11,7 +11,7 @@ import { MedicalPatient } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface MedicalPatientModalProps {
@@ -133,7 +133,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
       >
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
@@ -151,6 +151,8 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
               </h3>
             </div>
             <button
+              type="button"
+              aria-label={language === 'ar' ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
               className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
@@ -159,52 +161,59 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
           </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3 max-h-[65vh] overflow-y-auto px-1 pr-2">
+          <div className="space-y-3">
             <LabelInput
+              field="fullName"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'الاسم واللقب' : 'Nom & Prénom'}
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={setFullName}
               placeholder="Ex: Yacine Belkacemi"
               required
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="phone"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'رقم الهاتف' : 'Téléphone'}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 placeholder="0555 12 34 56"
                 required
               />
               <LabelInput
+                field="nationalId"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'رقم التعريف الوطني / الشفاء' : 'N° Carte Chifa / NIN'}
                 value={nationalId}
-                onChange={(e) => setNationalId(e.target.value)}
+                onChange={setNationalId}
                 placeholder="198816..."
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="dob"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'تاريخ الميلاد' : 'Date de Naissance'}
                 type="date"
                 value={dob}
-                onChange={(e) => setDob(e.target.value)}
+                onChange={setDob}
               />
-              <div>
-                <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
-                  {language === 'ar' ? 'الجنس' : 'Sexe'}
-                </label>
-                <LiveSegmentedControl
-                  fullWidth
-                  size="md"
-                  value={gender}
-                  onChange={(val) => setGender(val as any)}
-                  options={genderOptions}
-                  aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
-                />
-              </div>
               <LabelSelect
+                field="bloodGroup"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'فصيلة الدم' : 'Groupe Sanguin'}
                 value={bloodGroup}
                 onChange={(val) => setBloodGroup(val as any)}
@@ -212,50 +221,84 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
               />
             </div>
 
+            <div>
+              <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+                {language === 'ar' ? 'الجنس' : 'Sexe'}
+              </label>
+              <LiveSegmentedControl
+                fullWidth
+                size="md"
+                value={gender}
+                onChange={(val) => setGender(val as any)}
+                options={genderOptions}
+                aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
+              />
+            </div>
+
             <LabelInput
+              field="allergies"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'الحساسيات الدوائية والغذائية' : 'Allergies connues'}
               value={allergies}
-              onChange={(e) => setAllergies(e.target.value)}
+              onChange={setAllergies}
               placeholder="Ex: Pénicilline, Aspirine..."
             />
 
             <LabelInput
+              field="chronicConditions"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'الأمراض المزمنة' : 'Pathologies chroniques'}
               value={chronicConditions}
-              onChange={(e) => setChronicConditions(e.target.value)}
+              onChange={setChronicConditions}
               placeholder="Ex: Diabète, HTA..."
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="emergencyContact"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'جهة الاتصال في الطوارئ' : 'Contact d\'Urgence'}
                 value={emergencyContact}
-                onChange={(e) => setEmergencyContact(e.target.value)}
+                onChange={setEmergencyContact}
                 placeholder="Ex: Épouse, Frère..."
               />
               <LabelInput
+                field="emergencyPhone"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'هاتف الطوارئ' : 'Tél d\'Urgence'}
                 value={emergencyPhone}
-                onChange={(e) => setEmergencyPhone(e.target.value)}
+                onChange={setEmergencyPhone}
                 placeholder="0555..."
               />
             </div>
 
             <LabelInput
+              field="notes"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'ملاحظات سريرية' : 'Notes cliniques'}
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={setNotes}
               placeholder="Observations..."
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="secondary" onClick={onClose}>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={onClose}>
               {language === 'ar' ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton type="submit" variant="primary" icon={<UserPlus size={14} />}>
+            </Button>
+            <Button type="submit" tone="accent" size={40} leading={<UserPlus size={14} />}>
               {language === 'ar' ? 'حفظ الملف الطبي' : 'Créer le Dossier'}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

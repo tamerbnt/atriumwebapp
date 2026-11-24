@@ -35,8 +35,10 @@ import {
 } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion } from '../../ui/kinetic';
@@ -106,9 +108,6 @@ const STAGES: Array<{ id: DeliverableStage; countColor: string }> = [
   { id: 'Approved', countColor: 'text-emerald-500' },
   { id: 'Billed', countColor: 'text-black/55 dark:text-white/55' },
 ];
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceDeliverablesView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -1355,7 +1354,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                 updateDeliverableStage(
                                   item.projectId,
                                   item.id,
-                                  extractStr(val) as DeliverableStage
+                                  val as DeliverableStage
                                 )
                               }
                               options={STAGES.map((s) => {
@@ -1597,79 +1596,74 @@ export const FreelanceDeliverablesView: React.FC = () => {
           </div>
           <form onSubmit={handleCreateDeliverable} className="space-y-4 t-cap">
             <LabelSelect
+              field="TargetProject"
               label={`${t('free_deliv_field_project', language)} *`}
               value={targetProjectId || freelanceProjects[0]?.id || ''}
-              onChange={(val) => setTargetProjectId(extractStr(val))}
+              onChange={setTargetProjectId}
               options={freelanceProjects.map((p) => ({
                 value: p.id,
                 label: `${p.title} (${p.clientName})`,
               }))}
               placeholder={t('free_deliv_ph_select_project', language)}
+              height={40}
+              corner={12}
             />
             <LabelInput
               id="deliverable-title"
+              field="DeliverableTitle"
               label={t('free_deliv_field_title', language)}
               required
               placeholder={t('free_deliv_ph_title', language)}
               value={deliverableTitle}
-              onChange={(e) => setDeliverableTitle(extractStr(e))}
+              onChange={setDeliverableTitle}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div>
-              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                {t('free_deliv_field_tags', language)}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <textarea
-                  rows={2}
-                  placeholder={t('free_deliv_ph_desc', language)}
-                  value={deliverableDescription}
-                  onChange={(e) => setDeliverableDescription(e.target.value)}
-                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            <LabelTextarea
+              field="DeliverableNotes"
+              label={t('free_deliv_field_tags', language)}
+              rows={2}
+              placeholder={t('free_deliv_ph_desc', language)}
+              value={deliverableDescription}
+              onChange={setDeliverableDescription}
+              width="100%"
+              corner={12}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 id="deliverable-estimated-hours"
+                field="DeliverableEstHours"
                 label={t('free_deliv_field_est_hours', language)}
                 type="number"
                 min={1}
                 required
                 value={String(estimatedHours)}
-                onChange={(e) => setEstimatedHours(Number(extractStr(e)) || 1)}
+                onChange={(v) => setEstimatedHours(Number(v) || 1)}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="deliverable-due-date"
+                field="DeliverableDueDate"
                 label={t('free_deliv_field_due_date', language)}
                 type="date"
                 required
                 value={dueDate}
-                onChange={(e) => setDueDate(extractStr(e))}
+                onChange={setDueDate}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setIsAddDeliverableModalOpen(false)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAddDeliverableModalOpen(false)}>
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
-                type="submit"
-                data-sq="ctl"
-                data-sq-border="none"
-                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              >
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {t('free_deliv_btn_new', language)}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -1703,26 +1697,30 @@ export const FreelanceDeliverablesView: React.FC = () => {
             </button>
           </div>
           <form onSubmit={handleCreateProject} className="space-y-4 t-cap">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelSelect
+                field="NewProjClient"
                 label={`${t('free_invoice_client', language)} *`}
                 value={newProjectData.clientId}
                 onChange={(val) =>
-                  setNewProjectData({ ...newProjectData, clientId: extractStr(val) })
+                  setNewProjectData({ ...newProjectData, clientId: val })
                 }
                 options={freelanceClients.map((c) => ({
                   value: c.id,
                   label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
                 }))}
                 placeholder={t('free_deliv_ph_select_client', language)}
+                height={40}
+                corner={12}
               />
               <LabelSelect
+                field="NewProjPricing"
                 label={t('free_deliv_field_pricing', language)}
                 value={newProjectData.pricingModel}
                 onChange={(val) =>
                   setNewProjectData({
                     ...newProjectData,
-                    pricingModel: extractStr(val) as PricingModel,
+                    pricingModel: val as PricingModel,
                   })
                 }
                 options={[
@@ -1730,44 +1728,41 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   { value: 'Hourly', label: t('free_deliv_pricing_hourly', language) },
                   { value: 'Retainer', label: t('free_deliv_pricing_retainer', language) },
                 ]}
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
               id="new-project-title"
+              field="NewProjTitle"
               label={t('free_deliv_field_title', language)}
               required
               placeholder={t('free_deliv_ph_proj_title', language)}
               value={newProjectData.title}
-              onChange={(e) => setNewProjectData({ ...newProjectData, title: extractStr(e) })}
+              onChange={(v) => setNewProjectData({ ...newProjectData, title: v })}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div>
-              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                {t('free_deliv_field_tags', language)}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <textarea
-                  rows={2}
-                  placeholder={t('free_deliv_ph_proj_desc', language)}
-                  value={newProjectData.description}
-                  onChange={(e) =>
-                    setNewProjectData({ ...newProjectData, description: e.target.value })
-                  }
-                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
+            <LabelTextarea
+              field="NewProjNotes"
+              label={t('free_deliv_field_tags', language)}
+              rows={2}
+              placeholder={t('free_deliv_ph_proj_desc', language)}
+              value={newProjectData.description}
+              onChange={(v) => setNewProjectData({ ...newProjectData, description: v })}
+              width="100%"
+              corner={12}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelSelect
+                field="NewProjCurrency"
                 label={t('free_clients_currency', language)}
                 value={newProjectData.currency}
                 onChange={(val) =>
                   setNewProjectData({
                     ...newProjectData,
-                    currency: extractStr(val) as CurrencyCode,
+                    currency: val as CurrencyCode,
                   })
                 }
                 options={[
@@ -1775,55 +1770,57 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   { value: 'EUR', label: 'EUR' },
                   { value: 'USD', label: 'USD' },
                 ]}
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="new-project-budget"
+                field="NewProjBudget"
                 label={t('free_prop_total_quote', language)}
                 type="number"
                 value={String(newProjectData.budget)}
-                onChange={(e) =>
-                  setNewProjectData({ ...newProjectData, budget: Number(extractStr(e)) || 0 })
+                onChange={(v) =>
+                  setNewProjectData({ ...newProjectData, budget: Number(v) || 0 })
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="new-project-hours"
+                field="NewProjHours"
                 label={t('free_deliv_field_est_hours', language)}
                 type="number"
                 value={String(newProjectData.estimatedHours)}
-                onChange={(e) =>
+                onChange={(v) =>
                   setNewProjectData({
                     ...newProjectData,
-                    estimatedHours: Number(extractStr(e)) || 0,
+                    estimatedHours: Number(v) || 0,
                   })
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
               id="new-project-deadline"
+              field="NewProjDeadline"
               label={t('free_deliv_field_due_date', language)}
               type="date"
               value={newProjectData.deadline}
-              onChange={(e) => setNewProjectData({ ...newProjectData, deadline: extractStr(e) })}
+              onChange={(v) => setNewProjectData({ ...newProjectData, deadline: v })}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setIsAddProjectModalOpen(false)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAddProjectModalOpen(false)}>
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
-                type="submit"
-                data-sq="ctl"
-                data-sq-border="none"
-                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              >
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {t('free_deliv_field_project', language)}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -1845,14 +1842,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
             className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('free_deliv_edit', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                  {retainedDeliverableToEdit.project.title} · {retainedDeliverableToEdit.project.clientName}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_deliv_edit', language)}
+              </h3>
               <button
                 type="button"
                 onClick={() => setDeliverableToEdit(null)}
@@ -1865,77 +1857,69 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <form onSubmit={handleEditDeliverableSubmit} className="space-y-4 t-cap">
               <LabelInput
                 id="edit-deliverable-title"
+                field="EditDeliverableTitle"
                 label={t('free_deliv_field_title', language)}
                 required
                 value={editDeliverableForm.title}
-                onChange={(e) =>
-                  setEditDeliverableForm({ ...editDeliverableForm, title: extractStr(e) })
+                onChange={(v) =>
+                  setEditDeliverableForm({ ...editDeliverableForm, title: v })
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {t('free_deliv_field_tags', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    value={editDeliverableForm.description}
-                    onChange={(e) =>
-                      setEditDeliverableForm({ ...editDeliverableForm, description: e.target.value })
-                    }
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              <LabelTextarea
+                field="EditDeliverableNotes"
+                label={t('free_deliv_field_tags', language)}
+                rows={2}
+                value={editDeliverableForm.description}
+                onChange={(v) =>
+                  setEditDeliverableForm({ ...editDeliverableForm, description: v })
+                }
+                width="100%"
+                corner={12}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="edit-deliverable-estimated-hours"
+                  field="EditDeliverableEstHours"
                   label={t('free_deliv_field_est_hours', language)}
                   type="number"
                   min={1}
                   required
                   value={String(editDeliverableForm.estimatedHours)}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setEditDeliverableForm({
                       ...editDeliverableForm,
-                      estimatedHours: Number(extractStr(e)) || 1,
+                      estimatedHours: Number(v) || 1,
                     })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="edit-deliverable-due-date"
+                  field="EditDeliverableDueDate"
                   label={t('free_deliv_field_due_date', language)}
                   type="date"
                   required
                   value={editDeliverableForm.dueDate}
-                  onChange={(e) =>
-                    setEditDeliverableForm({ ...editDeliverableForm, dueDate: extractStr(e) })
+                  onChange={(v) =>
+                    setEditDeliverableForm({ ...editDeliverableForm, dueDate: v })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setDeliverableToEdit(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setDeliverableToEdit(null)}>
                   {t('common_cancel', language)}
-                </button>
-                <button
-                  type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-                >
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
                   {t('common_save', language)}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -1966,14 +1950,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('free_deliv_delete', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedDeliverableToDelete.title}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_deliv_delete', language)}
+              </h3>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {isAr
@@ -1982,22 +1961,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 ? `Supprimer définitivement le livrable "${retainedDeliverableToDelete.title}" ?`
                 : `Permanently remove deliverable "${retainedDeliverableToDelete.title}"?`}
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setDeliverableToDelete(null)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setDeliverableToDelete(null)}>
                 {t('common_cancel', language)}
-              </button>
-              <button
+              </Button>
+              <AtriumButton
                 type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
+                variant="danger"
+                size="md"
                 onClick={() => {
                   if (!deliverableToDelete) return;
                   deleteDeliverable(
@@ -2009,10 +1980,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   }
                   setDeliverableToDelete(null);
                 }}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
               >
                 {t('common_delete', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         )}
@@ -2042,14 +2012,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedProjectToDelete.title} · {retainedProjectToDelete.clientName}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
+              </h3>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {isAr
@@ -2058,32 +2023,23 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 ? `Supprimer le projet "${retainedProjectToDelete.title}" et tous ses livrables ?`
                 : `Delete project "${retainedProjectToDelete.title}" and all associated deliverables?`}
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setProjectToDelete(null)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setProjectToDelete(null)}>
                 {t('common_cancel', language)}
-              </button>
-              <button
+              </Button>
+              <AtriumButton
                 type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
+                variant="danger"
+                size="md"
                 onClick={() => {
                   if (!projectToDelete) return;
                   deleteFreelanceProject(projectToDelete.id);
                   setSelectedProjectId('all');
                   setProjectToDelete(null);
                 }}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
               >
                 {t('common_delete', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         )}

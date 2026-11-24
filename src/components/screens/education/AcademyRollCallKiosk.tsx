@@ -25,6 +25,8 @@ import {
 import { EduStudent } from '../../../types/index';
 import { pickLocalizedText, registerUndoEntry, runUndoBatch } from '../../../services/undoEngine';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
+import { FilterSelect } from '../../ui/FilterSelect';
+import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
@@ -305,23 +307,16 @@ export const AcademyRollCallKiosk: React.FC = () => {
         title={isRtl ? 'الحضور السريع' : isEn ? 'Roll Call Kiosk' : 'Appel Rapide'}
         secondaryActions={
           <div className="flex items-center gap-2 flex-wrap">
-            <div
-              data-sq="ctl"
-              data-sq-border="solid"
-              className="min-w-[230px] h-10 bg-white dark:bg-[#2B2825]"
-            >
-              <select
+            <div className="min-w-[230px]">
+              <FilterSelect
                 value={selectedSessionId}
-                onChange={(e) => setSelectedSessionId(e.target.value)}
-                aria-label={isRtl ? 'اختيار الحصة' : 'Sélectionner la séance'}
-                className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold text-black dark:text-white cursor-pointer focus:outline-none"
-              >
-                {eduSessions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.startTime} - {s.endTime} · {s.cohortName} ({s.classroomName || 'Salle'})
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedSessionId}
+                ariaLabel={isRtl ? 'اختيار الحصة' : 'Sélectionner la séance'}
+                options={eduSessions.map((s) => ({
+                  value: s.id,
+                  label: `${s.startTime} - ${s.endTime} · ${s.cohortName} (${s.classroomName || 'Salle'})`,
+                }))}
+              />
             </div>
             {isSessionLocked ? (
               <button
@@ -459,13 +454,13 @@ export const AcademyRollCallKiosk: React.FC = () => {
               data-sq-border="solid"
               className="relative h-10 bg-white dark:bg-[#292624]"
             >
-              <Search size={15} className="absolute left-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
+              <Search size={15} className="absolute start-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={isRtl ? 'بحث باسم الطالب أو الهاتف...' : 'Filtrer par nom ou tél...'}
-                className="lbi-field w-full h-full pl-9 pr-3 bg-transparent border-0 t-small font-medium focus:outline-none"
+                className="lbi-field w-full h-full ps-9 pe-3 bg-transparent border-0 t-small font-medium focus:outline-none"
               />
             </div>
           </div>
@@ -694,14 +689,9 @@ export const AcademyRollCallKiosk: React.FC = () => {
               >
                 <MessageCircle size={20} />
               </div>
-              <div>
-                <h3 className="t-label font-semibold text-black dark:text-white">
-                  {isRtl ? 'إشعار فوري بغياب الطالب' : "Notification d'Absence Immédiate"}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedNotifyingStudent.fullName} · {retainedNotifyingStudent.guardianPhone || retainedNotifyingStudent.phone}
-                </p>
-              </div>
+              <h3 className="t-label font-semibold text-black dark:text-white">
+                {isRtl ? 'إشعار فوري بغياب الطالب' : "Notification d'Absence Immédiate"}
+              </h3>
             </div>
             <div
               data-sq="card"
@@ -721,26 +711,24 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     }].`}
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
                 type="button"
-                data-sq="ctl"
-                data-sq-border="none"
+                tone="soft"
+                size={40}
                 onClick={() => setNotifyingStudent(null)}
-                className="flex-1 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black/70 dark:text-white/75 cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                data-sq="ctl"
-                data-sq-border="none"
+                tone="success"
+                size={40}
+                leading={<Send size={14} />}
                 onClick={() => handleSendGuardianAlert(retainedNotifyingStudent)}
-                className="flex-1 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Send size={14} />
-                <span>{isRtl ? 'إرسال عبر واتساب' : 'Envoyer WhatsApp'}</span>
-              </button>
+                {isRtl ? 'إرسال عبر واتساب' : 'Envoyer WhatsApp'}
+              </Button>
             </div>
           </div>
         )}

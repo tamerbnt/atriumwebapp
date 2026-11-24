@@ -22,6 +22,7 @@ import {
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriLivestock, AgriMilkingRecord, CowReproStatus } from '../../../types';
@@ -56,15 +57,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string => {
-  if (typeof v === 'string' || typeof v === 'number') return String(v);
-  if (v && typeof v === 'object' && 'target' in v) {
-    const tgt = (v as { target?: { value?: string } }).target;
-    if (tgt && typeof tgt.value === 'string') return tgt.value;
-  }
-  return String(v ?? '');
-};
 
 export const AgricultureLivestockView: React.FC = () => {
   const {
@@ -1645,47 +1637,64 @@ export const AgricultureLivestockView: React.FC = () => {
                 </button>
               </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="EarTag"
                   label={isAr ? 'رقم الحلقة الرسمي (DZ-16) *' : 'N° Boucle Officiel (DZ-16) *'}
                   placeholder="Ex: DZ-16-10482"
                   value={earTag}
-                  onChange={(e) => setEarTag(e.target.value)}
+                  onChange={setEarTag}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="NameOrNumber"
                   label={isAr ? 'اسم أو رقم التعريف' : 'Nom / Numéro Vache'}
                   placeholder="Ex: La Blanche"
                   value={nameOrNumber}
-                  onChange={(e) => setNameOrNumber(e.target.value)}
+                  onChange={setNameOrNumber}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
+                  field="Species"
                   label={isAr ? 'النوع *' : 'Espèce *'}
                   value={species}
                   onChange={(val) =>
-                    setSpecies(extractStr(val) as 'Bovine' | 'Ovine' | 'Caprine' | 'Other')
+                    setSpecies(val as 'Bovine' | 'Ovine' | 'Caprine' | 'Other')
                   }
                   options={[
                     { value: 'Bovine', label: 'Bovine (Bétail Laitier)' },
                     { value: 'Ovine', label: 'Ovine (Moutons)' },
                     { value: 'Caprine', label: 'Caprine (Chèvres)' },
                   ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
+                  field="Breed"
                   label={isAr ? 'السلالة *' : 'Race *'}
                   placeholder="Ex: Holstein, Montbéliarde"
                   value={breed}
-                  onChange={(e) => setBreed(e.target.value)}
+                  onChange={setBreed}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
+                  field="ReproStatus"
                   label={isAr ? 'الحالة التناسلية *' : 'Statut Reproduction *'}
                   value={reproStatus}
-                  onChange={(val) => setReproStatus(extractStr(val) as CowReproStatus)}
+                  onChange={(val) => setReproStatus(val as CowReproStatus)}
                   options={[
                     { value: 'Lactation', label: 'Lactation (En Traite)' },
                     { value: 'Génisse', label: 'Génisse (Jeune Femelle)' },
@@ -1694,29 +1703,41 @@ export const AgricultureLivestockView: React.FC = () => {
                     { value: 'Quarantaine', label: 'Quarantaine / Soins' },
                     { value: 'Réformée', label: 'Réformée' },
                   ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
+                  field="MilkProduction"
                   label={isAr ? 'الإنتاج اليومي (لتر) *' : 'Production Moyenne (L/j) *'}
                   type="number"
                   step="0.5"
                   value={milkProduction}
-                  onChange={(e) => setMilkProduction(e.target.value)}
+                  onChange={setMilkProduction}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="BirthDate"
                   label={isAr ? 'تاريخ الميلاد' : 'Date de Naissance'}
                   type="date"
                   value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
+                  onChange={setBirthDate}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelSelect
+                  field="HealthStatus"
                   label={isAr ? 'الحالة الصحية *' : 'Statut Sanitaire *'}
                   value={healthStatus}
                   onChange={(val) =>
                     setHealthStatus(
-                      extractStr(val) as 'Healthy' | 'InTreatment' | 'Quarantine' | 'Sick'
+                      val as 'Healthy' | 'InTreatment' | 'Quarantine' | 'Sick'
                     )
                   }
                   options={[
@@ -1725,25 +1746,32 @@ export const AgricultureLivestockView: React.FC = () => {
                     { value: 'Quarantine', label: 'Quarantaine' },
                     { value: 'Sick', label: 'Malade' },
                   ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
               <LabelInput
+                field="LivestockNotes"
                 label={isAr ? 'ملاحظات بيطرية وتطعيمات' : 'Observations & Prophylaxie'}
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={setNotes}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
+                  tone="soft"
+                  size={40}
                   type="button"
                   onClick={() => setIsAnimalModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {animalToEdit ? 'Enregistrer' : 'Ajouter Animal'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

@@ -28,6 +28,7 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -1381,12 +1382,7 @@ export const PosOrdersView: React.FC = () => {
       <Modal
         isOpen={Boolean(selectedSaleForReceipt)}
         onClose={() => setSelectedSaleForReceipt(null)}
-        title={isAr ? 'معاينة وصل الدفع 80 مم' : 'Ticket de Caisse 80mm'}
-        subtitle={
-          retainedSaleForReceipt
-            ? `Ticket #${retainedSaleForReceipt.id.slice(-8).toUpperCase()}`
-            : ''
-        }
+        title={isAr ? 'معاينة وصل الدفع 80 مم' : isEn ? 'Thermal Receipt 80mm' : 'Ticket de Caisse 80mm'}
       >
         {retainedSaleForReceipt && (
           <div className="space-y-4" dir="ltr">
@@ -1465,22 +1461,19 @@ export const PosOrdersView: React.FC = () => {
             </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex-1 h-10 px-4 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full cursor-pointer hover:opacity-90 flex items-center justify-center gap-2"
-              >
-                <Printer size={14} />
-                <span>{isAr ? 'طباعة الوصل' : 'Imprimer Ticket 80mm'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedSaleForReceipt(null)}
-                className="h-10 px-4 t-small font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setSelectedSaleForReceipt(null)}>
                 {t('action_cancel')}
-              </button>
+              </Button>
+              <Button
+                type="button"
+                tone="accent"
+                size={40}
+                leading={<Printer size={14} />}
+                onClick={() => window.print()}
+              >
+                {isAr ? 'طباعة الوصل' : isEn ? 'Print 80mm Receipt' : 'Imprimer Ticket 80mm'}
+              </Button>
             </div>
           </div>
         )}
@@ -1489,43 +1482,44 @@ export const PosOrdersView: React.FC = () => {
       <Modal
         isOpen={Boolean(selectedSaleForRefund)}
         onClose={() => setSelectedSaleForRefund(null)}
-        title={isAr ? 'تأكيد استرجاع الوصل (Avoir)' : 'Confirmer le Remboursement (Avoir)'}
-        subtitle={
-          retainedSaleForRefund
-            ? `Ticket #${retainedSaleForRefund.id.slice(-8).toUpperCase()} · ${formatMoney(retainedSaleForRefund.totalAmount)}`
-            : ''
-        }
+        title={isAr ? 'تأكيد استرجاع الوصل (Avoir)' : isEn ? 'Confirm Refund' : 'Confirmer le Remboursement (Avoir)'}
       >
         <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <p className="t-cap text-black/55 dark:text-white/55">
             {isAr
               ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
+              : isEn
+              ? 'Items will automatically return to physical inventory with a full audit trail.'
               : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}
           </p>
 
           <LabelInput
-            label={isAr ? 'سبب الإرجاع / الملاحظة' : 'Motif de retour / avoir'}
+            field="RefundReason"
+            label={isAr ? 'سبب الإرجاع / الملاحظة' : isEn ? 'Refund reason' : 'Motif de retour / avoir'}
             value={refundReason}
-            onChange={(val) => setRefundReason(typeof val === 'string' ? val : val.target?.value || '')}
-            placeholder="Ex: Erreur de saisie, produit défectueux..."
+            onChange={setRefundReason}
+            placeholder={isAr ? 'مثال: خطأ في الإدخال...' : isEn ? 'e.g. Entry mistake, defective item...' : 'Ex: Erreur de saisie, produit défectueux...'}
+            width="100%"
+            height={40}
+            corner={12}
           />
 
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <AtriumButton
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              tone="soft"
+              size={40}
               onClick={() => setSelectedSaleForRefund(null)}
             >
               {t('action_cancel')}
-            </AtriumButton>
+            </Button>
             <AtriumButton
               type="button"
               variant="danger"
-              size="sm"
+              size="md"
               onClick={handleConfirmRefund}
             >
-              {isAr ? 'تأكيد الاسترجاع' : 'Valider le Remboursement'}
+              {isAr ? 'تأكيد الاسترجاع' : isEn ? 'Confirm Refund' : 'Valider le Remboursement'}
             </AtriumButton>
           </div>
         </div>

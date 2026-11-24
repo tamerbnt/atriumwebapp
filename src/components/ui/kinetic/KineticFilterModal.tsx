@@ -2,6 +2,7 @@ import React from 'react';
 import { SlidersHorizontal, RotateCcw, X } from 'lucide-react';
 import { Button as BrandedAtriumButton } from '@/atrium/core';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
+import { LiveSelect } from '../live/LiveSelect';
 import { KineticModalShell } from './KineticModalShell';
 
 export interface KineticFilterTileOption {
@@ -71,20 +72,15 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
         className="relative w-full max-h-[85vh] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
       >
         <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] shrink-0">
-          <div className="flex items-center gap-[var(--s3,12px)]">
+          <div className="flex items-center gap-[var(--s3,12px)] min-w-0">
             <div className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
               <SlidersHorizontal size={16} strokeWidth={1.5} />
             </div>
-            <div className="flex flex-col gap-[var(--s1,4px)]">
-              <span className="t-dialog text-[var(--text-1)] block">
-                {dialogTitle}
-              </span>
-              <span className="t-cap text-[var(--text-2)] tabular-nums">
-                {displayCount} {entityPluralLabel}
-              </span>
-            </div>
+            <span className="t-dialog text-[var(--text-1)] truncate">
+              {dialogTitle}
+            </span>
           </div>
-          <div className="flex items-center gap-[var(--s2,8px)]">
+          <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
             {hasActiveFilters && (
               <button
                 type="button"
@@ -118,6 +114,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
             const resetText =
               section.resetLabel ||
               (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All');
+            const useSegmented = section.options.length <= 4;
             return (
               <div key={section.id} className="flex flex-col gap-[var(--s2,8px)]">
                 <div className="flex items-center justify-between gap-[var(--s2,8px)]">
@@ -136,60 +133,34 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                   )}
                 </div>
 
-                {section.kind === 'segmented' ? (
-                  <div className="w-full overflow-x-auto pb-[var(--s1,4px)]">
-                    <LiveSegmentedControl
-                      size="sm"
-                      fullWidth
-                      className="min-w-0 [&>button]:min-w-0 [&>button]:px-[var(--s2,8px)]"
-                      options={section.options as SegmentedOption[]}
-                      value={section.value}
-                      onValueChange={(val) => section.onChange(val)}
-                      aria-label={section.label}
-                    />
-                  </div>
+                {useSegmented ? (
+                  <LiveSegmentedControl
+                    size="sm"
+                    fullWidth
+                    className="min-w-0 [&>button]:min-w-0 [&>button]:px-[var(--s2,8px)]"
+                    options={section.options as SegmentedOption[]}
+                    value={section.value}
+                    onValueChange={(val) => section.onChange(val)}
+                    aria-label={section.label}
+                  />
                 ) : (
-                  <div
-                    className={`grid gap-[var(--s2,8px)] max-h-40 overflow-y-auto pe-[var(--s1,4px)] ${
-                      section.columns === 3
-                        ? 'grid-cols-2 sm:grid-cols-3'
-                        : 'grid-cols-1 sm:grid-cols-2'
-                    }`}
-                  >
-                    {section.options.map((opt) => {
-                      const isSelected = section.value === opt.value;
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          data-no-liquid="true"
-                          data-sq="row"
-                          data-sq-border={isSelected ? 'solid' : 'none'}
-                          onClick={() => section.onChange(opt.value)}
-                          title={opt.tooltip || opt.label}
-                          className={`relative px-[var(--s3,12px)] py-[var(--s2,8px)] t-small flex items-center justify-between gap-[var(--s2,8px)] cursor-pointer transition-colors ${
-                            isSelected
-                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.45)] font-semibold'
-                              : 'bg-[#F5F1EC] dark:bg-[#2B2825] text-[var(--text-1)] hover:bg-[#EDE6DF] dark:hover:bg-[#332F2B]'
-                          }`}
-                        >
-                          <div className="min-w-0 text-start flex flex-col gap-[var(--s1,4px)]">
-                            <div className="truncate font-semibold">{opt.label}</div>
-                            {opt.sublabel && (
-                              <div className="t-cap text-[var(--text-2)] tabular-nums truncate">
-                                {opt.sublabel}
-                              </div>
-                            )}
-                          </div>
-                          {opt.count !== undefined && (
-                            <span className="t-cap text-[var(--text-2)] tabular-nums shrink-0">
-                              {opt.count}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <LiveSelect
+                    size="md"
+                    tone="soft"
+                    className="w-full justify-between"
+                    aria-label={section.label}
+                    value={section.value}
+                    onValueChange={(val) => section.onChange(val)}
+                    options={section.options.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                      tooltip: opt.tooltip,
+                      description:
+                        opt.count !== undefined
+                          ? `${opt.sublabel ? `${opt.sublabel} · ` : ''}${opt.count}`
+                          : opt.sublabel,
+                    }))}
+                  />
                 )}
               </div>
             );

@@ -1036,20 +1036,6 @@ const TopBarInner: React.FC<TopBarProps> = ({
           <Menu
             placement="bottom-end"
             aria-label="Account menu"
-            header={
-              <div className="flex items-center gap-[var(--av-to-text,12px)]">
-                <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center t-small font-semibold shrink-0 shadow-2xs">
-                  {currentUser.fullName.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1 flex flex-col gap-[var(--s1,4px)]">
-                  <b className="truncate block t-label font-semibold">{currentUser.fullName}</b>
-                  <small className="truncate block t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">{currentUser.email}</small>
-                  <span className="inline-block t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] capitalize">
-                    {currentUser.role}
-                  </span>
-                </div>
-              </div>
-            }
             items={[
               {
                 id: 'lock',

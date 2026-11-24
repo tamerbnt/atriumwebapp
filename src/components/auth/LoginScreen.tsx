@@ -131,8 +131,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       {/* Background Subtle Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d4522f]/15 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Floating Language Switcher in Top Right */}
-      <div className="absolute top-[var(--s4,16px)] right-[var(--s4,16px)] z-20">
+      {/* Floating Language Switcher in Top End */}
+      <div className="absolute top-[var(--s4,16px)] end-[var(--s4,16px)] z-20">
         <div className="relative">
           <button
             type="button"
@@ -149,7 +149,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </button>
 
           {langMenuOpen && (
-            <div className={`absolute top-full mt-[var(--pop-offset,8px)] w-48 sq-elev-pop z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
+            <div className="absolute top-full end-0 mt-[var(--pop-offset,8px)] w-48 sq-elev-pop z-30">
               <div
                 data-sq="table"
                 data-sq-border="solid"
@@ -536,15 +536,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
               : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
           </div>
-          <button
+          <AtriumButton
             type="button"
-            data-sq="ctl"
-            data-sq-border="none"
+            variant="primary"
+            size="md"
+            className="w-full"
             onClick={() => setForgotPasswordOpen(false)}
-            className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-[var(--brand-fill,#C9461F)] text-white t-btn font-semibold cursor-pointer"
           >
             {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
-          </button>
+          </AtriumButton>
         </div>
       </KineticModalShell>
 

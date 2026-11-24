@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, ChevronDown, ChevronRight, Shield } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
+import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 import { auditService, type AuditLogRecord } from '../../lib/supabase/services/auditService';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { useAtriumSelector } from '../../services/store';
@@ -87,59 +89,36 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
     ? "Journal d'audit immuable"
     : 'Immutable Audit Log';
 
-  const subtitle = isAr
-    ? 'تتبع العمليات على مستوى الصفوف عبر التصفح التسلسلي'
-    : isFr
-    ? 'Traçabilité des mutations par curseur haute performance'
-    : 'Keyset-paginated row mutation trail';
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle} maxWidth="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="xl">
       <div className="flex flex-col gap-[var(--s4,16px)]">
         {/* Filter controls */}
-        <div className="flex flex-wrap items-center gap-[var(--s3,12px)] pb-[var(--s3,12px)] border-b border-[var(--atr-line)]">
-          <div
-            data-sq="ctl"
-            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="flex-1 min-w-[var(--field-min,200px)] h-[var(--btn-h,40px)] bg-[var(--atr-soft)] flex items-center"
-          >
-            <input
-              type="text"
-              value={tableFilter}
-              onChange={(e) => setTableFilter(e.target.value)}
-              placeholder={
-                isAr ? 'تصفية باسم الجدول...' : isFr ? 'Filtrer par table (ex: gym_members)...' : 'Filter by table (e.g. gym_members)...'
-              }
-              className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body text-[var(--atr-ink)] placeholder:text-[var(--atr-ink-4)] focus:outline-none"
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px_auto] gap-[var(--s3,12px)] items-end pb-[var(--s3,12px)] border-b border-[var(--atr-line)]">
+          <LabelInput
+            label={isAr ? 'الجدول' : isFr ? 'Table' : 'Table'}
+            value={tableFilter}
+            onChange={setTableFilter}
+            placeholder={
+              isAr ? 'مثال: gym_members' : isFr ? 'ex: gym_members' : 'e.g. gym_members'
+            }
+            height={40}
+          />
 
-          <div
-            data-sq="ctl"
-            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="flex items-center gap-[var(--s1,4px)] h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[var(--atr-soft)]"
-          >
-            {ACTION_OPTIONS.map((act) => (
-              <button
-                key={act}
-                type="button"
-                onClick={() => setActionFilter(act)}
-                data-sq={actionFilter === act ? 'thumb' : 'none'}
-                className={`h-full px-[var(--seg-px,12px)] t-small transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  actionFilter === act
-                    ? 'bg-[var(--atr-card)] text-[var(--atr-ink)]'
-                    : 'rounded-[var(--r-thumb,9px)] text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
-                }`}
-              >
-                {act === 'ALL' ? (isAr ? 'الكل' : isFr ? 'Tout' : 'All') : act}
-              </button>
-            ))}
-          </div>
+          <LabelSelect
+            label={isAr ? 'العملية' : isFr ? 'Action' : 'Action'}
+            value={actionFilter}
+            onChange={setActionFilter}
+            options={ACTION_OPTIONS.map((act) => ({
+              value: act,
+              label: act === 'ALL' ? (isAr ? 'الكل' : isFr ? 'Tout' : 'All') : act,
+            }))}
+            height={40}
+          />
 
           <AtriumButton
             type="button"
             variant="secondary"
-            size="sm"
+            size="md"
             icon={<RefreshCw size={16} strokeWidth={1.5} />}
             onClick={() => loadPage(false)}
             disabled={isLoading}
@@ -228,7 +207,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
           <div
             data-sq="table"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="divide-y divide-[var(--atr-line)] max-h-[380px] overflow-y-auto bg-[var(--atr-card)]"
+            className="divide-y divide-[var(--atr-line)] bg-[var(--atr-card)]"
           >
             {logs.map((entry) => {
               const isExpanded = expandedId === entry.id;
@@ -237,13 +216,13 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
                   <button
                     type="button"
                     onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                    className="w-full px-[var(--s4,16px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--s3,12px)] text-left rtl:text-right hover:bg-[var(--atr-soft)] transition-colors cursor-pointer"
+                    className="w-full px-[var(--s4,16px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--s3,12px)] text-start hover:bg-[var(--atr-soft)] transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                       {isExpanded ? (
                         <ChevronDown size={16} strokeWidth={1.5} className="text-[var(--atr-ink-4)] shrink-0" />
                       ) : (
-                        <ChevronRight size={16} strokeWidth={1.5} className="text-[var(--atr-ink-4)] shrink-0" />
+                        <ChevronRight size={16} strokeWidth={1.5} className="text-[var(--atr-ink-4)] shrink-0 rtl:rotate-180" />
                       )}
                       <span className="t-label font-semibold text-[var(--atr-ink)] truncate">
                         {entry.tableName}

@@ -115,12 +115,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               >
                 <Lock size={20} strokeWidth={1.75} />
               </div>
-              <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
-                <h3 className="t-dialog font-medium text-white">{t('fast_switch_title_lock', language)}</h3>
-                <p className="t-cap text-[var(--text-dark-2,#A99E92)]">
-                  {t('fast_switch_operator_security', language)}
-                </p>
-              </div>
+              <h3 className="t-dialog font-medium text-white">{t('fast_switch_title_lock', language)}</h3>
             </div>
             <button
               type="button"

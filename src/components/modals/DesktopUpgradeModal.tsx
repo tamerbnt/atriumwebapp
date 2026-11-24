@@ -155,7 +155,6 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
       onClose={onClose}
       isLoading={networkMode === 'force_skeleton'}
       title={language === 'ar' ? 'نسخة أتريوم المكتبية للكمبيوتر' : language === 'fr' ? 'Atrium Édition Bureau' : 'Atrium Desktop Edition'}
-      subtitle={language === 'ar' ? 'تجاوز حدود الفرع الواحد مع تطبيق سطح المكتب فائق الأداء' : language === 'fr' ? 'Dépassez la limite d\'une seule agence avec l\'application de bureau haute performance' : 'Expand beyond 1 branch with the high-performance desktop application'}
       maxWidth="lg"
     >
       <div className="flex flex-col gap-[var(--s6,24px)] select-none">

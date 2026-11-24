@@ -29,6 +29,7 @@ import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -1781,117 +1782,116 @@ export const PosInventoryView: React.FC<any> = () => {
         onClose={() => setIsProductFormModalOpen(false)}
         title={
           editingProductId
-            ? isAr ? 'تعديل بيانات المنتج' : 'Modifier le Produit'
-            : isAr ? 'إضافة منتج جديد للكتالوج' : 'Ajouter un Nouveau Produit'
+            ? isAr ? 'تعديل بيانات المنتج' : isEn ? 'Edit Product' : 'Modifier le Produit'
+            : isAr ? 'إضافة منتج جديد للكتالوج' : isEn ? 'Add New Product' : 'Ajouter un Nouveau Produit'
         }
-        subtitle={editingProductId ? formSku : currentBranch.name}
       >
         <form onSubmit={handleSaveProduct} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="ProdName"
-            label={isAr ? 'اسم المنتج أو الصنف' : 'Nom de l’article / désignation'}
+            label={isAr ? 'اسم المنتج أو الصنف' : isEn ? 'Product name' : 'Nom de l’article / désignation'}
             required
             value={formName}
             onChange={setFormName}
-            placeholder="Ex: Café Torréfié Arabica 1kg"
+            placeholder={isAr ? 'مثال: قهوة أرابيكا 1 كغ' : isEn ? 'e.g. Roasted Arabica Coffee 1kg' : 'Ex: Café Torréfié Arabica 1kg'}
             width="100%"
-            height={44}
+            height={40}
             corner={12}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelSelect
               field="ProdCategory"
-              label={isAr ? 'التصنيف' : 'Catégorie'}
+              label={isAr ? 'التصنيف' : isEn ? 'Category' : 'Catégorie'}
               value={formCategory}
-              onChange={(val) => setFormCategory(typeof val === 'string' ? val : val.target?.value || val)}
+              onChange={setFormCategory}
               options={[
-                { value: 'Beverage', label: 'Boissons & Cafés' },
-                { value: 'Grocery', label: 'Épicerie Fine & Huiles' },
-                { value: 'Bakery', label: 'Boulangerie & Pâtisserie' },
-                { value: 'Supplement', label: 'Compléments & Diététique' },
-                { value: 'Equipment', label: 'Équipements & Accessoires' },
-                { value: 'General', label: 'Articles Généraux' },
+                { value: 'Beverage', label: isAr ? 'مشروبات وقهوة' : isEn ? 'Beverages & Coffee' : 'Boissons & Cafés' },
+                { value: 'Grocery', label: isAr ? 'بقالة وزيوت' : isEn ? 'Grocery & Oils' : 'Épicerie Fine & Huiles' },
+                { value: 'Bakery', label: isAr ? 'مخبوزات وحلويات' : isEn ? 'Bakery & Pastry' : 'Boulangerie & Pâtisserie' },
+                { value: 'Supplement', label: isAr ? 'مكملات غذائية' : isEn ? 'Supplements' : 'Compléments & Diététique' },
+                { value: 'Equipment', label: isAr ? 'معدات وإكسسوارات' : isEn ? 'Equipment & Accessories' : 'Équipements & Accessoires' },
+                { value: 'General', label: isAr ? 'منتجات عامة' : isEn ? 'General Items' : 'Articles Généraux' },
               ]}
-              height={44}
+              height={40}
               corner={12}
             />
             <LabelSelect
               field="ProdUnit"
-              label={isAr ? 'وحدة القياس' : 'Unité de vente'}
+              label={isAr ? 'وحدة القياس' : isEn ? 'Sales Unit' : 'Unité de vente'}
               value={formUnit}
-              onChange={(val) => setFormUnit(typeof val === 'string' ? val : val.target?.value || val)}
+              onChange={setFormUnit}
               options={[
-                { value: 'pcs', label: 'Pièce (pcs)' },
-                { value: 'pack', label: 'Paquet / Lot' },
-                { value: 'box', label: 'Boîte' },
-                { value: 'kg', label: 'Kilogramme (kg)' },
-                { value: 'l', label: 'Litre (l)' },
+                { value: 'pcs', label: isAr ? 'قطعة (pcs)' : isEn ? 'Piece (pcs)' : 'Pièce (pcs)' },
+                { value: 'pack', label: isAr ? 'حزمة / علبة' : isEn ? 'Pack / Lot' : 'Paquet / Lot' },
+                { value: 'box', label: isAr ? 'صندوق' : isEn ? 'Box' : 'Boîte' },
+                { value: 'kg', label: isAr ? 'كيلوغرام (kg)' : isEn ? 'Kilogram (kg)' : 'Kilogramme (kg)' },
+                { value: 'l', label: isAr ? 'لتر (l)' : isEn ? 'Liter (l)' : 'Litre (l)' },
               ]}
-              height={44}
+              height={40}
               corner={12}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <LabelInput field="ProdSku" label="SKU" required value={formSku} onChange={setFormSku} placeholder="POS-COF-01" width="100%" height={44} corner={12} />
-            <LabelInput field="ProdBarcode" label={isAr ? 'الباركود EAN' : 'Code-Barres EAN-13'} value={formBarcode} onChange={setFormBarcode} placeholder="6131100200101" width="100%" height={44} corner={12} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelInput field="ProdSku" label="SKU" required value={formSku} onChange={setFormSku} placeholder="POS-COF-01" width="100%" height={40} corner={12} />
+            <LabelInput field="ProdBarcode" label={isAr ? 'الباركود EAN' : isEn ? 'EAN-13 Barcode' : 'Code-Barres EAN-13'} value={formBarcode} onChange={setFormBarcode} placeholder="6131100200101" width="100%" height={40} corner={12} />
           </div>
-          <div className={`grid ${isStaff ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
+          <div className={`grid ${isStaff ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3`}>
             <LabelInput
               field="ProdRetail"
-              label={isAr ? 'سعر البيع للعموم (د.ج)' : 'Prix de Vente TTC (DA)'}
+              label={isAr ? 'سعر البيع للعموم (د.ج)' : isEn ? 'Retail Price TTC (DA)' : 'Prix de Vente TTC (DA)'}
               type="number"
               required
               value={formPrice ? String(formPrice) : ''}
               onChange={(v) => setFormPrice(parseFloat(v) || 0)}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
             {!isStaff && (
               <LabelInput
                 field="ProdCost"
-                label={isAr ? 'سعر التكلفة / الشراء (د.ج)' : 'Coût d’Achat HT (DA)'}
+                label={isAr ? 'سعر التكلفة / الشراء (د.ج)' : isEn ? 'Cost Price HT (DA)' : 'Coût d’Achat HT (DA)'}
                 type="number"
                 required
                 value={formCost ? String(formCost) : ''}
                 onChange={(v) => setFormCost(parseFloat(v) || 0)}
                 width="100%"
-                height={44}
+                height={40}
                 corner={12}
               />
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="ProdStock"
-              label={isAr ? 'الكمية المتوفرة حالياً' : 'Stock Initial Réel'}
+              label={isAr ? 'الكمية المتوفرة حالياً' : isEn ? 'Initial Stock' : 'Stock Initial Réel'}
               type="number"
               required
               value={formStock !== undefined ? String(formStock) : ''}
               onChange={(v) => setFormStock(parseInt(v) || 0)}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
             <LabelInput
               field="ProdReorder"
-              label={isAr ? 'حد التنبيه بالنقص' : 'Seuil d’Alerte Réassort'}
+              label={isAr ? 'حد التنبيه بالنقص' : isEn ? 'Reorder Threshold' : 'Seuil d’Alerte Réassort'}
               type="number"
               required
               value={formReorder !== undefined ? String(formReorder) : ''}
               onChange={(v) => setFormReorder(parseInt(v) || 0)}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
           </div>
-          <div className="flex items-center justify-end gap-3 pt-3">
-            <button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsProductFormModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
-              {editingProductId ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إضافة الصنف' : 'Créer l’Article'}
-            </button>
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
+              {editingProductId ? (isAr ? 'حفظ التعديلات' : isEn ? 'Save Changes' : 'Enregistrer') : isAr ? 'إضافة الصنف' : isEn ? 'Create Product' : 'Créer l’Article'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -1899,75 +1899,56 @@ export const PosInventoryView: React.FC<any> = () => {
       <Modal
         isOpen={isAdjustStockModalOpen && Boolean(selectedProductForAdjust)}
         onClose={() => setIsAdjustStockModalOpen(false)}
-        title={isAr ? 'تعديل رصيد المخزون' : 'Ajustement Manuel de Stock'}
-        subtitle={
-          retainedProductForAdjust
-            ? `${retainedProductForAdjust.name} (Actuel: ${retainedProductForAdjust.stockQuantity} ${retainedProductForAdjust.unit || 'pcs'})`
-            : ''
-        }
+        title={isAr ? 'تعديل رصيد المخزون' : isEn ? 'Manual Stock Adjustment' : 'Ajustement Manuel de Stock'}
       >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="flex bg-[#EFE9E2] dark:bg-[#191716] p-1 t-small font-semibold"
-            >
-              <button
-                type="button"
-                onClick={() => setAdjustMode('add')}
-                data-sq="ctl-sm"
-                data-sq-border="none"
-                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'add' ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
-              >
-                + {isAr ? 'إضافة تموين' : 'Ajouter'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdjustMode('remove')}
-                data-sq="ctl-sm"
-                data-sq-border="none"
-                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'remove' ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
-              >
-                - {isAr ? 'خصم / تلف' : 'Retirer (Casse)'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdjustMode('set')}
-                data-sq="ctl-sm"
-                data-sq-border="none"
-                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'set' ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
-              >
-                = {isAr ? 'تحديد دقيق' : 'Fixer Solde'}
-              </button>
-            </div>
+            {retainedProductForAdjust && (
+              <div className="t-small text-black/65 dark:text-white/65">
+                {retainedProductForAdjust.name} · {retainedProductForAdjust.stockQuantity} {retainedProductForAdjust.unit || 'pcs'}
+              </div>
+            )}
+            <LiveSegmentedControl<'add' | 'remove' | 'set'>
+              value={adjustMode}
+              onChange={setAdjustMode}
+              options={[
+                { value: 'add', label: `+ ${isAr ? 'إضافة تموين' : isEn ? 'Add' : 'Ajouter'}` },
+                { value: 'remove', label: `- ${isAr ? 'خصم / تلف' : isEn ? 'Remove' : 'Retirer (Casse)'}` },
+                { value: 'set', label: `= ${isAr ? 'تحديد دقيق' : isEn ? 'Set Stock' : 'Fixer Solde'}` },
+              ]}
+              fullWidth
+            />
             <LabelInput
               field="AdjustQty"
-              label={adjustMode === 'set' ? 'Nouveau Solde Réel' : 'Quantité à modifier'}
+              label={
+                adjustMode === 'set'
+                  ? (isAr ? 'الرصيد الفعلي الجديد' : isEn ? 'New Stock Count' : 'Nouveau Solde Réel')
+                  : (isAr ? 'الكمية المعدلة' : isEn ? 'Quantity' : 'Quantité à modifier')
+              }
               type="number"
               required
               value={adjustQuantity ? String(adjustQuantity) : ''}
               onChange={(v) => setAdjustQuantity(parseInt(v) || 0)}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
             <LabelInput
               field="AdjustReason"
-              label={isAr ? 'سبب التعديل' : 'Motif de l’opération'}
+              label={isAr ? 'سبب التعديل' : isEn ? 'Reason' : 'Motif de l’opération'}
               value={adjustReason}
               onChange={setAdjustReason}
-              placeholder="Ex: Réception livraison, Casse accidentelle..."
+              placeholder={isAr ? 'مثال: استلام شحنة، تلف...' : isEn ? 'e.g. Delivery, breakage...' : 'Ex: Réception livraison, Casse accidentelle...'}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
-            <div className="flex items-center justify-end gap-3 pt-3">
-              <button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAdjustStockModalOpen(false)}>
                 {t('action_cancel')}
-              </button>
-              <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
-                {isAr ? 'تأكيد التعديل' : 'Valider l’Ajustement'}
-              </button>
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {isAr ? 'تأكيد التعديل' : isEn ? 'Apply Adjustment' : 'Valider l’Ajustement'}
+              </Button>
             </div>
           </form>
       </Modal>
@@ -1975,28 +1956,27 @@ export const PosInventoryView: React.FC<any> = () => {
       <Modal
         isOpen={isBatchRestockModalOpen}
         onClose={() => setIsBatchRestockModalOpen(false)}
-        title={isAr ? 'تموين جماعي للأصناف المحددة' : 'Réassort Groupé d’Articles'}
-        subtitle={`${selectedProductIds.size} ${isAr ? 'أصناف مختارة' : 'produits sélectionnés'}`}
+        title={isAr ? 'تموين جماعي للأصناف المحددة' : isEn ? 'Batch Restock' : 'Réassort Groupé d’Articles'}
       >
         <form onSubmit={handleConfirmBatchRestock} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="BatchQty"
-            label={isAr ? 'الكمية الإضافية لكل صنف (+)' : 'Quantité à rajouter par article (+)'}
+            label={isAr ? 'الكمية الإضافية لكل صنف (+)' : isEn ? 'Quantity to add per item (+)' : 'Quantité à rajouter par article (+)'}
             type="number"
             required
             value={batchRestockQty ? String(batchRestockQty) : ''}
             onChange={(v) => setBatchRestockQty(parseInt(v) || 0)}
             width="100%"
-            height={44}
+            height={40}
             corner={12}
           />
-          <div className="flex items-center justify-end gap-3 pt-3">
-            <button type="button" onClick={() => setIsBatchRestockModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsBatchRestockModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
-              {isAr ? 'تطبيق التموين' : 'Confirmer le Réassort'}
-            </button>
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
+              {isAr ? 'تطبيق التموين' : isEn ? 'Confirm Restock' : 'Confirmer le Réassort'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -2004,38 +1984,37 @@ export const PosInventoryView: React.FC<any> = () => {
       <Modal
         isOpen={isRetailPoModalOpen}
         onClose={() => setIsRetailPoModalOpen(false)}
-        title={isAr ? 'إنشاء طلبية تموين من المورد' : 'Nouvelle Commande de Réapprovisionnement'}
-        subtitle={isAr ? 'سند طلبية شراء موجه للمورد مع تاريخ التسليم' : 'Bon de commande fournisseur (PO) avec délai prévisionnel'}
+        title={isAr ? 'إنشاء طلبية تموين من المورد' : isEn ? 'New Purchase Order' : 'Nouvelle Commande de Réapprovisionnement'}
       >
         <form onSubmit={handleCreateRetailPo} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelSelect
               field="PoSupplier"
-              label={isAr ? 'المورد التجاري' : 'Fournisseur / Grossiste'}
+              label={isAr ? 'المورد التجاري' : isEn ? 'Supplier / Wholesaler' : 'Fournisseur / Grossiste'}
               value={poSupplierId}
-              onChange={(val) => setPoSupplierId(typeof val === 'string' ? val : val.target?.value || val)}
+              onChange={setPoSupplierId}
               options={b2bSuppliers.map((s) => ({
                 value: s.id,
                 label: `${s.supplierName} (${s.city || 'Alger'})`,
               }))}
-              height={44}
+              height={40}
               corner={12}
             />
             <LabelInput
               field="PoExpectedDate"
-              label={isAr ? 'تاريخ التسليم المتوقع' : 'Date de livraison prévue'}
+              label={isAr ? 'تاريخ التسليم المتوقع' : isEn ? 'Expected Delivery Date' : 'Date de livraison prévue'}
               type="date"
               value={poExpectedDate}
               onChange={setPoExpectedDate}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="t-small font-semibold text-black dark:text-white">
-                {isAr ? 'السلع المطلوبة' : 'Articles & Quantités à commander'}
+                {isAr ? 'السلع المطلوبة' : isEn ? 'Order Line Items' : 'Articles & Quantités à commander'}
               </span>
               <button
                 type="button"
@@ -2056,23 +2035,23 @@ export const PosInventoryView: React.FC<any> = () => {
                 }
                 className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-1 cursor-pointer"
               >
-                + {isAr ? 'إضافة صنف' : 'Ajouter une ligne'}
+                + {isAr ? 'إضافة صنف' : isEn ? 'Add line' : 'Ajouter une ligne'}
               </button>
             </div>
-            <div className="space-y-2 max-h-60 overflow-y-auto p-1">
+            <div className="space-y-2">
               {poItems.map((item, idx) => (
                 <div
                   key={idx}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center"
                 >
                   <div className="sm:col-span-6">
                     <LabelSelect
-                      label="Produit"
+                      field={`PoItemProd-${idx}`}
+                      label={isAr ? 'المنتج' : isEn ? 'Product' : 'Produit'}
                       value={item.productId}
-                      onChange={(val) => {
-                        const prodId = typeof val === 'string' ? val : val?.target?.value || val;
+                      onChange={(prodId) => {
                         const sel = products.find((p) => p.id === prodId);
                         if (!sel) return;
                         setPoItems((prev) => {
@@ -2091,37 +2070,47 @@ export const PosInventoryView: React.FC<any> = () => {
                         value: p.id,
                         label: `${p.name} (${p.sku})`,
                       }))}
+                      height={40}
+                      corner={12}
                     />
                   </div>
                   <div className="sm:col-span-2">
                     <LabelInput
+                      field={`PoItemQty-${idx}`}
                       type="number"
                       min="1"
-                      label="Qté"
+                      label={isAr ? 'الكمية' : isEn ? 'Qty' : 'Qté'}
                       value={item.orderedQty}
                       onChange={(val) => {
-                        const parsed = parseInt(typeof val === 'string' ? val : val?.target?.value || '1') || 1;
+                        const parsed = parseInt(val) || 1;
                         setPoItems((prev) => {
                           const next = [...prev];
                           next[idx] = { ...next[idx], orderedQty: parsed };
                           return next;
                         });
                       }}
+                      width="100%"
+                      height={40}
+                      corner={12}
                     />
                   </div>
                   <div className="sm:col-span-3">
                     <LabelInput
+                      field={`PoItemCost-${idx}`}
                       type="number"
-                      label="Prix Achat"
+                      label={isAr ? 'سعر الشراء' : isEn ? 'Unit Cost' : 'Prix Achat'}
                       value={item.unitCostHt}
                       onChange={(val) => {
-                        const parsed = parseFloat(typeof val === 'string' ? val : val?.target?.value || '0') || 0;
+                        const parsed = parseFloat(val) || 0;
                         setPoItems((prev) => {
                           const next = [...prev];
                           next[idx] = { ...next[idx], unitCostHt: parsed };
                           return next;
                         });
                       }}
+                      width="100%"
+                      height={40}
+                      corner={12}
                     />
                   </div>
                   <div className="sm:col-span-1 flex items-center justify-end">
@@ -2143,12 +2132,12 @@ export const PosInventoryView: React.FC<any> = () => {
           </div>
           <LabelInput
             field="PoNotes"
-            label={isAr ? 'ملاحظات وتوجيهات الشحن' : 'Instructions de livraison & Note'}
+            label={isAr ? 'ملاحظات وتوجيهات الشحن' : isEn ? 'Delivery Notes' : 'Instructions de livraison & Note'}
             value={poNotes}
             onChange={setPoNotes}
-            placeholder="Ex: Livraison par camionnette..."
+            placeholder={isAr ? 'مثال: تسليم بالشاحنة...' : isEn ? 'e.g. Van delivery...' : 'Ex: Livraison par camionnette...'}
             width="100%"
-            height={44}
+            height={40}
             corner={12}
           />
           <div
@@ -2157,19 +2146,19 @@ export const PosInventoryView: React.FC<any> = () => {
             className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
           >
             <span className="font-semibold text-black/70 dark:text-white/75">
-              {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}
+              {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : isEn ? 'Estimated Total TTC (19% VAT)' : 'Total Estimé TTC (TVA 19% incluse) :'}
             </span>
             <span className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
               {formatMoney(poItems.reduce((sum, it) => sum + it.orderedQty * it.unitCostHt, 0) * 1.19)}
             </span>
           </div>
-          <div className="flex items-center justify-end gap-3 pt-3">
-            <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsRetailPoModalOpen(false)}>
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsRetailPoModalOpen(false)}>
               {t('action_cancel')}
-            </AtriumButton>
-            <AtriumButton type="submit" variant="primary" size="sm">
-              {isAr ? 'تأكيد وإرسال الطلبية' : 'Émettre le Bon de Commande'}
-            </AtriumButton>
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
+              {isAr ? 'تأكيد وإرسال الطلبية' : isEn ? 'Issue Purchase Order' : 'Émettre le Bon de Commande'}
+            </Button>
           </div>
         </form>
       </Modal>

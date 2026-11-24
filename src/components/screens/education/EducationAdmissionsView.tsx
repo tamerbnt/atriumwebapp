@@ -28,6 +28,7 @@ import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -58,9 +59,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const EducationAdmissionsView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -1216,43 +1214,49 @@ export const EducationAdmissionsView: React.FC = () => {
                 student CRM and create an active enrollment record.
               </p>
               <LabelSelect
+                field="StartingCohort"
                 label={t('edu_label_cohort')}
                 value={targetCohortId}
-                onChange={(val) => setTargetCohortId(extractStr(val))}
+                onChange={setTargetCohortId}
                 options={eduCohorts.map((c) => ({
                   value: c.id,
                   label: `${c.name} (${c.cohortCode || c.courseTitle}) — ${c.tuitionFee.toLocaleString()} DZD`,
                 }))}
                 placeholder="Select Starting Cohort..."
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="InitialDeposit"
                 label="Acompte Initial Reçu (DZD)"
                 type="number"
                 min="0"
                 step="1000"
                 value={conversionDeposit === 0 ? '' : conversionDeposit}
                 placeholder="0 DZD (Optionnel - Règlement à l'inscription)"
-                onChange={(val) => setConversionDeposit(Math.max(0, Number(extractStr(val)) || 0))}
+                onChange={(val) => setConversionDeposit(Math.max(0, Number(val) || 0))}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
-                <button
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  data-sq="ctl"
-                  data-sq-border="solid"
+                  tone="soft"
+                  size={40}
                   onClick={() => setConversionLead(null)}
-                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  data-sq="ctl"
-                  data-sq-border="none"
+                  tone="accent"
+                  size={40}
                   onClick={handleConfirmConversion}
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_convert_student')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1291,13 +1295,13 @@ export const EducationAdmissionsView: React.FC = () => {
                   required
                   placeholder="e.g. Yacine Benali"
                   value={formData.studentName}
-                  onChange={(val) => setFormData({ ...formData, studentName: extractStr(val) })}
+                  onChange={(val) => setFormData({ ...formData, studentName: val })}
                   width="100%"
-                  height={44}
+                  height={40}
                   corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <LabelInput
                     field="phone"
@@ -1306,9 +1310,9 @@ export const EducationAdmissionsView: React.FC = () => {
                     required
                     placeholder="0550 00 00 00"
                     value={formData.phone}
-                    onChange={(val) => setFormData({ ...formData, phone: extractStr(val) })}
+                    onChange={(val) => setFormData({ ...formData, phone: val })}
                     width="100%"
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                 </div>
@@ -1319,32 +1323,36 @@ export const EducationAdmissionsView: React.FC = () => {
                     type="email"
                     placeholder="yacine@example.com"
                     value={formData.email}
-                    onChange={(val) => setFormData({ ...formData, email: extractStr(val) })}
+                    onChange={(val) => setFormData({ ...formData, email: val })}
                     width="100%"
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                 </div>
               </div>
               <LabelSelect
+                field="DesiredCourse"
                 label={t('edu_field_course_title')}
                 value={formData.desiredCourseId}
-                onChange={(val) => setFormData({ ...formData, desiredCourseId: extractStr(val) })}
+                onChange={(val) => setFormData({ ...formData, desiredCourseId: val })}
                 options={eduCourses.map((co) => ({
                   value: co.id,
                   label: `${co.title} (${co.category})`,
                 }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <LabelInput
                     field="guardianName"
                     label={t('edu_field_guardian_name')}
                     placeholder="Parent / Sponsor"
                     value={formData.guardianName}
-                    onChange={(val) => setFormData({ ...formData, guardianName: extractStr(val) })}
+                    onChange={(val) => setFormData({ ...formData, guardianName: val })}
                     width="100%"
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                 </div>
@@ -1354,31 +1362,29 @@ export const EducationAdmissionsView: React.FC = () => {
                     label={t('member_field_acquisition')}
                     placeholder="e.g. Instagram, Referral, Walk-in"
                     value={formData.source}
-                    onChange={(val) => setFormData({ ...formData, source: extractStr(val) })}
+                    onChange={(val) => setFormData({ ...formData, source: val })}
                     width="100%"
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-                <button
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  data-sq="ctl"
-                  data-sq-border="solid"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsAddLeadModalOpen(false)}
-                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  tone="accent"
+                  size={40}
                 >
                   {t('edu_btn_new_lead')}
-                </button>
+                </Button>
               </div>
             </form>
             </div>

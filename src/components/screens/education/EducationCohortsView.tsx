@@ -27,6 +27,7 @@ import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -1016,7 +1017,7 @@ export const EducationCohortsView: React.FC = () => {
                 field="CourseCurriculum"
                 label={t('edu_field_course_title')}
                 value={formData.courseId}
-                onChange={(val) => setFormData({ ...formData, courseId: val?.target?.value ?? String(val) })}
+                onChange={(val) => setFormData({ ...formData, courseId: val })}
                 options={eduCourses.map((co) => ({ value: co.id, label: co.title, sublabel: co.category }))}
                 searchable
                 width="100%"
@@ -1028,18 +1029,18 @@ export const EducationCohortsView: React.FC = () => {
                 label={t('edu_field_cohort_code')}
                 required
                 value={formData.name}
-                onChange={(val) => setFormData({ ...formData, name: val?.target?.value ?? String(val) })}
+                onChange={(val) => setFormData({ ...formData, name: val })}
                 placeholder="e.g. Full-Stack Dev - Autumn Batch"
                 width="100%"
                 height={40}
                 corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
                   field="Instructor"
                   label={t('edu_field_instructor')}
                   value={formData.instructorId}
-                  onChange={(val) => setFormData({ ...formData, instructorId: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, instructorId: val })}
                   options={staff.map((s) => ({ value: s.id, label: s.fullName, sublabel: s.role }))}
                   searchable
                   width="100%"
@@ -1050,7 +1051,7 @@ export const EducationCohortsView: React.FC = () => {
                   field="AssignedClassroom"
                   label={t('edu_field_classroom')}
                   value={formData.classroomId}
-                  onChange={(val) => setFormData({ ...formData, classroomId: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, classroomId: val })}
                   options={eduClassrooms.map((r) => ({ value: r.id, label: r.name, sublabel: `Cap: ${r.capacity}` }))}
                   searchable
                   width="100%"
@@ -1058,14 +1059,14 @@ export const EducationCohortsView: React.FC = () => {
                   corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="StartDate"
                   label={t('edu_field_start_date')}
                   type="date"
                   required
                   value={formData.startDate}
-                  onChange={(val) => setFormData({ ...formData, startDate: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, startDate: val })}
                   width="100%"
                   height={40}
                   corner={12}
@@ -1076,20 +1077,20 @@ export const EducationCohortsView: React.FC = () => {
                   type="date"
                   required
                   value={formData.endDate}
-                  onChange={(val) => setFormData({ ...formData, endDate: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, endDate: val })}
                   width="100%"
                   height={40}
                   corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="TuitionFee"
                   label={t('edu_field_tuition_fee')}
                   type="number"
                   required
                   value={formData.tuitionFee}
-                  onChange={(val) => setFormData({ ...formData, tuitionFee: Number(val?.target?.value ?? val) })}
+                  onChange={(val) => setFormData({ ...formData, tuitionFee: Number(val) || 0 })}
                   width="100%"
                   height={40}
                   corner={12}
@@ -1100,7 +1101,7 @@ export const EducationCohortsView: React.FC = () => {
                   type="number"
                   required
                   value={formData.maxStudents}
-                  onChange={(val) => setFormData({ ...formData, maxStudents: Number(val?.target?.value ?? val) })}
+                  onChange={(val) => setFormData({ ...formData, maxStudents: Number(val) || 0 })}
                   width="100%"
                   height={40}
                   corner={12}
@@ -1110,30 +1111,28 @@ export const EducationCohortsView: React.FC = () => {
                 field="ScheduleSummary"
                 label={t('edu_field_schedule_desc')}
                 value={formData.scheduleSummary}
-                onChange={(val) => setFormData({ ...formData, scheduleSummary: val?.target?.value ?? String(val) })}
+                onChange={(val) => setFormData({ ...formData, scheduleSummary: val })}
                 placeholder="e.g. Sat & Tue 14:00 - 16:30"
                 width="100%"
                 height={40}
                 corner={12}
               />
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-                <button
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  data-sq="ctl"
-                  data-sq-border="solid"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsAddCohortModalOpen(false)}
-                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  tone="accent"
+                  size={40}
                 >
                   {t('edu_btn_save_cohort')}
-                </button>
+                </Button>
               </div>
             </form>
             </div>

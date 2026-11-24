@@ -22,7 +22,8 @@ import {
 } from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
@@ -194,14 +195,9 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-[#22201E]">
-          <div>
-            <h2 className="t-card font-semibold text-black dark:text-white">
-              {t('edu_roll_call_title')}
-            </h2>
-            <p className="t-cap text-black/70 dark:text-white/70">
-              {activeCohort?.name || t('edu_label_cohort')} · {activeSession?.date || t('common_today')}
-            </p>
-          </div>
+          <h2 className="t-card font-semibold text-black dark:text-white">
+            {t('edu_roll_call_title')}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -213,13 +209,12 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
 
         {/* Filters & Tally */}
         <div className="px-6 py-3 border-b border-[var(--atr-divider)] bg-white dark:bg-[#22201E] flex flex-wrap items-center justify-between gap-3 t-cap">
-          <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 min-w-[260px]">
             <LabelSelect
               field="Cohort"
               label={t('edu_label_cohort')}
               value={selectedCohortId}
-              onChange={(val) => {
-                const nextCohortId = val?.target?.value ?? String(val);
+              onChange={(nextCohortId) => {
                 setSelectedCohortId(nextCohortId);
                 const nextCohortSessions = eduSessions.filter((s) => s.cohortId === nextCohortId);
                 const nextSessionId = nextCohortSessions[0]?.id || '';
@@ -231,7 +226,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                 label: c.name,
                 sublabel: c.cohortCode || c.courseTitle,
               }))}
-              width={220}
+              width="100%"
               height={40}
               corner={12}
             />
@@ -240,8 +235,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
               field="Session"
               label={t('edu_label_session')}
               value={selectedSessionId}
-              onChange={(val) => {
-                const nextSessionId = val?.target?.value ?? String(val);
+              onChange={(nextSessionId) => {
                 setSelectedSessionId(nextSessionId);
                 setRollState(buildRollStateForSession(selectedCohortId, nextSessionId));
               }}
@@ -253,7 +247,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                       label: `${s.date} (${s.startTime} - ${s.endTime})`,
                     }))
               }
-              width={260}
+              width="100%"
               height={40}
               corner={12}
             />
@@ -267,103 +261,89 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                 rate: String(attendanceRate),
               })}
             </span>
-            <button
+            <Button
               type="button"
-              data-sq="ctl-sm"
-              data-sq-border="solid"
+              tone="soft"
+              size={36}
               onClick={markAllPresent}
-              className="px-3 py-2 bg-white dark:bg-[#2B2825] hover:bg-neutral-50 dark:hover:bg-[#332F2B] font-semibold text-black dark:text-white cursor-pointer"
             >
               {t('edu_mark_all_present')}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Student Roster Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-2 t-cap">
-          {studentsInCohort.map((student) => {
-            const currentStatus = rollState[student.id]?.status || 'Present';
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 t-cap">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+            {studentsInCohort.map((student) => {
+              const currentStatus = rollState[student.id]?.status || 'Present';
 
-            return (
-              <div
-                key={student.id}
-                data-sq="card"
-                data-sq-border="solid"
-                className="flex items-center justify-between p-3 bg-white dark:bg-[#22201E] hover:[--sq-stroke:rgba(212,82,47,0.45)] transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    data-sq="ctl-sm"
-                    data-sq-border="solid"
-                    className="w-8 h-8 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
-                  >
-                    {student.fullName.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-black dark:text-white">
-                      {student.fullName}
-                    </div>
-                    <div className="t-cap text-black/55 dark:text-white/55">
-                      {student.guardianName
-                        ? t('edu_guardian_prefix', { name: student.guardianName })
-                        : student.phone}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {(['Present', 'Late', 'Absent', 'Excused'] as AttendanceStatus[]).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
+              return (
+                <div
+                  key={student.id}
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 bg-white dark:bg-[#22201E] hover:[--sq-stroke:rgba(212,82,47,0.45)] transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
                       data-sq="ctl-sm"
-                      data-sq-border="none"
-                      onClick={() => handleStatusChange(student.id, st)}
-                      className={`px-3 py-2 t-small font-semibold transition-colors cursor-pointer ${
-                        currentStatus === st
-                          ? st === 'Present'
-                            ? 'bg-emerald-600 text-white'
-                            : st === 'Late'
-                            ? 'bg-amber-600 text-white'
-                            : st === 'Absent'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-blue-600 text-white'
-                          : 'bg-neutral-100 dark:bg-[#2B2825] text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
-                      }`}
+                      data-sq-border="solid"
+                      className="w-8 h-8 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
                     >
-                      {getStatusLabel(st)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                      {student.fullName.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-black dark:text-white truncate">
+                        {student.fullName}
+                      </div>
+                      <div className="t-cap text-black/55 dark:text-white/55 truncate">
+                        {student.guardianName
+                          ? t('edu_guardian_prefix', { name: student.guardianName })
+                          : student.phone}
+                      </div>
+                    </div>
+                  </div>
 
-          {studentsInCohort.length === 0 && (
-            <div className="py-12 text-center text-black/55 dark:text-white/55 italic">
-              {t('edu_no_students_enrolled')}
-            </div>
-          )}
+                  <LiveSegmentedControl
+                    size="sm"
+                    value={currentStatus}
+                    onChange={(val) => handleStatusChange(student.id, val as AttendanceStatus)}
+                    aria-label={student.fullName}
+                    options={(['Present', 'Late', 'Absent', 'Excused'] as AttendanceStatus[]).map((st) => ({
+                      value: st,
+                      label: getStatusLabel(st),
+                    }))}
+                  />
+                </div>
+              );
+            })}
+
+            {studentsInCohort.length === 0 && (
+              <div className="py-12 text-center text-black/55 dark:text-white/55 italic">
+                {t('edu_no_students_enrolled')}
+              </div>
+            )}
+          </div>
 
           {/* Action Footer */}
-          <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3 sticky bottom-0 bg-white dark:bg-[#262422] pb-2">
-            <AtriumButton
-              variant="outline"
-              size="sm"
+          <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-2.5 bg-white dark:bg-[#262422]">
+            <Button
+              tone="soft"
+              size={40}
               type="button"
               onClick={onClose}
             >
               {t('common_cancel')}
-            </AtriumButton>
-            <AtriumButton
-              variant="primary"
-              size="sm"
-              glow
+            </Button>
+            <Button
+              tone="accent"
+              size={40}
               type="submit"
               disabled={studentsInCohort.length === 0}
             >
               {t('edu_save_roll_call')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

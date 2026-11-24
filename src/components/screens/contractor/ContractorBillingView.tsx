@@ -23,9 +23,11 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ContractorDgp } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { calculateDecompteProvisoire } from '../../../utils/contractorRules';
@@ -56,13 +58,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string =>
-  typeof v === 'string'
-    ? v
-    : typeof v === 'number'
-    ? String(v)
-    : (v as { target?: { value?: string } })?.target?.value ?? '';
 
 export const ContractorBillingView: React.FC<any> = () => {
   const {
@@ -973,37 +968,65 @@ export const ContractorBillingView: React.FC<any> = () => {
               </div>
             <form onSubmit={handleCreateDgp} className="space-y-4">
               <LabelInput
+                field="periodLabel"
+                width="100%"
+                height={40}
+                corner={12}
                 label="Libellé de la période"
                 value={periodLabel}
-                onChange={(e) => setPeriodLabel(e.target.value)}
+                onChange={setPeriodLabel}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="periodGross"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Montant brut du mois (HT DZD)"
                   type="number"
                   value={periodGross}
-                  onChange={(e) => setPeriodGross(e.target.value)}
+                  onChange={setPeriodGross}
                   required
                 />
                 <LabelInput
+                  field="retentionPct"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Retenue de garantie (%)"
                   type="number"
                   value={retentionPct}
-                  onChange={(e) => setRetentionPct(e.target.value)}
+                  onChange={setRetentionPct}
                   required
                 />
               </div>
-              <LabelInput
-                label="Amortissement avances forfaitaires (DZD)"
-                type="number"
-                value={advanceAmort}
-                onChange={(e) => setAdvanceAmort(e.target.value)}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  field="advanceAmort"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label="Amortissement avances forfaitaires (DZD)"
+                  type="number"
+                  value={advanceAmort}
+                  onChange={setAdvanceAmort}
+                />
+                <LabelInput
+                  field="penaltiesDzd"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label="Pénalités éventuelles déduites (DZD)"
+                  type="number"
+                  value={penaltiesDzd}
+                  onChange={setPenaltiesDzd}
+                />
+              </div>
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-[#22201E] flex items-center justify-between"
+                className="p-3 bg-neutral-50 dark:bg-[#22201E] flex items-center justify-between gap-3"
               >
                 <div>
                   <div className="t-small font-semibold text-black dark:text-white">
@@ -1015,41 +1038,39 @@ export const ContractorBillingView: React.FC<any> = () => {
                       : 'Dispense de retenue 5% (Art. 99 Décret 15-247)'}
                   </div>
                 </div>
-                <input
-                  type="checkbox"
+                <LiveSwitch
                   checked={hasBankCaution}
-                  onChange={(e) => setHasBankCaution(e.target.checked)}
-                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer"
+                  onCheckedChange={setHasBankCaution}
+                  ariaLabel={isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label="Pénalités éventuelles déduites (DZD)"
-                  type="number"
-                  value={penaltiesDzd}
-                  onChange={(e) => setPenaltiesDzd(e.target.value)}
-                />
-                <LabelSelect
-                  label="Taux TVA Applicable"
+              <div>
+                <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+                  Taux TVA Applicable
+                </label>
+                <LiveSegmentedControl
+                  size="md"
+                  fullWidth
                   value={vatRate}
-                  onChange={(val) => setVatRate(extractStr(val))}
+                  onChange={setVatRate}
                   options={[
-                    { value: '19', label: '19% - Travaux BTP Standard' },
-                    { value: '9', label: '9% - Logement Social (AADL/LPP)' },
+                    { value: '19', label: '19% (Travaux BTP Standard)' },
+                    { value: '9', label: '9% (Logement Social)' },
                   ]}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
+                <Button
                   type="button"
-                  variant="outline"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsModalOpen(false)}
                 >
-                  Annuler
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
-                  Enregistrer situation
-                </AtriumButton>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </Button>
+                <Button tone="accent" size={40} type="submit">
+                  {isAr ? 'حفظ الكشف' : 'Enregistrer situation'}
+                </Button>
               </div>
             </form>
             </div>

@@ -19,6 +19,7 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { ManufacturingOrder } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -830,28 +831,23 @@ export const ManufacturingQcView: React.FC<any> = () => {
           <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-3">
-                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold shrink-0">
                   <ShieldCheck size={22} />
                 </div>
-                <div>
-                  <h3 className="font-semibold t-card text-black dark:text-white">
-                    {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
-                </div>
+                <h3 className="font-semibold t-card text-black dark:text-white">
+                  {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
+                </h3>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
+                  tone="success"
+                  size={36}
+                  leading={<Printer size={14} />}
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Printer size={14} />
-                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                </button>
+                  {isAr ? 'طباعة' : 'Imprimer'}
+                </Button>
                 <button
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
@@ -873,7 +869,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="tabular-nums font-semibold t-small text-emerald-700">
                     CERT-2026-{retainedOrderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
                   </div>
@@ -927,7 +923,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
               <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] t-small text-black/75 font-medium">
                 Le Responsable Assurance Qualité atteste que le lot ci-dessus référencé répond strictement aux spécifications techniques du cahier des charges et est libéré pour livraison client.
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
                 <div>
                   <span className="text-black/55 t-cap block">Ingénieur Métrologie & CQ</span>
                   <div className="h-10 flex items-center justify-center text-black italic">Ing. Sofiane Mokrani</div>

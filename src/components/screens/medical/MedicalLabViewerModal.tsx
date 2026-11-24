@@ -12,9 +12,11 @@ import {
   Microscope,
 } from 'lucide-react';
 import { MedicalLabRecord, MedicalPatient, MedicalPractitioner } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion, KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
@@ -117,24 +119,17 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Microscope size={20} /></div>
-<div>
 <div className="flex items-center gap-2">
 <h2 className="t-card font-semibold text-black dark:text-white">Dossier Biologique & Imagerie Médicale</h2>
 <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-200 dark:bg-neutral-700 text-black/70 dark:text-white/75">{patient.fullName}</span>
 </div>
-<p className="t-cap text-black/55 dark:text-white/55">Suivi des bilans sanguins, biochimie, NFS et rapports échographiques</p>
-</div>
 </div>
 <div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="none" className="flex bg-[#EFE9E2] dark:bg-[#191716] p-[3px] t-small font-semibold">
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("list")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "list" ? "bg-white dark:bg-[#2B2825] text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>
-Bilans (
-{patientLabs.length}
-)
-</button>
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("create")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "create" ? "bg-white dark:bg-[#2B2825] text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>+ Saisir Résultats</button>
-</div>
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] cursor-pointer"><X size={18} /></button>
+<LiveSegmentedControl size="sm" value={activeTab} onChange={setActiveTab} options={[
+									{ value: "list", label: `Bilans (${patientLabs.length})` },
+									{ value: "create", label: "+ Saisir Résultats" }
+								]} />
+<button type="button" onClick={onClose} aria-label="Fermer" className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] cursor-pointer"><X size={18} /></button>
 </div>
 </div>
 <div className="p-6 overflow-y-auto flex-1">
@@ -213,48 +208,32 @@ Rapport d'Imagerie (
     }}
   />
 </KineticEmptyStateMotion> : /* @__PURE__ */ <form onSubmit={handleCreateLab} className="space-y-4">
-<div className="grid grid-cols-2 gap-3">
-<LabelSelect label="Type de Bilan" value={testCategory} onChange={(val) => setTestCategory(val)} options={[
-									{
-										value: "Biochimie Sanguine",
-										label: "Biochimie Sanguine"
-									},
-									{
-										value: "Hématologie (NFS)",
-										label: "Hématologie (NFS)"
-									},
-									{
-										value: "Bilan Lipidique",
-										label: "Bilan Lipidique"
-									},
-									{
-										value: "Inflammatoire & Cardiaque",
-										label: "Inflammatoire & Cardiaque"
-									}
+<div>
+<label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">Type de Bilan</label>
+<LiveSegmentedControl size="sm" fullWidth value={testCategory} onChange={setTestCategory} options={[
+									{ value: "Biochimie Sanguine", label: "Biochimie" },
+									{ value: "Hématologie (NFS)", label: "Hématologie NFS" },
+									{ value: "Bilan Lipidique", label: "Lipidique" },
+									{ value: "Inflammatoire & Cardiaque", label: "Inflammatoire" }
 								]} />
-<LabelSelect label="Médecin Prescripteur" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p: any) => ({
+</div>
+<LabelSelect field="doctorId" width="100%" height={40} corner={12} label="Médecin Prescripteur" value={doctorId} onChange={setDoctorId} options={practitioners.map((p: any) => ({
 									value: p.id,
 									label: p.fullName
 								}))} />
-</div>
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#191716] space-y-3">
 <span className="t-small font-semibold text-black/70 dark:text-white/75 block">Valeurs Biologiques Mesurées</span>
-<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<LabelInput label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={(e) => setGlycemieVal(e.target.value)} />
-<LabelInput label="Créatinine (7-12 mg/L)" value={creatinineVal} onChange={(e) => setCreatinineVal(e.target.value)} />
-<LabelInput label="HbA1c (4.0-6.5 %)" value={hbA1cVal} onChange={(e) => setHbA1cVal(e.target.value)} />
-<LabelInput label="CRP (< 6.0 mg/L)" value={crpVal} onChange={(e) => setCrpVal(e.target.value)} />
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<LabelInput field="glycemieVal" width="100%" height={40} corner={12} label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={setGlycemieVal} />
+<LabelInput field="creatinineVal" width="100%" height={40} corner={12} label="Créatinine (7-12 mg/L)" value={creatinineVal} onChange={setCreatinineVal} />
+<LabelInput field="hbA1cVal" width="100%" height={40} corner={12} label="HbA1c (4.0-6.5 %)" value={hbA1cVal} onChange={setHbA1cVal} />
+<LabelInput field="crpVal" width="100%" height={40} corner={12} label="CRP (< 6.0 mg/L)" value={crpVal} onChange={setCrpVal} />
 </div>
 </div>
-<div>
-<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Conclusion & Interprétation Clinique</label>
-<div data-sq="ctl" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-<textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="lbi-field w-full px-3 py-2 t-cap bg-transparent border-0 text-black dark:text-white focus:outline-hidden" required />
-</div>
-</div>
-<div className="pt-3 border-t border-[var(--atr-divider)] flex justify-between items-center">
-<AtriumButton variant="ghost" type="button" onClick={() => setActiveTab("list")}>Annuler</AtriumButton>
-<AtriumButton variant="primary" type="submit" icon={<CheckCircle2 size={16} />}>Enregistrer le Bilan</AtriumButton>
+<LabelTextarea field="clinicalConclusion" width="100%" corner={12} label="Conclusion & Interprétation Clinique" value={clinicalConclusion} onChange={setClinicalConclusion} rows={3} required />
+<div className="pt-3 border-t border-[var(--atr-divider)] flex justify-end gap-2 items-center">
+<Button tone="soft" size={40} type="button" onClick={() => setActiveTab("list")}>Annuler</Button>
+<Button tone="accent" size={40} type="submit" leading={<CheckCircle2 size={16} />}>Enregistrer le Bilan</Button>
 </div>
 </form>}
 </div>

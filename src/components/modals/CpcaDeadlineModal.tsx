@@ -14,6 +14,7 @@ import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import {
   calculateCPCADeadline,
   CPCARecourseType,
@@ -43,7 +44,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
 
   const [selectedMatterId, setSelectedMatterId] = useState(matters[0]?.id || '');
   const [caseNumber, setCaseNumber] = useState('26/01482');
-  const [courtJurisdiction, setCourtJurisdiction] = useState('Tribunal de Sidi M\'Hamed');
+  const [courtJurisdiction, setCourtJurisdiction] = useState("Tribunal de Sidi M'Hamed");
   const [chamber, setChamber] = useState('Chambre Commerciale 2');
   const [recourseType, setRecourseType] = useState<CPCARecourseType>('appel_commercial');
   const [notificationDate, setNotificationDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -143,6 +144,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
             label={isAr ? 'القضية المرتبطة' : isEn ? 'Linked Case' : 'Dossier Lié'}
             value={selectedMatterId}
             onChange={setSelectedMatterId}
+            height={40}
             options={matters.map((m) => ({
               value: m.id,
               label: `${m.matterNumber} - ${m.title}`,
@@ -152,16 +154,18 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           <LabelInput
             label={isAr ? 'رقم القضية' : isEn ? 'Case Number' : 'N° Jugement'}
             value={caseNumber}
-            onChange={(e) => setCaseNumber(e.target.value)}
+            onChange={setCaseNumber}
+            height={40}
             required
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--s3,12px)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4,16px)]">
           <LabelSelect
             label={isAr ? 'نوع الطعن' : isEn ? 'Filing Type' : 'Type Recours'}
             value={recourseType}
             onChange={(v) => setRecourseType(v as CPCARecourseType)}
+            height={40}
             options={[
               { value: 'appel_commercial', label: isAr ? 'استئناف تجاري (30 يوم)' : isEn ? 'Commercial Appeal (30d)' : 'Appel Commercial (30j)' },
               { value: 'appel_civil', label: isAr ? 'استئناف مدني (30 يوم)' : isEn ? 'Civil Appeal (30d)' : 'Appel Civil (30j)' },
@@ -176,14 +180,22 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
             type="date"
             label={isAr ? 'تاريخ التبليغ' : isEn ? 'Notice Date' : 'Date Notification'}
             value={notificationDate}
-            onChange={(e) => setNotificationDate(e.target.value)}
+            onChange={setNotificationDate}
+            height={40}
             required
           />
+        </div>
 
-          <LabelSelect
-            label={isAr ? 'نطاق الإقامة' : isEn ? 'Party Location' : 'Domicile'}
+        <div className="flex flex-col gap-[var(--s1,4px)]">
+          <label className="t-small font-medium text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
+            {isAr ? 'نطاق الإقامة' : isEn ? 'Party Location' : 'Domicile'}
+          </label>
+          <LiveSegmentedControl
+            fullWidth
+            size="md"
             value={domicileCategory}
-            onChange={(v) => setDomicileCategory(v as DomicileCategory)}
+            onValueChange={(v) => setDomicileCategory(v as DomicileCategory)}
+            aria-label={isAr ? 'نطاق الإقامة' : isEn ? 'Party Location' : 'Domicile'}
             options={[
               { value: 'local', label: isAr ? 'محلي (0 يوم)' : isEn ? 'Local (0d)' : 'Local (0j)' },
               { value: 'grand_sud', label: isAr ? 'الجنوب الكبير (+15 يوم)' : isEn ? 'Deep South (+15d)' : 'Grand Sud (+15j)' },
@@ -196,14 +208,16 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           <LabelInput
             label={isAr ? 'المحضر القضائي' : isEn ? 'Bailiff Name' : 'Huissier'}
             value={bailiffName}
-            onChange={(e) => setBailiffName(e.target.value)}
+            onChange={setBailiffName}
+            height={40}
             required
           />
 
           <LabelInput
             label={isAr ? 'المحكمة والغرفة' : isEn ? 'Court & Chamber' : 'Tribunal & Chambre'}
             value={`${courtJurisdiction} - ${chamber}`}
-            onChange={(e) => setCourtJurisdiction(e.target.value)}
+            onChange={setCourtJurisdiction}
+            height={40}
           />
         </div>
 

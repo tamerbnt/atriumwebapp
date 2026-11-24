@@ -32,7 +32,10 @@ import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -63,9 +66,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceClientsView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -1324,16 +1324,11 @@ export const FreelanceClientsView: React.FC = () => {
           className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-5"
         >
           <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-            <div>
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {clientToEdit
-                  ? t('free_clients_modal_title_edit', language)
-                  : t('free_clients_modal_title_add', language)}
-              </h3>
-              <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                {t('free_clients_modal_desc', language)}
-              </p>
-            </div>
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {clientToEdit
+                ? t('free_clients_modal_title_edit', language)
+                : t('free_clients_modal_title_add', language)}
+            </h3>
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
@@ -1351,20 +1346,20 @@ export const FreelanceClientsView: React.FC = () => {
                 label={`${t('free_clients_full_name', language)} *`}
                 required
                 value={formData.name}
-                onChange={(v) => setFormData({ ...formData, name: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, name: v })}
                 placeholder={t('free_clients_ph_name', language)}
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
               <LabelInput
                 field="Company"
                 label={t('free_clients_company', language)}
                 value={formData.company}
-                onChange={(v) => setFormData({ ...formData, company: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, company: v })}
                 placeholder={t('free_clients_ph_company', language)}
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
             </div>
@@ -1376,10 +1371,10 @@ export const FreelanceClientsView: React.FC = () => {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(v) => setFormData({ ...formData, email: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, email: v })}
                 placeholder={t('free_clients_ph_email', language)}
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
               <LabelInput
@@ -1387,15 +1382,15 @@ export const FreelanceClientsView: React.FC = () => {
                 label={t('free_clients_phone', language)}
                 type="tel"
                 value={formData.phone}
-                onChange={(v) => setFormData({ ...formData, phone: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, phone: v })}
                 placeholder={t('free_clients_ph_phone', language)}
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelSelect
                 field="Currency"
                 label={t('free_clients_currency', language)}
@@ -1403,7 +1398,7 @@ export const FreelanceClientsView: React.FC = () => {
                 onChange={(val) =>
                   setFormData({
                     ...formData,
-                    currency: extractStr(val) as CurrencyCode,
+                    currency: val as CurrencyCode,
                   })
                 }
                 options={[
@@ -1411,7 +1406,7 @@ export const FreelanceClientsView: React.FC = () => {
                   { value: 'EUR', label: 'EUR (€)' },
                   { value: 'USD', label: 'USD ($)' },
                 ]}
-                height={46}
+                height={40}
                 corner={12}
               />
               <LabelInput
@@ -1419,9 +1414,9 @@ export const FreelanceClientsView: React.FC = () => {
                 label={t('free_clients_hourly_rate', language)}
                 type="number"
                 value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
-                onChange={(v) => setFormData({ ...formData, hourlyRate: Number(extractStr(v)) || 0 })}
+                onChange={(v) => setFormData({ ...formData, hourlyRate: Number(v) || 0 })}
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
               <LabelSelect
@@ -1431,7 +1426,7 @@ export const FreelanceClientsView: React.FC = () => {
                 onChange={(val) =>
                   setFormData({
                     ...formData,
-                    status: extractStr(val) as FreelanceClientStatus,
+                    status: val as FreelanceClientStatus,
                   })
                 }
                 options={[
@@ -1446,7 +1441,7 @@ export const FreelanceClientsView: React.FC = () => {
                   { value: 'Prospect', label: t('free_clients_status_prospect', language) },
                   { value: 'Archived', label: t('free_clients_status_archived', language) },
                 ]}
-                height={46}
+                height={40}
                 corner={12}
               />
             </div>
@@ -1455,7 +1450,7 @@ export const FreelanceClientsView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="grid grid-cols-2 gap-3 p-3 bg-amber-50/70 dark:bg-amber-950/25"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/70 dark:bg-amber-950/25"
               >
                 <LabelInput
                   field="RetainerHours"
@@ -1463,11 +1458,11 @@ export const FreelanceClientsView: React.FC = () => {
                   type="number"
                   value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
                   onChange={(v) =>
-                    setFormData({ ...formData, monthlyRetainerHours: Number(extractStr(v)) || 0 })
+                    setFormData({ ...formData, monthlyRetainerHours: Number(v) || 0 })
                   }
                   placeholder={t('free_clients_ph_retainer_hrs', language)}
                   width="100%"
-                  height={46}
+                  height={40}
                   corner={12}
                 />
                 <LabelInput
@@ -1478,57 +1473,37 @@ export const FreelanceClientsView: React.FC = () => {
                   onChange={(v) =>
                     setFormData({
                       ...formData,
-                      monthlyRetainerAmount: Number(extractStr(v)) || 0,
+                      monthlyRetainerAmount: Number(v) || 0,
                     })
                   }
                   placeholder={t('free_clients_ph_flat_fee', language)}
                   width="100%"
-                  height={46}
+                  height={40}
                   corner={12}
                 />
               </div>
             )}
 
-            <div>
-              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                {t('free_clients_notes', language)}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <textarea
-                  rows={2}
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder={t('free_clients_notes_ph', language)}
-                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
+            <LabelTextarea
+              field="ClientNotes"
+              label={t('free_clients_notes', language)}
+              rows={2}
+              value={formData.notes}
+              onChange={(v) => setFormData({ ...formData, notes: v })}
+              placeholder={t('free_clients_notes_ph', language)}
+              width="100%"
+              corner={12}
+            />
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setIsAddModalOpen(false)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAddModalOpen(false)}>
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
-                type="submit"
-                data-sq="ctl"
-                data-sq-border="none"
-                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              >
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {clientToEdit
                   ? t('free_clients_save_changes', language)
                   : t('free_clients_create_btn', language)}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -1561,14 +1536,9 @@ export const FreelanceClientsView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('free_clients_delete', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {t('free_clients_delete_warning', language)}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_clients_delete', language)}
+              </h3>
             </div>
 
             <p className="t-cap text-black/70 dark:text-white/75">
@@ -1579,17 +1549,11 @@ export const FreelanceClientsView: React.FC = () => {
               ({retainedClientToDelete.company || t('free_clients_private_badge', language)})?
             </p>
 
-            <label
+            <div
               data-sq="card"
               data-sq-border="none"
-              className="flex items-start gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 cursor-pointer"
+              className="flex items-start justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75"
             >
-              <input
-                type="checkbox"
-                checked={deleteCascade}
-                onChange={(e) => setDeleteCascade(e.target.checked)}
-                className="mt-0.5 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
-              />
               <div>
                 <span className="font-semibold block text-black dark:text-white">
                   {t('free_clients_cascade_delete', language)}
@@ -1598,24 +1562,30 @@ export const FreelanceClientsView: React.FC = () => {
                   {t('free_clients_cascade_desc', language)}
                 </span>
               </div>
-            </label>
+              <LiveSwitch
+                checked={deleteCascade}
+                onCheckedChange={setDeleteCascade}
+                aria-label={t('free_clients_cascade_delete', language)}
+                className="shrink-0 mt-0.5"
+              />
+            </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
                 type="button"
-                variant="ghost"
-                size="sm"
+                tone="soft"
+                size={40}
                 onClick={() => {
                   setClientToDelete(null);
                   setDeleteCascade(false);
                 }}
               >
                 {t('free_clients_cancel', language)}
-              </AtriumButton>
+              </Button>
               <AtriumButton
                 type="button"
                 variant="danger"
-                size="sm"
+                size="md"
                 onClick={() => {
                   if (clientToDelete) {
                     deleteFreelanceClient(clientToDelete.id, deleteCascade);

@@ -27,6 +27,7 @@ import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalLabViewerModal } from './MedicalLabViewerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
+import { Button, LabelInput } from '../../../atrium/core';
 import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1178,92 +1179,89 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <div
                           data-sq="card"
                           data-sq-border="solid"
-                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-[#191716] space-y-2 t-cap"
+                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-[#191716] space-y-3"
                         >
-                          <div className="t-small font-semibold text-black/70 dark:text-white/75">
-                            Nouvelle Prise de Constantes
+                          <div className="t-small font-semibold text-black/75 dark:text-white/80">
+                            {isAr ? 'قياس العلامات الحيوية الجديدة' : 'Nouvelle Prise de Constantes'}
                           </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">Sys (mmHg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  value={newSys}
-                                  onChange={(e) => setNewSys(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">Dia (mmHg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  value={newDia}
-                                  onChange={(e) => setNewDia(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">Pouls (bpm)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  value={newHr}
-                                  onChange={(e) => setNewHr(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <LabelInput
+                              field="vitalsSys"
+                              label="Sys (mmHg)"
+                              type="number"
+                              value={newSys}
+                              onChange={setNewSys}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
+                            <LabelInput
+                              field="vitalsDia"
+                              label="Dia (mmHg)"
+                              type="number"
+                              value={newDia}
+                              onChange={setNewDia}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
+                            <LabelInput
+                              field="vitalsHr"
+                              label={isAr ? 'النبض (bpm)' : 'Pouls (bpm)'}
+                              type="number"
+                              value={newHr}
+                              onChange={setNewHr}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
                           </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">Poids (kg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  value={newWeight}
-                                  onChange={(e) => setNewWeight(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">Glycémie (mg/dL)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  step="1"
-                                  value={newSugar}
-                                  onChange={(e) => setNewSugar(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="t-cap text-black/55 dark:text-white/55">SpO₂ (%)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
-                                <input
-                                  type="number"
-                                  value={newSpo2}
-                                  onChange={(e) => setNewSpo2(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
-                                />
-                              </div>
-                            </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <LabelInput
+                              field="vitalsWeight"
+                              label={isAr ? 'الوزن (kg)' : 'Poids (kg)'}
+                              type="number"
+                              value={newWeight}
+                              onChange={setNewWeight}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
+                            <LabelInput
+                              field="vitalsSugar"
+                              label={isAr ? 'السكر (mg/dL)' : 'Glycémie (mg/dL)'}
+                              type="number"
+                              step="1"
+                              value={newSugar}
+                              onChange={setNewSugar}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
+                            <LabelInput
+                              field="vitalsSpo2"
+                              label="SpO₂ (%)"
+                              type="number"
+                              value={newSpo2}
+                              onChange={setNewSpo2}
+                              width="100%"
+                              height={40}
+                              corner={12}
+                            />
                           </div>
-                          <div className="flex justify-end gap-2 pt-1">
-                            <button
+                          <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                            <Button
                               type="button"
+                              tone="soft"
+                              size={36}
                               onClick={() => setShowAddVitals(false)}
-                              className="px-2.5 py-1 t-cap text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
                             >
-                              Annuler
-                            </button>
-                            <button
+                              {isAr ? 'إلغاء' : 'Annuler'}
+                            </Button>
+                            <Button
                               type="button"
+                              tone="accent"
+                              size={36}
                               onClick={() => {
                                 const sysVal = parseInt(newSys, 10) || 120;
                                 const diaVal = parseInt(newDia, 10) || 80;
@@ -1300,11 +1298,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                 setInspectedPatient(updated);
                                 setShowAddVitals(false);
                               }}
-                              data-sq="ctl-sm"
-                              className="px-3 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold cursor-pointer"
                             >
-                              Enregistrer
-                            </button>
+                              {isAr ? 'حفظ' : 'Enregistrer'}
+                            </Button>
                           </div>
                         </div>
                       )}

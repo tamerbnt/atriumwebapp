@@ -29,7 +29,7 @@ import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -58,9 +58,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const EducationTimetableView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -979,58 +976,82 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             <form onSubmit={handleCreateSession} className="space-y-4">
               <LabelSelect
+                field="Cohort"
                 label={t('edu_label_cohort')}
                 value={formData.cohortId}
-                onChange={(v) => setFormData({ ...formData, cohortId: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, cohortId: v })}
                 options={eduCohorts.map((c) => ({ value: c.id, label: c.name }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelSelect
+                field="Classroom"
                 label={t('edu_field_classroom')}
                 value={formData.classroomId}
-                onChange={(v) => setFormData({ ...formData, classroomId: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, classroomId: v })}
                 options={eduClassrooms.map((r) => ({
                   value: r.id,
                   label: `${r.name} (Cap: ${r.capacity})`,
                 }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="SessionDate"
                   label="Date"
                   type="date"
                   value={formData.date}
-                  onChange={(v) => setFormData({ ...formData, date: extractStr(v) })}
+                  onChange={(v) => setFormData({ ...formData, date: v })}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <LabelInput
+                    field="StartTime"
                     label="Début"
                     type="time"
                     value={formData.startTime}
-                    onChange={(v) => setFormData({ ...formData, startTime: extractStr(v) })}
+                    onChange={(v) => setFormData({ ...formData, startTime: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
                     required
                   />
                   <LabelInput
+                    field="EndTime"
                     label="Fin"
                     type="time"
                     value={formData.endTime}
-                    onChange={(v) => setFormData({ ...formData, endTime: extractStr(v) })}
+                    onChange={(v) => setFormData({ ...formData, endTime: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
                     required
                   />
                 </div>
               </div>
               <LabelInput
+                field="SessionTopic"
                 label="Module / Thème du cours"
                 value={formData.topic}
-                onChange={(v) => setFormData({ ...formData, topic: extractStr(v) })}
+                onChange={(v) => setFormData({ ...formData, topic: v })}
                 placeholder="Ex: Programmation Web Avancée"
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="flex justify-end gap-2 pt-2">
-                <AtriumButton variant="secondary" type="button" onClick={() => setIsAddSessionModalOpen(false)}>
-                  Annuler
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+                <Button tone="soft" size={40} type="button" onClick={() => setIsAddSessionModalOpen(false)}>
+                  {t('common_cancel')}
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   Ajouter au Planning
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

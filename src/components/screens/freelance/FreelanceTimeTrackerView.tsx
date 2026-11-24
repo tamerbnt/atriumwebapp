@@ -31,6 +31,8 @@ import { TimeLogEntry } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -59,9 +61,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceTimeTrackerView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -1458,7 +1457,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               label={`${t('free_invoice_client', language)} *`}
               placeholder={t('free_time_ph_select_client', language)}
               value={manualForm.clientId}
-              onChange={(val) => handleManualClientChange(extractStr(val))}
+              onChange={handleManualClientChange}
               options={freelanceClients.map((c) => ({
                 value: c.id,
                 label: c.name,
@@ -1475,7 +1474,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               placeholder={t('free_time_ph_select_project', language)}
               value={manualForm.projectId}
               onChange={(val) =>
-                setManualForm((prev) => ({ ...prev, projectId: extractStr(val) }))
+                setManualForm((prev) => ({ ...prev, projectId: val }))
               }
               options={availableManualProjects.map((p) => ({
                 value: p.id,
@@ -1495,26 +1494,28 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             />
             <LabelInput
               id="manual-task-summary"
+              field="ManualTaskSummary"
               label={t('free_time_field_notes', language)}
               required
               placeholder={t('free_time_ph_task_summary', language)}
               value={manualForm.taskDescription}
-              onChange={(e) =>
-                setManualForm((prev) => ({ ...prev, taskDescription: extractStr(e) }))
+              onChange={(v) =>
+                setManualForm((prev) => ({ ...prev, taskDescription: v }))
               }
               width="100%"
               height={40}
               corner={12}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 id="manual-hours"
+                field="ManualHours"
                 label={t('free_time_field_hours', language)}
                 type="number"
                 min={0}
                 value={String(manualForm.hours)}
-                onChange={(e) =>
-                  setManualForm((prev) => ({ ...prev, hours: Number(extractStr(e)) || 0 }))
+                onChange={(v) =>
+                  setManualForm((prev) => ({ ...prev, hours: Number(v) || 0 }))
                 }
                 width="100%"
                 height={40}
@@ -1522,13 +1523,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               />
               <LabelInput
                 id="manual-minutes"
+                field="ManualMinutes"
                 label={t('free_time_field_minutes', language)}
                 type="number"
                 min={0}
                 max={59}
                 value={String(manualForm.minutes)}
-                onChange={(e) =>
-                  setManualForm((prev) => ({ ...prev, minutes: Number(extractStr(e)) || 0 }))
+                onChange={(v) =>
+                  setManualForm((prev) => ({ ...prev, minutes: Number(v) || 0 }))
                 }
                 width="100%"
                 height={40}
@@ -1537,43 +1539,38 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             </div>
             <LabelInput
               id="manual-date"
+              field="ManualDate"
               label={t('free_time_field_date', language)}
               type="date"
               value={manualForm.date}
-              onChange={(e) => setManualForm((prev) => ({ ...prev, date: extractStr(e) }))}
+              onChange={(v) => setManualForm((prev) => ({ ...prev, date: v }))}
               width="100%"
               height={40}
               corner={12}
             />
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="billableManual"
-                checked={manualForm.isBillable}
-                onChange={(e) =>
-                  setManualForm({ ...manualForm, isBillable: e.target.checked })
-                }
-                className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
-              />
-              <label
-                htmlFor="billableManual"
-                className="font-medium text-black/70 dark:text-white/75"
-              >
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="flex items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]"
+            >
+              <span className="font-medium text-black/75 dark:text-white/80">
                 {t('free_time_billable', language)}
-              </label>
+              </span>
+              <LiveSwitch
+                checked={manualForm.isBillable}
+                onCheckedChange={(checked) =>
+                  setManualForm({ ...manualForm, isBillable: checked })
+                }
+                aria-label={t('free_time_billable', language)}
+              />
             </div>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => setIsManualModalOpen(false)}
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsManualModalOpen(false)}>
                 {t('common_cancel', language)}
-              </AtriumButton>
-              <AtriumButton variant="primary" size="sm" glow type="submit">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {t('common_save', language)}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>
@@ -1595,14 +1592,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('free_time_edit_modal_title', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedLogToEdit.clientName} · {retainedLogToEdit.projectTitle}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_time_edit_modal_title', language)}
+              </h3>
               <button
                 type="button"
                 onClick={() => setLogToEdit(null)}
@@ -1615,25 +1607,27 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <form onSubmit={handleEditLogSubmit} className="space-y-4 t-cap">
               <LabelInput
                 id="edit-task-summary"
+                field="EditTaskSummary"
                 label={t('free_time_field_notes', language)}
                 required
                 value={editLogForm.taskDescription}
-                onChange={(e) =>
-                  setEditLogForm((prev) => ({ ...prev, taskDescription: extractStr(e) }))
+                onChange={(v) =>
+                  setEditLogForm((prev) => ({ ...prev, taskDescription: v }))
                 }
                 width="100%"
                 height={40}
                 corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="edit-hours"
+                  field="EditHours"
                   label={t('free_time_field_hours', language)}
                   type="number"
                   min={0}
                   value={String(editLogForm.hours)}
-                  onChange={(e) =>
-                    setEditLogForm((prev) => ({ ...prev, hours: Number(extractStr(e)) || 0 }))
+                  onChange={(v) =>
+                    setEditLogForm((prev) => ({ ...prev, hours: Number(v) || 0 }))
                   }
                   width="100%"
                   height={40}
@@ -1641,13 +1635,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 />
                 <LabelInput
                   id="edit-minutes"
+                  field="EditMinutes"
                   label={t('free_time_field_minutes', language)}
                   type="number"
                   min={0}
                   max={59}
                   value={String(editLogForm.minutes)}
-                  onChange={(e) =>
-                    setEditLogForm((prev) => ({ ...prev, minutes: Number(extractStr(e)) || 0 }))
+                  onChange={(v) =>
+                    setEditLogForm((prev) => ({ ...prev, minutes: Number(v) || 0 }))
                   }
                   width="100%"
                   height={40}
@@ -1656,38 +1651,38 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </div>
               <LabelInput
                 id="edit-date"
+                field="EditDate"
                 label={t('free_time_field_date', language)}
                 type="date"
                 value={editLogForm.date}
-                onChange={(e) => setEditLogForm((prev) => ({ ...prev, date: extractStr(e) }))}
+                onChange={(v) => setEditLogForm((prev) => ({ ...prev, date: v }))}
                 width="100%"
                 height={40}
                 corner={12}
               />
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="billableEdit"
-                  checked={editLogForm.isBillable}
-                  onChange={(e) =>
-                    setEditLogForm({ ...editLogForm, isBillable: e.target.checked })
-                  }
-                  className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
-                />
-                <label
-                  htmlFor="billableEdit"
-                  className="font-medium text-black/70 dark:text-white/75 cursor-pointer"
-                >
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]"
+              >
+                <span className="font-medium text-black/75 dark:text-white/80">
                   {t('free_time_billable', language)}
-                </label>
+                </span>
+                <LiveSwitch
+                  checked={editLogForm.isBillable}
+                  onCheckedChange={(checked) =>
+                    setEditLogForm({ ...editLogForm, isBillable: checked })
+                  }
+                  aria-label={t('free_time_billable', language)}
+                />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToEdit(null)}>
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setLogToEdit(null)}>
                   {t('common_cancel', language)}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
                   {t('common_save', language)}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
           </div>
@@ -1718,26 +1713,21 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('free_time_delete_modal_title', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedLogToDelete.date} · {formatDuration(retainedLogToDelete.durationSeconds)}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_time_delete_modal_title', language)}
+              </h3>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {t('free_time_delete_modal_confirm', language)} "{retainedLogToDelete.taskDescription}" (
               {retainedLogToDelete.projectTitle})?
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToDelete(null)}>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setLogToDelete(null)}>
                 {t('common_cancel', language)}
-              </AtriumButton>
+              </Button>
               <AtriumButton
                 variant="danger"
-                size="sm"
+                size="md"
                 type="button"
                 onClick={() => {
                   if (!logToDelete) return;

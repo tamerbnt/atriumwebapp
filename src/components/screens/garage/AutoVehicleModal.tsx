@@ -10,7 +10,8 @@ import {
 import { VehicleAsset, useGarageData } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AutoVehicleModalProps {
@@ -109,9 +110,6 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
     }
   };
 
-  const extractStr = (eOrVal: any): string =>
-    eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!plate.trim() || !brand.trim() || !ownerName.trim()) {
@@ -192,40 +190,16 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Client Type Switcher (Particulier vs Flotte B2B) */}
-          <div
-            data-sq="ctl"
-            data-sq-border="none"
-            className="flex items-center gap-1 p-[3px] bg-[#F3EDE7] dark:bg-[#191716]"
-          >
-            <button
-              type="button"
-              data-no-liquid="true"
-              data-sq="thumb"
-              data-sq-border="none"
-              onClick={() => handleFleetToggle(false)}
-              className={`flex-1 py-2 px-3 t-small font-semibold transition-all cursor-pointer ${
-                !isFleet
-                  ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
-                  : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              🚗 {isAr ? 'زبون فردي (Particulier)' : 'Client Particulier'}
-            </button>
-            <button
-              type="button"
-              data-no-liquid="true"
-              data-sq="thumb"
-              data-sq-border="none"
-              onClick={() => handleFleetToggle(true)}
-              className={`flex-1 py-2 px-3 t-small font-semibold transition-all cursor-pointer ${
-                isFleet
-                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
-                  : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              🏢 {isAr ? 'أسطول شركات (Flotte B2B)' : 'Flotte Entreprise B2B'}
-            </button>
-          </div>
+          <LiveSegmentedControl
+            value={isFleet ? 'fleet' : 'individual'}
+            onChange={(val) => handleFleetToggle(val === 'fleet')}
+            options={[
+              { value: 'individual', label: isAr ? 'زبون فردي (Particulier)' : 'Client Particulier' },
+              { value: 'fleet', label: isAr ? 'أسطول شركات (Flotte B2B)' : 'Flotte Entreprise B2B' },
+            ]}
+            size="sm"
+            fullWidth
+          />
 
           {/* If Corporate Fleet, show fleet account picker */}
           {isFleet && (
@@ -239,13 +213,17 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
                 <span>{isAr ? 'حساب أسطول الشركة المتعاقدة' : 'Compte Flotte Partenaire (Conventionné)'}</span>
               </div>
               <LabelSelect
+                field="vehicleFleetId"
                 label={isAr ? 'الشركة المالكة للأسطول' : 'Entreprise Cliente'}
                 value={fleetId}
-                onChange={(v) => handleFleetChange(extractStr(v))}
+                onChange={handleFleetChange}
                 options={fleets.map((f) => ({
                   value: f.id,
                   label: `${f.companyName} (${f.tradeName})`,
                 }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
           )}
@@ -253,69 +231,105 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           {/* Registration Plate & VIN */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="vehiclePlate"
               label={isAr ? 'الماتريكيل / لوحة الترقيم *' : 'Immatriculation (Matricule) *'}
               value={plate}
-              onChange={(e) => setPlate(e.target.value)}
+              onChange={setPlate}
               placeholder="00142-118-16"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="vehicleVin"
               label={isAr ? 'رقم الشاسيه (VIN)' : 'N° Châssis (VIN)'}
               value={vin}
-              onChange={(e) => setVin(e.target.value)}
+              onChange={setVin}
               placeholder="VF15R240..."
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
-          {/* Make, Model, Year, Fuel */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          {/* Make, Model, Year */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
+              field="vehicleBrand"
               label={isAr ? 'الماركة *' : 'Marque *'}
               value={brand}
-              onChange={(e) => setBrand(e.target.value)}
+              onChange={setBrand}
               placeholder="Renault"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="vehicleModel"
               label={isAr ? 'الموديل *' : 'Modèle *'}
               value={model}
-              onChange={(e) => setModel(e.target.value)}
+              onChange={setModel}
               placeholder="Clio 4 dCi"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="vehicleYear"
               label={isAr ? 'السنة' : 'Année'}
               type="number"
               value={year}
-              onChange={(e) => setYear(e.target.value)}
+              onChange={setYear}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <LabelSelect
-              label={isAr ? 'نوع الوقود' : 'Carburant'}
+          </div>
+
+          {/* Fuel Type (4 options -> LiveSegmentedControl) */}
+          <div className="space-y-1.5">
+            <label className="t-small font-semibold text-black/70 dark:text-white/75 block">
+              {isAr ? 'نوع الوقود' : 'Carburant'}
+            </label>
+            <LiveSegmentedControl
               value={fuelType || 'Diesel'}
-              onChange={(v) => setFuelType(extractStr(v) as VehicleAsset['fuelType'])}
+              onChange={(v) => setFuelType(v as VehicleAsset['fuelType'])}
               options={[
-                { value: 'Diesel', label: 'Diesel (Gazole)' },
-                { value: 'Essence', label: 'Essence Sans Plomb' },
-                { value: 'GPL', label: 'GPL / Sirghaz' },
-                { value: 'Hybride', label: 'Hybride' },
+                { value: 'Diesel', label: 'Diesel' },
+                { value: 'Essence', label: 'Essence' },
+                { value: 'GPL', label: 'GPL' },
+                { value: 'Hybride', label: isAr ? 'هجين' : 'Hybride' },
               ]}
+              size="sm"
+              fullWidth
             />
           </div>
 
           {/* Owner details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="vehicleOwnerName"
               label={isAr ? 'اسم الزبون / ممثل الأسطول *' : 'Nom du Propriétaire / Conducteur *'}
               value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
+              onChange={setOwnerName}
               placeholder="Sofiane Mansouri"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="vehicleOwnerPhone"
               label={isAr ? 'رقم الهاتف *' : 'Téléphone Contact *'}
               value={ownerPhone}
-              onChange={(e) => setOwnerPhone(e.target.value)}
+              onChange={setOwnerPhone}
               placeholder="0550 12 34 56"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
@@ -323,35 +337,47 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           {/* Mileage & Daily Rhythm */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
+              field="vehicleMileage"
               label={isAr ? 'العداد الحالي (km) *' : 'Kilométrage Actuel (km) *'}
               type="number"
               value={mileage}
-              onChange={(e) => setMileage(e.target.value)}
+              onChange={setMileage}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="vehicleDailyAvgKm"
               label={isAr ? 'المعدل اليومي (km/j)' : 'Roulage Moyen (km/jour)'}
               type="number"
               value={dailyAvgKm}
-              onChange={(e) => setDailyAvgKm(e.target.value)}
+              onChange={setDailyAvgKm}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
+              field="vehicleCarteGrise"
               label={isAr ? 'رقم البطاقة الرمادية' : 'N° Carte Grise'}
               value={carteGriseNumber}
-              onChange={(e) => setCarteGriseNumber(e.target.value)}
+              onChange={setCarteGriseNumber}
               placeholder="CG-16-..."
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="ghost" onClick={onClose}>
+            <Button type="button" tone="soft" size={40} onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton type="submit" variant="primary" icon={<Car size={15} />}>
+            </Button>
+            <Button type="submit" tone="accent" size={40} leading={<Car size={15} />}>
               {vehicleToEdit
                 ? (isAr ? 'حفظ التعديلات' : 'Enregistrer les Modifications')
                 : (isAr ? 'تسجيل المركبة في الحظيرة' : 'Enregistrer le Véhicule')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

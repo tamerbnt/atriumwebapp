@@ -725,25 +725,17 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         />
 
         {/* Modal Header */}
-        <div className="relative z-10 px-[var(--modal-pad,24px)] pt-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-white/10 flex items-start justify-between gap-[var(--s4,16px)]">
-          <div className="flex flex-col gap-[var(--s2,8px)]">
-            <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
-              <span className="t-small text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/15">
-                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
-                {isAr ? 'ميزات حقيقية مثبتة' : isFr ? 'Fonctionnalités réelles & certifiées' : 'Verifiable Built-in Capabilities'}
-              </span>
-              <span className="t-small h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-white/[0.08] text-white/85">
-                {data.screenBadge[language] || data.screenBadge.en}
-              </span>
-            </div>
-            <h2 className="t-dialog font-medium text-white">
-              {data.title[language] || data.title.en}
-            </h2>
-          </div>
+        <div className="relative z-10 px-[var(--modal-pad,24px)] pt-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-white/10 flex items-center justify-between gap-[var(--s4,16px)] shrink-0">
+          <h2 className="t-dialog font-medium text-white truncate min-w-0">
+            {data.title[language] || data.title.en}
+          </h2>
 
           <button
+            type="button"
+            data-no-liquid="true"
             onClick={onClose}
             className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] shrink-0 rounded-full grid place-items-center bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X size={16} strokeWidth={1.5} />
           </button>
@@ -793,14 +785,15 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="relative z-10 px-[var(--modal-pad,24px)] py-[var(--s4,16px)] border-t border-white/10 flex items-center justify-between bg-[#1E1C1A]">
-          <button
+        <div className="relative z-10 px-[var(--modal-pad,24px)] py-[var(--s4,16px)] border-t border-white/10 flex items-center justify-end gap-[var(--s3,12px)] bg-[#1E1C1A] shrink-0">
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="md"
             onClick={onClose}
-            className="t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white transition-colors cursor-pointer"
           >
-            {isAr ? 'إلغاء' : isFr ? 'Fermer' : 'Close'}
-          </button>
+            {isAr ? 'إغلاق' : isFr ? 'Fermer' : 'Close'}
+          </AtriumButton>
 
           <AtriumButton
             variant="primary"
@@ -809,7 +802,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
             className="flex items-center gap-[var(--btn-icon-gap,8px)]"
           >
             <span>{isAr ? 'اعتماد هذا الهدف والمتابعة' : isFr ? 'Appliquer & Continuer' : 'Apply & Continue'}</span>
-            <ArrowRight size={16} strokeWidth={1.5} />
+            <ArrowRight size={16} strokeWidth={1.5} className="rtl:rotate-180" />
           </AtriumButton>
         </div>
 

@@ -180,6 +180,9 @@ export const KineticModalShell: React.FC<KineticModalShellProps> = ({
     const onKeyDown = (e: KeyboardEvent) => {
       if (!closeOnEscape || e.key !== 'Escape') return;
       if (activeModalStack[activeModalStack.length - 1] !== token) return;
+      if (typeof document !== 'undefined' && document.querySelector('[data-atr-popover-open="true"]')) {
+        return;
+      }
       e.stopPropagation();
       onCloseRef.current();
     };

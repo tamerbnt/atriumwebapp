@@ -30,6 +30,8 @@ import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion } from '../../ui/kinetic';
@@ -1244,57 +1246,78 @@ export const EducationStudentsView: React.FC = () => {
             </div>
             <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 t-cap">
               <LabelInput
+                field="StudentFullName"
                 id="student-fullname"
                 label={t('edu_field_fullname')}
                 required
                 value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, fullName: val })}
                 placeholder="e.g. Amine Mansouri"
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="StudentPhone"
                   id="student-phone"
                   label={t('edu_field_phone')}
                   type="tel"
                   required
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, phone: val })}
                   placeholder="0550 12 34 56"
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
+                  field="StudentEmail"
                   id="student-email"
                   label={t('edu_field_email')}
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, email: val })}
                   placeholder="amine@example.com"
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="SchoolGrade"
                   id="student-grade"
                   label={t('edu_field_school_grade')}
                   value={formData.schoolGrade}
-                  onChange={(e) => setFormData({ ...formData, schoolGrade: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, schoolGrade: val })}
                   placeholder="e.g. 3AS Math / Adult"
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelSelect
+                  field="StudentStatus"
                   label={t('edu_filter_status')}
                   value={formData.status}
-                  onChange={(val) => setFormData({ ...formData, status: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, status: val as StudentStatus })}
                   options={[
                     { value: 'Active', label: t('edu_status_active') },
                     { value: 'Applicant', label: t('edu_stage_inquiry') },
                     { value: 'Graduated', label: t('edu_status_graduated') },
                     { value: 'Suspended', label: t('edu_status_paused') },
                   ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
               {!studentToEdit && eduCohorts.length > 0 && (
                 <LabelSelect
+                  field="InitialCohort"
                   label={t('edu_field_initial_cohort')}
                   value={formData.initialCohortId}
-                  onChange={(val) => setFormData({ ...formData, initialCohortId: val?.target?.value ?? String(val) })}
+                  onChange={(val) => setFormData({ ...formData, initialCohortId: val })}
                   options={[
                     { value: '', label: 'No immediate cohort assignment' },
                     ...eduCohorts.map((c) => ({
@@ -1303,6 +1326,9 @@ export const EducationStudentsView: React.FC = () => {
                     })),
                   ]}
                   placeholder="Select Cohort..."
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               )}
               <div
@@ -1310,68 +1336,77 @@ export const EducationStudentsView: React.FC = () => {
                 data-sq-border="solid"
                 className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3"
               >
-                <label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-black dark:text-white">
+                    {t('edu_field_is_minor')}
+                  </span>
+                  <LiveSwitch
                     checked={formData.isMinor}
-                    onChange={(e) => setFormData({ ...formData, isMinor: e.target.checked })}
-                    className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
+                    onCheckedChange={(checked) => setFormData({ ...formData, isMinor: checked })}
+                    aria-label={t('edu_field_is_minor')}
                   />
-                  <span>{t('edu_field_is_minor')}</span>
-                </label>
+                </div>
                 {formData.isMinor && (
                   <div className="space-y-3 pt-2">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <LabelInput
+                        field="GuardianName"
                         id="guardian-name"
                         label={t('edu_field_guardian_name')}
                         value={formData.guardianName}
-                        onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+                        onChange={(val) => setFormData({ ...formData, guardianName: val })}
                         placeholder="e.g. Karim Mansouri"
+                        width="100%"
+                        height={40}
+                        corner={12}
                       />
                       <LabelSelect
+                        field="GuardianRelation"
                         label={t('edu_field_guardian_relation')}
                         value={formData.guardianRelation}
-                        onChange={(val) =>
-                          setFormData({ ...formData, guardianRelation: val?.target?.value ?? String(val) })
-                        }
+                        onChange={(val) => setFormData({ ...formData, guardianRelation: val })}
                         options={[
                           { value: 'Father', label: 'Father' },
                           { value: 'Mother', label: 'Mother' },
                           { value: 'Guardian', label: 'Guardian' },
                           { value: 'Sibling', label: 'Sibling' },
                         ]}
+                        width="100%"
+                        height={40}
+                        corner={12}
                       />
                     </div>
                     <LabelInput
+                      field="GuardianPhone"
                       id="guardian-phone"
                       label={t('edu_field_guardian_phone')}
                       type="tel"
                       value={formData.guardianPhone}
-                      onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+                      onChange={(val) => setFormData({ ...formData, guardianPhone: val })}
                       placeholder="0661 98 76 54"
+                      width="100%"
+                      height={40}
+                      corner={12}
                     />
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-                <button
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  data-sq="ctl"
-                  data-sq-border="solid"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  tone="accent"
+                  size={40}
                 >
                   {t('edu_btn_save_student')}
-                </button>
+                </Button>
               </div>
             </form>
             </div>

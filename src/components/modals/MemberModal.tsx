@@ -18,6 +18,7 @@ import { Button, LiquidButton } from '@/atrium/core';
 import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { LabelTextarea } from '../ui/LabelTextarea';
 import { t } from '../../utils/i18n';
 
 export interface MemberModalProps {
@@ -180,12 +181,22 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     const newErrors: { fullName?: string; email?: string } = {};
 
     if (!fullName.trim()) {
-      newErrors.fullName = 'Le nom est obligatoire.';
+      newErrors.fullName =
+        language === 'ar'
+          ? 'الاسم الكامل مطلوب.'
+          : language === 'en'
+          ? 'Full name is required.'
+          : 'Le nom est obligatoire.';
     }
 
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!email.trim() || !emailRegex.test(email)) {
-      newErrors.email = 'Veuillez saisir une adresse email valide.';
+      newErrors.email =
+        language === 'ar'
+          ? 'يرجى إدخال بريد إلكتروني صحيح.'
+          : language === 'en'
+          ? 'Please enter a valid email address.'
+          : 'Veuillez saisir une adresse email valide.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -278,14 +289,14 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
 
   const sourceOptions = useMemo(
     () => [
-      { value: 'Walk-in', label: 'Passage direct' },
+      { value: 'Walk-in', label: language === 'ar' ? 'زيارة مباشرة' : language === 'en' ? 'Walk-in' : 'Passage direct' },
       { value: 'Instagram', label: 'Instagram' },
       { value: 'Facebook', label: 'Facebook' },
-      { value: 'Referral', label: 'Parrainage' },
-      { value: 'Website', label: 'Site web' },
-      { value: 'VIP Partner', label: 'Partenaire' },
+      { value: 'Referral', label: language === 'ar' ? 'توصية' : language === 'en' ? 'Referral' : 'Parrainage' },
+      { value: 'Website', label: language === 'ar' ? 'الموقع الإلكتروني' : language === 'en' ? 'Website' : 'Site web' },
+      { value: 'VIP Partner', label: language === 'ar' ? 'شريك' : language === 'en' ? 'Partner' : 'Partenaire' },
     ],
-    []
+    [language]
   );
 
   return (
@@ -296,37 +307,37 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
       maxWidthClass="max-w-xl"
       zIndexClass="z-[9990]"
       ariaLabelledBy="member-modal-title"
-      dialogClassName="text-left"
+      dialogClassName="text-start"
     >
       <div
         data-sq="panel"
         data-sq-border="solid"
+        dir={language === 'ar' ? 'rtl' : 'ltr'}
         className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)]"
       >
         <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[var(--atr-divider)]">
-          <div className="flex flex-col gap-[var(--s1)]">
-            <h3
-              id="member-modal-title"
-              className="t-dialog text-[var(--text-1)]"
-            >
-              {displayedEdit
-                ? language === 'ar'
-                  ? `تعديل ملف ${terminology.memberSingle}`
-                  : `Modifier la fiche ${terminology.memberSingle.toLowerCase()}`
-                : language === 'ar'
-                ? `تسجيل ${terminology.memberSingle} جديد`
-                : `Nouveau ${terminology.memberSingle.toLowerCase()}`}
-            </h3>
-            <p className="t-cap text-[var(--text-2)]">
-              {currentBranch.name} · Atrium Health & Roster
-            </p>
-          </div>
+        <div className="flex items-center justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[var(--atr-divider)]">
+          <h3
+            id="member-modal-title"
+            className="t-dialog text-[var(--text-1)] truncate"
+          >
+            {displayedEdit
+              ? language === 'ar'
+                ? `تعديل ملف ${terminology.memberSingle}`
+                : language === 'en'
+                ? `Edit ${terminology.memberSingle}`
+                : `Modifier la fiche ${terminology.memberSingle.toLowerCase()}`
+              : language === 'ar'
+              ? `تسجيل ${terminology.memberSingle} جديد`
+              : language === 'en'
+              ? `New ${terminology.memberSingle}`
+              : `Nouveau ${terminology.memberSingle.toLowerCase()}`}
+          </h3>
           <button
             type="button"
             onClick={requestClose}
-            aria-label="Fermer la boîte de dialogue"
+            aria-label={t('action_close', language)}
             className="w-[var(--seg-m-h,32px)] h-[var(--seg-m-h,32px)] rounded-full grid place-items-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer shrink-0"
           >
             <X size={16} strokeWidth={1.5} />
@@ -341,151 +352,53 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
               {t('member_section_personal', language)}
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3)]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3)] items-end">
               {/* Full Name Field */}
-              {useKineticSpring ? (
-                <div>
-                  <LabelInput
-                    inputRef={nameInputRef}
-                    id="member-fullName"
-                    name="fullName"
-                    field="FullName"
-                    label={`${t('modal_name', language)} *`}
-                    required
-                    value={fullName}
-                    error={errors.fullName}
-                    errorId="fullName-error"
-                    onChange={(val) => {
-                      formDirtyRef.current = true;
-                      setFullName(String(val));
-                      if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
-                    }}
-                    width="100%"
-                    height={40}
-                    corner={12}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-[var(--s1)]">
-                  <label
-                    htmlFor="member-fullName"
-                    className="t-small font-medium text-[var(--text-2)]"
-                  >
-                    {t('modal_name', language)} *
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    data-sq-stroke-w={errors.fullName ? '1.5' : undefined}
-                    className={`relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors ${
-                      errors.fullName
-                        ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]'
-                    }`}
-                  >
-                    <input
-                      ref={nameInputRef}
-                      id="member-fullName"
-                      name="fullName"
-                      type="text"
-                      required
-                      aria-invalid={Boolean(errors.fullName)}
-                      aria-describedby={errors.fullName ? 'fullName-error' : undefined}
-                      value={fullName}
-                      onChange={(e) => {
-                        formDirtyRef.current = true;
-                        setFullName(e.target.value);
-                        if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
-                      }}
-                      className="w-full h-[var(--btn-h,40px)] px-[var(--s3)] bg-transparent border-0 t-body font-medium text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none"
-                      placeholder="ex: Amira Belkacem"
-                    />
-                  </div>
-                  {errors.fullName && (
-                    <p
-                      id="fullName-error"
-                      role="alert"
-                      className="t-cap font-medium text-[#B8321C] flex items-center gap-[var(--s1)]"
-                    >
-                      <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
-                      <span>{errors.fullName}</span>
-                    </p>
-                  )}
-                </div>
-              )}
+              <div>
+                <LabelInput
+                  inputRef={nameInputRef}
+                  id="member-fullName"
+                  name="fullName"
+                  field="FullName"
+                  label={`${t('modal_name', language)} *`}
+                  required
+                  value={fullName}
+                  error={errors.fullName}
+                  errorId="fullName-error"
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setFullName(val);
+                    if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+                  }}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
 
               {/* Email Field */}
-              {useKineticSpring ? (
-                <div>
-                  <LabelInput
-                    inputRef={emailInputRef}
-                    id="member-email"
-                    name="email"
-                    type="email"
-                    field="Email"
-                    label={`${t('modal_email', language)} *`}
-                    required
-                    value={email}
-                    error={errors.email}
-                    errorId="email-error"
-                    onChange={(val) => {
-                      formDirtyRef.current = true;
-                      setEmail(String(val));
-                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    width="100%"
-                    height={40}
-                    corner={12}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-[var(--s1)]">
-                  <label
-                    htmlFor="member-email"
-                    className="t-small font-medium text-[var(--text-2)]"
-                  >
-                    {t('modal_email', language)} *
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    data-sq-stroke-w={errors.email ? '1.5' : undefined}
-                    className={`relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors ${
-                      errors.email
-                        ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]'
-                    }`}
-                  >
-                    <input
-                      ref={emailInputRef}
-                      id="member-email"
-                      name="email"
-                      type="email"
-                      required
-                      aria-invalid={Boolean(errors.email)}
-                      aria-describedby={errors.email ? 'email-error' : undefined}
-                      value={email}
-                      onChange={(e) => {
-                        formDirtyRef.current = true;
-                        setEmail(e.target.value);
-                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                      }}
-                      className="w-full h-[var(--btn-h,40px)] px-[var(--s3)] bg-transparent border-0 t-body font-medium text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none"
-                      placeholder="contact@domaine.com"
-                    />
-                  </div>
-                  {errors.email && (
-                    <p
-                      id="email-error"
-                      role="alert"
-                      className="t-cap font-medium text-[#B8321C] flex items-center gap-[var(--s1)]"
-                    >
-                      <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
-                      <span>{errors.email}</span>
-                    </p>
-                  )}
-                </div>
-              )}
+              <div>
+                <LabelInput
+                  inputRef={emailInputRef}
+                  id="member-email"
+                  name="email"
+                  type="email"
+                  field="Email"
+                  label={`${t('modal_email', language)} *`}
+                  required
+                  value={email}
+                  error={errors.email}
+                  errorId="email-error"
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setEmail(val);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
 
               {/* Phone Field */}
               <div>
@@ -504,41 +417,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 />
               </div>
 
-              {/* Gender and Birth Date */}
-              <div className="grid grid-cols-2 gap-[var(--s2)] items-start">
-                {useKineticSpring ? (
-                  <LabelSelect
-                    field="Gender"
-                    label={t('member_field_gender', language)}
-                    value={gender}
-                    onChange={(val) => {
-                      formDirtyRef.current = true;
-                      setGender((val?.target?.value ?? val) as Gender);
-                    }}
-                    options={genderOptions}
-                    width="100%"
-                    height={40}
-                    corner={12}
-                  />
-                ) : (
-                  <div className="flex flex-col gap-[var(--s1)]">
-                    <label className="t-small font-medium text-[var(--text-2)]">
-                      {t('member_field_gender', language)}
-                    </label>
-                    <LiveSegmentedControl
-                      fullWidth
-                      size="md"
-                      value={gender}
-                      onValueChange={(val) => {
-                        formDirtyRef.current = true;
-                        setGender(val as Gender);
-                      }}
-                      options={genderOptions}
-                      aria-label={t('member_field_gender', language)}
-                    />
-                  </div>
-                )}
-
+              {/* Birth Date */}
+              <div>
                 <LabelInput
                   field="BirthDate"
                   label={t('member_field_birth_date', language)}
@@ -554,6 +434,24 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 />
               </div>
             </div>
+
+            {/* Gender Segmented Control (<= 4 options) */}
+            <div className="flex flex-col gap-[var(--s1)]">
+              <label className="t-small font-medium text-[var(--text-2)]">
+                {t('member_field_gender', language)}
+              </label>
+              <LiveSegmentedControl
+                fullWidth
+                size="md"
+                value={gender}
+                onValueChange={(val) => {
+                  formDirtyRef.current = true;
+                  setGender(val as Gender);
+                }}
+                options={genderOptions}
+                aria-label={t('member_field_gender', language)}
+              />
+            </div>
             </div>
 
             {/* Section 2: Membership Plan */}
@@ -568,7 +466,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   value={planId}
                   onChange={(val) => {
                     formDirtyRef.current = true;
-                    setPlanId(val?.target?.value ?? val);
+                    setPlanId(val);
                   }}
                   options={planOptions}
                   width="100%"
@@ -620,7 +518,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     formDirtyRef.current = true;
                     setEmergencyName(val);
                   }}
-                  placeholder="Nom du proche"
+                  placeholder={language === 'ar' ? 'اسم القريب' : language === 'en' ? 'Contact name' : 'Nom du proche'}
                   width="100%"
                   height={40}
                   corner={12}
@@ -647,7 +545,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   value={source}
                   onChange={(val) => {
                     formDirtyRef.current = true;
-                    setSource(val?.target?.value ?? val);
+                    setSource(val);
                   }}
                   options={sourceOptions}
                   width="100%"
@@ -656,31 +554,27 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 />
               </div>
 
-              <div className="flex flex-col gap-[var(--s1)]">
-                <label className="t-small font-semibold text-[var(--text-1)]">
-                  {t('member_field_private_notes', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="solid"
-                  className="relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors [--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]"
-                >
-                  <textarea
-                    rows={2}
-                    value={notes}
-                    onChange={(e) => {
-                      formDirtyRef.current = true;
-                      setNotes(e.target.value);
-                    }}
-                    placeholder="Notes médicales, objectifs ou restrictions..."
-                    className="w-full p-[var(--s3)] t-body bg-transparent border-0 text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none resize-none block"
-                  />
-                </div>
-              </div>
+              <LabelTextarea
+                field="Notes"
+                label={t('member_field_private_notes', language)}
+                value={notes}
+                onChange={(val) => {
+                  formDirtyRef.current = true;
+                  setNotes(val);
+                }}
+                rows={2}
+                placeholder={
+                  language === 'ar'
+                    ? 'ملاحظات طبية، أهداف أو قيود...'
+                    : language === 'en'
+                    ? 'Medical notes, goals or restrictions...'
+                    : 'Notes médicales, objectifs ou restrictions...'
+                }
+              />
             </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-[var(--s3)] pt-[var(--s3)] border-t border-[var(--atr-divider)]">
+          <div className="flex items-center justify-end gap-[var(--s3)] pt-[var(--s4)] border-t border-[var(--atr-divider)]">
             <Button
               type="button"
               tone="soft"
@@ -697,6 +591,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
               labels={{
                 idle: displayedEdit
                   ? t('action_save', language)
+                  : language === 'ar'
+                  ? `تسجيل ${terminology.memberSingle}`
+                  : language === 'en'
+                  ? `Enroll ${terminology.memberSingle}`
                   : `Inscrire ${terminology.memberSingle.toLowerCase()}`,
               }}
             />

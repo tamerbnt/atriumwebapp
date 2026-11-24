@@ -7,7 +7,7 @@ import {
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriWeighbridgeTicket } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface AgriWeighbridgePrintModalProps {
@@ -61,21 +61,14 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               >
                 <Scale size={22} />
               </div>
-            <div>
-              <h2 className="t-card font-semibold text-black dark:text-white">
-                {isAr ? 'تذكرة ميزان الجسر ووصل التسليم' : 'Ticket Pont-Bascule & Bon de Livraison'}
-              </h2>
-              <p className="t-cap text-black/70 dark:text-white/70">
-                {isAr
-                  ? 'وصل تسليم رسمي مزدوج اللغة مع حساب طابع المادة 317'
-                  : 'Document commercial bilingue avec pesée brute/tare et droit de timbre Art. 317'}
-              </p>
-            </div>
+            <h2 className="t-card font-semibold text-black dark:text-white">
+              {isAr ? 'تذكرة ميزان الجسر ووصل التسليم' : 'Ticket Pont-Bascule & Bon de Livraison'}
+            </h2>
           </div>
           <div className="flex items-center gap-2">
-            <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>
+            <Button tone="accent" size={40} onClick={handlePrint} leading={<Printer size={15} />}>
               {isAr ? 'طباعة الوصل' : 'Imprimer Ticket'}
-            </AtriumButton>
+            </Button>
             <button
               type="button"
               aria-label={isAr ? 'إغلاق' : 'Fermer'}

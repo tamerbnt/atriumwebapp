@@ -421,7 +421,7 @@
     --color-accent-dim: rgba(212, 82, 47, 0.15);
     --color-accent-hover: #b03b1b;
     --color-accent-light: #FDF4F0;
-    --atr-z-popover: 1000;
+    --atr-z-popover: 10050;
 
     /* Liquid Buttons Tokens — Light Mode */
     --atr-liq-btn-bg: #D5532F;
@@ -1238,11 +1238,22 @@ div[tabindex],
 /* ══ Label input ═══════════════════════════════════════════
    Positioned at the root for the canvas halo */
 .lbi {
+  --lbi-bg: #F5F1EC;
+  --lbi-bg-focus: #FFFFFF;
+  --lbi-scale: 0.86;
+  --lbi-lift: 20px;
   position: relative;
   font-family: var(--font-ui);
   display: block;
   width: 100%;
   padding-top: var(--s2, 8px);
+}
+
+[data-theme="dark"] .lbi,
+[data-atrium-theme="dark"] .lbi,
+.dark .lbi {
+  --lbi-bg: #292624;
+  --lbi-bg-focus: #2E2B28;
 }
 
 .lbi-box {
@@ -1256,21 +1267,11 @@ div[tabindex],
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: #F5F1EC;
+  background: var(--lbi-bg);
   transition: background-color 180ms ease;
 }
-[data-theme="dark"] .lbi-bg,
-[data-atrium-theme="dark"] .lbi-bg,
-.dark .lbi-bg {
-  background: #292624;
-}
 .lbi[data-focus="true"] .lbi-bg {
-  background: #FFFFFF;
-}
-[data-theme="dark"] .lbi[data-focus="true"] .lbi-bg,
-[data-atrium-theme="dark"] .lbi[data-focus="true"] .lbi-bg,
-.dark .lbi[data-focus="true"] .lbi-bg {
-  background: #2E2B28;
+  background: var(--lbi-bg-focus);
 }
 
 .lbi-ring {
@@ -1310,14 +1311,18 @@ div[tabindex],
   position: absolute;
   left: var(--lbi-x);
   top: 50%;
+  max-width: calc(100% - var(--lbi-x, 14px) * 2 - 8px);
+  overflow: hidden;
+  text-overflow: ellipsis;
   font: var(--t-label);
-  line-height: 1;
+  line-height: 1.25;
+  padding-block: 1px;
   letter-spacing: var(--tr-13);
   white-space: pre;
   color: var(--text-3);
   transform-origin: left center;
   transform: translateY(-50%);
-  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease;
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease, max-width 220ms ease;
   cursor: text;
   -webkit-user-select: none;
   user-select: none;
@@ -1325,11 +1330,23 @@ div[tabindex],
 }
 
 .lbi[data-up="true"] .lbi-label {
-  transform: translateY(-50%) translateY(-20px) scale(0.92);
+  max-width: calc((100% - var(--lbi-x, 14px) * 2 - 8px) / var(--lbi-scale, 0.86));
+  transform: translateY(-50%) translateY(calc(var(--lbi-lift, 20px) * -1)) scale(var(--lbi-scale, 0.86));
   color: var(--text-2);
 }
 
+.lbi[data-multiline="true"] .lbi-label {
+  top: 14px;
+  transform: translateY(0);
+}
+
+.lbi[data-multiline="true"][data-up="true"] .lbi-label {
+  top: 0;
+  transform: translateY(-50%) scale(var(--lbi-scale, 0.86));
+}
+
 .lbi[data-has-prefix="true"]:not([data-up="true"]) .lbi-label {
+  max-width: calc(100% - var(--lbi-x, 14px) - 42px);
   transform: translateY(-50%) translateX(var(--s6, 24px));
 }
 
@@ -1358,8 +1375,28 @@ div[tabindex],
   outline: none;
 }
 
+.lbi-textarea-field {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: inherit;
+  padding: 14px var(--lbi-x, 14px) 10px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  font: var(--t-body);
+  line-height: 1.5;
+  letter-spacing: var(--tr-13);
+  color: var(--text-1);
+  caret-color: var(--atr-acc);
+  outline: none;
+  resize: vertical;
+}
+
 [data-theme="dark"] .lbi-field,
-.dark .lbi-field {
+.dark .lbi-field,
+[data-theme="dark"] .lbi-textarea-field,
+.dark .lbi-textarea-field {
   color: #FFFFFF !important;
 }
 
@@ -1449,7 +1486,9 @@ div[tabindex],
 .lbi-eye[data-show="true"] svg:first-child { opacity: 0; scale: 0.7; filter: blur(2px); }
 .lbi-eye[data-show="true"] svg:last-child { opacity: 1; scale: 1; filter: none; }
 
-[dir="rtl"] .lbi-label {
+[dir="rtl"] .lbi-label,
+.lbi[data-rtl="true"] .lbi-label,
+.lbi-label[dir="rtl"] {
   left: auto;
   right: var(--lbi-x);
   transform-origin: right center;
@@ -1457,20 +1496,30 @@ div[tabindex],
   unicode-bidi: plaintext;
 }
 [dir="rtl"] .lbi[data-has-prefix="true"]:not([data-up="true"]) .lbi-label,
+.lbi[data-rtl="true"][data-has-prefix="true"]:not([data-up="true"]) .lbi-label,
 .lbi[data-has-prefix="true"]:not([data-up="true"]) .lbi-label[dir="rtl"] {
   transform: translateY(-50%) translateX(calc(var(--s6, 24px) * -1));
 }
-[dir="rtl"] .lbi-field {
+[dir="rtl"] .lbi-field,
+.lbi[data-rtl="true"] .lbi-field {
   padding: 0 var(--lbi-x) 0 0;
   text-align: right;
   letter-spacing: normal !important;
   unicode-bidi: plaintext;
 }
-[dir="rtl"] .lbi-field::-webkit-calendar-picker-indicator {
+[dir="rtl"] .lbi-textarea-field,
+.lbi[data-rtl="true"] .lbi-textarea-field {
+  text-align: right;
+  letter-spacing: normal !important;
+  unicode-bidi: plaintext;
+}
+[dir="rtl"] .lbi-field::-webkit-calendar-picker-indicator,
+.lbi[data-rtl="true"] .lbi-field::-webkit-calendar-picker-indicator {
   margin-right: 0;
   margin-left: var(--s3, 12px);
 }
-[dir="rtl"] .lbi-eye {
+[dir="rtl"] .lbi-eye,
+.lbi[data-rtl="true"] .lbi-eye {
   right: auto;
   left: var(--s3, 12px);
 }
@@ -2496,7 +2545,7 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   position: fixed;
   top: 0;
   left: 0;
-  z-index: var(--atr-z-popover, 1000);
+  z-index: var(--atr-z-popover, 10050);
   box-sizing: border-box;
   width: calc(var(--h) * 8);
   min-width: var(--field-min, 200px);

@@ -51,7 +51,6 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Google OAuth & 403 Error Fix Guide"
-      subtitle="Complete answers for Google Cloud Console setup and test user errors"
       maxWidth="md"
     >
       <div className="flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1,#17130F)] dark:text-white select-none">
@@ -202,22 +201,23 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--s2,8px)]">
-          <button
+        <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--s3,12px)] border-t border-[var(--atr-divider)]">
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="md"
             onClick={onClose}
-            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white cursor-pointer"
           >
             Close Guide
-          </button>
-          <button
+          </AtriumButton>
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="md"
             onClick={handleBypass}
-            data-sq="ctl-sm"
-            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-100 cursor-pointer"
           >
             Sign In with 1-Click
-          </button>
+          </AtriumButton>
         </div>
       </div>
     </Modal>

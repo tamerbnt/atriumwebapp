@@ -8,7 +8,7 @@ import {
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface OnilBordereauPrintModalProps {
@@ -43,17 +43,12 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Milk size={22} /></div>
-<div>
 <h2 className="t-card font-semibold text-black dark:text-white">
 {isAr ? "جدول تسليم الحليب الطازج - ملف الدعم الوطني ONIL" : "Bordereau Officiel de Livraison de Lait Cru (Subvention ONIL)"}
 </h2>
-<p className="t-cap text-black/55 dark:text-white/75">
-{isAr ? "مطابق للقرار الوزاري المشترك - 12 دج/لتر للمربي المعتمد لدى مصالح الفلاحة DSA" : "Conforme à l'Arrêté Interministériel - Prime de 12,00 DA/Litre versée par l'ONIL"}
-</p>
-</div>
 </div>
 <div className="flex items-center gap-2">
-<AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الوثيقة الرسمية" : "Imprimer Bordereau"}</AtriumButton>
+<Button tone="accent" size={40} onClick={handlePrint} leading={<Printer size={15} />}>{isAr ? "طباعة الوثيقة الرسمية" : "Imprimer Bordereau"}</Button>
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 </div>

@@ -191,39 +191,39 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     if (category === 'project_milestone') {
       const pmNavItems: Array<{ id: ActiveScreen; label: string; role: string; icon: React.ReactNode }> = [
         // Direction
-        { id: 'pm_dir_dashboard', label: t('pm_screen_dir_dashboard'), role: t('pm_role_direction_name'), icon: <LayoutDashboard size={15} /> },
-        { id: 'pm_dir_new_project', label: t('pm_screen_dir_new_project'), role: t('pm_role_direction_name'), icon: <FileText size={15} /> },
-        { id: 'pm_dir_approvals', label: t('pm_screen_dir_approvals'), role: t('pm_role_direction_name'), icon: <ShieldCheck size={15} /> },
-        { id: 'pm_dir_reports', label: t('pm_screen_dir_reports'), role: t('pm_role_direction_name'), icon: <BarChart2 size={15} /> },
+        { id: 'pm_dir_dashboard', label: t('pm_screen_dir_dashboard', language), role: t('pm_role_direction_name', language), icon: <LayoutDashboard size={15} /> },
+        { id: 'pm_dir_new_project', label: t('pm_screen_dir_new_project', language), role: t('pm_role_direction_name', language), icon: <FileText size={15} /> },
+        { id: 'pm_dir_approvals', label: t('pm_screen_dir_approvals', language), role: t('pm_role_direction_name', language), icon: <ShieldCheck size={15} /> },
+        { id: 'pm_dir_reports', label: t('pm_screen_dir_reports', language), role: t('pm_role_direction_name', language), icon: <BarChart2 size={15} /> },
         ...(canAccessHistoryScreen
-          ? [{ id: 'history' as ActiveScreen, label: t('nav_history', language), role: t('pm_role_direction_name'), icon: <History size={15} /> }]
+          ? [{ id: 'history' as ActiveScreen, label: t('nav_history', language), role: t('pm_role_direction_name', language), icon: <History size={15} /> }]
           : []),
         // Chef de Projet
-        { id: 'pm_cp_projects', label: t('pm_screen_cp_projects'), role: t('pm_role_chef_projet_name'), icon: <Kanban size={15} /> },
-        { id: 'pm_cp_catalog', label: t('pm_screen_cp_catalog'), role: t('pm_role_chef_projet_name'), icon: <ShoppingBag size={15} /> },
-        { id: 'pm_cp_orders', label: t('pm_screen_cp_orders'), role: t('pm_role_chef_projet_name'), icon: <Sparkles size={15} /> },
-        { id: 'pm_cp_files', label: t('pm_screen_cp_deliverables'), role: t('pm_role_chef_projet_name'), icon: <FileText size={15} /> },
-        { id: 'pm_cp_expenses', label: t('pm_screen_cp_expenses'), role: t('pm_role_chef_projet_name'), icon: <Wallet size={15} /> },
+        { id: 'pm_cp_projects', label: t('pm_screen_cp_projects', language), role: t('pm_role_chef_projet_name', language), icon: <Kanban size={15} /> },
+        { id: 'pm_cp_catalog', label: t('pm_screen_cp_catalog', language), role: t('pm_role_chef_projet_name', language), icon: <ShoppingBag size={15} /> },
+        { id: 'pm_cp_orders', label: t('pm_screen_cp_orders', language), role: t('pm_role_chef_projet_name', language), icon: <Sparkles size={15} /> },
+        { id: 'pm_cp_files', label: t('pm_screen_cp_deliverables', language), role: t('pm_role_chef_projet_name', language), icon: <FileText size={15} /> },
+        { id: 'pm_cp_expenses', label: t('pm_screen_cp_expenses', language), role: t('pm_role_chef_projet_name', language), icon: <Wallet size={15} /> },
         // Créa
-        { id: 'pm_crea_kanban', label: t('pm_screen_crea_kanban'), role: t('pm_role_crea_name'), icon: <Layers size={15} /> },
-        { id: 'pm_crea_production', label: t('pm_screen_crea_production'), role: t('pm_role_crea_name'), icon: <Sparkles size={15} /> },
-        { id: 'pm_crea_upload', label: t('pm_screen_crea_upload'), role: t('pm_role_crea_name'), icon: <FileText size={15} /> },
-        { id: 'pm_crea_briefs', label: t('pm_screen_crea_briefs'), role: t('pm_role_crea_name'), icon: <FileText size={15} /> },
+        { id: 'pm_crea_kanban', label: t('pm_screen_crea_kanban', language), role: t('pm_role_crea_name', language), icon: <Layers size={15} /> },
+        { id: 'pm_crea_production', label: t('pm_screen_crea_production', language), role: t('pm_role_crea_name', language), icon: <Sparkles size={15} /> },
+        { id: 'pm_crea_upload', label: t('pm_screen_crea_upload', language), role: t('pm_role_crea_name', language), icon: <FileText size={15} /> },
+        { id: 'pm_crea_briefs', label: t('pm_screen_crea_briefs', language), role: t('pm_role_crea_name', language), icon: <FileText size={15} /> },
         // Superviseur
-        { id: 'pm_sup_missions', label: t('pm_screen_sup_missions'), role: t('pm_role_superviseur_name'), icon: <Radio size={15} /> },
-        { id: 'pm_sup_attendance', label: t('pm_screen_sup_attendance'), role: t('pm_role_superviseur_name'), icon: <Clock size={15} /> },
-        { id: 'pm_sup_staffing', label: t('pm_screen_sup_staffing'), role: t('pm_role_superviseur_name'), icon: <Users size={15} /> },
-        { id: 'pm_sup_expenses', label: t('pm_screen_sup_expenses'), role: t('pm_role_superviseur_name'), icon: <Wallet size={15} /> },
+        { id: 'pm_sup_missions', label: t('pm_screen_sup_missions', language), role: t('pm_role_superviseur_name', language), icon: <Radio size={15} /> },
+        { id: 'pm_sup_attendance', label: t('pm_screen_sup_attendance', language), role: t('pm_role_superviseur_name', language), icon: <Clock size={15} /> },
+        { id: 'pm_sup_staffing', label: t('pm_screen_sup_staffing', language), role: t('pm_role_superviseur_name', language), icon: <Users size={15} /> },
+        { id: 'pm_sup_expenses', label: t('pm_screen_sup_expenses', language), role: t('pm_role_superviseur_name', language), icon: <Wallet size={15} /> },
         // RH
-        { id: 'pm_rh_talents', label: t('pm_screen_rh_talents'), role: t('pm_role_rh_name'), icon: <Users size={15} /> },
-        { id: 'pm_rh_dossier', label: t('pm_screen_rh_dossier'), role: t('pm_role_rh_name'), icon: <FileText size={15} /> },
-        { id: 'pm_rh_portal', label: t('pm_screen_rh_portal'), role: t('pm_role_rh_name'), icon: <GraduationCap size={15} /> },
-        { id: 'pm_rh_walkin', label: t('pm_screen_rh_walkin'), role: t('pm_role_rh_name'), icon: <DoorOpen size={15} /> },
+        { id: 'pm_rh_talents', label: t('pm_screen_rh_talents', language), role: t('pm_role_rh_name', language), icon: <Users size={15} /> },
+        { id: 'pm_rh_dossier', label: t('pm_screen_rh_dossier', language), role: t('pm_role_rh_name', language), icon: <FileText size={15} /> },
+        { id: 'pm_rh_portal', label: t('pm_screen_rh_portal', language), role: t('pm_role_rh_name', language), icon: <GraduationCap size={15} /> },
+        { id: 'pm_rh_walkin', label: t('pm_screen_rh_walkin', language), role: t('pm_role_rh_name', language), icon: <DoorOpen size={15} /> },
         // Compta
-        { id: 'pm_compta_payroll', label: t('pm_screen_compta_payroll'), role: t('pm_role_compta_name'), icon: <Wallet size={15} /> },
-        { id: 'pm_compta_ccp', label: t('pm_screen_compta_ccp'), role: t('pm_role_compta_name'), icon: <FileText size={15} /> },
-        { id: 'pm_compta_expenses', label: t('pm_screen_compta_expenses'), role: t('pm_role_compta_name'), icon: <ShieldCheck size={15} /> },
-        { id: 'pm_compta_stock', label: t('pm_screen_compta_stock'), role: t('pm_role_compta_name'), icon: <ShoppingBag size={15} /> },
+        { id: 'pm_compta_payroll', label: t('pm_screen_compta_payroll', language), role: t('pm_role_compta_name', language), icon: <Wallet size={15} /> },
+        { id: 'pm_compta_ccp', label: t('pm_screen_compta_ccp', language), role: t('pm_role_compta_name', language), icon: <FileText size={15} /> },
+        { id: 'pm_compta_expenses', label: t('pm_screen_compta_expenses', language), role: t('pm_role_compta_name', language), icon: <ShieldCheck size={15} /> },
+        { id: 'pm_compta_stock', label: t('pm_screen_compta_stock', language), role: t('pm_role_compta_name', language), icon: <ShoppingBag size={15} /> },
         // Settings
         { id: 'settings', label: t('nav_settings', language), role: language === 'ar' ? 'النظام' : language === 'fr' ? 'Système' : 'System', icon: <Settings size={15} /> },
       ];
@@ -600,7 +600,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   onClick={item.onSelect}
                   onMouseEnter={() => setSelectedIndex(index)}
                   data-sq="row"
-                  className={`w-full flex items-center justify-between p-[var(--row-inset,12px)] text-left rtl:text-right transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between p-[var(--row-inset,12px)] text-start transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-[#FDF4F0] dark:bg-[#2B2825] text-[var(--text-1,#17130F)] dark:text-white scale-[1.01]'
                       : 'text-[var(--text-2,#5A5047)] dark:text-white/80 hover:bg-[#FAF7F4] dark:hover:bg-[#22201E]'
@@ -641,7 +641,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                         : item.category}
                     </span>
                     {isSelected && (
-                      <ArrowRight size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hidden sm:block" />
+                      <ArrowRight size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hidden sm:block rtl:rotate-180" />
                     )}
                   </div>
                 </button>

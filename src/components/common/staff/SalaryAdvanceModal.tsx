@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { X, DollarSign, Calendar, User, FileText, CreditCard } from 'lucide-react';
+import { X, DollarSign } from 'lucide-react';
 import { StaffMember } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface SalaryAdvanceModalProps {
@@ -59,9 +61,10 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
+        dir={isAr ? 'rtl' : 'ltr'}
         className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative [--sq-stroke:var(--sq-stroke-pop)]"
       >
-          <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+          <div className="flex items-center justify-between gap-[var(--s3,12px)] pb-[var(--s3,12px)] border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0">
               <div
                 data-sq="tile"
@@ -69,19 +72,15 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               >
                 <DollarSign className="w-5 h-5" strokeWidth={1.75} />
               </div>
-              <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
-                <h3 className="t-dialog text-[var(--text-1)] dark:text-white truncate">
-                  {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
-                </h3>
-                <p className="t-cap text-[var(--text-2)] dark:text-white/75">
-                  {isAr ? 'تخصم من الراتب' : isEn ? 'Deducted next payroll' : 'Déduit sur paie'}
-                </p>
-              </div>
+              <h3 className="t-dialog text-[var(--text-1)] dark:text-white truncate">
+                {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
+              </h3>
             </div>
 
             <button
               type="button"
               onClick={onClose}
+              aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
               className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
@@ -89,41 +88,30 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s4,16px)]">
-            <div className="flex flex-col gap-[var(--s2,8px)]">
-              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
-              </label>
-              <LabelSelect
-                value={selectedStaffId}
-                onChange={(val) => setSelectedStaffId(val)}
-                options={staffList.map((s) => ({
-                  value: s.id,
-                  label: `${s.fullName} (${s.role})`,
-                }))}
-              />
-            </div>
+            <LabelSelect
+              label={isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
+              value={selectedStaffId}
+              onChange={setSelectedStaffId}
+              height={40}
+              options={staffList.map((s) => ({
+                value: s.id,
+                label: `${s.fullName} (${s.role})`,
+              }))}
+            />
 
-            <div className="flex flex-col gap-[var(--s2,8px)]">
-              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                {isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant'}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="relative h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-              >
-                <input
-                  type="number"
-                  min="500"
-                  max={selectedStaff?.salary ? selectedStaff.salary * 0.8 : 200000}
-                  step="500"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full h-full px-[var(--s4,16px)] pe-[var(--s8,48px)] bg-transparent text-[var(--text-1)] dark:text-white t-card tabular-nums focus:outline-hidden"
-                />
-                <span className="absolute end-[var(--s4,16px)] t-small text-[var(--text-2)] dark:text-white/65">DZD</span>
-              </div>
+            <div className="flex flex-col gap-[var(--s1,4px)]">
+              <LabelInput
+                label={isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant'}
+                type="number"
+                min={500}
+                max={selectedStaff?.salary ? selectedStaff.salary * 0.8 : 200000}
+                step={500}
+                required
+                value={amount}
+                onChange={setAmount}
+                height={40}
+                suffix={<span className="t-small text-[var(--text-2)] dark:text-white/65">DZD</span>}
+              />
               {selectedStaff?.salary && (
                 <p className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums">
                   {isAr ? `الحد: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} دج` : isEn ? `Max: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD` : `Max : ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD`}
@@ -131,62 +119,41 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               )}
             </div>
 
-            <div className="flex flex-col gap-[var(--s2,8px)]">
-              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
+            <div className="flex flex-col gap-[var(--s1,4px)]">
+              <label className="block t-small font-medium text-[var(--text-2)] dark:text-white/80">
                 {isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}
               </label>
-              <div className="grid grid-cols-3 gap-[var(--s2,8px)]">
-                {[
-                  { id: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
-                  { id: 'ccp', label: isAr ? 'بريدي' : isEn ? 'Postal' : 'Poste' },
-                  { id: 'bank_transfer', label: isAr ? 'تحويل' : isEn ? 'Transfer' : 'Virement' },
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(m.id as any)}
-                    data-sq="ctl"
-                    data-sq-border={paymentMethod === m.id ? 'solid' : 'none'}
-                    className={`h-[var(--btn-h,40px)] px-[var(--s3,12px)] t-btn transition-all cursor-pointer ${
-                      paymentMethod === m.id
-                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] [--sq-stroke:#d4522f]'
-                        : 'bg-[#F5F1EC] dark:bg-[#2B2825] text-[var(--text-2)] dark:text-white/75 hover:bg-[#EDE6DF] dark:hover:bg-[#332F2B]'
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
+              <LiveSegmentedControl
+                fullWidth
+                size="md"
+                value={paymentMethod}
+                onValueChange={(v) => setPaymentMethod(v as 'cash' | 'ccp' | 'bank_transfer')}
+                aria-label={isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}
+                options={[
+                  { value: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
+                  { value: 'ccp', label: isAr ? 'بريدي' : isEn ? 'Postal' : 'Poste' },
+                  { value: 'bank_transfer', label: isAr ? 'تحويل' : isEn ? 'Transfer' : 'Virement' },
+                ]}
+              />
             </div>
 
-            <div className="flex flex-col gap-[var(--s2,8px)]">
-              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                {isAr ? 'ملاحظة' : isEn ? 'Note' : 'Motif'}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-              >
-                <input
-                  type="text"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={isAr ? 'ملاحظة...' : isEn ? 'Reason...' : 'Motif...'}
-                  className="w-full h-full px-[var(--s4,16px)] bg-transparent text-[var(--text-1)] dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 t-body focus:outline-hidden"
-                />
-              </div>
-            </div>
+            <LabelInput
+              label={isAr ? 'ملاحظة' : isEn ? 'Note' : 'Motif'}
+              type="text"
+              value={reason}
+              onChange={setReason}
+              placeholder={isAr ? 'ملاحظة...' : isEn ? 'Reason...' : 'Motif...'}
+              height={40}
+            />
 
             <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--footer-gap,16px)] border-t border-[var(--atr-divider)]">
-              <button
+              <Button
                 type="button"
+                tone="soft"
                 onClick={onClose}
-                data-sq="ctl-sm"
-                className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/75 dark:hover:text-white cursor-pointer"
               >
                 {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
-              </button>
+              </Button>
               <AtriumButton type="submit">
                 {isAr ? 'تأكيد' : isEn ? 'Confirm' : 'Confirmer'}
               </AtriumButton>
@@ -196,3 +163,4 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
     </KineticModalShell>
   );
 };
+

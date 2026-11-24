@@ -9,7 +9,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: var(--atr-z-popover, 1000);
+  z-index: var(--atr-z-popover, 10050);
   box-sizing: border-box;
   width: calc(var(--h) * 8);
   min-width: var(--field-min, 200px);

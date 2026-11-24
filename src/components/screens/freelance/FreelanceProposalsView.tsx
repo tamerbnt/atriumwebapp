@@ -25,7 +25,9 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -56,9 +58,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceProposalsView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -1296,55 +1295,63 @@ export const FreelanceProposalsView: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 id="draft-client-name"
+                field="DraftClientName"
                 label={t('free_clients_field_contact', language)}
                 required
                 placeholder={t('free_prop_ph_contact', language)}
                 value={formData.clientName}
-                onChange={(e) => setFormData({ ...formData, clientName: extractStr(e) })}
+                onChange={(v) => setFormData({ ...formData, clientName: v })}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="draft-client-company"
+                field="DraftClientCompany"
                 label={t('free_clients_field_company', language)}
                 placeholder={t('free_prop_ph_company', language)}
                 value={formData.clientCompany}
-                onChange={(e) => setFormData({ ...formData, clientCompany: extractStr(e) })}
+                onChange={(v) => setFormData({ ...formData, clientCompany: v })}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
               id="draft-client-email"
+              field="DraftClientEmail"
               label={t('free_clients_field_email', language)}
               type="email"
               required
               placeholder="contact@company.com"
               value={formData.clientEmail}
-              onChange={(e) => setFormData({ ...formData, clientEmail: extractStr(e) })}
+              onChange={(v) => setFormData({ ...formData, clientEmail: v })}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
               id="draft-proposal-title"
+              field="DraftProposalTitle"
               label={t('free_prop_engagement_title', language)}
               required
               placeholder={t('free_prop_ph_title', language)}
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: extractStr(e) })}
+              onChange={(v) => setFormData({ ...formData, title: v })}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div>
-              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                {t('free_prop_exec_summary', language)}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <textarea
-                  rows={2}
-                  placeholder={t('free_prop_scope_ph', language)}
-                  value={formData.overview}
-                  onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
+            <LabelTextarea
+              field="DraftOverview"
+              label={t('free_prop_exec_summary', language)}
+              rows={2}
+              placeholder={t('free_prop_scope_ph', language)}
+              value={formData.overview}
+              onChange={(v) => setFormData({ ...formData, overview: v })}
+              width="100%"
+              corner={12}
+            />
             <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-black dark:text-white">
@@ -1366,9 +1373,9 @@ export const FreelanceProposalsView: React.FC = () => {
                         field={`ScopeItem-${idx}`}
                         label={`${t('free_prop_deliverable_item', language)} ${idx + 1}`}
                         value={item}
-                        onChange={(v) => handleScopeItemChange(idx, extractStr(v))}
+                        onChange={(v) => handleScopeItemChange(idx, v)}
                         width="100%"
-                        height={44}
+                        height={40}
                         corner={12}
                       />
                     </div>
@@ -1386,64 +1393,74 @@ export const FreelanceProposalsView: React.FC = () => {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelSelect
+                field="DraftCurrency"
                 label={t('free_invoices_currency', language)}
                 value={formData.currency}
                 onChange={(val) =>
-                  setFormData({ ...formData, currency: extractStr(val) as CurrencyCode })
+                  setFormData({ ...formData, currency: val as CurrencyCode })
                 }
                 options={[
                   { value: 'DZD', label: 'DZD' },
                   { value: 'EUR', label: 'EUR' },
                   { value: 'USD', label: 'USD' },
                 ]}
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="draft-budget"
+                field="DraftBudget"
                 label={isAr ? 'الميزانية' : isFr ? 'Budget' : 'Budget'}
                 type="number"
                 value={String(formData.proposedBudget)}
-                onChange={(e) =>
-                  setFormData({ ...formData, proposedBudget: Number(extractStr(e)) || 0 })
+                onChange={(v) =>
+                  setFormData({ ...formData, proposedBudget: Number(v) || 0 })
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
                 id="draft-weeks"
+                field="DraftWeeks"
                 label={isAr ? 'المدة (أسابيع)' : isFr ? 'Délai (sem.)' : 'Est. Weeks'}
                 type="number"
                 value={String(formData.estimatedTimelineWeeks)}
-                onChange={(e) =>
+                onChange={(v) =>
                   setFormData({
                     ...formData,
-                    estimatedTimelineWeeks: Number(extractStr(e)) || 1,
+                    estimatedTimelineWeeks: Number(v) || 1,
                   })
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
               id="draft-valid-until"
+              field="DraftValidUntil"
               label={t('free_prop_valid_until', language)}
               type="date"
               value={formData.validUntil}
-              onChange={(e) => setFormData({ ...formData, validUntil: extractStr(e) })}
+              onChange={(v) => setFormData({ ...formData, validUntil: v })}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => setIsDraftModalOpen(false)}
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsDraftModalOpen(false)}>
                 {t('free_clients_cancel', language)}
-              </AtriumButton>
-              <AtriumButton variant="primary" size="sm" glow type="submit">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {isAr
                   ? 'حفظ عرض السعر'
                   : isFr
                   ? 'Enregistrer le Devis'
                   : 'Save Proposal'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>
@@ -1491,24 +1508,33 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="edit-client-name"
+                  field="EditClientName"
                   label={t('free_clients_field_contact', language)}
                   required
                   value={editFormData.clientName}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, clientName: extractStr(e) })
+                  onChange={(v) =>
+                    setEditFormData({ ...editFormData, clientName: v })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="edit-client-company"
+                  field="EditClientCompany"
                   label={t('free_clients_field_company', language)}
                   value={editFormData.clientCompany}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, clientCompany: extractStr(e) })
+                  onChange={(v) =>
+                    setEditFormData({ ...editFormData, clientCompany: v })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
               <LabelInput
                 id="edit-proposal-title"
+                field="EditProposalTitle"
                 label={
                   isAr
                     ? 'عنوان المشروع / المهمة'
@@ -1518,29 +1544,26 @@ export const FreelanceProposalsView: React.FC = () => {
                 }
                 required
                 value={editFormData.title}
-                onChange={(e) => setEditFormData({ ...editFormData, title: extractStr(e) })}
+                onChange={(v) => setEditFormData({ ...editFormData, title: v })}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {isAr
+              <LabelTextarea
+                field="EditOverview"
+                label={
+                  isAr
                     ? 'ملخص تنفيذي للمشروع'
                     : isFr
                     ? 'Résumé Exécutif du Projet'
-                    : 'Executive Overview'}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    value={editFormData.overview}
-                    onChange={(e) => setEditFormData({ ...editFormData, overview: e.target.value })}
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
+                    : 'Executive Overview'
+                }
+                rows={2}
+                value={editFormData.overview}
+                onChange={(v) => setEditFormData({ ...editFormData, overview: v })}
+                width="100%"
+                corner={12}
+              />
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-black/70 dark:text-white/75">
@@ -1570,11 +1593,11 @@ export const FreelanceProposalsView: React.FC = () => {
                         value={item}
                         onChange={(v) => {
                           const updated = [...editFormData.scopeItems];
-                          updated[idx] = extractStr(v);
+                          updated[idx] = v;
                           setEditFormData({ ...editFormData, scopeItems: updated });
                         }}
                         width="100%"
-                        height={44}
+                        height={40}
                         corner={12}
                       />
                     </div>
@@ -1596,14 +1619,15 @@ export const FreelanceProposalsView: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <LabelSelect
+                  field="EditCurrency"
                   label={t('free_invoices_currency', language)}
                   value={editFormData.currency}
                   onChange={(val) =>
                     setEditFormData({
                       ...editFormData,
-                      currency: extractStr(val) as CurrencyCode,
+                      currency: val as CurrencyCode,
                     })
                   }
                   options={[
@@ -1611,55 +1635,64 @@ export const FreelanceProposalsView: React.FC = () => {
                     { value: 'EUR', label: 'EUR' },
                     { value: 'USD', label: 'USD' },
                   ]}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="edit-budget"
+                  field="EditBudget"
                   label={isAr ? 'الميزانية' : isFr ? 'Budget' : 'Budget'}
                   type="number"
                   value={String(editFormData.proposedBudget)}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setEditFormData({
                       ...editFormData,
-                      proposedBudget: Number(extractStr(e)) || 0,
+                      proposedBudget: Number(v) || 0,
                     })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="edit-weeks"
+                  field="EditWeeks"
                   label={isAr ? 'المدة (أسابيع)' : isFr ? 'Délai (sem.)' : 'Est. Weeks'}
                   type="number"
                   value={String(editFormData.estimatedTimelineWeeks)}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setEditFormData({
                       ...editFormData,
-                      estimatedTimelineWeeks: Number(extractStr(e)) || 1,
+                      estimatedTimelineWeeks: Number(v) || 1,
                     })
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
               <LabelInput
                 id="edit-valid-until"
+                field="EditValidUntil"
                 label={t('free_prop_valid_until', language)}
                 type="date"
                 value={editFormData.validUntil}
-                onChange={(e) => setEditFormData({ ...editFormData, validUntil: extractStr(e) })}
+                onChange={(v) => setEditFormData({ ...editFormData, validUntil: v })}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => setProposalToEdit(null)}
-                >
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setProposalToEdit(null)}>
                   {t('free_clients_cancel', language)}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
                   {isAr
                     ? 'حفظ التعديلات'
                     : isFr
                     ? 'Enregistrer les Modifications'
                     : 'Save Changes'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
           </div>
@@ -1690,14 +1723,9 @@ export const FreelanceProposalsView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {isAr ? 'حذف عرض السعر' : isFr ? 'Supprimer le Devis' : 'Delete Proposal'}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {retainedProposalToDelete.clientName}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {isAr ? 'حذف عرض السعر' : isFr ? 'Supprimer le Devis' : 'Delete Proposal'}
+              </h3>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {isAr
@@ -1706,18 +1734,13 @@ export const FreelanceProposalsView: React.FC = () => {
                 ? `Supprimer le devis "${retainedProposalToDelete.title}" du pipeline ?`
                 : `Delete proposal "${retainedProposalToDelete.title}" from your pipeline?`}
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => setProposalToDelete(null)}
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setProposalToDelete(null)}>
                 {t('free_clients_cancel', language)}
-              </AtriumButton>
+              </Button>
               <AtriumButton
                 variant="danger"
-                size="sm"
+                size="md"
                 type="button"
                 onClick={() => {
                   if (!proposalToDelete) return;

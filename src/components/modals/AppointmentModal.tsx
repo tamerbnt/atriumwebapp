@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Calendar,
-  Clock,
-  User,
-  Sparkles,
-  Scissors,
-  DollarSign,
   Phone,
-  FileText,
   CheckCircle2,
-  AlertCircle,
   Play,
   CreditCard,
   Trash2,
   X,
-  UserPlus,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
@@ -25,11 +16,13 @@ import {
   useAtriumActions,
   useAtriumSelector,
 } from '../../services/store';
-import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
+import { Appointment, AppointmentStatus } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { useRetainedModalValue } from '../ui/kinetic';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { LabelTextarea } from '../ui/LabelTextarea';
+import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { Button, LiquidButton } from '@/atrium/core';
 import { formatMoney, localizeStatus } from '../../utils/rules';
 import { t, getLocalizedService, getLocalizedServiceCategory } from '../../utils/i18n';
@@ -63,7 +56,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     members,
     staff,
     servicesCatalog,
-    currentBranch,
     language,
     networkMode,
   } = useAtriumSelector(
@@ -178,10 +170,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       finalClientName = walkinName.trim() || 'Walk-in Client';
       finalClientPhone = walkinPhone.trim() || '+213 550 00 00 00';
 
-      // Auto-create client record for seamless CRM persistence
       const createdClient = addMember({
         fullName: finalClientName,
-        email: `${finalClientName.toLowerCase().replace(/\\s+/g, '.') || 'client'}@guest.dz`,
+        email: `${finalClientName.toLowerCase().replace(/\s+/g, '.') || 'client'}@guest.dz`,
         phoneNumber: finalClientPhone,
         status: 'Active',
         startDate: date,
@@ -274,13 +265,6 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       onClose={onClose}
       isLoading={networkMode === 'force_skeleton'}
       title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
-      subtitle={
-        isEditing && displayAppointment
-          ? t('apt_ref_sub', language)
-              .replace('{id}', displayAppointment.id.slice(-6).toUpperCase())
-              .replace('{branch}', currentBranch.name)
-          : t('apt_schedule_sub', language).replace('{branch}', currentBranch.name)
-      }
       maxWidth="lg"
     >
       <div className="flex flex-col gap-[var(--s4,16px)]">
@@ -318,40 +302,40 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-[var(--s2,8px)]">
+          <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
             {status !== 'InChair' && status !== 'Completed' && (
-              <button
+              <Button
                 type="button"
+                size={32}
+                tone="accent"
                 onClick={handleStartService}
-                data-sq="ctl-sm"
-                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+                leading={<Play size={14} strokeWidth={1.75} />}
               >
-                <Play size={16} strokeWidth={1.5} />
                 {t('apt_seat_client', language)}
-              </button>
+              </Button>
             )}
 
             {status !== 'Completed' && (
-              <button
+              <Button
                 type="button"
+                size={32}
+                tone="soft"
                 onClick={handleSendToPOS}
-                data-sq="ctl-sm"
-                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+                leading={<CreditCard size={14} strokeWidth={1.75} />}
               >
-                <CreditCard size={16} strokeWidth={1.5} />
                 {t('apt_checkout_pos', language)}
-              </button>
+              </Button>
             )}
 
             {status !== 'Cancelled' && (
-              <button
+              <Button
                 type="button"
+                size={32}
+                tone="ghost"
                 onClick={handleCancelBooking}
-                data-sq="ctl-sm"
-                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-2,#5A5047)] dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
                 {t('action_cancel', language)}
-              </button>
+              </Button>
             )}
 
             {confirmingDelete ? (
@@ -396,48 +380,28 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {/* Client Selection (Toggle Walk-in vs Existing if new) */}
         {!isEditing && (
           <div className="flex flex-col gap-[var(--s2,8px)]">
-            <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+            <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)]">
               <label className="t-label text-[var(--text-1,#17130F)] dark:text-white">
                 {t('apt_field_intake_mode', language)}
               </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#EFE9E2] dark:bg-[#191716]"
-              >
-                <button
-                  type="button"
-                  onClick={() => setBookingMode('registered')}
-                  data-sq={bookingMode === 'registered' ? 'thumb' : 'none'}
-                  className={`h-full px-[var(--seg-px,12px)] t-small transition-colors cursor-pointer ${
-                    bookingMode === 'registered'
-                      ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                      : 'rounded-[var(--r-thumb,9px)] text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white'
-                  }`}
-                >
-                  {t('apt_mode_registered', language)}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingMode('walkin')}
-                  data-sq={bookingMode === 'walkin' ? 'thumb' : 'none'}
-                  className={`h-full px-[var(--seg-px,12px)] t-small transition-colors cursor-pointer ${
-                    bookingMode === 'walkin'
-                      ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                      : 'rounded-[var(--r-thumb,9px)] text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white'
-                  }`}
-                >
-                  {t('apt_mode_walkin', language)}
-                </button>
-              </div>
-          </div>
+              <LiveSegmentedControl
+                size="sm"
+                value={bookingMode}
+                onValueChange={(val) => setBookingMode(val as 'registered' | 'walkin')}
+                aria-label={t('apt_field_intake_mode', language)}
+                options={[
+                  { value: 'registered', label: t('apt_mode_registered', language) },
+                  { value: 'walkin', label: t('apt_mode_walkin', language) },
+                ]}
+              />
+            </div>
 
             {bookingMode === 'registered' ? (
               <LabelSelect
                 field="SelectClient"
                 label={t('apt_field_registered_client', language)}
                 value={selectedClientId}
-                onChange={(val) => setSelectedClientId(val?.target?.value ?? val)}
+                onChange={setSelectedClientId}
                 searchable
                 options={members.map((client) => ({
                   value: client.id,
@@ -501,7 +465,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             field="TreatmentService"
             label={t('apt_field_treatment', language)}
             value={selectedServiceId}
-            onChange={(val) => handleServiceChange(val?.target?.value ?? String(val))}
+            onChange={handleServiceChange}
             options={servicesCatalog.map((service) => {
               const loc = getLocalizedService(service, language);
               return {
@@ -523,7 +487,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             field="AssignedStylist"
             label={t('apt_field_stylist', language)}
             value={selectedStaffId}
-            onChange={(val) => setSelectedStaffId(val?.target?.value ?? String(val))}
+            onChange={setSelectedStaffId}
             options={staff.map((s) => ({
               value: s.id,
               label: s.fullName,
@@ -555,7 +519,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               field="StartTime"
               label={t('apt_field_start_time', language)}
               value={startTime}
-              onChange={(val) => setStartTime(val?.target?.value ?? String(val))}
+              onChange={setStartTime}
               options={[
                 '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
                 '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
@@ -575,7 +539,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="w-full h-[var(--btn-h,40px)] px-[var(--s3,12px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] text-[var(--text-1,#17130F)] dark:text-white t-label font-semibold tabular-nums"
+              className="w-full h-[var(--btn-h,40px)] px-[var(--s3,12px)] flex items-center bg-[#F5F1EC] dark:bg-[#292624] text-[var(--text-1,#17130F)] dark:text-white t-label font-semibold tabular-nums"
             >
               {calculatedEndTime}
             </div>
@@ -592,7 +556,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               min={0}
               step={500}
               value={price}
-              onChange={(val) => setPrice(Number(val?.target?.value || val || 0))}
+              onChange={(val) => setPrice(Number(val) || 0)}
               width="100%"
               height={40}
               corner={12}
@@ -604,7 +568,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               field="BookingStatus"
               label={t('apt_field_booking_status', language)}
               value={status}
-              onChange={(val) => setStatus((val?.target?.value ?? String(val)) as AppointmentStatus)}
+              onChange={(val) => setStatus(val as AppointmentStatus)}
               options={[
                 { value: 'Confirmed', label: t('apt_status_confirmed', language) },
                 { value: 'InChair', label: t('apt_status_inchair', language) },
@@ -620,27 +584,16 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </div>
 
         {/* Treatment Notes */}
-        <div className="flex flex-col gap-[var(--s1,4px)]">
-          <label className="t-small text-[var(--text-1,#17130F)] dark:text-white flex items-center gap-[var(--s2,8px)]">
-            <FileText size={16} strokeWidth={1.5} /> {t('apt_field_notes', language)}
-          </label>
-          <div
-            data-sq="card"
-            data-sq-border="none"
-            className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-          >
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder={t('apt_ph_notes', language)}
-              className="w-full p-[var(--s3,12px)] t-body bg-transparent text-[var(--text-1,#17130F)] dark:text-white placeholder:text-[var(--text-3,#766C62)] dark:placeholder:text-[var(--text-dark-2,#A99E92)] focus:outline-none resize-none"
-            />
-          </div>
-        </div>
+        <LabelTextarea
+          label={t('apt_field_notes', language)}
+          value={notes}
+          onChange={setNotes}
+          rows={2}
+          placeholder={t('apt_ph_notes', language)}
+        />
 
         {/* Action Buttons */}
-        <div className="pt-[var(--s2,8px)] flex items-center justify-end gap-[var(--s3,12px)] border-t border-[var(--atr-divider)]">
+        <div className="pt-[var(--s4,16px)] flex items-center justify-end gap-[var(--s3,12px)] border-t border-[var(--atr-divider)]">
           <Button
             type="button"
             tone="soft"
@@ -661,3 +614,4 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     </Modal>
   );
 };
+

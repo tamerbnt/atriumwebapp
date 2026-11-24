@@ -23,6 +23,7 @@ import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -57,9 +58,6 @@ import {
 } from '../../ui/kinetic';
 
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const EducationFinanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -1063,7 +1061,7 @@ export const EducationFinanceView: React.FC = () => {
                   <label className="t-small font-semibold text-black/70 dark:text-white/75">
                     Sélectionner l'échéance à solder
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {retainedPaymentEnrollment.installments.map((inst, idx) => (
                       <button
                         key={idx}
@@ -1074,7 +1072,7 @@ export const EducationFinanceView: React.FC = () => {
                           setSelectedInstallmentIndex(idx);
                           setPaymentAmount(inst.isPaid ? 0 : inst.amount);
                         }}
-                        className={`p-2 text-left rtl:text-right transition-colors cursor-pointer ${
+                        className={`p-2 text-start transition-colors cursor-pointer ${
                           selectedInstallmentIndex === idx
                             ? 'bg-[#FCEEE8] dark:bg-[#2B2825] [--sq-stroke:#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
                             : 'bg-white dark:bg-[#22201E] text-black/70 dark:text-white/75'
@@ -1091,41 +1089,46 @@ export const EducationFinanceView: React.FC = () => {
                 </div>
               )}
               <LabelInput
+                field="PaymentAmount"
                 id="payment-amount"
                 label={t('edu_field_pay_amount')}
                 type="number"
                 min="1"
                 max={retainedPaymentEnrollment.balanceDue}
                 value={paymentAmount}
-                onChange={(v) => setPaymentAmount(parseInt(extractStr(v), 10) || 0)}
+                onChange={(v) => setPaymentAmount(parseInt(v, 10) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelSelect
                 field="Method"
                 label={t('edu_field_pay_method')}
                 value={paymentMethod}
-                onChange={(val) => setPaymentMethod(extractStr(val))}
+                onChange={setPaymentMethod}
                 options={[
                   { value: 'Cash', label: 'Cash (Campus Bureau)' },
                   { value: 'Card / POS', label: 'Card (CIB / Dahabia POS)' },
                   { value: 'Bank Transfer', label: 'Bank / CCP Transfer' },
                   { value: 'Scholarship Voucher', label: 'Scholarship Voucher' },
                 ]}
-                height={44}
+                width="100%"
+                height={40}
                 corner={12}
               />
-              <div className="pt-2 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
+              <div className="pt-3 flex justify-end gap-2.5 border-t border-[var(--atr-divider)]">
+                <Button
+                  tone="soft"
+                  size={40}
                   type="button"
                   onClick={() => setSelectedEnrollmentForPayment(null)}
                 >
                   {t('common_cancel')}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {t('edu_btn_save_payment')}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
           </div>
@@ -1193,17 +1196,16 @@ export const EducationFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="pt-2 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
-              <AtriumButton
-                variant="primary"
-                size="md"
-                glow
-                icon={<Printer size={15} />}
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-[var(--atr-divider)]">
+              <Button
+                tone="accent"
+                size={40}
+                leading={<Printer size={15} />}
                 className="w-full justify-center"
                 onClick={() => window.print()}
               >
                 Print Official Receipt
-              </AtriumButton>
+              </Button>
             </div>
           </div>
         )}

@@ -23,9 +23,10 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -62,9 +63,6 @@ import {
 } from '../../ui/kinetic';
 
 type ModeKey = 'attendance' | 'gradebook';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const EducationAttendanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -1222,9 +1220,10 @@ export const EducationAttendanceView: React.FC = () => {
                 field="Student"
                 label={t('edu_grade_student')}
                 value={gradeForm.studentId}
-                onChange={(val) => setGradeForm({ ...gradeForm, studentId: extractStr(val) })}
+                onChange={(val) => setGradeForm({ ...gradeForm, studentId: val })}
                 options={cohortStudents.map((s) => ({ value: s.id, label: s.fullName }))}
-                height={44}
+                width="100%"
+                height={40}
                 corner={12}
               />
 
@@ -1234,15 +1233,15 @@ export const EducationAttendanceView: React.FC = () => {
                   label={t('edu_grade_assessment')}
                   required
                   value={gradeForm.assessmentTitle}
-                  onChange={(val) => setGradeForm({ ...gradeForm, assessmentTitle: extractStr(val) })}
+                  onChange={(val) => setGradeForm({ ...gradeForm, assessmentTitle: val })}
                   placeholder="e.g. Midterm Exam, Project 1, Final Defense"
                   width="100%"
-                  height={46}
+                  height={40}
                   corner={12}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <LabelInput
                     field="Score"
@@ -1250,9 +1249,9 @@ export const EducationAttendanceView: React.FC = () => {
                     type="number"
                     required
                     value={gradeForm.score}
-                    onChange={(val) => setGradeForm({ ...gradeForm, score: Number(extractStr(val)) || 0 })}
+                    onChange={(val) => setGradeForm({ ...gradeForm, score: Number(val) || 0 })}
                     width="100%"
-                    height={46}
+                    height={40}
                     corner={12}
                   />
                 </div>
@@ -1263,39 +1262,31 @@ export const EducationAttendanceView: React.FC = () => {
                     type="number"
                     required
                     value={gradeForm.maxScore}
-                    onChange={(val) => setGradeForm({ ...gradeForm, maxScore: Number(extractStr(val)) || 100 })}
+                    onChange={(val) => setGradeForm({ ...gradeForm, maxScore: Number(val) || 100 })}
                     width="100%"
-                    height={46}
+                    height={40}
                     corner={12}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-black dark:text-white mb-1">
-                  {t('edu_grade_remarks')}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-[#F5F1EC] dark:bg-[#292624]"
-                >
-                  <textarea
-                    rows={2}
-                    value={gradeForm.teacherRemarks}
-                    onChange={(e) => setGradeForm({ ...gradeForm, teacherRemarks: e.target.value })}
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
+              <LabelTextarea
+                field="TeacherRemarks"
+                label={t('edu_grade_remarks')}
+                rows={2}
+                value={gradeForm.teacherRemarks}
+                onChange={(val) => setGradeForm({ ...gradeForm, teacherRemarks: val })}
+                width="100%"
+                corner={12}
+              />
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="outline" size="sm" type="button" onClick={() => setIsGradeModalOpen(false)}>
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+                <Button tone="soft" size={40} type="button" onClick={() => setIsGradeModalOpen(false)}>
                   {t('common_cancel')}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {t('edu_grade_save')}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

@@ -12,6 +12,10 @@ import {
 } from 'lucide-react';
 import { StaffMember, StaffAttendanceDayStatus, StaffAttendanceLogRecord } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
   KineticSlideOverInspector,
@@ -26,6 +30,7 @@ import {
   computeInitialsColor,
 } from '../../ui/kinetic';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
+import { X } from 'lucide-react';
 
 interface StaffAttendanceSubViewProps {
   staffList: StaffMember[];
@@ -664,102 +669,77 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
+          dir={isAr ? 'rtl' : 'ltr'}
           className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col gap-[var(--modal-gap,20px)]"
         >
-              <h4 className="t-dialog text-[var(--text-1)] dark:text-white">
-                {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
-              </h4>
+              <div className="flex items-center justify-between gap-[var(--s3,12px)] pb-[var(--s3,12px)] border-b border-[var(--atr-divider)]">
+                <h4 className="t-dialog text-[var(--text-1)] dark:text-white truncate">
+                  {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setIsManualModalOpen(false)}
+                  aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer shrink-0"
+                >
+                  <X className="w-4 h-4" strokeWidth={1.5} />
+                </button>
+              </div>
               <form onSubmit={handleManualSubmit} className="flex flex-col gap-[var(--s4,16px)]">
-                <div className="flex flex-col gap-[var(--s2,8px)]">
-                  <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                    {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-                  >
-                    <select
-                      value={manualStaffId}
-                      onChange={(e) => setManualStaffId(e.target.value)}
-                      className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body text-[var(--text-1)] dark:text-white focus:outline-none cursor-pointer"
-                    >
-                      {staffList.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.fullName} ({s.role})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <LabelSelect
+                  label={isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
+                  value={manualStaffId}
+                  onChange={setManualStaffId}
+                  height={40}
+                  options={staffList.map((s) => ({
+                    value: s.id,
+                    label: `${s.fullName} (${s.role})`,
+                  }))}
+                />
 
-                <div className="grid grid-cols-2 gap-[var(--s3,12px)]">
-                  <div className="flex flex-col gap-[var(--s2,8px)]">
-                    <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3,12px)] items-end">
+                  <div className="flex flex-col gap-[var(--s1,4px)]">
+                    <label className="block t-small font-medium text-[var(--text-2)] dark:text-white/80">
                       {isAr ? 'النوع' : isEn ? 'Type' : 'Type'}
                     </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-                    >
-                      <select
-                        value={manualType}
-                        onChange={(e) => setManualType(e.target.value as any)}
-                        className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body text-[var(--text-1)] dark:text-white focus:outline-none cursor-pointer"
-                      >
-                        <option value="in">{isAr ? 'دخول' : isEn ? 'Clock In' : 'Arrivée'}</option>
-                        <option value="out">{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[var(--s2,8px)]">
-                    <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                      {isAr ? 'الوقت' : isEn ? 'Time' : 'Heure'}
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-                    >
-                      <input
-                        type="time"
-                        value={manualTime}
-                        onChange={(e) => setManualTime(e.target.value)}
-                        className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body tabular-nums text-[var(--text-1)] dark:text-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-[var(--s2,8px)]">
-                  <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
-                    {isAr ? 'السبب' : isEn ? 'Note' : 'Motif'}
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
-                  >
-                    <input
-                      type="text"
-                      value={manualNotes}
-                      onChange={(e) => setManualNotes(e.target.value)}
-                      placeholder={isAr ? 'ملاحظة...' : isEn ? 'Optional note...' : 'Motif...'}
-                      className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body text-[var(--text-1)] dark:text-white focus:outline-none"
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="md"
+                      value={manualType}
+                      onValueChange={(val) => setManualType(val as 'in' | 'out')}
+                      aria-label={isAr ? 'النوع' : isEn ? 'Type' : 'Type'}
+                      options={[
+                        { value: 'in', label: isAr ? 'دخول' : isEn ? 'Clock In' : 'Arrivée' },
+                        { value: 'out', label: isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie' },
+                      ]}
                     />
                   </div>
+                  <LabelInput
+                    label={isAr ? 'الوقت' : isEn ? 'Time' : 'Heure'}
+                    type="time"
+                    value={manualTime}
+                    onChange={setManualTime}
+                    height={40}
+                  />
                 </div>
 
+                <LabelInput
+                  label={isAr ? 'السبب' : isEn ? 'Note' : 'Motif'}
+                  type="text"
+                  value={manualNotes}
+                  onChange={setManualNotes}
+                  placeholder={isAr ? 'ملاحظة...' : isEn ? 'Optional note...' : 'Motif...'}
+                  height={40}
+                />
+
                 <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--footer-gap,16px)] border-t border-[var(--atr-divider)]">
-                  <button
+                  <Button
                     type="button"
+                    tone="soft"
                     onClick={() => setIsManualModalOpen(false)}
-                    data-sq="ctl-sm"
-                    className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/75 dark:hover:text-white cursor-pointer"
                   >
                     {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
-                  </button>
+                  </Button>
                   <AtriumButton type="submit">{isAr ? 'حفظ' : isEn ? 'Save' : 'Valider'}</AtriumButton>
                 </div>
               </form>

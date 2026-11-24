@@ -4,7 +4,7 @@ import { useAtriumSelector } from '../../../services/store';
 import { ContractorDgp, ContractorProject } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { numberToAlgerianWords } from '../../../utils/algerianPtt';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface ContractorDecomptePrintModalProps {
@@ -35,15 +35,10 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 <h3 className="font-semibold t-label text-black dark:text-white">
 {isAr ? "الكشف المالي المؤقت الرسمي (Décret 15-247)" : "Bordereau Officiel de Décompte Provisoire"}
 </h3>
-<p className="t-cap text-black/55 dark:text-white/75">
-{dgp.dgpNumber}
-{" · "}
-{project?.projectName || "Marché BTP"}
-</p>
 </div>
 </div>
 <div className="flex items-center gap-2">
-<AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الكشف" : "Imprimer le Décompte"}</AtriumButton>
+<Button tone="accent" size={36} onClick={handlePrint} leading={<Printer size={15} />}>{isAr ? "طباعة الكشف" : "Imprimer le Décompte"}</Button>
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>

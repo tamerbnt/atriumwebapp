@@ -72,7 +72,6 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
       onClose={onClose}
       isLoading={networkMode === 'force_skeleton'}
       title={t('voucher_title', language)}
-      subtitle={t('voucher_subtitle', language)}
       maxWidth="md"
     >
       <div className="flex flex-col gap-[var(--s5)]">
@@ -107,7 +106,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
               value={code}
               onChange={(val) => setCode(val.toUpperCase())}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
               required
             />
@@ -161,7 +160,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                   type="button"
                   data-sq="card"
                   onClick={() => handleApplyPreset(v.code)}
-                  className="w-full text-left rtl:text-right p-[var(--s3)] bg-white dark:bg-[#22201E] hover:dark:bg-[#282523] flex items-center justify-between gap-[var(--s3)] group cursor-pointer transition-colors"
+                  className="w-full text-start p-[var(--s3)] bg-white dark:bg-[#22201E] hover:dark:bg-[#282523] flex items-center justify-between gap-[var(--s3)] group cursor-pointer transition-colors"
                 >
                   <div className="flex flex-col gap-[var(--s1)]">
                     <div className="t-small font-semibold text-[var(--text-1)]">

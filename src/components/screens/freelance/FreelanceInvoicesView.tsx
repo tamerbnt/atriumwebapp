@@ -29,7 +29,9 @@ import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { FreelanceInvoice, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -59,9 +61,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceInvoicesView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -1313,14 +1312,9 @@ export const FreelanceInvoicesView: React.FC = () => {
           className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-            <div>
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_inv_modal_new_title', language)}
-              </h3>
-              <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                {t('free_inv_modal_new_desc', language)}
-              </p>
-            </div>
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_inv_modal_new_title', language)}
+            </h3>
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
@@ -1338,8 +1332,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   label={`${t('free_invoice_client', language)} *`}
                   placeholder={t('free_inv_ph_select_client', language)}
                   value={targetClientId}
-                  onChange={(val) => {
-                    const clientId = extractStr(val);
+                  onChange={(clientId) => {
                     setTargetClientId(clientId);
                     const cl = freelanceClients.find((c) => c.id === clientId);
                     if (cl) setCurrency(cl.currency);
@@ -1362,7 +1355,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   field="InvoiceCurrency"
                   label={t('free_clients_currency', language)}
                   value={currency}
-                  onChange={(val) => setCurrency(extractStr(val) as CurrencyCode)}
+                  onChange={(val) => setCurrency(val as CurrencyCode)}
                   options={[
                     { value: 'DZD', label: 'DZD' },
                     { value: 'EUR', label: 'EUR' },
@@ -1381,7 +1374,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                 type="date"
                 required
                 value={dueDate}
-                onChange={(v) => setDueDate(extractStr(v))}
+                onChange={setDueDate}
                 width="100%"
                 height={40}
                 corner={12}
@@ -1393,7 +1386,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                 min={0}
                 max={100}
                 value={String(taxPercent)}
-                onChange={(val) => setTaxPercent(Number(extractStr(val)) || 0)}
+                onChange={(val) => setTaxPercent(Number(val) || 0)}
                 width="100%"
                 height={40}
                 corner={12}
@@ -1414,100 +1407,78 @@ export const FreelanceInvoicesView: React.FC = () => {
               </div>
               <div className="space-y-2">
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="flex-1 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
-                        type="text"
+                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                    <div className="sm:col-span-6">
+                      <LabelInput
+                        field={`InvItemDesc-${idx}`}
+                        label={t('free_inv_item_desc', language)}
                         required
-                        placeholder={t('free_inv_item_desc', language)}
                         value={item.description}
-                        onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                        className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                        onChange={(v) => handleItemChange(idx, 'description', v)}
+                        width="100%"
+                        height={40}
+                        corner={12}
                       />
                     </div>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-16 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
+                    <div className="sm:col-span-2">
+                      <LabelInput
+                        field={`InvItemQty-${idx}`}
+                        label={t('free_inv_ph_qty', language)}
                         type="number"
-                        min="1"
-                        placeholder={t('free_inv_ph_qty', language)}
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(idx, 'quantity', Number(e.target.value))}
-                        className="lbi-field w-full px-2 py-2 bg-transparent border-0 text-black dark:text-white text-right focus:outline-none"
+                        min={1}
+                        value={String(item.quantity)}
+                        onChange={(v) => handleItemChange(idx, 'quantity', Number(v) || 1)}
+                        width="100%"
+                        height={40}
+                        corner={12}
                       />
                     </div>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-24 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
+                    <div className={items.length > 1 ? 'sm:col-span-3' : 'sm:col-span-4'}>
+                      <LabelInput
+                        field={`InvItemRate-${idx}`}
+                        label={t('free_inv_ph_rate', language)}
                         type="number"
-                        min="0"
-                        placeholder={t('free_inv_ph_rate', language)}
-                        value={item.unitRate}
-                        onChange={(e) => handleItemChange(idx, 'unitRate', Number(e.target.value))}
-                        className="lbi-field w-full px-2 py-2 bg-transparent border-0 text-black dark:text-white text-right focus:outline-none"
+                        min={0}
+                        value={String(item.unitRate)}
+                        onChange={(v) => handleItemChange(idx, 'unitRate', Number(v) || 0)}
+                        width="100%"
+                        height={40}
+                        corner={12}
                       />
                     </div>
                     {items.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItemRow(idx)}
-                        className="p-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
-                        aria-label="Remove line"
-                      >
-                        <X size={14} />
-                      </button>
+                      <div className="sm:col-span-1 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItemRow(idx)}
+                          className="p-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
+                          aria-label="Remove line"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
             </div>
-            <div>
-              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                {t('free_inv_notes_terms', language)}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={t('free_inv_notes_ph', language)}
-                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <LabelTextarea
+              field="InvoiceNotes"
+              label={t('free_inv_notes_terms', language)}
+              rows={2}
+              value={notes}
+              onChange={setNotes}
+              placeholder={t('free_inv_notes_ph', language)}
+              width="100%"
+              corner={12}
+            />
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsCreateModalOpen(false)}>
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
-                type="submit"
-                data-sq="ctl"
-                data-sq-border="none"
-                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              >
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {t('free_inv_btn_new', language)}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -1537,14 +1508,9 @@ export const FreelanceInvoicesView: React.FC = () => {
               >
                 <AlertTriangle size={20} />
               </div>
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {t('common_delete', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  #{retainedInvoiceToDelete.invoiceNumber}
-                </p>
-              </div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('common_delete', language)}
+              </h3>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {t('free_clients_delete_confirm', language)}{' '}
@@ -1553,32 +1519,23 @@ export const FreelanceInvoicesView: React.FC = () => {
               </strong>{' '}
               ({retainedInvoiceToDelete.clientName})?
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setInvoiceToDelete(null)}
-                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setInvoiceToDelete(null)}>
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
+              </Button>
+              <AtriumButton
                 type="button"
-                data-no-liquid="true"
-                data-sq="ctl"
-                data-sq-border="none"
+                variant="danger"
+                size="md"
                 onClick={() => {
                   if (!invoiceToDelete) return;
                   deleteFreelanceInvoice(invoiceToDelete.id);
                   if (selectedInvoice?.id === invoiceToDelete.id) setSelectedInvoice(null);
                   setInvoiceToDelete(null);
                 }}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
               >
                 {t('common_delete', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Undo2, Redo2, Search, Trash2, X, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Undo2, Redo2, Search, Trash2, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
   useUndoHistory,
   getVerticalDisplayName,
@@ -11,9 +11,11 @@ import {
   SupportedLanguage,
   UndoOperationType,
   UndoVerticalKey,
-  UndoEntryStatus,
   BusinessCategory,
 } from '../../types/index';
+import { LiveSelect } from './live/LiveSelect';
+import { LiveSegmentedControl } from './live/LiveSegmentedControl';
+import { LabelInput } from './LabelInput';
 
 export interface UndoHistoryPopoverProps {
   isOpen: boolean;
@@ -51,7 +53,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
   currentCategory,
   language,
 }) => {
-  const { entries, availableCount, undoById, redoById, clearHistory } = useUndoHistory(
+  const { entries, undoById, redoById, clearHistory } = useUndoHistory(
     businessId,
     branchId
   );
@@ -100,7 +102,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
   const l3 = (ar: string, fr: string, en: string) => (isAr ? ar : isEn ? en : fr);
 
   const getOpLabel = (op: 'all' | UndoOperationType) => {
-    if (op === 'all') return l3('الكل', 'Tout', 'All');
+    if (op === 'all') return l3('كل العمليات', 'Toutes opérations', 'All actions');
     return getOperationDisplayName(op, language);
   };
 
@@ -114,142 +116,78 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
     <div
       role="dialog"
       aria-label={l3('سجل التراجع والعمليات', "Historique d'annulation", 'Undo History')}
-      className="sq-elev-pop absolute top-[calc(100%+8px)] right-0 rtl:right-auto rtl:left-0 w-[min(420px,calc(100vw-24px))] bg-white dark:bg-[#262422] border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] z-[120] overflow-hidden flex flex-col max-h-[min(78vh,560px)]"
+      className="sq-elev-pop absolute top-[calc(100%+8px)] end-0 w-[min(420px,calc(100vw-24px))] bg-white dark:bg-[#262422] border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] z-[120] overflow-hidden flex flex-col max-h-[min(78vh,560px)]"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-black/[0.05] dark:border-white/[0.07]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div
-            className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{
-              background: 'var(--facility-accent-dim, rgba(201, 70, 31, 0.12))',
-              color: 'var(--facility-accent, var(--brand-fill, #C9461F))',
-            }}
-          >
-            <Undo2 size={16} strokeWidth={1.75} />
+      {/* Filters Toolbar (Headerless Popover) */}
+      <div className="px-4 py-3 border-b border-black/[0.05] dark:border-white/[0.07] flex flex-col gap-2.5 bg-[#FBF8F5] dark:bg-[#191716]">
+        <div className="flex items-end gap-2">
+          <div className="flex-1 min-w-0">
+            <LabelInput
+              field={l3('بحث في العمليات', 'Filtrer les actions', 'Filter actions')}
+              value={searchQuery}
+              onChange={(val) => setSearchQuery(val)}
+              prefix={<Search size={14} strokeWidth={1.6} />}
+            />
           </div>
-          <div className="min-w-0">
-            <h3 className="t-card text-[var(--text-1)] truncate">
-              {l3('سجل التراجع', "Historique d'annulation", 'Undo History')}
-            </h3>
-            <p className="t-cap text-[var(--text-2)] tabular-nums">
-              {availableCount}{' '}
-              {l3('عملية متاحة للتراجع', 'actions annulables', 'reversible actions')}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1 shrink-0">
           {entries.length > 0 && (
             <button
               type="button"
+              data-no-liquid=""
               onClick={() => clearHistory()}
-              className="h-8 px-2.5 rounded-[10px] t-small text-[var(--text-2)] hover:text-rose-600 hover:bg-rose-500/10 flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap"
+              className="h-10 px-2.5 rounded-[10px] t-small text-[var(--text-2)] hover:text-rose-600 hover:bg-rose-500/10 flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap shrink-0"
               title={l3('مسح السجل', "Vider l'historique", 'Clear history')}
             >
-              <Trash2 size={13} strokeWidth={1.6} />
+              <Trash2 size={14} strokeWidth={1.6} />
               <span>{l3('مسح', 'Vider', 'Clear')}</span>
             </button>
           )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--atr-soft,#ede6e0)] transition-colors cursor-pointer"
-            aria-label={l3('إغلاق', 'Fermer', 'Close')}
-          >
-            <X size={16} strokeWidth={1.6} />
-          </button>
         </div>
-      </div>
 
-      {/* Filters Toolbar */}
-      <div className="px-4 py-3 border-b border-black/[0.05] dark:border-white/[0.07] flex flex-col gap-2.5 bg-[#FBF8F5] dark:bg-[#191716]">
-        {/* Search + Vertical Select */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 min-w-0">
-            <Search
-              size={14}
-              strokeWidth={1.6}
-              className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] pointer-events-none"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={l3('بحث في العمليات...', 'Filtrer les actions...', 'Filter actions...')}
-              className="w-full h-8 ps-8 pe-7 rounded-[10px] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus:bg-white dark:focus:bg-[#312D2A] t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--facility-accent,var(--brand-fill))]/30 transition-colors"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 rtl:right-auto rtl:left-2 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-[var(--text-1)] cursor-pointer"
-                aria-label="Clear filter search"
-              >
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          <select
+        <div className="grid grid-cols-2 gap-2">
+          <LiveSelect
+            size="sm"
+            tone="soft"
+            className="w-full justify-between"
             aria-label={l3('تصفية حسب النشاط', 'Filtrer par module', 'Filter by vertical')}
             value={verticalFilter}
-            onChange={(e) => setVerticalFilter(e.target.value as 'all' | UndoVerticalKey)}
-            className="h-8 px-2.5 rounded-[10px] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus:bg-white dark:focus:bg-[#312D2A] t-small text-[var(--text-1)] dark:text-white max-w-[148px] truncate cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--facility-accent,var(--brand-fill))]/30 transition-colors"
-          >
-            <option value="all">{l3('كل القطاعات', 'Tous modules', 'All modules')}</option>
-            {presentVerticals.map((v) => (
-              <option key={v} value={v}>
-                {getVerticalDisplayName(v, language)}
-              </option>
-            ))}
-          </select>
+            onValueChange={(val) => setVerticalFilter(val as 'all' | UndoVerticalKey)}
+            options={[
+              { value: 'all', label: l3('كل القطاعات', 'Tous modules', 'All modules') },
+              ...presentVerticals.map((v) => ({
+                value: v,
+                label: getVerticalDisplayName(v, language),
+              })),
+            ]}
+          />
+
+          <LiveSelect
+            size="sm"
+            tone="soft"
+            className="w-full justify-between"
+            aria-label={l3('نوع العملية', "Type d'opération", 'Operation type')}
+            value={opFilter}
+            onValueChange={(val) => setOpFilter(val as 'all' | UndoOperationType)}
+            options={OP_FILTERS.map((op) => ({
+              value: op,
+              label: getOpLabel(op),
+            }))}
+          />
         </div>
 
-        {/* Operation Type Segmented Filter */}
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {OP_FILTERS.map((op) => {
-            const active = opFilter === op;
-            return (
-              <button
-                key={op}
-                type="button"
-                onClick={() => setOpFilter(op)}
-                className={`h-7 px-2.5 rounded-[8px] t-small whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
-                  active
-                    ? 'bg-white dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white font-semibold shadow-2xs'
-                    : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
-                }`}
-              >
-                {getOpLabel(op)}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Availability Filter */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1">
-            {STATUS_FILTERS.map((st) => {
-              const active = statusFilter === st;
-              return (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setStatusFilter(st)}
-                  className={`h-6 px-2 rounded-[6px] t-cap whitespace-nowrap cursor-pointer transition-colors ${
-                    active
-                      ? 'font-semibold text-[var(--facility-accent,var(--brand-fill))] bg-[var(--facility-accent-dim,rgba(201,70,31,0.12))]'
-                      : 'text-[var(--text-3)] hover:text-[var(--text-1)]'
-                  }`}
-                >
-                  {getStatusLabel(st)}
-                </button>
-              );
-            })}
-          </div>
-          <span className="t-cap text-[var(--text-3)] tabular-nums whitespace-nowrap">
-            {filteredEntries.length} / {entries.length}
+          <LiveSegmentedControl
+            size="sm"
+            fullWidth
+            value={statusFilter}
+            onValueChange={(val) => setStatusFilter(val as 'all' | 'available' | 'undone')}
+            aria-label={l3('الحالة', 'Statut', 'Status')}
+            options={STATUS_FILTERS.map((st) => ({
+              value: st,
+              label: getStatusLabel(st),
+            }))}
+          />
+          <span className="t-cap text-[var(--text-3)] tabular-nums whitespace-nowrap shrink-0">
+            {filteredEntries.length}/{entries.length}
           </span>
         </div>
       </div>

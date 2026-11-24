@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { QrCode, Scan, KeyRound, CheckCircle2, X, Clock, ArrowRight, User } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowRight } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { LiquidButton } from '@/atrium/core';
 import { StaffMember } from '../../../types/index';
 
@@ -58,51 +59,38 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isAr ? 'تسجيل الحضور' : isEn ? 'Clock Kiosk' : 'Borne Pointage'}
-      subtitle={isAr ? 'الرمز أو البطاقة' : isEn ? 'Badge or PIN' : 'Badge ou PIN'}
       maxWidth="md"
     >
       <div className="flex flex-col gap-[var(--s4,16px)]">
         {/* Punch Type Selector */}
-        <div
-          data-sq="ctl"
-          data-sq-border="none"
-          className="grid grid-cols-2 gap-[var(--s1,4px)] p-[var(--seg-pad,2px)] bg-[#EFE9E2] dark:bg-[#191716] h-[var(--seg-s-h,32px)]"
-        >
-          <button
-            type="button"
-            onClick={() => setPunchType('in')}
-            data-sq={punchType === 'in' ? 'thumb' : 'none'}
-            className={`h-[var(--seg-s-thumb-h,28px)] px-[var(--seg-px,12px)] t-btn flex items-center justify-center gap-[var(--seg-badge-gap,6px)] transition-all cursor-pointer ${
-              punchType === 'in'
-                ? 'bg-emerald-600 text-white'
-                : 'rounded-[var(--r-thumb,9px)] text-[var(--text-2)] dark:text-white/80 hover:text-[var(--text-1)] dark:hover:text-white'
-            }`}
-          >
-            <Clock size={16} strokeWidth={1.5} />
-            <span>{isAr ? 'دخول' : isEn ? 'Clock In' : 'Entrée'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPunchType('out')}
-            data-sq={punchType === 'out' ? 'thumb' : 'none'}
-            className={`h-[var(--seg-s-thumb-h,28px)] px-[var(--seg-px,12px)] t-btn flex items-center justify-center gap-[var(--seg-badge-gap,6px)] transition-all cursor-pointer ${
-              punchType === 'out'
-                ? 'bg-amber-600 text-white'
-                : 'rounded-[var(--r-thumb,9px)] text-[var(--text-2)] dark:text-white/80 hover:text-[var(--text-1)] dark:hover:text-white'
-            }`}
-          >
-            <Clock size={16} strokeWidth={1.5} />
-            <span>{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</span>
-          </button>
-        </div>
+        <LiveSegmentedControl
+          fullWidth
+          size="md"
+          value={punchType}
+          onValueChange={(val) => setPunchType(val as 'in' | 'out')}
+          aria-label={isAr ? 'نوع التسجيل' : isEn ? 'Punch Type' : 'Type de pointage'}
+          options={[
+            {
+              value: 'in',
+              label: isAr ? 'دخول' : isEn ? 'Clock In' : 'Entrée',
+              icon: <Clock size={16} strokeWidth={1.5} />,
+            },
+            {
+              value: 'out',
+              label: isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie',
+              icon: <Clock size={16} strokeWidth={1.5} />,
+            },
+          ]}
+        />
 
         {/* Input for RFID Token or PIN */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s3,12px)]">
           <LabelInput
             label={isAr ? 'الرمز' : isEn ? 'Badge / PIN' : 'Badge / PIN'}
             value={inputCode}
-            onChange={(e: any) => setInputCode(e?.target?.value ?? e)}
+            onChange={setInputCode}
             placeholder={isAr ? 'الرمز...' : isEn ? 'Code or PIN...' : 'Code ou PIN...'}
+            height={40}
             autoFocus
           />
 

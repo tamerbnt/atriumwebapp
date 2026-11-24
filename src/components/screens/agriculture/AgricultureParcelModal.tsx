@@ -10,7 +10,7 @@ import {
 import { AgriParcel, AgriTenureType, AgriIrrigationType, AgriParcelStatus } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AgricultureParcelModalProps {
@@ -161,18 +161,26 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
               <LabelInput
+                field="ParcelName"
                 label={isAr ? 'اسم القطعة أو الحقل' : 'Désignation de la parcelle'}
                 value={name}
                 onChange={setName}
                 placeholder="Ex: Verger Nord - Orangers Thomson"
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
             <LabelInput
+              field="ParcelCode"
               label={isAr ? 'الرمز الداخلي' : 'Code'}
               value={code}
               onChange={setCode}
               placeholder="Ex: P-01"
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -188,6 +196,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelSelect
+                field="TenureType"
                 label={isAr ? 'طبيعة الحيازة' : 'Régime foncier'}
                 value={tenureType}
                 onChange={(val) => setTenureType(val as AgriTenureType)}
@@ -196,35 +205,51 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
                   { value: 'propriete_melk', label: isAr ? 'ملكية خاصة (ملك)' : 'Propriété Privée (Melk)' },
                   { value: 'fermage_location', label: isAr ? 'عقد إيجار / مزارعة' : 'Fermage / Location Privée' },
                 ]}
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <LabelInput
+                field="CadastralSection"
                 label={isAr ? 'القسم والجزيرة العقارية' : 'Section & Îlot cadastral'}
                 value={cadastralSection}
                 onChange={setCadastralSection}
                 placeholder="Ex: Section 04, Îlot 12"
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <LabelInput
+                field="CadastralDeedRef"
                 label={isAr ? 'رقم العقد التوثيقي / الدفتر' : 'Réf. Acte / Livret Foncier'}
                 value={cadastralDeedRef}
                 onChange={setCadastralDeedRef}
                 placeholder="Ex: Acte N° 1048/2012"
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
+              field="SurfaceHectares"
               label={isAr ? 'المساحة (هكتار)' : 'Superficie (Ha)'}
               type="number"
               step="0.1"
               value={surfaceHectares}
               onChange={setSurfaceHectares}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
 
             <LabelSelect
+              field="IrrigationType"
               label={isAr ? 'نظام الري' : 'Mode d\'irrigation'}
               value={irrigationType}
               onChange={(val) => setIrrigationType(val as AgriIrrigationType)}
@@ -235,50 +260,74 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
                 { value: 'Gravity', label: isAr ? 'السقي السطحي / الساقية' : 'Gravitaire' },
                 { value: 'Rainfed', label: isAr ? 'فلاحة بورية (مطرية)' : 'Bour (Pluvial)' },
               ]}
+              width="100%"
+              height={40}
+              corner={12}
             />
 
             <LabelInput
+              field="AnrhAnnualQuotaM3"
               label={isAr ? 'حصة مياه البئر ANRH (م³)' : 'Quota Forage ANRH (m³)'}
               type="number"
               value={anrhAnnualQuotaM3}
               onChange={setAnrhAnnualQuotaM3}
               placeholder="Ex: 50000"
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="CurrentCrop"
               label={isAr ? 'المحصول المزروع' : 'Culture actuelle'}
               value={currentCrop}
               onChange={setCurrentCrop}
               placeholder="Ex: Oranges Thomson & Clémentines"
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
 
             <LabelInput
+              field="SoilType"
               label={isAr ? 'نوع التربة والخصوبة' : 'Pédologie & Type de sol'}
               value={soilType}
               onChange={setSoilType}
               placeholder="Ex: Argilo-limoneux profond fertile"
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
+              field="PlantingDate"
               label={isAr ? 'تاريخ الغرس / البذر' : 'Date de plantation'}
               type="date"
               value={plantingDate}
               onChange={setPlantingDate}
+              width="100%"
+              height={40}
+              corner={12}
             />
 
             <LabelInput
+              field="ExpectedHarvestDate"
               label={isAr ? 'تاريخ الجني المتوقع' : 'Récolte estimée'}
               type="date"
               value={expectedHarvestDate}
               onChange={setExpectedHarvestDate}
+              width="100%"
+              height={40}
+              corner={12}
             />
 
             <LabelSelect
+              field="ParcelStatus"
               label={isAr ? 'الحالة الحالية' : 'Statut cultural'}
               value={status}
               onChange={(val) => setStatus(val as AgriParcelStatus)}
@@ -289,33 +338,39 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
                 { value: 'Harvesting', label: isAr ? 'موسم الجني' : 'En Récolte' },
                 { value: 'Damaged', label: isAr ? 'تلف / صقيع' : 'Sinistrée' },
               ]}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div>
             <LabelInput
+              field="ParcelNotes"
               label={isAr ? 'ملاحظات وتوصيات agronomy' : 'Observations agronomiques'}
               value={notes}
               onChange={setNotes}
               placeholder="Ex: Programme de fertilisation NPK et analyses de sol validées..."
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
-            <button
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
               onClick={onClose}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className="px-4 py-2 t-small font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-[#2B2825] dark:hover:bg-[#332F2B] text-black dark:text-white cursor-pointer"
+              tone="soft"
+              size={40}
             >
               {isAr ? 'إلغاء' : 'Annuler'}
-            </button>
-            <AtriumButton variant="primary" type="submit">
+            </Button>
+            <Button tone="accent" size={40} type="submit">
               {initialData
                 ? (isAr ? 'حفظ التعديلات' : 'Enregistrer les Modifications')
                 : (isAr ? 'تأكيد وحفظ القطعة' : 'Créer le Passeport Parcelle')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

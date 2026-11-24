@@ -18,9 +18,11 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { useMedicalData } from './medicalData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { MedicalCertificateRecord } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -59,9 +61,6 @@ const MEMBER_PILL_OK =
   'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const MEMBER_PILL_WARN =
   'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
-
-const extractStr = (val: any): string =>
-  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const MedicalCertificatesView: React.FC<any> = () => {
   const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
@@ -847,7 +846,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         zIndexClass="z-50"
         scrimClassName="bg-black/60"
       >
-        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden max-h-[92vh]">
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-y-auto">
               <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#22201E]">
                 <div className="flex items-center gap-3">
                   <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
@@ -869,46 +868,46 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
             <form
               onSubmit={handleCreateCertificate}
-              className="p-6 space-y-4 overflow-y-auto max-h-[75vh]"
+              className="p-6 space-y-4"
             >
-              <LabelSelect
-                label="Type de Certificat"
-                value={certType}
-                onChange={(val) =>
-                  setCertType(
-                    extractStr(val) as MedicalCertificateRecord['certificateType']
-                  )
-                }
-                options={[
-                  {
-                    value: 'ArretDeTravail',
-                    label: "Certificat d'Arrêt de Travail (CNAS)",
-                  },
-                  {
-                    value: 'AptitudePhysique',
-                    label: "Certificat d'Aptitude Physique & Sport",
-                  },
-                  {
-                    value: 'CertificatDescriptifITT',
-                    label: 'Certificat Médical Descriptif (avec ITT)',
-                  },
-                  {
-                    value: 'LettreOrientation',
-                    label: "Lettre d'Orientation / Liaison Confrère",
-                  },
-                ]}
-              />
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+                  Type de Certificat
+                </label>
+                <LiveSegmentedControl
+                  size="sm"
+                  fullWidth
+                  value={certType}
+                  onChange={(val) =>
+                    setCertType(val as MedicalCertificateRecord['certificateType'])
+                  }
+                  options={[
+                    { value: 'ArretDeTravail', label: 'Arrêt Travail' },
+                    { value: 'AptitudePhysique', label: 'Aptitude Sport' },
+                    { value: 'CertificatDescriptifITT', label: 'Descriptif ITT' },
+                    { value: 'LettreOrientation', label: 'Orientation' },
+                  ]}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
+                  field="selectedPatientId"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Patient"
                   value={selectedPatientId}
-                  onChange={(val) => setSelectedPatientId(extractStr(val))}
+                  onChange={setSelectedPatientId}
                   options={patients.map((p) => ({ value: p.id, label: p.fullName }))}
                 />
                 <LabelSelect
+                  field="selectedDoctorId"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Médecin Signataire"
                   value={selectedDoctorId}
-                  onChange={(val) => setSelectedDoctorId(extractStr(val))}
+                  onChange={setSelectedDoctorId}
                   options={practitioners.map((p) => ({
                     value: p.id,
                     label: `${p.fullName} (${p.specialty})`,
@@ -919,24 +918,36 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               {certType === 'ArretDeTravail' && (
                 <>
                   <LabelInput
+                    field="patientEmployer"
+                    width="100%"
+                    height={40}
+                    corner={12}
                     label="Organisme Employeur / Entreprise du Patient"
                     value={patientEmployer}
-                    onChange={(e) => setPatientEmployer(e.target.value)}
+                    onChange={setPatientEmployer}
                     placeholder="ex: Sonatrach, Ministère, Société privée..."
                   />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <LabelInput
+                      field="startDate"
+                      width="100%"
+                      height={40}
+                      corner={12}
                       label="Date de Début de l'Arrêt"
                       type="date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={setStartDate}
                       required
                     />
                     <LabelInput
+                      field="endDate"
+                      width="100%"
+                      height={40}
+                      corner={12}
                       label="Date de Fin (Inclus)"
                       type="date"
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
+                      onChange={setEndDate}
                       required
                     />
                   </div>
@@ -975,50 +986,55 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
               {certType === 'CertificatDescriptifITT' && (
                 <LabelInput
+                  field="ittDays"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Incapacité Totale de Travail (en jours)"
                   type="number"
                   value={String(ittDays)}
-                  onChange={(e) => setIttDays(Number(e.target.value))}
+                  onChange={(v) => setIttDays(Number(v))}
                   required
                 />
               )}
 
               {(certType === 'AptitudePhysique' || certType === 'LettreOrientation') && (
                 <LabelInput
+                  field="purpose"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Objet / Destination du Certificat"
                   value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
+                  onChange={setPurpose}
                   placeholder="ex: Football amateur, Visite d'embauche, Référé pour avis cardiologique"
                   required
                 />
               )}
 
-              <div>
-                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  Constatations Cliniques &amp; Mentions Légales
-                </label>
-                <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-                  <textarea
-                    value={clinicalFindings}
-                    onChange={(e) => setClinicalFindings(e.target.value)}
-                    rows={3}
-                    className="lbi-field w-full px-3 py-2 t-cap bg-transparent border-0 text-black dark:text-white focus:outline-hidden"
-                    required
-                  />
-                </div>
-              </div>
+              <LabelTextarea
+                field="clinicalFindings"
+                width="100%"
+                corner={12}
+                label="Constatations Cliniques & Mentions Légales"
+                value={clinicalFindings}
+                onChange={setClinicalFindings}
+                rows={3}
+                required
+              />
 
-              <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-between items-center">
-                <AtriumButton
-                  variant="ghost"
+              <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-end gap-2 items-center">
+                <Button
+                  tone="soft"
+                  size={40}
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
                 >
                   Annuler
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit" icon={<CheckCircle2 size={16} />}>
+                </Button>
+                <Button tone="accent" size={40} type="submit" leading={<CheckCircle2 size={16} />}>
                   Générer le Document Officiel
-                </AtriumButton>
+                </Button>
               </div>
             </form>
           </div>
@@ -1132,17 +1148,18 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2">
-              <AtriumButton variant="secondary" onClick={() => setActivePrintCert(null)}>
+            <div className="mt-6 flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button tone="soft" size={40} type="button" onClick={() => setActivePrintCert(null)}>
                 Fermer
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
+              </Button>
+              <Button
+                tone="accent"
+                size={40}
                 onClick={() => window.print()}
-                icon={<Printer size={15} />}
+                leading={<Printer size={15} />}
               >
                 Lancer l&apos;Impression
-              </AtriumButton>
+              </Button>
             </div>
           </div>
         )}

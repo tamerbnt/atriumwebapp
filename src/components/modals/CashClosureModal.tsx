@@ -13,6 +13,7 @@ import { shallowEqualObjects, useAtriumSelector, showToast } from '../../service
 import { Modal } from '../ui/Modal';
 import { Button, LiquidButton } from '@/atrium/core';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelTextarea } from '../ui/LabelTextarea';
 import { formatMoney } from '../../utils/rules';
 import { DailyCashClosure, CashReceipt } from '../../types';
 
@@ -156,13 +157,14 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-[var(--s3,12px)]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[var(--s3,12px)]">
               <div className="flex flex-col gap-[var(--s1,4px)]">
                 <LabelInput
                   type="number"
                   label="2 000 DA"
                   value={String(b2000)}
-                  onChange={(e) => setB2000(Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(val) => setB2000(Math.max(0, parseInt(val, 10) || 0))}
+                  height={40}
                 />
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
                   = {formatMoney(b2000 * 2000, language)}
@@ -173,7 +175,8 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
                   type="number"
                   label="1 000 DA"
                   value={String(b1000)}
-                  onChange={(e) => setB1000(Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(val) => setB1000(Math.max(0, parseInt(val, 10) || 0))}
+                  height={40}
                 />
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
                   = {formatMoney(b1000 * 1000, language)}
@@ -184,7 +187,8 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
                   type="number"
                   label="500 DA"
                   value={String(b500)}
-                  onChange={(e) => setB500(Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(val) => setB500(Math.max(0, parseInt(val, 10) || 0))}
+                  height={40}
                 />
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
                   = {formatMoney(b500 * 500, language)}
@@ -195,7 +199,8 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
                   type="number"
                   label="200 DA"
                   value={String(b200)}
-                  onChange={(e) => setB200(Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(val) => setB200(Math.max(0, parseInt(val, 10) || 0))}
+                  height={40}
                 />
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
                   = {formatMoney(b200 * 200, language)}
@@ -206,7 +211,8 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
                   type="number"
                   label="100 DA"
                   value={String(b100)}
-                  onChange={(e) => setB100(Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(val) => setB100(Math.max(0, parseInt(val, 10) || 0))}
+                  height={40}
                 />
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
                   = {formatMoney(b100 * 100, language)}
@@ -229,14 +235,15 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           </div>
         </div>
 
-        <LabelInput
+        <LabelTextarea
           label={isAr ? 'ملاحظات الإغلاق' : isEn ? 'Closing Notes' : 'Observations'}
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={setNotes}
+          rows={2}
           placeholder={isAr ? 'أضف ملاحظة...' : isEn ? 'Add note...' : 'Notes...'}
         />
 
-        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s4,16px)] border-t border-[var(--atr-divider)]">
           <Button tone="soft" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>

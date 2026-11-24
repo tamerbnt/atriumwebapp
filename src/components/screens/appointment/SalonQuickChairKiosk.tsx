@@ -26,6 +26,10 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { EmptyState } from '../../../atrium/components/EmptyState';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import {
   KineticEmptyStateMotion,
   KineticModalShell,
@@ -642,19 +646,20 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+            className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
           >
-            <h3 className="t-card font-semibold text-black dark:text-white mb-1">
+            <h3 className="t-card font-semibold text-black dark:text-white">
               {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
             </h3>
-            <p className="t-cap text-black/62 dark:text-white/65 mb-4">
-              {retainedCheckoutStation.clientName} — {retainedCheckoutStation.serviceName}
-            </p>
             <div
               data-sq="card"
               data-sq-border="none"
-              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 mb-4"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2"
             >
+              <div className="flex justify-between font-medium text-black dark:text-white pb-2 border-b border-[var(--atr-divider)]">
+                <span>{retainedCheckoutStation.clientName}</span>
+                <span className="text-black/62 dark:text-white/65">{retainedCheckoutStation.serviceName}</span>
+              </div>
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
                 <span className="tabular-nums font-semibold">
@@ -680,45 +685,34 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 mb-5">
-              {['cash', 'baridimob', 'cib'].map((pm) => (
-                <button
-                  key={pm}
-                  type="button"
-                  onClick={() => setPaymentMethod(pm)}
-                  data-sq="ctl"
-                  data-sq-border="solid"
-                  style={paymentMethod === pm ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
-                  className={`py-2 px-2 t-small font-semibold border-0 transition-all flex flex-col items-center gap-1 cursor-pointer ${
-                    paymentMethod === pm
-                      ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/75 dark:text-white/80'
-                  }`}
-                >
-                  {pm === 'cash' ? <Banknote size={15} /> : <CreditCard size={15} />}
-                  <span>{pm === 'cash' ? 'Espèces' : pm === 'baridimob' ? 'BaridiMob' : 'CIB'}</span>
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button
+            <LiveSegmentedControl
+              size="md"
+              fullWidth
+              value={paymentMethod}
+              onChange={setPaymentMethod}
+              options={[
+                { value: 'cash', label: 'Espèces' },
+                { value: 'baridimob', label: 'BaridiMob' },
+                { value: 'cib', label: 'CIB' },
+              ]}
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
                 type="button"
+                tone="soft"
+                size={40}
                 onClick={() => setCheckoutModalStationKey(null)}
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                tone="accent"
+                size={40}
                 onClick={handleConfirmCheckout}
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold cursor-pointer"
               >
                 {isRtl ? 'تأكيد' : 'Valider'}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -736,12 +730,13 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
           data-sq-border="solid"
           className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 max-h-[92vh] overflow-y-auto"
         >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {isRtl ? 'تسكين زبون' : 'Installer un Client au Fauteuil'}
                 </h3>
                 <button
                   type="button"
+                  aria-label={isRtl ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsAddClientModalOpen(false)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 dark:text-white/65 cursor-pointer hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors"
                 >
@@ -749,102 +744,72 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 </button>
               </div>
               <form onSubmit={handleAddNewClientToStation} className="space-y-4">
-                <div>
-                  <label className="block t-small font-semibold mb-1">{isRtl ? 'محطة العمل' : 'Poste'}</label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
-                  >
-                    <select
-                      value={targetStationId}
-                      onChange={(e) => setTargetStationId(e.target.value)}
-                      className="w-full h-full px-3 bg-transparent border-0 t-small font-medium outline-none"
-                    >
-                      {workstationsList.map((ws) => (
-                        <option key={ws.id} value={ws.id}>
-                          {ws.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block t-small font-semibold mb-1">{isRtl ? 'اسم الزبون' : 'Nom du client'}</label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
-                  >
-                    <input
-                      type="text"
-                      required
-                      value={newClientName}
-                      onChange={(e) => setNewClientName(e.target.value)}
-                      placeholder="Ex: Karim Mansouri"
-                      className="lbi-field px-3 bg-transparent border-0 t-small font-medium outline-none"
-                      style={{ paddingInline: '12px' }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block t-small font-semibold mb-1">{isRtl ? 'الخدمة' : 'Prestation'}</label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
-                  >
-                    <select
-                      value={selectedServiceId}
-                      onChange={(e) => setSelectedServiceId(e.target.value)}
-                      className="w-full h-full px-3 bg-transparent border-0 t-small font-medium outline-none"
-                    >
-                      {servicesCatalog.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name} — {formatMoney(s.price, 'DZD')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block t-small font-semibold mb-1">{isRtl ? 'المصففة' : 'Styliste'}</label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
-                  >
-                    <select
-                      value={selectedStylistId}
-                      onChange={(e) => setSelectedStylistId(e.target.value)}
-                      className="w-full h-full px-3 bg-transparent border-0 t-small font-medium outline-none"
-                    >
-                      {staff.map((st) => (
-                        <option key={st.id} value={st.id}>
-                          {st.fullName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="pt-2 flex gap-2">
-                  <button
+                <LabelSelect
+                  field="targetStationId"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label={isRtl ? 'محطة العمل' : 'Poste'}
+                  value={targetStationId}
+                  onChange={setTargetStationId}
+                  options={workstationsList.map((ws) => ({
+                    value: ws.id,
+                    label: ws.name,
+                  }))}
+                />
+                <LabelInput
+                  field="newClientName"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label={isRtl ? 'اسم الزبون' : 'Nom du client'}
+                  required
+                  value={newClientName}
+                  onChange={setNewClientName}
+                  placeholder="Ex: Karim Mansouri"
+                />
+                <LabelSelect
+                  field="selectedServiceId"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label={isRtl ? 'الخدمة' : 'Prestation'}
+                  value={selectedServiceId}
+                  onChange={setSelectedServiceId}
+                  options={servicesCatalog.map((s) => ({
+                    value: s.id,
+                    label: `${s.name} — ${formatMoney(s.price, 'DZD')}`,
+                  }))}
+                />
+                <LabelSelect
+                  field="selectedStylistId"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  label={isRtl ? 'المصففة' : 'Styliste'}
+                  value={selectedStylistId}
+                  onChange={setSelectedStylistId}
+                  options={staff.map((st) => ({
+                    value: st.id,
+                    label: st.fullName,
+                  }))}
+                />
+                <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-end gap-2">
+                  <Button
                     type="button"
+                    tone="soft"
+                    size={40}
                     onClick={() => setIsAddClientModalOpen(false)}
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
                   >
                     {isRtl ? 'إلغاء' : 'Annuler'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold cursor-pointer"
+                    tone="accent"
+                    size={40}
                   >
                     {isRtl ? 'تسكين' : 'Installer'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -877,7 +842,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="card"
               data-sq-border="none"
-              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 text-left mb-5"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 text-start mb-5"
             >
               <div className="flex justify-between">
                 <span>Client :</span>
@@ -894,29 +859,27 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 </span>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
                 type="button"
+                tone="soft"
+                size={40}
                 onClick={() => setLastReceipt(null)}
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
               >
                 Fermer
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                tone="accent"
+                size={40}
+                leading={<Printer size={14} />}
                 onClick={() => {
                   window.print();
                   setLastReceipt(null);
                 }}
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Printer size={14} />
-                <span>Imprimer</span>
-              </button>
+                Imprimer
+              </Button>
             </div>
           </div>
         )}

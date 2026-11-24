@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, AlertTriangle, Droplets, Check, Zap } from 'lucide-react';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriTreatmentLog, AgriParcel, AgriCropCycle } from '../../../types';
@@ -266,78 +267,118 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelSelect
+              field="Parcel"
               label={isAr ? 'القطعة الفلاحية المستهدفة *' : 'Parcelle Cadastrale *'}
               value={parcelId}
-              onChange={(val) => setParcelId(val)}
+              onChange={setParcelId}
               options={parcelOptions}
+              width="100%"
+              height={40}
+              corner={12}
             />
 
             <LabelSelect
+              field="CropCycle"
               label={isAr ? 'دورة المحصول المرتبطة' : 'Cycle de Culture Associé'}
               value={cropCycleId}
-              onChange={(val) => setCropCycleId(val)}
+              onChange={setCropCycleId}
               options={cycleOptions}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelInput
+              field="ProductName"
               label={isAr ? 'اسم المنتج التجاري *' : 'Produit Commercial Homologué *'}
               placeholder="Ex: Ridomil Gold, Cuprocol"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={setProductName}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="ActiveIngredient"
               label={isAr ? 'المادة الفعالة' : 'Substance Active'}
               placeholder="Ex: Métalaxyl-M + Mancozèbe"
               value={activeIngredient}
-              onChange={(e) => setActiveIngredient(e.target.value)}
+              onChange={setActiveIngredient}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <LabelInput
+              field="TargetPest"
               label={isAr ? 'الآفة أو المرض المستهدف *' : 'Cible / Maladie *'}
               placeholder="Ex: Mildiou, Oïdium, Cératite"
               value={targetPest}
-              onChange={(e) => setTargetPest(e.target.value)}
+              onChange={setTargetPest}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="Dosage"
               label={isAr ? 'الجرعة بالهكتار *' : 'Dose / ha *'}
               placeholder="Ex: 2.5 kg/ha"
               value={dosage}
-              onChange={(e) => setDosage(e.target.value)}
+              onChange={setDosage}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="TotalQuantityUsed"
               label={isAr ? 'الكمية الإجمالية المستخدمة' : 'Quantité Totale Utilisée'}
               placeholder="Ex: 20 kg"
               value={totalQuantityUsed}
-              onChange={(e) => setTotalQuantityUsed(e.target.value)}
+              onChange={setTotalQuantityUsed}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <LabelInput
+              field="TreatmentDate"
               label={isAr ? 'تاريخ المعالجة والرش *' : 'Date d’Application *'}
               type="date"
               value={treatmentDate}
-              onChange={(e) => setTreatmentDate(e.target.value)}
+              onChange={setTreatmentDate}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="DarDays"
               label={isAr ? 'فترة الأمان DAR (أيام) *' : 'Délai Avant Récolte DAR (Jours) *'}
               type="number"
               value={darDays}
-              onChange={(e) => setDarDays(e.target.value)}
+              onChange={setDarDays}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="Operator"
               label={isAr ? 'المطبق المسؤول' : 'Applicateur Responsable'}
               value={operator}
-              onChange={(e) => setOperator(e.target.value)}
+              onChange={setOperator}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
@@ -372,37 +413,39 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="safetyGear"
-              checked={safetyGearConfirmed}
-              onChange={(e) => setSafetyGearConfirmed(e.target.checked)}
-              className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
-            />
-            <label htmlFor="safetyGear" className="t-cap text-black/70 dark:text-white cursor-pointer">
+          <div className="flex items-center justify-between gap-3 py-1">
+            <span className="t-cap text-black/70 dark:text-white">
               {isAr
                 ? 'أؤكد ارتداء معدات الوقاية الفردية (EPI) ومراعاة اتجاه الرياح'
                 : 'Je confirme le port des Équipements de Protection Individuelle (EPI) et le respect des normes INPV'}
-            </label>
+            </span>
+            <LiveSwitch
+              checked={safetyGearConfirmed}
+              onCheckedChange={setSafetyGearConfirmed}
+              aria-label={isAr ? 'معدات الوقاية' : 'Confirmation EPI'}
+            />
           </div>
 
           <LabelInput
+            field="TreatmentNotes"
             label={isAr ? 'ملاحظات وظروف الطقس' : 'Observations & Conditions Météo'}
             placeholder="Ex: Pulvérisation sans vent, température 19°C..."
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={setNotes}
+            width="100%"
+            height={40}
+            corner={12}
           />
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="ghost" size="sm" onClick={onClose} type="button">
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+            <Button tone="soft" size={40} onClick={onClose} type="button">
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+            </Button>
+            <Button tone="accent" size={40} type="submit" leading={<Check size={14} />}>
               {logToEdit
                 ? (isAr ? 'حفظ التعديلات' : 'Enregistrer')
                 : (isAr ? 'تأكيد وقيد المعالجة' : 'Consigner le Traitement Phyto')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

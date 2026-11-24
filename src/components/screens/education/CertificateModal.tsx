@@ -20,7 +20,7 @@ import {
 import { EduCertificate } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
@@ -126,14 +126,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {activeCert && (
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Printer size={14} />}
+              <Button
+                tone="soft"
+                size={36}
+                leading={<Printer size={14} />}
                 onClick={handlePrint}
               >
-                <span>{t('edu_cert_print')}</span>
-              </AtriumButton>
+                {t('edu_cert_print')}
+              </Button>
             )}
             <button
               onClick={onClose}
@@ -153,7 +153,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   field="RecipientStudent"
                   label={t('edu_cert_recipient')}
                   value={studentId}
-                  onChange={(val) => setStudentId(val?.target?.value ?? String(val))}
+                  onChange={setStudentId}
                   options={eduStudents.map((s) => ({
                     value: s.id,
                     label: s.fullName,
@@ -171,7 +171,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   field="CompletedCohort"
                   label={t('edu_cert_cohort')}
                   value={cohortId}
-                  onChange={(val) => setCohortId(val?.target?.value ?? String(val))}
+                  onChange={setCohortId}
                   options={eduCohorts.map((c) => ({
                     value: c.id,
                     label: c.name,
@@ -184,7 +184,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="CumulativeGrade"
                   label={t('edu_cert_grade')}
@@ -192,7 +192,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   min={50}
                   max={100}
                   value={averageGrade}
-                  onChange={(val) => setAverageGrade(parseInt(val?.target?.value ?? val) || 0)}
+                  onChange={(val) => setAverageGrade(parseInt(val, 10) || 0)}
                   width="100%"
                   height={40}
                   corner={12}
@@ -209,7 +209,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="Signatory Name"
                   label={t('edu_cert_signatory_name')}
@@ -230,31 +230,30 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
               </div>
 
-              <div className="pt-4 flex justify-end gap-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
+              <div className="pt-4 flex justify-end gap-2.5 border-t border-[var(--atr-divider)]">
+                <Button
+                  tone="soft"
+                  size={40}
                   type="button"
                   onClick={onClose}
                 >
                   {t('common_cancel')}
-                </AtriumButton>
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  glow
-                  icon={<FileCheck size={14} />}
+                </Button>
+                <Button
+                  tone="accent"
+                  size={40}
+                  leading={<FileCheck size={14} />}
                   type="submit"
                 >
                   {t('edu_cert_generate')}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
           ) : (
             /* Printable Preview */
             <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-[var(--r-card,16px)] border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
-              <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+              <div className="absolute end-4 bottom-4 opacity-5 pointer-events-none text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 <GraduationCap size={240} />
               </div>
 
@@ -295,7 +294,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   </div>
                 )}
 
-                <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#d4522f]/20 mt-8 text-left rtl:text-right">
+                <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8 border-t border-[#d4522f]/20 mt-8 text-start">
                   <div>
                     <div className="t-small font-semibold text-black">
                       {activeCert.signatoryName}
@@ -308,7 +307,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right rtl:text-left">
+                  <div className="sm:text-end">
                     <div className="t-cap tabular-nums text-black/55 rtl:normal-case rtl:tracking-normal">
                       {t('edu_cert_verif_hash')}
                     </div>

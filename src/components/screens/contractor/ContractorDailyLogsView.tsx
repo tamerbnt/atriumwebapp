@@ -30,9 +30,11 @@ import {
 } from '../../../services/store';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ContractorDailyLog } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
@@ -64,13 +66,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string =>
-  typeof v === 'string'
-    ? v
-    : typeof v === 'number'
-    ? String(v)
-    : (v as { target?: { value?: string } })?.target?.value ?? '';
 
 export const ContractorDailyLogsView: React.FC<any> = () => {
   const {
@@ -1547,23 +1542,31 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </button>
               </div>
             <form onSubmit={handleCreateLog} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'تاريخ التقرير' : 'Date'}
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(extractStr(e))}
-                  required
-                />
-                <LabelSelect
-                  label={isAr ? 'الطقس' : 'Météo'}
+              <LabelInput
+                field="date"
+                width="100%"
+                height={40}
+                corner={12}
+                label={isAr ? 'تاريخ التقرير' : 'Date'}
+                type="date"
+                value={date}
+                onChange={setDate}
+                required
+              />
+              <div>
+                <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+                  {isAr ? 'الطقس' : 'Météo'}
+                </label>
+                <LiveSegmentedControl
+                  size="md"
+                  fullWidth
                   value={weather}
-                  onChange={(v) => setWeather(extractStr(v))}
+                  onChange={setWeather}
                   options={[
                     { value: 'Ensoleillé', label: 'Ensoleillé' },
                     { value: 'Nuageux', label: 'Nuageux' },
                     { value: 'Pluvieux', label: 'Pluvieux' },
-                    { value: 'Venteux / Sirocco', label: 'Venteux / Sirocco' },
+                    { value: 'Venteux / Sirocco', label: 'Venteux' },
                   ]}
                 />
               </div>
@@ -1585,7 +1588,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                     {totalHeadcount} ouvriers
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {[
                     { label: 'Maçons', value: craftMasons, set: setCraftMasons },
                     { label: 'Ferrailleurs', value: craftIronworkers, set: setCraftIronworkers },
@@ -1628,41 +1631,58 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </div>
               </div>
               <LabelInput
+                field="tasks"
+                width="100%"
+                height={40}
+                corner={12}
                 label={isAr ? 'الأعمال المنجزة بالتفصيل' : 'Tâches accomplies et avancement'}
                 value={tasks}
-                onChange={(e) => setTasks(extractStr(e))}
+                onChange={setTasks}
                 placeholder="Ex: Coulage dalle niveau R+3, ferraillage voiles..."
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="equipment"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'العتاد والآليات' : 'Engins mobilisés'}
                   value={equipment}
-                  onChange={(e) => setEquipment(extractStr(e))}
+                  onChange={setEquipment}
                 />
                 <LabelInput
+                  field="signature"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'المشرف الموقّع' : 'Superviseur / Ingénieur'}
                   value={signature}
-                  onChange={(e) => setSignature(extractStr(e))}
+                  onChange={setSignature}
                   required
                 />
               </div>
               <LabelInput
+                field="incidents"
+                width="100%"
+                height={40}
+                corner={12}
                 label={isAr ? 'ملاحظات الأمان' : 'Sécurité HSE & Remarques'}
                 value={incidents}
-                onChange={(e) => setIncidents(extractStr(e))}
+                onChange={setIncidents}
               />
-              <div className="flex justify-end gap-2 pt-2">
-                <AtriumButton
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  variant="secondary"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsLogModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {isAr ? 'توقيع المحضر' : 'Valider & Signer'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>
@@ -1699,86 +1719,123 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </button>
               </div>
             <form onSubmit={handleCreateConcretePour} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'تاريخ الصبة' : 'Date de coulage'}
-                  type="date"
-                  value={pourDate}
-                  onChange={(e) => setPourDate(extractStr(e))}
-                  required
-                />
-                <LabelSelect
-                  label={isAr ? 'رتبة الخرسانة' : 'Classe du Béton'}
+              <LabelInput
+                field="pourDate"
+                width="100%"
+                height={40}
+                corner={12}
+                label={isAr ? 'تاريخ الصبة' : 'Date de coulage'}
+                type="date"
+                value={pourDate}
+                onChange={setPourDate}
+                required
+              />
+              <div>
+                <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+                  {isAr ? 'رتبة الخرسانة' : 'Classe du Béton'}
+                </label>
+                <LiveSegmentedControl
+                  size="md"
+                  fullWidth
                   value={pourGrade}
-                  onChange={(v) => setPourGrade(extractStr(v))}
+                  onChange={setPourGrade}
                   options={[
-                    { value: 'B20', label: 'B20 (Gros béton)' },
-                    { value: 'B25', label: 'B25 (Structure standard)' },
-                    { value: 'B30', label: 'B30 (Voiles fortement armés)' },
-                    { value: 'B35', label: 'B35 (Haute résistance)' },
+                    { value: 'B20', label: 'B20' },
+                    { value: 'B25', label: 'B25' },
+                    { value: 'B30', label: 'B30' },
+                    { value: 'B35', label: 'B35' },
                   ]}
                 />
               </div>
               <LabelInput
+                field="pourElement"
+                width="100%"
+                height={40}
+                corner={12}
                 label={isAr ? 'العنصر المصبوب' : 'Élément structural coulé'}
                 value={pourElement}
-                onChange={(e) => setPourElement(extractStr(e))}
+                onChange={setPourElement}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="pourSupplier"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'المورد' : 'Centrale à béton'}
                   value={pourSupplier}
-                  onChange={(e) => setPourSupplier(extractStr(e))}
+                  onChange={setPourSupplier}
                   required
                 />
                 <LabelInput
+                  field="pourSlip"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'رقم وصل التسليم' : 'N° Bon de Livraison'}
                   value={pourSlip}
-                  onChange={(e) => setPourSlip(extractStr(e))}
+                  onChange={setPourSlip}
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <LabelInput
+                  field="pourVolume"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Volume (m³)"
                   type="number"
                   value={pourVolume}
-                  onChange={(e) => setPourVolume(extractStr(e))}
+                  onChange={setPourVolume}
                   required
                 />
                 <LabelInput
+                  field="pourSlump"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Affaissement (cm)"
                   type="number"
                   value={pourSlump}
-                  onChange={(e) => setPourSlump(extractStr(e))}
+                  onChange={setPourSlump}
                   required
                 />
                 <LabelInput
+                  field="pourCylinders"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Éprouvettes"
                   type="number"
                   value={pourCylinders}
-                  onChange={(e) => setPourCylinders(extractStr(e))}
+                  onChange={setPourCylinders}
                   required
                 />
               </div>
               <LabelInput
+                field="pourStrength7D"
+                width="100%"
+                height={40}
+                corner={12}
                 label="Résistance écrasement 7 jours (MPa)"
                 type="number"
                 value={pourStrength7D}
-                onChange={(e) => setPourStrength7D(extractStr(e))}
+                onChange={setPourStrength7D}
               />
-              <div className="flex justify-end gap-2 pt-2">
-                <AtriumButton
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  variant="secondary"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsConcreteModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {isAr ? 'تسجيل ومطابقة' : 'Enregistrer Coulée'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>
@@ -1813,17 +1870,25 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </button>
               </div>
             <form onSubmit={handleCreateEquipmentLog} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="eqName"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Désignation Engin"
                   value={eqName}
-                  onChange={(e) => setEqName(extractStr(e))}
+                  onChange={setEqName}
                   required
                 />
                 <LabelSelect
+                  field="eqCategory"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Catégorie"
                   value={eqCategory}
-                  onChange={(v) => setEqCategory(extractStr(v))}
+                  onChange={setEqCategory}
                   options={[
                     { value: 'Excavator', label: 'Pelle hydraulique' },
                     { value: 'TowerCrane', label: 'Grue à tour' },
@@ -1833,54 +1898,75 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   ]}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="eqMatricule"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Immatriculation / Matricule"
                   value={eqMatricule}
-                  onChange={(e) => setEqMatricule(extractStr(e))}
+                  onChange={setEqMatricule}
                   required
                 />
                 <LabelInput
+                  field="eqOperator"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Conducteur d’engin"
                   value={eqOperator}
-                  onChange={(e) => setEqOperator(extractStr(e))}
+                  onChange={setEqOperator}
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <LabelInput
+                  field="eqHours"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Heures compteur"
                   type="number"
                   value={eqHours}
-                  onChange={(e) => setEqHours(extractStr(e))}
+                  onChange={setEqHours}
                   required
                 />
                 <LabelInput
+                  field="eqFuelLiters"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Gasoil servi (L)"
                   type="number"
                   value={eqFuelLiters}
-                  onChange={(e) => setEqFuelLiters(extractStr(e))}
+                  onChange={setEqFuelLiters}
                   required
                 />
                 <LabelInput
+                  field="eqTheoreticalBurnRate"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label="Norme (L/h)"
                   type="number"
                   value={eqTheoreticalBurnRate}
-                  onChange={(e) => setEqTheoreticalBurnRate(extractStr(e))}
+                  onChange={setEqTheoreticalBurnRate}
                   required
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <AtriumButton
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
                   type="button"
-                  variant="secondary"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsEquipmentModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {isAr ? 'حفظ وفحص النسبة' : 'Valider & Contrôler'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

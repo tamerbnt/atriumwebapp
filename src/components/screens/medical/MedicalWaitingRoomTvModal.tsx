@@ -13,7 +13,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { MedicalConsultation, MedicalPractitioner } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { useMedicalData } from './medicalData';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion, KineticModalShell } from '../../ui/kinetic';
@@ -154,18 +153,13 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           >
             <Activity size={26} className="animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="t-dialog font-semibold tracking-wide text-white">
-                Centre Médical El-Chifa
-              </span>
-              <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-[#0D9488]/20 text-[#14B8A6]">
-                Écran Salle d'Attente
-              </span>
-            </div>
-            <p className="t-cap text-white/50">
-              Système Numérique d'Appel des Patients · Polyclinique & Soins Ambulatoires
-            </p>
+          <div className="flex items-center gap-2">
+            <span className="t-dialog font-semibold tracking-wide text-white">
+              Centre Médical El-Chifa
+            </span>
+            <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-[#0D9488]/20 text-[#14B8A6]">
+              Écran Salle d'Attente
+            </span>
           </div>
         </div>
 

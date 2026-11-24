@@ -26,6 +26,8 @@ import { formatMoney } from '../../../utils/rules';
 import { ManufacturingOrder } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { ManufacturingOrderModal } from './ManufacturingOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -975,18 +977,16 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
             {tab === 'notes' && (
               <div className="space-y-3 t-cap">
-                <label className="block t-small font-semibold text-black/55 dark:text-white/55">
-                  {isAr ? 'ملاحظات وتوجيهات الورشة' : "Consignes d'Atelier & Rebuts"}
-                </label>
-                <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-                  <textarea
-                    value={inspectorNotes}
-                    onChange={(e) => setInspectorNotes(e.target.value)}
-                    rows={8}
-                    placeholder={isAr ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
-                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white t-cap outline-none"
-                  />
-                </div>
+                <LabelTextarea
+                  field="ofInspectorNotes"
+                  label={isAr ? 'ملاحظات وتوجيهات الورشة' : "Consignes d'Atelier & Rebuts"}
+                  value={inspectorNotes}
+                  onChange={setInspectorNotes}
+                  rows={7}
+                  placeholder={isAr ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
+                  width="100%"
+                  corner={12}
+                />
                 <div className="flex items-center justify-between pt-1">
                   <span className="t-cap text-black/55 dark:text-white/55">
                     {noteSaved && (
@@ -995,9 +995,9 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                       </span>
                     )}
                   </span>
-                  <AtriumButton type="button" variant="primary" size="sm" icon={<Save size={13} />} onClick={handleSaveNotes}>
-                    <span>{isAr ? 'حفظ الملاحظات' : 'Enregistrer'}</span>
-                  </AtriumButton>
+                  <Button type="button" tone="accent" size={36} leading={<Save size={13} />} onClick={handleSaveNotes}>
+                    {isAr ? 'حفظ الملاحظات' : 'Enregistrer'}
+                  </Button>
                 </div>
               </div>
             )}
@@ -1036,30 +1036,23 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-3">
-                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0">
                   <Printer size={20} />
                 </div>
-                <div>
-                  <h3 className="font-semibold t-card text-black dark:text-white">
-                    {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
-                  </p>
-                </div>
+                <h3 className="font-semibold t-card text-black dark:text-white">
+                  {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
+                </h3>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
+                  tone="accent"
+                  size={36}
+                  leading={<Printer size={14} />}
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Printer size={14} />
-                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                </button>
+                  {isAr ? 'طباعة' : 'Imprimer'}
+                </Button>
                 <button
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
@@ -1081,7 +1074,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="tabular-nums font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedOrderForFiche.orderNumber}</div>
                   <div className="tabular-nums t-small font-semibold text-black/75 mt-0.5">
                     {retainedOrderForFiche.batchLotNumber || 'LOT-202610-0089'}
@@ -1114,8 +1107,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                 <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                   <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-black/[0.12]">
                     <tr>
-                      <th className="p-2 text-left w-12">Op.</th>
-                      <th className="p-2 text-left">Poste de Travail / Opération</th>
+                      <th className="p-2 text-start w-12">Op.</th>
+                      <th className="p-2 text-start">Poste de Travail / Opération</th>
                       <th className="p-2 text-center w-24">Cadence</th>
                       <th className="p-2 text-center w-28">Visa Opérateur</th>
                       <th className="p-2 text-center w-28">Visa Contrôle CQ</th>
@@ -1126,29 +1119,29 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                       <td className="p-2 tabular-nums font-semibold text-center">010</td>
                       <td className="p-2">Découpe, Dégauchissage & Calibrage brut</td>
                       <td className="p-2 tabular-nums text-center">45 min</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
                       <td className="p-2 tabular-nums font-semibold text-center">020</td>
                       <td className="p-2">Usinage commande numérique & Perçage CNC</td>
                       <td className="p-2 tabular-nums text-center">60 min</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
                       <td className="p-2 tabular-nums font-semibold text-center">030</td>
                       <td className="p-2">Assemblage mécanique & Pose quincaillerie</td>
                       <td className="p-2 tabular-nums text-center">40 min</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
                       <td className="p-2 tabular-nums font-semibold text-center">040</td>
                       <td className="p-2">Finition de surface & Contrôle dimensionnel final</td>
                       <td className="p-2 tabular-nums text-center">30 min</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
-                      <td className="p-2 border-l border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-s border-black/[0.12] text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1159,7 +1152,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                 </span>
                 <span className="tabular-nums font-semibold text-black">{'Tolérance Rebut : < 3%'}</span>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t text-center t-cap">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t text-center t-cap">
                 <div>
                   <span className="text-black/55 t-cap block">Chef d'Atelier (Lancement)</span>
                   <div className="h-10 flex items-center justify-center text-black/75 italic">M. Brahim M.</div>

@@ -14,9 +14,10 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { DoctorOrdonnanceConfig, MedicalPractitioner } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { KineticModalShell } from '../../ui/kinetic';
 
 interface MedicalOrdonnancePersonalizerModalProps {
@@ -121,9 +122,6 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 <h2 className="t-card font-semibold text-black dark:text-white">Studio de Personnalisation d'Ordonnance</h2>
 <span className="t-small font-semibold px-2 py-1 rounded-full bg-[#0D9488]/15 text-[#0D9488]">Format A5 & A4</span>
 </div>
-<p className="t-cap text-black/55 dark:text-white/75">
-Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentions légales par médecin
-</p>
 </div>
 </div>
 <div className="flex items-center gap-2">
@@ -156,32 +154,20 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 <Printer size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 Format de Papier & Mode d'Impression
 </span>
-<div className="grid grid-cols-2 gap-3">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div>
-<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Taille du Papier</label>
-<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-[#191716]">
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
-													...formData,
-													paperFormat: "A5"
-												})} className={`py-2 t-small font-semibold transition-all cursor-pointer ${formData.paperFormat === "A5" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>A5 (148×210)</button>
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
-													...formData,
-													paperFormat: "A4"
-												})} className={`py-2 t-small font-semibold transition-all cursor-pointer ${formData.paperFormat === "A4" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>A4 (210×297)</button>
-</div>
+<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1.5">Taille du Papier</label>
+<LiveSegmentedControl size="md" fullWidth value={formData.paperFormat} onChange={(v) => setFormData({ ...formData, paperFormat: v as any })} options={[
+													{ value: "A5", label: "A5 (148×210)" },
+													{ value: "A4", label: "A4 (210×297)" }
+												]} />
 </div>
 <div>
-<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Support Papier</label>
-<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-[#191716]">
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
-													...formData,
-													printMode: "full_digital"
-												})} className={`py-2 t-small font-semibold transition-all cursor-pointer ${formData.printMode === "full_digital" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black" : "text-black/70 dark:text-white/75"}`}>En-tête Numérique</button>
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
-													...formData,
-													printMode: "preprinted_paper"
-												})} className={`py-2 t-small font-semibold transition-all cursor-pointer ${formData.printMode === "preprinted_paper" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black" : "text-black/70 dark:text-white/75"}`}>Papier Pré-imprimé</button>
-</div>
+<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1.5">Support Papier</label>
+<LiveSegmentedControl size="md" fullWidth value={formData.printMode} onChange={(v) => setFormData({ ...formData, printMode: v as any })} options={[
+													{ value: "full_digital", label: "En-tête Numérique" },
+													{ value: "preprinted_paper", label: "Papier Pré-imprimé" }
+												]} />
 </div>
 </div>
 {formData.printMode === "preprinted_paper" && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-700 dark:text-amber-300 t-cap">
@@ -193,36 +179,36 @@ Mode Pré-imprimé actif: L'en-tête et le logo ne seront pas imprimés pour lai
 <Building size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 Identité & Titres Médicaux
 </span>
-<LabelInput label="Nom et Prénom du Médecin" value={formData.doctorName} onChange={(e) => setFormData({
+<LabelInput field="doctorName" width="100%" height={40} corner={12} label="Nom et Prénom du Médecin" value={formData.doctorName} onChange={(v) => setFormData({
 											...formData,
-											doctorName: e.target.value
+											doctorName: v
 										})} />
-<LabelInput label="Spécialité & Discipline (ex: Cardiologue)" value={formData.specialtyTitle} onChange={(e) => setFormData({
+<LabelInput field="specialtyTitle" width="100%" height={40} corner={12} label="Spécialité & Discipline (ex: Cardiologue)" value={formData.specialtyTitle} onChange={(v) => setFormData({
 											...formData,
-											specialtyTitle: e.target.value
+											specialtyTitle: v
 										})} />
-<LabelInput label="Titres Académiques & Hospitaliers" value={formData.academicCredentials} onChange={(e) => setFormData({
+<LabelInput field="academicCredentials" width="100%" height={40} corner={12} label="Titres Académiques & Hospitaliers" value={formData.academicCredentials} onChange={(v) => setFormData({
 											...formData,
-											academicCredentials: e.target.value
+											academicCredentials: v
 										})} />
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label="N° Inscription Ordre des Médecins" value={formData.licenseNumber} onChange={(e) => setFormData({
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<LabelInput field="licenseNumber" width="100%" height={40} corner={12} label="N° Inscription Ordre des Médecins" value={formData.licenseNumber} onChange={(v) => setFormData({
 												...formData,
-												licenseNumber: e.target.value
+												licenseNumber: v
 											})} />
-<LabelInput label="Téléphone Cabinet / Secrétariat" value={formData.cabinetPhone} onChange={(e) => setFormData({
+<LabelInput field="cabinetPhone" width="100%" height={40} corner={12} label="Téléphone Cabinet / Secrétariat" value={formData.cabinetPhone} onChange={(v) => setFormData({
 												...formData,
-												cabinetPhone: e.target.value
+												cabinetPhone: v
 											})} />
 </div>
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label="Numéro d'Urgence (optionnel)" value={formData.emergencyPhone} onChange={(e) => setFormData({
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<LabelInput field="emergencyPhone" width="100%" height={40} corner={12} label="Numéro d'Urgence (optionnel)" value={formData.emergencyPhone} onChange={(v) => setFormData({
 												...formData,
-												emergencyPhone: e.target.value
+												emergencyPhone: v
 											})} />
-<LabelInput label="Adresse de la Polyclinique" value={formData.clinicAddress} onChange={(e) => setFormData({
+<LabelInput field="clinicAddress" width="100%" height={40} corner={12} label="Adresse de la Polyclinique" value={formData.clinicAddress} onChange={(v) => setFormData({
 												...formData,
-												clinicAddress: e.target.value
+												clinicAddress: v
 											})} />
 </div>
 </div>
@@ -259,29 +245,23 @@ Palette de Style & Sécurité
 						))}
 					</div>
 </div>
-<div className="flex items-center justify-between pt-2 border-t border-[var(--atr-divider)]">
+<div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>
-<input type="checkbox" checked={formData.showWatermark} onChange={(e) => setFormData({
-												...formData,
-												showWatermark: e.target.checked
-											})} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer" />
+<LiveSwitch checked={formData.showWatermark} onCheckedChange={(checked) => setFormData({ ...formData, showWatermark: checked })} ariaLabel="Filigrane Caducée" />
 </div>
-<div className="flex items-center justify-between pt-2 border-t border-[var(--atr-divider)]">
+<div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Afficher le Cachet / Tampon Numérique Officiel</span>
-<input type="checkbox" checked={formData.isStampEnabled} onChange={(e) => setFormData({
-												...formData,
-												isStampEnabled: e.target.checked
-											})} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer" />
+<LiveSwitch checked={formData.isStampEnabled} onCheckedChange={(checked) => setFormData({ ...formData, isStampEnabled: checked })} ariaLabel="Cachet Numérique Officiel" />
 </div>
 </div>
 <div className="space-y-3">
-<LabelInput label="Horaires de Consultation (Pied de page)" value={formData.footerConsultationHours} onChange={(e) => setFormData({
+<LabelInput field="footerConsultationHours" width="100%" height={40} corner={12} label="Horaires de Consultation (Pied de page)" value={formData.footerConsultationHours} onChange={(v) => setFormData({
 										...formData,
-										footerConsultationHours: e.target.value
+										footerConsultationHours: v
 									})} />
-<LabelInput label="Mention Légale / Validité Ordonnance" value={formData.footerLegalNotice} onChange={(e) => setFormData({
+<LabelInput field="footerLegalNotice" width="100%" height={40} corner={12} label="Mention Légale / Validité Ordonnance" value={formData.footerLegalNotice} onChange={(v) => setFormData({
 										...formData,
-										footerLegalNotice: e.target.value
+										footerLegalNotice: v
 									})} />
 </div>
 </div>
@@ -361,9 +341,9 @@ Aperçu Réel Ordonnance (
 </div>
 </div>
 </div>
-<div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#22201E]">
-<AtriumButton variant="ghost" onClick={onClose}>Annuler</AtriumButton>
-<AtriumButton variant="primary" onClick={handleSave} icon={<Check size={16} />}>Enregistrer le Modèle d'Ordonnance</AtriumButton>
+<div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-2 shrink-0 bg-[#F3EDE7] dark:bg-[#22201E]">
+<Button tone="soft" size={40} type="button" onClick={onClose}>Annuler</Button>
+<Button tone="accent" size={40} onClick={handleSave} leading={<Check size={16} />}>Enregistrer le Modèle d'Ordonnance</Button>
 </div>
 			</div>
 		</KineticModalShell>

@@ -3,7 +3,7 @@ import { X, Calculator, Printer, CheckCircle2, TrendingUp, Info, Building2 } fro
 import { showToast, useAtriumSelector } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { calculatePriceRevisionCoeff } from '../../../utils/contractorRules';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { ContractorProject } from '../../../types';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
@@ -87,11 +87,6 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 <h2 className="t-card font-semibold text-black dark:text-white">
 {isAr ? "حاسبة مراجعة الأسعار التعاقدية (CCAG المادة 54)" : "Calculateur de Révision des Prix (CCAG Art. 54)"}
 </h2>
-<p className="t-cap text-black/55 dark:text-white/55">
-{project.projectCode}
-{" · "}
-{project.projectName}
-</p>
 </div>
 </div>
 <button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
@@ -109,9 +104,9 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
 <span className="t-small font-semibold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
-<div className="grid grid-cols-2 gap-2">
-<LabelInput label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
-<LabelInput label="Indice Actuel S" type="number" value={currentLaborS} onChange={setCurrentLaborS} />
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<LabelInput field="baseLaborS0" width="100%" height={40} corner={12} label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
+<LabelInput field="currentLaborS" width="100%" height={40} corner={12} label="Indice Actuel S" type="number" value={currentLaborS} onChange={setCurrentLaborS} />
 </div>
 <div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55 pt-1">
 <span>Ratio S / S0:</span>
@@ -125,9 +120,9 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
 <span className="t-small font-semibold text-black dark:text-white block">Matériaux & Carburant (M)</span>
-<div className="grid grid-cols-2 gap-2">
-<LabelInput label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
-<LabelInput label="Indice Actuel M" type="number" value={currentMaterialM} onChange={setCurrentMaterialM} />
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<LabelInput field="baseMaterialM0" width="100%" height={40} corner={12} label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
+<LabelInput field="currentMaterialM" width="100%" height={40} corner={12} label="Indice Actuel M" type="number" value={currentMaterialM} onChange={setCurrentMaterialM} />
 </div>
 <div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55 pt-1">
 <span>Ratio M / M0:</span>
@@ -148,14 +143,14 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 {(parseFloat(coeffA) + parseFloat(coeffB) + parseFloat(coeffC)).toFixed(2)}
 </span>
 </div>
-<div className="grid grid-cols-3 gap-3">
-<LabelInput label="Marge Fixe (a)" type="number" value={coeffA} onChange={setCoeffA} />
-<LabelInput label="Part M.O. (b)" type="number" value={coeffB} onChange={setCoeffB} />
-<LabelInput label="Part Matériaux (c)" type="number" value={coeffC} onChange={setCoeffC} />
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<LabelInput field="coeffA" width="100%" height={40} corner={12} label="Marge Fixe (a)" type="number" value={coeffA} onChange={setCoeffA} />
+<LabelInput field="coeffB" width="100%" height={40} corner={12} label="Part M.O. (b)" type="number" value={coeffB} onChange={setCoeffB} />
+<LabelInput field="coeffC" width="100%" height={40} corner={12} label="Part Matériaux (c)" type="number" value={coeffC} onChange={setCoeffC} />
 </div>
 </div>
 <div>
-<LabelInput label="Montant Initial des Travaux HT (DZD)" type="number" value={contractBaseAmount} onChange={setContractBaseAmount} />
+<LabelInput field="contractBaseAmount" width="100%" height={40} corner={12} label="Montant Initial des Travaux HT (DZD)" type="number" value={contractBaseAmount} onChange={setContractBaseAmount} />
 </div>
 <div className="sq-elev-card">
 <div data-sq="card" data-sq-border="solid" data-surface="dark" className="p-4 bg-[#1F1D1B] [--sq-stroke:var(--sq-stroke-obsidian)] text-white space-y-3">
@@ -189,11 +184,9 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 </div>
-<div className="flex items-center justify-between pt-2">
-<AtriumButton variant="secondary" onClick={onClose}>{isAr ? "إغلاق" : "Fermer"}</AtriumButton>
-<div className="flex items-center gap-2">
-<AtriumButton variant="primary" onClick={handlePrintNote} icon={<Printer size={14} />}>{isAr ? "طباعة مذكرة المراجعة" : "Imprimer Note CCAG"}</AtriumButton>
-</div>
+<div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+<Button tone="soft" size={40} onClick={onClose}>{isAr ? "إغلاق" : "Fermer"}</Button>
+<Button tone="accent" size={40} onClick={handlePrintNote} leading={<Printer size={14} />}>{isAr ? "طباعة مذكرة المراجعة" : "Imprimer Note CCAG"}</Button>
 </div>
 </div>
 </div>

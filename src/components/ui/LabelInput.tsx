@@ -20,17 +20,19 @@ import { squircleNotchedRingPaths, squirclePath } from "@/atrium/motion/shapes";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-const S = 0.78;
+const S = 0.86;
 const IN = 0.75;
 
 function computeRingPaths(W: number, H: number, r: number, lw: number, isRtl: boolean) {
   const lx = Math.max(12, r + 2);
+  const maxGapW = Math.max(16, W - lx * 2 - 4);
+  const gapW = Math.min(maxGapW, lw * S + 8);
   const x0 = isRtl
-    ? Math.max(r * 0.5, W - lx - lw * S - 4)
+    ? Math.max(r * 0.5, W - lx - gapW)
     : Math.max(r * 0.5, lx - 4);
   const x1 = isRtl
     ? Math.min(W - r * 0.5, W - lx + 4)
-    : Math.min(W - r, lx + lw * S + 4);
+    : Math.min(W - r * 0.5, lx + gapW - 4);
   const ring = squircleNotchedRingPaths(W, H, r, IN, x0, x1, 0.6);
   const bg = squirclePath(0, 0, W, H, r, 0.6);
   return { lx, bg, ...ring };
@@ -40,7 +42,7 @@ export interface LabelInputProps {
   field?: string;
   label?: string;
   value?: string | number;
-  onChange?: (val: any) => void;
+  onChange?: (val: string) => void;
   type?: string;
   corner?: number;
   width?: number | string;
@@ -109,7 +111,7 @@ export function LabelInput({
   const resolvedErrorId = errorId || `${id}-error`;
 
   const resolvedField = field ?? "";
-  const label = explicitLabel || field || "Email";
+  const label = explicitLabel || field || "";
   const isSecret = type === "password" || resolvedField.toLowerCase().includes("password") || label.toLowerCase().includes("password");
   const isEmailField = !type && (resolvedField ? resolvedField.toLowerCase().includes("email") : label.toLowerCase().includes("email"));
 
@@ -129,10 +131,10 @@ export function LabelInput({
     type === "month" ||
     type === "week";
 
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
   const isRtl =
     (typeof document !== "undefined" && document.documentElement.dir === "rtl") ||
-    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
-  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+    hasArabic;
 
   const up = focus || isDateTime || (value !== undefined && value !== null && String(value).length > 0);
 
@@ -261,15 +263,7 @@ export function LabelInput({
     if (controlledValue === undefined) {
       setInternalValue(val);
     }
-    if (!onChange) return;
-    const hybrid: any = new String(val);
-    hybrid.target = e.target;
-    hybrid.currentTarget = e.currentTarget;
-    hybrid.preventDefault = () => e.preventDefault?.();
-    hybrid.stopPropagation = () => e.stopPropagation?.();
-    hybrid.valueOf = () => val;
-    hybrid.toString = () => val;
-    onChange(hybrid);
+    onChange?.(val);
   };
 
   return (
@@ -281,7 +275,12 @@ export function LabelInput({
       data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
       data-has-prefix={Boolean(prefix)}
       data-invalid={Boolean(error)}
-      style={{ width: typeof width === "number" ? `${width}px` : width }}
+      data-rtl={isRtl ? "true" : undefined}
+      style={{
+        width: typeof width === "number" ? `${width}px` : width,
+        "--lbi-scale": String(S),
+        "--lbi-lift": `${H / 2}px`,
+      } as React.CSSProperties}
     >
       <div
         className="lbi-box"

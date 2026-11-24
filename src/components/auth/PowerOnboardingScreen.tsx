@@ -63,6 +63,7 @@ import {
 } from '../modals/FeatureBlueprintModal';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 import { deriveCategoryConfigDefaultsFromOnboarding } from '../../utils/businessConfig';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 import { OnboardingShowcaseCard } from './OnboardingShowcaseCard';
@@ -2050,7 +2051,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     });
                     return (
                       <div className="space-y-[var(--ob-gap)]">
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-[var(--ob-grid-gap)]">
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-[var(--ob-grid-gap)] items-center">
                           <LabelInput
                             field="branchAddress"
                             label={isAr ? 'عنوان الفرع الرئيسي' : isFr ? 'Adresse du siège / établissement' : 'Headquarters Address'}
@@ -2060,32 +2061,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             height={isCompactHeight ? 36 : 40}
                             corner={12}
                           />
-                          <div
-                            data-sq="ctl"
-                            data-sq-border="solid"
-                            className={`${isCompactHeight ? 'h-[36px]' : 'h-[40px]'} px-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.14)] flex items-center justify-between gap-[var(--s2,8px)]`}
-                          >
-                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] shrink-0">
-                              {isAr ? 'الولاية' : 'Wilaya'}
-                            </span>
-                            <select
-                              aria-label={isAr ? 'الولاية' : 'Wilaya'}
-                              value={wilayaCode}
-                              onChange={(e) => setWilayaCode(e.target.value)}
-                              className="bg-transparent text-[#FFF5EE] t-small font-medium focus:outline-none text-end cursor-pointer"
-                            >
-                              <option value="16" className="bg-[#231F1D] text-[#FFF5EE]">16 · Alger</option>
-                              <option value="31" className="bg-[#231F1D] text-[#FFF5EE]">31 · Oran</option>
-                              <option value="25" className="bg-[#231F1D] text-[#FFF5EE]">25 · Constantine</option>
-                              <option value="09" className="bg-[#231F1D] text-[#FFF5EE]">09 · Blida</option>
-                              <option value="19" className="bg-[#231F1D] text-[#FFF5EE]">19 · Sétif</option>
-                              <option value="06" className="bg-[#231F1D] text-[#FFF5EE]">06 · Béjaïa</option>
-                              <option value="23" className="bg-[#231F1D] text-[#FFF5EE]">23 · Annaba</option>
-                              <option value="15" className="bg-[#231F1D] text-[#FFF5EE]">15 · Tizi Ouzou</option>
-                              <option value="13" className="bg-[#231F1D] text-[#FFF5EE]">13 · Tlemcen</option>
-                              <option value="30" className="bg-[#231F1D] text-[#FFF5EE]">30 · Ouargla</option>
-                            </select>
-                          </div>
+                          <LabelSelect
+                            field="wilayaCode"
+                            label={isAr ? 'الولاية' : 'Wilaya'}
+                            value={wilayaCode}
+                            onChange={setWilayaCode}
+                            height={isCompactHeight ? 36 : 40}
+                            corner={12}
+                            options={[
+                              { value: '16', label: '16 · Alger' },
+                              { value: '31', label: '31 · Oran' },
+                              { value: '25', label: '25 · Constantine' },
+                              { value: '09', label: '09 · Blida' },
+                              { value: '19', label: '19 · Sétif' },
+                              { value: '06', label: '06 · Béjaïa' },
+                              { value: '23', label: '23 · Annaba' },
+                              { value: '15', label: '15 · Tizi Ouzou' },
+                              { value: '13', label: '13 · Tlemcen' },
+                              { value: '30', label: '30 · Ouargla' },
+                            ]}
+                          />
                         </div>
 
                         <div
@@ -2186,19 +2181,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 >
                   <Sparkles className="w-[var(--icon-m,20px)] h-[var(--icon-m,20px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.75} />
                 </div>
-                <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
-                  <h3 className="t-dialog font-medium text-white">
-                    {isAr ? 'الحصول على ترخيص Atrium OS' : isFr ? 'Obtenir une licence Atrium OS' : 'Get an Atrium OS License'}
-                  </h3>
-                  <p className="t-cap text-[var(--text-dark-2,#A99E92)]">
-                    {isAr ? 'ترخيص دائم مدى الحياة بدون رسوم دورية' : isFr ? 'Licence perpétuelle à vie • Facture proforma & convention' : 'Perpetual lifetime license • Official invoice'}
-                  </p>
-                </div>
+                <h3 className="t-dialog font-medium text-white">
+                  {isAr ? 'الحصول على ترخيص Atrium OS' : isFr ? 'Obtenir une licence Atrium OS' : 'Get an Atrium OS License'}
+                </h3>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowLicenseModal(false)}
+                aria-label={isAr ? 'إغلاق' : isFr ? 'Fermer' : 'Close'}
                 className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-white/5 hover:bg-white/10 text-[var(--text-dark-2,#A99E92)] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
@@ -2240,11 +2231,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <CreditCard className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                   <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian payment options'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-[var(--s2,8px)] t-small text-white/85">
-                  <div>• Virement Postal CCP / SFP 01</div>
-                  <div>• Virement Bancaire (BNA, BEA, CPA)</div>
-                  <div>• Application BaridiMob</div>
-                  <div>• Règlement espèces en agence</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s2,8px)] t-small text-white/85">
+                  <div>• {isAr ? 'تحويل بريدي CCP / SFP 01' : isFr ? 'Virement Postal CCP / SFP 01' : 'Postal CCP / SFP 01 Transfer'}</div>
+                  <div>• {isAr ? 'تحويل بنكي (BNA, BEA, CPA)' : isFr ? 'Virement Bancaire (BNA, BEA, CPA)' : 'Bank Transfer (BNA, BEA, CPA)'}</div>
+                  <div>• {isAr ? 'تطبيق بريدي موب (BaridiMob)' : isFr ? 'Application BaridiMob' : 'BaridiMob App'}</div>
+                  <div>• {isAr ? 'الدفع نقداً في الوكالة' : isFr ? 'Règlement espèces en agence' : 'Cash Settlement in Office'}</div>
                 </div>
               </div>
 

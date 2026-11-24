@@ -34,7 +34,6 @@ export interface LiveDropdownMenuProps {
 export function LiveDropdownMenu({
   trigger,
   items,
-  header,
   placement = 'bottom-end',
   'aria-label': ariaLabel,
 }: LiveDropdownMenuProps) {
@@ -78,7 +77,6 @@ export function LiveDropdownMenu({
         aria-label={ariaLabel}
         placement={placement}
         width="menu"
-        header={header}
         focus="first"
         onRequestClose={() => setOpen(false)}
       >

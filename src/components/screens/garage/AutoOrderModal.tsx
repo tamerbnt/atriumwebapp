@@ -23,7 +23,9 @@ import {
 import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AutoOrderModalProps {
@@ -33,9 +35,6 @@ interface AutoOrderModalProps {
   bays?: WorkshopBay[];
   onSave: (order: RepairOrder) => void;
 }
-
-const extractStr = (eOrVal: any): string =>
-  eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
 
 export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
@@ -191,39 +190,25 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 <button type="button" onClick={onClose} aria-label={language === "ar" ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X size={18} /></button>
 </div>
-<div className="flex items-center gap-1 px-6 pt-3 border-b border-[var(--atr-divider)] bg-white dark:bg-[#262422] overflow-x-auto">
-{[
-						{
-							id: "intake",
-							label: language === "ar" ? "1. بيانات الدخول والعداد" : "1. Véhicule & Compteur",
-							icon: /* @__PURE__ */ <Gauge size={14} />
-						},
-						{
-							id: "walkaround",
-							label: language === "ar" ? "2. معاينة الهيكل" : "2. Inspection Carrosserie",
-							icon: /* @__PURE__ */ <Camera size={14} />
-						},
-						{
-							id: "dispatch",
-							label: language === "ar" ? "3. العطل وجسر الرفع" : "3. Diagnostic & Pont",
-							icon: /* @__PURE__ */ <Wrench size={14} />
-						},
-						{
-							id: "signature",
-							label: language === "ar" ? "4. الموافقة والتوقيع" : "4. Accord & Signature",
-							icon: /* @__PURE__ */ <PenTool size={14} />
-						}
-					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-4 py-2 t-small font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
-{t.icon}
-<span>{t.label}</span>
-{t.id === "walkaround" && damageMarkers.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-cap flex items-center justify-center tabular-nums">{damageMarkers.length}</span>}
-</button>)}
+<div className="px-6 pt-3 pb-2 border-b border-[var(--atr-divider)] bg-white dark:bg-[#262422]">
+<LiveSegmentedControl
+  value={activeTab}
+  onChange={setActiveTab}
+  options={[
+    { value: "intake", label: language === "ar" ? "1. الدخول والعداد" : "1. Véhicule" },
+    { value: "walkaround", label: (language === "ar" ? "2. الهيكل" : "2. Carrosserie") + (damageMarkers.length > 0 ? ` (${damageMarkers.length})` : "") },
+    { value: "dispatch", label: language === "ar" ? "3. العطل والجسر" : "3. Diagnostic" },
+    { value: "signature", label: language === "ar" ? "4. التوقيع" : "4. Signature" }
+  ]}
+  size="sm"
+  fullWidth
+/>
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-{activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
+{activeTab === "intake" && <div className="space-y-5 animate-in fade-in">
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-4">
-<LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={(v) => setSelectedVehicleId(extractStr(v))} options={vehicleOptions} />
-{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap bg-white dark:bg-[#191716] p-3">
+<LabelSelect field="orderVehicleId" label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={setSelectedVehicleId} options={vehicleOptions} width="100%" height={40} corner={12} />
+{activeVehicle && <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap bg-white dark:bg-[#191716] p-3">
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
 <span className="font-semibold text-black dark:text-white">{activeVehicle.ownerName}</span>
@@ -245,51 +230,42 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>}
 </div>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div className="space-y-2">
-<LabelInput label={language === "ar" ? "العداد الفعلي عند الدخول (كم)" : "Kilométrage actuel compteur (km)"} type="number" value={currentMileage} onChange={(e) => setCurrentMileage(e.target.value)} required />
-<label className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75 cursor-pointer pt-1">
-<input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>
-{language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}
-</span>
-</label>
-</div>
-<div className="space-y-2">
-<label className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
-<span className="flex items-center gap-2">
-<Fuel size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-{language === "ar" ? "مستوى الوقود" : "Niveau de carburant"}
-</span>
-<span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-{fuelLevel}
-%
-</span>
-</label>
-<div className="grid grid-cols-5 gap-2 pt-1">
-{[
-												"0",
-												"25",
-												"50",
-												"75",
-												"100"
-											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border="none" onClick={() => setFuelLevel(lvl)} className={`py-2 t-small font-semibold transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white" : "bg-[#F5F1EC] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B]"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+<div className="space-y-2.5">
+<LabelInput field="orderMileage" label={language === "ar" ? "العداد الفعلي عند الدخول (كم)" : "Kilométrage actuel compteur (km)"} type="number" value={currentMileage} onChange={setCurrentMileage} width="100%" height={40} corner={12} required />
+<div className="flex items-center justify-between gap-2 px-1 pt-0.5 t-cap text-black/70 dark:text-white/75">
+<span>{language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}</span>
+<LiveSwitch checked={isOdometerReplaced} onCheckedChange={setIsOdometerReplaced} />
 </div>
 </div>
+<LabelSelect
+  field="orderFuelLevel"
+  label={language === "ar" ? "مستوى الوقود" : "Niveau de carburant"}
+  value={fuelLevel}
+  onChange={setFuelLevel}
+  options={[
+    { value: "0", label: language === "ar" ? "فارغ (0%)" : "Vide (0%)" },
+    { value: "25", label: "25%" },
+    { value: "50", label: "50%" },
+    { value: "75", label: "75%" },
+    { value: "100", label: language === "ar" ? "ممتلئ (100%)" : "Plein (100%)" }
+  ]}
+  width="100%"
+  height={40}
+  corner={12}
+/>
 </div>
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
-<div className="flex items-center justify-between">
+<div className="flex flex-wrap items-center justify-between gap-2">
 <span className="t-small font-semibold text-black dark:text-white">
 {language === "ar" ? "الملحقات والأغراض المسلمة في المركبة" : "Accessoires & Objets à Bord"}
 </span>
-<label className="flex items-center gap-2 t-cap text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full cursor-pointer">
-<input type="checkbox" checked={isVehicleDirty} onChange={(e) => setIsVehicleDirty(e.target.checked)} className="rounded-[var(--r-check,6px)] text-amber-600" />
-<span>
-{language === "ar" ? "المركبة غير نظيفة (فحص مشروط)" : "Véhicule très sale (réserve carrosserie)"}
-</span>
-</label>
+<div className="flex items-center gap-2 t-cap text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-full">
+<span>{language === "ar" ? "المركبة غير نظيفة (فحص مشروط)" : "Véhicule très sale (réserve carrosserie)"}</span>
+<LiveSwitch checked={isVehicleDirty} onCheckedChange={setIsVehicleDirty} />
 </div>
-<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 t-cap">
+</div>
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-2 t-cap">
 {[
 											{
 												key: "spareWheel",
@@ -311,51 +287,67 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												key: "wheelLockKey",
 												label: language === "ar" ? "مفتاح براغي العجلات السري" : "Écrou antivol jantes"
 											}
-										].map((item) => /* @__PURE__ */ <label key={item.key} data-sq="ctl" data-sq-border="none" className="flex items-center gap-2 p-2 bg-white dark:bg-[#2B2825] cursor-pointer">
-<input type="checkbox" checked={accessories[item.key]} onChange={(e) => setAccessories((prev) => ({
-													...prev,
-													[item.key]: e.target.checked
-												}))} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+										].map((item) => <div key={item.key} data-sq="ctl" data-sq-border="none" className="flex items-center justify-between gap-2 p-2.5 bg-white dark:bg-[#2B2825]">
 <span className="text-black/70 dark:text-white/75">{item.label}</span>
-</label>)}
+<LiveSwitch
+  checked={accessories[item.key]}
+  onCheckedChange={(checked) => setAccessories((prev) => ({
+    ...prev,
+    [item.key]: checked
+  }))}
+/>
+</div>)}
 </div>
 </div>
 </div>}
-{activeTab === "walkaround" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<div data-sq="card" data-sq-border="none" className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
-<div className="flex items-center gap-2">
-{[
-											"front",
-											"rear",
-											"left",
-											"right"
-										].map((view) => /* @__PURE__ */ <button key={view} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border="none" onClick={() => setActiveCarView(view)} className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white" : "bg-white dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B]"}`}>
-{view === "front" ? "Face Avant" : view === "rear" ? "Face Arrière" : view === "left" ? "Côté Gauche" : "Côté Droit"}
-</button>)}
-</div>
-<div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="none" className="bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-<select value={selectedDamageType} onChange={(e) => setSelectedDamageType(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 t-cap px-2.5 py-2 focus:outline-none">
-<option value="scratch">Rayure (Scratch)</option>
-<option value="dent">Bosse (Dent)</option>
-<option value="crack">Fissure / Cassure</option>
-<option value="paint_chip">Éclat peinture</option>
-<option value="missing_part">Pièce manquante</option>
-</select>
-</div>
-<div data-sq="ctl" data-sq-border="none" className="bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-<select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 t-cap px-2.5 py-2 focus:outline-none">
-<option value="minor">Léger</option>
-<option value="moderate">Moyen</option>
-<option value="severe">Important</option>
-</select>
-</div>
+{activeTab === "walkaround" && <div className="space-y-4 animate-in fade-in">
+<div data-sq="card" data-sq-border="none" className="flex flex-col gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+<LiveSegmentedControl
+  value={activeCarView}
+  onChange={setActiveCarView}
+  options={[
+    { value: "front", label: language === "ar" ? "الواجهة الأمامية" : "Face Avant" },
+    { value: "rear", label: language === "ar" ? "الواجهة الخلفية" : "Face Arrière" },
+    { value: "left", label: language === "ar" ? "الجانب الأيسر" : "Côté Gauche" },
+    { value: "right", label: language === "ar" ? "الجانب الأيمن" : "Côté Droit" }
+  ]}
+  size="sm"
+  fullWidth
+/>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+<LabelSelect
+  field="orderDamageType"
+  label={language === "ar" ? "نوع الضرر" : "Type de dommage"}
+  value={selectedDamageType}
+  onChange={setSelectedDamageType}
+  options={[
+    { value: "scratch", label: "Rayure (Scratch)" },
+    { value: "dent", label: "Bosse (Dent)" },
+    { value: "crack", label: "Fissure / Cassure" },
+    { value: "paint_chip", label: "Éclat peinture" },
+    { value: "missing_part", label: "Pièce manquante" }
+  ]}
+  width="100%"
+  height={40}
+  corner={12}
+/>
+<LiveSegmentedControl
+  value={selectedSeverity}
+  onChange={setSelectedSeverity}
+  options={[
+    { value: "minor", label: language === "ar" ? "خفيف" : "Léger" },
+    { value: "moderate", label: language === "ar" ? "متوسط" : "Moyen" },
+    { value: "severe", label: language === "ar" ? "بليغ" : "Important" }
+  ]}
+  size="sm"
+  fullWidth
+/>
 </div>
 </div>
 <div data-sq="card" data-sq-border="solid" data-surface="dark" className="relative w-full h-64 sm:h-72 bg-[#191716] dark:bg-[#131211] [--sq-stroke:var(--sq-stroke-obsidian)] flex items-center justify-center overflow-hidden group">
 <button type="button" onClick={handleCanvasClick} aria-label={language === "ar" ? "انقر على المخطط لتسجيل الضرر" : "Cliquer sur le schéma pour consigner un dommage"} className="w-full h-full relative flex items-center justify-center p-4 cursor-crosshair bg-transparent border-0">
 <svg viewBox="0 0 400 200" className="w-full max-w-md h-full opacity-70 group-hover:opacity-90 transition-opacity">
-{activeCarView === "front" && /* @__PURE__ */ <g stroke="#d4522f" strokeWidth="2.5" fill="none">
+{activeCarView === "front" && <g stroke="#d4522f" strokeWidth="2.5" fill="none">
 <rect x="70" y="60" width="260" height="90" rx="30" />
 <path d="M100 60 L130 20 L270 20 L300 60" />
 <circle cx="110" cy="100" r="18" />
@@ -363,7 +355,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <rect x="150" y="90" width="100" height="25" rx="5" />
 <line x1="80" y1="140" x2="320" y2="140" strokeWidth="4" />
 </g>}
-{activeCarView === "rear" && /* @__PURE__ */ <g stroke="#d4522f" strokeWidth="2.5" fill="none">
+{activeCarView === "rear" && <g stroke="#d4522f" strokeWidth="2.5" fill="none">
 <rect x="70" y="60" width="260" height="90" rx="25" />
 <path d="M100 60 L120 25 L280 25 L300 60" />
 <rect x="90" y="85" width="40" height="20" rx="4" fill="#EF4444" fillOpacity="0.4" />
@@ -371,7 +363,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <rect x="160" y="95" width="80" height="30" rx="4" />
 <circle cx="200" cy="75" r="8" />
 </g>}
-{(activeCarView === "left" || activeCarView === "right") && /* @__PURE__ */ <g stroke="#d4522f" strokeWidth="2.5" fill="none">
+{(activeCarView === "left" || activeCarView === "right") && <g stroke="#d4522f" strokeWidth="2.5" fill="none">
 <path d="M40 120 L80 120 L110 70 L260 70 L320 100 L360 120 L360 140 L40 140 Z" />
 <circle cx="100" cy="140" r="24" strokeWidth="3" />
 <circle cx="300" cy="140" r="24" strokeWidth="3" />
@@ -380,11 +372,11 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <rect x="210" y="100" width="15" height="5" rx="2" />
 </g>}
 </svg>
-{damageMarkers.filter((m) => m.view === activeCarView).map((marker, idx) => /* @__PURE__ */ <span key={marker.id} style={{
+{damageMarkers.filter((m) => m.view === activeCarView).map((marker, idx) => <span key={marker.id} style={{
 													left: `${marker.xPercent}%`,
 													top: `${marker.yPercent}%`
 												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold tabular-nums flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in pointer-events-none" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</span>)}
-<span className="absolute bottom-3 left-4 t-cap text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs pointer-events-none">
+<span className="absolute bottom-3 start-4 t-cap text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs pointer-events-none">
 {language === "ar" ? "انقر على الصورة لإضافة نقطة خدش/صدمة" : "Cliquez sur le schéma pour consigner un dommage"}
 </span>
 </button>
@@ -396,15 +388,15 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {damageMarkers.length}
 )
 </span>
-{damageMarkers.length === 0 ? /* @__PURE__ */ <p className="t-cap text-black/55 dark:text-white/55 italic">
+{damageMarkers.length === 0 ? <p className="t-cap text-black/55 dark:text-white/55 italic">
 {language === "ar" ? "لم يتم تسجيل أي خدوش. انقر على المخطط أعلاه لتحديد الأضرار." : "Aucun dommage répertorié. Cliquez sur le schéma ci-dessus pour ajouter des repères."}
-</p> : /* @__PURE__ */ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
-{damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} data-sq="ctl" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#2B2825] t-cap">
+</p> : <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
+{damageMarkers.map((m, idx) => <div key={m.id} data-sq="ctl" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#2B2825] t-cap">
 <div className="flex items-center gap-2">
 <span className="w-5 h-5 rounded-full bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center t-small font-semibold">{idx + 1}</span>
 <div>
 <span className="font-semibold text-black dark:text-white capitalize">{m.damageType}</span>
-<span className="text-black/55 dark:text-white/55 ml-1.5 capitalize">
+<span className="text-black/55 dark:text-white/55 ms-1.5 capitalize">
 (
 {m.view}
 {" · "}
@@ -418,12 +410,12 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>}
 </div>
 </div>}
-{activeTab === "dispatch" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<LabelInput label={language === "ar" ? "وصف العطل والشكوى الأولية" : "Symptômes & motif de dépose (Panne constatée)"} value={diagnostic} onChange={(e) => setDiagnostic(e.target.value)} placeholder="Ex: Bruit suspect au freinage, voyant moteur orange, révision vidange..." required />
+{activeTab === "dispatch" && <div className="space-y-4 animate-in fade-in">
+<LabelInput field="orderDiagnostic" label={language === "ar" ? "وصف العطل والشكوى الأولية" : "Symptômes & motif de dépose (Panne constatée)"} value={diagnostic} onChange={setDiagnostic} placeholder="Ex: Bruit suspect au freinage, voyant moteur orange, révision vidange..." width="100%" height={40} corner={12} required />
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<LabelInput label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" value={estimatedCost} onChange={(e) => setEstimatedCost(e.target.value)} />
-<LabelSelect label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={(v) => setAssignedBayId(extractStr(v))} options={bayOptions} />
-<LabelSelect label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={(v) => setTechnician(extractStr(v))} options={[
+<LabelInput field="orderEstimatedCost" label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" value={estimatedCost} onChange={setEstimatedCost} width="100%" height={40} corner={12} />
+<LabelSelect field="orderAssignedBayId" label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={setAssignedBayId} options={bayOptions} width="100%" height={40} corner={12} />
+<LabelSelect field="orderTechnician" label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={setTechnician} options={[
 												{
 													value: "Karim (Chef Atelier)",
 													label: "Karim (Chef Atelier)"
@@ -440,7 +432,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 													value: "Yassine (Technicien Entretien)",
 													label: "Yassine (Technicien Entretien)"
 												}
-											]} />
+											]} width="100%" height={40} corner={12} />
 </div>
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2 t-cap">
 <span className="font-semibold text-black dark:text-white block">
@@ -459,7 +451,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </ul>
 </div>
 </div>}
-{activeTab === "signature" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
+{activeTab === "signature" && <div className="space-y-4 animate-in fade-in">
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#FDF4F0] dark:bg-[#2B2825] space-y-2">
 <div className="flex items-center gap-2 t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 <ShieldCheck size={18} />
@@ -477,19 +469,19 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <PenTool size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 {language === "ar" ? "توقيع الزبون على الشاشة أو إقرار الاستلام" : "Signature client sur écran & accord contradictoire"}
 </span>
-{isClientSigned && /* @__PURE__ */ <span className="t-small text-emerald-600 font-semibold flex items-center gap-1">
+{isClientSigned && <span className="t-small text-emerald-600 font-semibold flex items-center gap-1">
 <CheckCircle2 size={14} />
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
 <button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 [--sq-stroke:#34d399]" : "bg-white dark:bg-[#191716] hover:[--sq-stroke:#d4522f]"}`}>
-{isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
+{isClientSigned ? <span className="text-center space-y-1 block">
 <span className="italic t-dialog text-black dark:text-white font-semibold block">{activeVehicle?.ownerName || 'Client'}</span>
 <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block">
 {new Date().toLocaleString()}
 {" · Signature Numérique Reçue"}
 </span>
-</span> : /* @__PURE__ */ <span className="text-center t-cap text-black/55 dark:text-white/55 space-y-1 block">
+</span> : <span className="text-center t-cap text-black/55 dark:text-white/55 space-y-1 block">
 <PenTool size={20} className="mx-auto text-black/55 dark:text-white/55" />
 <span className="block">
 {language === "ar" ? "انقر هنا لتسجيل توقيع الزبون الرقمي" : "Cliquez ici pour apposer la signature du client sur verre"}
@@ -501,19 +493,19 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#22201E]">
 <div className="flex items-center gap-2">
-{activeTab !== "intake" && /* @__PURE__ */ <AtriumButton variant="secondary" onClick={() => {
+{activeTab !== "intake" && <Button type="button" tone="soft" size={40} onClick={() => {
 								if (activeTab === "walkaround") setActiveTab("intake");
 								if (activeTab === "dispatch") setActiveTab("walkaround");
 								if (activeTab === "signature") setActiveTab("dispatch");
-							}}>{language === "ar" ? "السابق" : "Précédent"}</AtriumButton>}
+							}}>{language === "ar" ? "السابق" : "Précédent"}</Button>}
 </div>
 <div className="flex items-center gap-2">
-<AtriumButton variant="secondary" onClick={onClose}>{language === "ar" ? "إلغاء" : "Annuler"}</AtriumButton>
-{activeTab !== "signature" ? /* @__PURE__ */ <AtriumButton variant="primary" onClick={() => {
+<Button type="button" tone="soft" size={40} onClick={onClose}>{language === "ar" ? "إلغاء" : "Annuler"}</Button>
+{activeTab !== "signature" ? <Button type="button" tone="accent" size={40} onClick={() => {
 								if (activeTab === "intake") setActiveTab("walkaround");
 								else if (activeTab === "walkaround") setActiveTab("dispatch");
 								else if (activeTab === "dispatch") setActiveTab("signature");
-							}}>{language === "ar" ? "التالي" : "Suivant"}</AtriumButton> : /* @__PURE__ */ <AtriumButton variant="primary" onClick={handleSubmit} icon={<CheckCircle2 size={16} />}>{language === "ar" ? "اعتماد أمر التصليح (Créer OR)" : "Valider & Ouvrir l'OR"}</AtriumButton>}
+							}}>{language === "ar" ? "التالي" : "Suivant"}</Button> : <Button type="button" tone="accent" size={40} onClick={handleSubmit} leading={<CheckCircle2 size={16} />}>{language === "ar" ? "اعتماد أمر التصليح (Créer OR)" : "Valider & Ouvrir l'OR"}</Button>}
 </div>
 </div>
 </div>

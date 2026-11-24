@@ -39,6 +39,10 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Modal } from '../../ui/Modal';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
 
 export const SettingsFormulesTab: React.FC = () => {
   const {
@@ -471,48 +475,30 @@ export const SettingsFormulesTab: React.FC = () => {
 
           {/* Search & Status Filter Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] px-[var(--s3,12px)]">
-            <div className="relative flex-1 max-w-md">
-              <Search
-                size={15}
-                strokeWidth={1.5}
-                className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-[12px] text-[var(--text-2)]"
-              />
-              <input
-                type="text"
-                data-sq="ctl"
+            <div className="flex-1 max-w-md">
+              <LabelInput
+                field="searchFormules"
+                label={L('Search by name or code...', 'Rechercher par nom ou code...', 'ابحث بالاسم أو الرمز...')}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={L('Search by name or code...', 'Rechercher par nom ou code...', 'ابحث بالاسم أو الرمز...')}
-                className="w-full h-[38px] ps-[36px] pe-[12px] bg-[#FAF7F4] dark:bg-[#2B2825] border-0 text-[var(--text-1)] t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
+                onChange={setSearchQuery}
+                prefix={<Search size={15} strokeWidth={1.5} className="text-[var(--text-2)]" />}
+                height={40}
+                corner={12}
               />
             </div>
 
             {descriptor.mode !== 'salon_services' && (
-              <div className="flex items-center gap-[var(--s1,4px)] bg-[#EFE9E2] dark:bg-[#191716] p-[3px]" data-sq="ctl" data-sq-border="none">
-                {(['all', 'active', 'archived'] as const).map((status) => {
-                  const active = statusFilter === status;
-                  const lbl =
-                    status === 'all'
-                      ? L('All', 'Toutes', 'الكل')
-                      : status === 'active'
-                      ? L('Active', 'Actives', 'النشطة')
-                      : L('Archived', 'Archivées', 'المؤرشفة');
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => setStatusFilter(status)}
-                      className={`h-[30px] px-[12px] t-small font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                        active
-                          ? 'bg-[var(--brand-fill)] text-white'
-                          : 'text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white'
-                      }`}
-                    >
-                      {lbl}
-                    </button>
-                  );
-                })}
-              </div>
+              <LiveSegmentedControl
+                size="md"
+                value={statusFilter}
+                onValueChange={(val) => setStatusFilter(val as 'all' | 'active' | 'archived')}
+                aria-label={L('Status filter', 'Filtre statut', 'تصفية الحالة')}
+                options={[
+                  { value: 'all', label: L('All', 'Toutes', 'الكل') },
+                  { value: 'active', label: L('Active', 'Actives', 'النشطة') },
+                  { value: 'archived', label: L('Archived', 'Archivées', 'المؤرشفة') },
+                ]}
+              />
             )}
           </div>
 
@@ -742,229 +728,191 @@ export const SettingsFormulesTab: React.FC = () => {
         }
         maxWidth="md"
       >
-        <form onSubmit={handleSubmitModal} className="flex flex-col gap-[var(--s3,12px)]">
+        <form onSubmit={handleSubmitModal} className="flex flex-col gap-[var(--s4,16px)]">
           {descriptor.mode !== 'gym_plans' && descriptor.mode !== 'salon_services' && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3,12px)]">
-              <div className="flex flex-col gap-[var(--s1,4px)]">
-                <label className="t-cap text-[var(--text-2)] font-medium">
-                  {L('Code', 'Code référence', 'الرمز')}
-                </label>
-                <input
-                  type="text"
-                  data-sq="ctl"
-                  value={formCode}
-                  onChange={(e) => setFormCode(e.target.value)}
-                  placeholder="FRM-01"
-                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small uppercase focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                />
-              </div>
-              <div className="flex flex-col gap-[var(--s1,4px)] sm:col-span-2">
-                <label className="t-cap text-[var(--text-2)] font-medium">
-                  {L('Formule Name *', 'Nom de la formule *', 'اسم الصيغة *')}
-                </label>
-                <input
-                  type="text"
-                  data-sq="ctl"
+              <LabelInput
+                field="formCode"
+                label={L('Code', 'Code référence', 'الرمز')}
+                value={formCode}
+                onChange={(val) => setFormCode(val.toUpperCase())}
+                placeholder="FRM-01"
+                height={40}
+                corner={12}
+              />
+              <div className="sm:col-span-2">
+                <LabelInput
+                  field="formName"
+                  label={L('Formule Name *', 'Nom de la formule *', 'اسم الصيغة *')}
                   value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
+                  onChange={setFormName}
                   required
+                  height={40}
+                  corner={12}
                 />
               </div>
             </div>
           )}
 
           {(descriptor.mode === 'gym_plans' || descriptor.mode === 'salon_services') && (
-            <div className="flex flex-col gap-[var(--s1,4px)]">
-              <label className="t-cap text-[var(--text-2)] font-medium">
-                {L('Name *', 'Nom *', 'الاسم *')}
-              </label>
-              <input
-                type="text"
-                data-sq="ctl"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                required
-              />
-            </div>
+            <LabelInput
+              field="formName"
+              label={L('Name *', 'Nom *', 'الاسم *')}
+              value={formName}
+              onChange={setFormName}
+              required
+              height={40}
+              corner={12}
+            />
           )}
 
           {descriptor.mode === 'salon_services' ? (
-            <div className="flex flex-col gap-[var(--s1,4px)]">
-              <label className="t-cap text-[var(--text-2)] font-medium">
-                {L('Service Category', 'Catégorie prestation', 'تصنيف الخدمة')}
-              </label>
-              <select
-                data-sq="ctl"
-                value={serviceCategory}
-                onChange={(e) => setServiceCategory(e.target.value as ServiceItem['category'])}
-                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-              >
-                <option value="Hair">{L('Hair', 'Coiffure', 'شعر')}</option>
-                <option value="Barber">{L('Barber', 'Barbier', 'حلاقة')}</option>
-                <option value="Nails">{L('Nails', 'Onglerie', 'أظافر')}</option>
-                <option value="Facial">{L('Facial', 'Soin Visage', 'العناية بالوجه')}</option>
-                <option value="Massage">{L('Massage & Spa', 'Massage & Spa', 'مساج وسبا')}</option>
-                <option value="Bridal">{L('Bridal', 'Mariée', 'عرائس')}</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="serviceCategory"
+              label={L('Service Category', 'Catégorie prestation', 'تصنيف الخدمة')}
+              value={serviceCategory}
+              onChange={(val) => setServiceCategory(val as ServiceItem['category'])}
+              height={40}
+              corner={12}
+              options={[
+                { value: 'Hair', label: L('Hair', 'Coiffure', 'شعر') },
+                { value: 'Barber', label: L('Barber', 'Barbier', 'حلاقة') },
+                { value: 'Nails', label: L('Nails', 'Onglerie', 'أظافر') },
+                { value: 'Facial', label: L('Facial', 'Soin Visage', 'العناية بالوجه') },
+                { value: 'Massage', label: L('Massage & Spa', 'Massage & Spa', 'مساج وسبا') },
+                { value: 'Bridal', label: L('Bridal', 'Mariée', 'عرائس') },
+              ]}
+            />
           ) : (
-            <div className="flex flex-col gap-[var(--s1,4px)]">
-              <label className="t-cap text-[var(--text-2)] font-medium">
-                {L('Description', 'Description / Détails', 'الوصف')}
-              </label>
-              <input
-                type="text"
-                data-sq="ctl"
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-              />
-            </div>
+            <LabelInput
+              field="formDescription"
+              label={L('Description', 'Description / Détails', 'الوصف')}
+              value={formDescription}
+              onChange={setFormDescription}
+              height={40}
+              corner={12}
+            />
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[var(--s3,12px)]">
-            <div className="flex flex-col gap-[var(--s1,4px)]">
-              <label className="t-cap text-[var(--text-2)] font-medium">
-                {L(`Price (${currency})`, `Tarif (${currency})`, `السعر (${currency})`)}
-              </label>
-              <input
-                type="number"
-                min={0}
-                step={10}
-                data-sq="ctl"
-                value={formPrice}
-                onChange={(e) => setFormPrice(Number(e.target.value))}
-                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3,12px)]">
+            <LabelInput
+              field="formPrice"
+              label={L(`Price (${currency})`, `Tarif (${currency})`, `السعر (${currency})`)}
+              type="number"
+              min={0}
+              step={10}
+              value={String(formPrice)}
+              onChange={(val) => setFormPrice(Number(val) || 0)}
+              height={40}
+              corner={12}
+            />
 
             {descriptor.mode === 'gym_plans' ? (
               <>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">
-                    {L('Duration (Days)', 'Durée (Jours)', 'المدة (أيام)')}
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    data-sq="ctl"
-                    value={formDurationValue}
-                    onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">
-                    {L('Sessions / Week (0=∞)', 'Séances / Sem (0=∞)', 'الحصص/أسبوع')}
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    data-sq="ctl"
-                    value={planSessionsPerWeek}
-                    onChange={(e) => setPlanSessionsPerWeek(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
+                <LabelInput
+                  field="formDurationValue"
+                  label={L('Duration (Days)', 'Durée (Jours)', 'المدة (أيام)')}
+                  type="number"
+                  min={1}
+                  value={String(formDurationValue)}
+                  onChange={(val) => setFormDurationValue(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="planSessionsPerWeek"
+                  label={L('Sessions / Week (0=∞)', 'Séances / Sem (0=∞)', 'الحصص/أسبوع')}
+                  type="number"
+                  min={0}
+                  value={String(planSessionsPerWeek)}
+                  onChange={(val) => setPlanSessionsPerWeek(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
               </>
             ) : descriptor.mode === 'salon_services' ? (
               <>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">
-                    {L('Duration (min)', 'Durée (min)', 'المدة (دقيقة)')}
-                  </label>
-                  <input
-                    type="number"
-                    min={5}
-                    step={5}
-                    data-sq="ctl"
-                    value={formDurationValue}
-                    onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">
-                    {L('Commission (%)', 'Commission (%)', 'العمولة (%)')}
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    data-sq="ctl"
-                    value={formRatePercent}
-                    onChange={(e) => setFormRatePercent(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
+                <LabelInput
+                  field="formDurationValue"
+                  label={L('Duration (min)', 'Durée (min)', 'المدة (دقيقة)')}
+                  type="number"
+                  min={5}
+                  step={5}
+                  value={String(formDurationValue)}
+                  onChange={(val) => setFormDurationValue(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="formRatePercent"
+                  label={L('Commission (%)', 'Commission (%)', 'العمولة (%)')}
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={String(formRatePercent)}
+                  onChange={(val) => setFormRatePercent(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
               </>
             ) : (
               <>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">{rateLabel}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={0.5}
-                    data-sq="ctl"
-                    value={formRatePercent}
-                    onChange={(e) => setFormRatePercent(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
-                <div className="flex flex-col gap-[var(--s1,4px)]">
-                  <label className="t-cap text-[var(--text-2)] font-medium">TVA (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={0.5}
-                    data-sq="ctl"
-                    value={formTaxRate}
-                    onChange={(e) => setFormTaxRate(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                  />
-                </div>
+                <LabelInput
+                  field="formRatePercent"
+                  label={rateLabel}
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={String(formRatePercent)}
+                  onChange={(val) => setFormRatePercent(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="formTaxRate"
+                  label="TVA (%)"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.5}
+                  value={String(formTaxRate)}
+                  onChange={(val) => setFormTaxRate(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
               </>
             )}
           </div>
 
           {descriptor.mode !== 'gym_plans' && descriptor.mode !== 'salon_services' && (
-            <div className="grid grid-cols-2 gap-[var(--s3,12px)]">
-              <div className="flex flex-col gap-[var(--s1,4px)]">
-                <label className="t-cap text-[var(--text-2)] font-medium">
-                  {L('Validity / Duration', 'Durée / Volume', 'المدة / الكمية')}
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  data-sq="ctl"
-                  value={formDurationValue}
-                  onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                />
-              </div>
-              <div className="flex flex-col gap-[var(--s1,4px)]">
-                <label className="t-cap text-[var(--text-2)] font-medium">
-                  {L('Unit', 'Unité', 'الوحدة')}
-                </label>
-                <select
-                  data-sq="ctl"
-                  value={formDurationUnit}
-                  onChange={(e) => setFormDurationUnit(e.target.value as FormuleDurationUnit)}
-                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
-                >
-                  <option value="unit">{L('Per Unit', 'Unité / Acte', 'وحدة')}</option>
-                  <option value="minutes">Minutes</option>
-                  <option value="hours">{L('Hours', 'Heures', 'ساعات')}</option>
-                  <option value="days">{L('Days', 'Jours', 'أيام')}</option>
-                  <option value="months">{L('Months', 'Mois', 'أشهر')}</option>
-                  <option value="sessions">{L('Sessions', 'Séances', 'حصص')}</option>
-                </select>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3,12px)]">
+              <LabelInput
+                field="formDurationValue"
+                label={L('Validity / Duration', 'Durée / Volume', 'المدة / الكمية')}
+                type="number"
+                min={0}
+                value={String(formDurationValue)}
+                onChange={(val) => setFormDurationValue(Number(val) || 0)}
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="formDurationUnit"
+                label={L('Unit', 'Unité', 'الوحدة')}
+                value={formDurationUnit}
+                onChange={(val) => setFormDurationUnit(val as FormuleDurationUnit)}
+                height={40}
+                corner={12}
+                options={[
+                  { value: 'unit', label: L('Per Unit', 'Unité / Acte', 'وحدة') },
+                  { value: 'minutes', label: L('Minutes', 'Minutes', 'دقائق') },
+                  { value: 'hours', label: L('Hours', 'Heures', 'ساعات') },
+                  { value: 'days', label: L('Days', 'Jours', 'أيام') },
+                  { value: 'months', label: L('Months', 'Mois', 'أشهر') },
+                  { value: 'sessions', label: L('Sessions', 'Séances', 'حصص') },
+                ]}
+              />
             </div>
           )}
 
@@ -975,14 +923,15 @@ export const SettingsFormulesTab: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)]">
-            <button
+          <div className="flex items-center justify-end gap-[var(--s2,8px)] pt-[var(--s3,12px)] border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
+              tone="soft"
+              size={40}
               onClick={() => setIsModalOpen(false)}
-              className="h-[40px] px-[var(--s4,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
             >
               {L('Cancel', 'Annuler', 'إلغاء')}
-            </button>
+            </Button>
             <AtriumButton type="submit" size="md" icon={<CheckCircle2 size={15} />}>
               {editingId ? L('Save Changes', 'Mettre à jour', 'حفظ التغييرات') : L('Create Formule', 'Créer la formule', 'إنشاء')}
             </AtriumButton>

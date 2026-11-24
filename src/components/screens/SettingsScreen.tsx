@@ -1584,7 +1584,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         isOpen={isAddBranchOpen}
         onClose={() => setIsAddBranchOpen(false)}
         title={language === 'ar' ? 'إضافة فرع' : language === 'fr' ? 'Ajouter Succursale' : 'Add Branch'}
-        subtitle={currentBusiness.name}
       >
         <form onSubmit={handleCreateBranch} className="flex flex-col gap-[var(--modal-gap,20px)]">
           {branchError && (
@@ -1645,14 +1644,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             corner={12}
           />
 
-          <div className="flex justify-end gap-[var(--s3,12px)]">
-            <button
+          <div className="flex justify-end gap-[var(--s3,12px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
+              tone="soft"
+              size={40}
               onClick={() => setIsAddBranchOpen(false)}
-              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
-            </button>
+            </Button>
             <AtriumButton
               type="submit"
               size="md"
@@ -1668,7 +1668,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         isOpen={isAddDeviceOpen}
         onClose={() => setIsAddDeviceOpen(false)}
         title={language === 'ar' ? 'إضافة جهاز' : language === 'fr' ? 'Ajouter Terminal' : 'Add Terminal'}
-        subtitle={language === 'ar' ? 'تسجيل جهاز جديد' : language === 'fr' ? 'Nouveau poste' : 'Register device'}
       >
         <form onSubmit={handleRegisterDevice} className="flex flex-col gap-[var(--modal-gap,20px)]">
           {deviceError && (
@@ -1705,22 +1704,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             corner={12}
           />
 
-          <div className="flex justify-end gap-[var(--s3,12px)]">
-            <button
+          <div className="flex justify-end gap-[var(--s3,12px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
+              tone="soft"
+              size={40}
               onClick={() => setIsAddDeviceOpen(false)}
-              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
-            </button>
-            <button
+            </Button>
+            <AtriumButton
               type="submit"
-              data-sq="ctl"
-              data-sq-border="none"
-              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-white bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] cursor-pointer transition-colors"
+              size="md"
             >
               {language === 'ar' ? 'حفظ' : language === 'fr' ? 'Autoriser' : 'Authorize'}
-            </button>
+            </AtriumButton>
           </div>
         </form>
       </Modal>
@@ -1734,7 +1732,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           setPendingBackupMeta(null);
         }}
         title={language === 'ar' ? 'استعادة قاعدة البيانات من النسخة الاحتياطية' : language === 'fr' ? 'Restaurer la base de données' : 'Restore Database from Backup'}
-        subtitle={language === 'ar' ? 'مراجعة محتويات النسخة قبل استبدال بيانات مساحة العمل' : language === 'fr' ? 'Vérifier le contenu avant d\'écraser les données' : 'Review backup contents before overwriting workspace data'}
       >
         <div className="flex flex-col gap-[var(--modal-gap,20px)]">
           <div
@@ -1829,18 +1826,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
           )}
 
-          <div className="flex justify-end gap-[var(--s3,12px)]">
-            <button
+          <div className="flex justify-end gap-[var(--s3,12px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
+            <Button
               type="button"
+              tone="soft"
+              size={40}
               onClick={() => {
                 setIsRestoreModalOpen(false);
                 setPendingBackupContent(null);
                 setPendingBackupMeta(null);
               }}
-              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
-            </button>
+            </Button>
             <AtriumButton
               variant="danger"
               onClick={handleConfirmRestore}

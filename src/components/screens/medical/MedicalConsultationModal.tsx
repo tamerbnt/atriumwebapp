@@ -10,7 +10,8 @@ import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient, MedicalConsultation } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useMedicalData } from './medicalData';
 import { KineticModalShell } from '../../ui/kinetic';
 
@@ -171,7 +172,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       scrimClassName="bg-black/50"
       ariaLabel={language === 'ar' ? 'فحص واستشارة جديدة' : 'Nouvelle Consultation & Triage'}
     >
-      <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+      <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
@@ -183,6 +184,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             </div>
             <button
               type="button"
+              aria-label={language === 'ar' ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
               className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
@@ -198,8 +200,12 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
               </div>
             )}
 
-          <div className="space-y-3 max-h-[65vh] overflow-y-auto px-1 pr-2">
+          <div className="space-y-3">
             <LabelSelect
+              field="patientId"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'المريض' : 'Patient'}
               value={patientId}
               onChange={setPatientId}
@@ -207,6 +213,10 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             />
 
             <LabelSelect
+              field="doctorId"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'الطبيب المعالج / التوجيه' : 'Médecin / Affectation Cabinet'}
               value={doctorId}
               onChange={setDoctorId}
@@ -220,101 +230,120 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             />
 
             {/* Urgency Level Triage */}
-            <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+            <div data-sq="card" data-sq-border="none" className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
               <span className="t-small font-semibold text-black dark:text-white">
                 {language === 'ar' ? 'درجة الإلحاح / الفرز' : 'Priorité Triage'}
               </span>
-              <div className="flex items-center gap-2">
-                {(['Normal', 'Prioritaire', 'Urgence'] as const).map((lvl) => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl-sm"
-                    data-sq-border="none"
-                    onClick={() => setUrgency(lvl)}
-                    className={`px-2.5 py-1 t-small font-semibold transition-all cursor-pointer ${
-                      urgency === lvl
-                        ? lvl === 'Urgence'
-                          ? 'bg-rose-600 text-white'
-                          : lvl === 'Prioritaire'
-                          ? 'bg-[var(--brand-fill,#C9461F)] text-white'
-                          : 'bg-[#0D9488] text-white'
-                        : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    {lvl}
-                  </button>
-                ))}
-              </div>
+              <LiveSegmentedControl
+                size="sm"
+                value={urgency}
+                onChange={(v) => setUrgency(v as 'Normal' | 'Prioritaire' | 'Urgence')}
+                options={[
+                  { value: 'Normal', label: 'Normal' },
+                  { value: 'Prioritaire', label: 'Prioritaire' },
+                  { value: 'Urgence', label: 'Urgence' },
+                ]}
+              />
             </div>
 
             <LabelInput
+              field="chiefComplaint"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'سبب الاستشارة / الشكوى الرئيسية' : 'Motif de consultation / Plainte'}
               value={chiefComplaint}
-              onChange={(e) => setChiefComplaint(e.target.value)}
+              onChange={setChiefComplaint}
               placeholder="Ex: Fièvre, céphalées, renouvellement..."
               required
             />
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
               <LabelInput
+                field="bp"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'ضغط الدم (TA)' : 'Tension (TA)'}
                 value={bp}
-                onChange={(e) => setBp(e.target.value)}
+                onChange={setBp}
                 placeholder="120/80"
               />
               <LabelInput
+                field="temp"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'الحرارة (°C)' : 'Temp (°C)'}
                 type="number"
                 step="0.1"
                 value={temp}
-                onChange={(e) => setTemp(e.target.value)}
+                onChange={setTemp}
               />
               <LabelInput
+                field="weight"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'الوزن (kg)' : 'Poids (kg)'}
                 type="number"
                 value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+                onChange={setWeight}
               />
               <LabelInput
+                field="heartRate"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'النبض (bpm)' : 'Pouls (bpm)'}
                 type="number"
                 value={heartRate}
-                onChange={(e) => setHeartRate(e.target.value)}
+                onChange={setHeartRate}
               />
             </div>
 
             <LabelInput
+              field="diagnosis"
+              width="100%"
+              height={40}
+              corner={12}
               label={language === 'ar' ? 'التشخيص الأولي' : 'Diagnostic préliminaire'}
               value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
+              onChange={setDiagnosis}
               placeholder="Ex: Rhinopharyngite aiguë..."
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="fee"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'أتعاب الكشف (د.ج)' : 'Tarif consultation (DA)'}
                 type="number"
                 value={fee}
-                onChange={(e) => setFee(e.target.value)}
+                onChange={setFee}
               />
               <LabelInput
+                field="copay"
+                width="100%"
+                height={40}
+                corner={12}
                 label={language === 'ar' ? 'حصة المريض / الدفع المباشر (د.ج)' : 'Ticket modérateur patient (DA)'}
                 type="number"
                 value={copay}
-                onChange={(e) => setCopay(e.target.value)}
+                onChange={setCopay}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="secondary" onClick={onClose}>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={onClose}>
               {language === 'ar' ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton type="submit" variant="primary" icon={<Stethoscope size={14} />}>
+            </Button>
+            <Button type="submit" tone="accent" size={40} leading={<Stethoscope size={14} />}>
               {language === 'ar' ? 'إحالة إلى غرفة الفحص' : 'Admettre en consultation'}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

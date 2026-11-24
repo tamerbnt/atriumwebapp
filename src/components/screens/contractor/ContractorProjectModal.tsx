@@ -10,15 +10,9 @@ import {
 import { ContractorProject } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
-
-const extractStr = (v: unknown): string =>
-  typeof v === 'string'
-    ? v
-    : typeof v === 'number'
-    ? String(v)
-    : (v as { target?: { value?: string } })?.target?.value ?? '';
 
 interface ContractorProjectModalProps {
   isOpen: boolean;
@@ -151,41 +145,61 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <LabelInput
+            field="projectName"
+            width="100%"
+            height={40}
+            corner={12}
             label={isAr ? 'اسم الورشة / المشروع *' : 'Intitulé du Projet / Chantier *'}
             placeholder="Ex: Construction Immeuble R+5 ou Aménagement VRD"
             value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
+            onChange={setProjectName}
             required
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="clientName"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'صاحب المشروع (العميل) *' : 'Maître d’Ouvrage (Client) *'}
               placeholder="Ex: SPA Maghreb Invest"
               value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
+              onChange={setClientName}
               required
             />
             <LabelInput
+              field="siteLocation"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'موقع الورشة' : 'Localisation Chantier'}
               placeholder="Ex: Chéraga, Alger"
               value={siteLocation}
-              onChange={(e) => setSiteLocation(e.target.value)}
+              onChange={setSiteLocation}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="contractAmount"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'مبلغ الصفقة الإجمالي (دج)' : 'Montant du Marché (DZD)'}
               type="number"
               value={contractAmount}
-              onChange={(e) => setContractAmount(e.target.value)}
+              onChange={setContractAmount}
               required
             />
             <LabelSelect
+              field="retentionPercent"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'نسبة الضمان (Retenue)' : 'Retenue de Garantie'}
               value={retentionPercent}
-              onChange={(v) => setRetentionPercent(extractStr(v))}
+              onChange={setRetentionPercent}
               options={[
                 { value: '5', label: '5% (Standard Marchés Publics)' },
                 { value: '10', label: '10% (Privé / Sous-traitance)' },
@@ -194,56 +208,78 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="startDate"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'تاريخ الانطلاق' : 'Date d’Ordre de Service (ODS)'}
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={setStartDate}
             />
             <LabelInput
+              field="targetEndDate"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'تاريخ التسليم المتوقع' : 'Délai Contractuel'}
               type="date"
               value={targetEndDate}
-              onChange={(e) => setTargetEndDate(e.target.value)}
+              onChange={setTargetEndDate}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="supervisorName"
+              width="100%"
+              height={40}
+              corner={12}
               label={isAr ? 'رئيس الورشة / المهندس المشرف' : 'Chef de Chantier / Conducteur'}
               placeholder="Ex: Ing. Mourad Benali"
               value={supervisorName}
-              onChange={(e) => setSupervisorName(e.target.value)}
+              onChange={setSupervisorName}
             />
-            <LabelSelect
-              label={isAr ? 'الحالة' : 'Statut Chantier'}
+            <LabelInput
+              field="progressPercent"
+              width="100%"
+              height={40}
+              corner={12}
+              label={isAr ? 'نسبة الإنجاز (%)' : 'Avancement (%)'}
+              type="number"
+              min="0"
+              max="100"
+              value={progressPercent}
+              onChange={setProgressPercent}
+            />
+          </div>
+
+          <div>
+            <label className="block t-cap font-medium text-black/65 dark:text-white/65 mb-1.5">
+              {isAr ? 'الحالة' : 'Statut Chantier'}
+            </label>
+            <LiveSegmentedControl
+              size="md"
+              fullWidth
               value={status}
-              onChange={(v) => setStatus(extractStr(v) as ContractorProject['status'])}
+              onChange={(v) => setStatus(v as ContractorProject['status'])}
               options={[
-                { value: 'InProgress', label: 'En Cours' },
-                { value: 'ProvisionalHandover', label: 'Réception Provisoire' },
-                { value: 'DefinitiveHandover', label: 'Réception Définitive' },
+                { value: 'InProgress', label: isAr ? 'قيد التنفيذ' : 'En Cours' },
+                { value: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réc. Provisoire' },
+                { value: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réc. Définitive' },
               ]}
             />
           </div>
 
-          <LabelInput
-            label={isAr ? 'نسبة الإنجاز (%)' : 'Avancement (%)'}
-            type="number"
-            min="0"
-            max="100"
-            value={progressPercent}
-            onChange={(e) => setProgressPercent(e.target.value)}
-          />
-
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="ghost" size="sm" onClick={onClose}>
+            <Button type="button" tone="soft" size={40} onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton variant="primary" size="sm" type="submit">
+            </Button>
+            <Button tone="accent" size={40} type="submit">
               {initialData ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : (isAr ? 'تأكيد التسجيل' : 'Créer le Chantier')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

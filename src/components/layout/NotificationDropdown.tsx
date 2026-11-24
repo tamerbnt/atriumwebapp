@@ -141,61 +141,35 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
         data-sq-border="solid"
         className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col"
       >
-      {/* Unified Panel Header */}
-      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-b border-black/[0.045] dark:border-white/[0.06] bg-white dark:bg-[#262422] t-cap text-[var(--text-2)]">
-        <div className="flex items-center gap-[var(--s2,8px)] t-card text-[var(--text-1)]">
-          <Bell size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
-          <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
-          {unreadNotificationCount > 0 && (
-            <span className="min-w-[var(--badge-h,22px)] px-[var(--badge-px,6px)] h-[var(--badge-h,22px)] inline-flex items-center justify-center rounded-full t-small tabular-nums bg-[var(--brand-fill)] text-white leading-none">
-              {unreadNotificationCount}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-[var(--s2,8px)] t-small">
-          {notifications.length > 0 && (
-            <>
-              <button
-                type="button"
-                data-no-liquid=""
-                onClick={() => markAllNotificationsAsRead()}
-                className="hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
-                title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
-              >
-                <CheckCheck size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
-                <span className="hidden sm:inline">
-                  {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
-                </span>
-              </button>
-              <span className="text-[var(--text-3)]">•</span>
-              <button
-                type="button"
-                data-no-liquid=""
-                onClick={() => clearAllNotifications()}
-                className="hover:text-rose-600 t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
-                title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Tout effacer' : 'Clear all'}
-              >
-                <Trash2 size={16} strokeWidth={1.5} />
-                <span className="hidden sm:inline">
-                  {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
-                </span>
-              </button>
-              <span className="text-[var(--text-3)]">•</span>
-            </>
-          )}
-
+      {notifications.length > 0 && (
+        <div className="flex items-center justify-end gap-[var(--s2,8px)] px-[var(--s3,12px)] pt-[var(--s3,12px)] t-small text-[var(--text-2)]">
           <button
             type="button"
             data-no-liquid=""
-            onClick={onClose}
-            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
-            aria-label="Close notifications"
+            onClick={() => markAllNotificationsAsRead()}
+            className="hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
+            title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
           >
-            <X size={16} strokeWidth={1.5} />
+            <CheckCheck size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
+            <span>
+              {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
+            </span>
+          </button>
+          <span className="text-[var(--text-3)]">•</span>
+          <button
+            type="button"
+            data-no-liquid=""
+            onClick={() => clearAllNotifications()}
+            className="hover:text-rose-600 t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
+            title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Tout effacer' : 'Clear all'}
+          >
+            <Trash2 size={16} strokeWidth={1.5} />
+            <span>
+              {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
+            </span>
           </button>
         </div>
-      </div>
+      )}
 
       {/* Enclosed Notification Rows List */}
       <div className="flex flex-col gap-[var(--s2,8px)] p-[var(--s3,12px)] max-h-[380px] overflow-y-auto no-scrollbar">
@@ -309,26 +283,6 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Unified Panel Footer */}
-      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#22201E] t-cap text-[var(--text-2)]">
-        <div className="flex items-center gap-[var(--s2,8px)] t-small">
-          <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-emerald-500 shrink-0" />
-          <span>
-            {language === 'ar'
-              ? 'مركز أتريوم المباشر'
-              : language === 'fr'
-              ? 'Centre Atrium Live'
-              : 'Atrium Live Center'}
-          </span>
-        </div>
-        <span className="text-[var(--text-3)]">
-          {language === 'ar'
-            ? 'البث التشغيلي المباشر'
-            : language === 'fr'
-            ? 'Flux opérationnel en direct'
-            : 'Realtime Operational Stream'}
-        </span>
-      </div>
       </div>
     </motion.div>
   );

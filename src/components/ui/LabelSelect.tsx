@@ -6,10 +6,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import { useAtriumSelector } from '../../services/store';
 import { enqueueLabelWrite, cancelLabelGeometryTask } from './labelGeometryQueue';
 import { squircleNotchedRingPaths, squirclePath } from '@/atrium/motion/shapes';
+import { LivePopoverPanel, popoverClasses } from './live/LivePopoverPanel';
 
 export interface SelectOption {
   value: string | number;
@@ -25,7 +26,7 @@ export interface LabelSelectProps {
   label?: string;
   value?: string | number;
   options: (SelectOption | string)[];
-  onChange: (val: any) => void;
+  onChange: (val: string) => void;
   placeholder?: string;
   searchable?: boolean;
   disabled?: boolean;
@@ -40,24 +41,26 @@ export interface LabelSelectProps {
 }
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-const S = 0.82;
+const S = 0.86;
 const IN = 0.75;
 
 function computeSelectRingPaths(W: number, H: number, r: number, lw: number, isRtl: boolean) {
   const lx = Math.max(12, r + 2);
+  const maxGapW = Math.max(16, W - lx * 2 - 4);
+  const gapW = Math.min(maxGapW, lw * S + 8);
   const x0 = isRtl
-    ? Math.max(r * 0.5, W - lx - lw * S - 4)
+    ? Math.max(r * 0.5, W - lx - gapW)
     : Math.max(r * 0.5, lx - 4);
   const x1 = isRtl
     ? Math.min(W - r * 0.5, W - lx + 4)
-    : Math.min(W - r, lx + lw * S + 4);
+    : Math.min(W - r * 0.5, lx + gapW - 4);
   const ring = squircleNotchedRingPaths(W, H, r, IN, x0, x1, 0.6);
   const bg = squirclePath(0, 0, W, H, r, 0.6);
   return { lx, bg, ...ring };
 }
 
 export const LabelSelect: React.FC<LabelSelectProps> = ({
-  field = 'Select',
+  field = '',
   label: explicitLabel,
   value: controlledValue,
   options,
@@ -81,17 +84,15 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   const gapLPathRef = useRef<SVGPathElement | null>(null);
   const gapRPathRef = useRef<SVGPathElement | null>(null);
   const lab = useRef<HTMLLabelElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   const generatedId = `lbs-${useId().replace(/:/g, '')}`;
   const id = customId || generatedId;
-  const label = explicitLabel || field;
+  const label = explicitLabel || field || '';
 
   const normalizedOptions: SelectOption[] = useMemo(
     () =>
@@ -105,7 +106,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   );
 
   const selectedOption = normalizedOptions.find(
-    (opt) => String(opt.value) === String(controlledValue) && String(controlledValue) !== ''
+    (opt) => String(opt.value) === String(controlledValue) && String(controlledValue ?? '') !== ''
   );
 
   const language = useAtriumSelector((s) => s.language);
@@ -113,15 +114,16 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
   const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
 
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
   const isRtl =
     language === 'ar' ||
     (typeof document !== 'undefined' && document.documentElement.dir === 'rtl') ||
-    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
-  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+    hasArabic;
 
   const H = height;
   const r = clamp(corner, 0, H / 2);
   const up = isOpen || selectedOption !== undefined;
+  const showSearch = searchable || normalizedOptions.length >= 6;
   const initialW = Math.max(80, typeof width === 'number' ? width : 240);
   const lastGeomRef = useRef<{ W: number; lw: number }>({ W: initialW, lw: 48 });
   const measuredBoxWRef = useRef<number>(0);
@@ -198,104 +200,35 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
     };
   }, [width, label]);
 
-  // Click outside listener
+  // Focus search input when searchable popover opens
   useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        boxRef.current &&
-        !boxRef.current.contains(e.target as Node) &&
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  // Collision detection to flip upward if near viewport or dialog bottom
-  useEffect(() => {
-    if (isOpen && boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      const dialog = boxRef.current.closest('[role="dialog"]') as HTMLElement | null;
-      const bottomLimit = dialog ? Math.min(window.innerHeight, dialog.getBoundingClientRect().bottom) : window.innerHeight;
-      const topLimit = dialog ? Math.max(0, dialog.getBoundingClientRect().top) : 0;
-      const spaceBelow = bottomLimit - rect.bottom;
-      const spaceAbove = rect.top - topLimit;
-      if (spaceBelow < 210 && spaceAbove > spaceBelow) {
-        setOpenUpward(true);
-      } else {
-        setOpenUpward(false);
-      }
+    if (isOpen && showSearch) {
+      const timer = window.setTimeout(() => {
+        searchInputRef.current?.focus({ preventScroll: true });
+      }, 45);
+      return () => window.clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, showSearch]);
 
-  // Focus search input when popover opens
-  useEffect(() => {
-    if (isOpen && (searchable || normalizedOptions.length >= 6)) {
-      const timer = setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 40);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, searchable, normalizedOptions.length]);
-
-  const filteredOptions = normalizedOptions.filter((opt) => {
-    if (!searchQuery.trim()) return true;
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery.trim()) return normalizedOptions;
     const q = searchQuery.toLowerCase();
-    return (
-      opt.label.toLowerCase().includes(q) ||
-      (opt.sublabel && opt.sublabel.toLowerCase().includes(q))
+    return normalizedOptions.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(q) ||
+        (opt.sublabel && opt.sublabel.toLowerCase().includes(q))
     );
-  });
+  }, [normalizedOptions, searchQuery]);
 
-  const handleSelect = (val: string | number) => {
+  const handleClose = () => {
     setIsOpen(false);
     setSearchQuery('');
-    const hybrid: any = new String(val);
-    hybrid.target = { value: val, name: name || id };
-    hybrid.currentTarget = { value: val, name: name || id };
-    hybrid.value = val;
-    hybrid.valueOf = () => val;
-    hybrid.toString = () => String(val);
-    onChange(hybrid);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (disabled) return;
-
-    if (!isOpen) {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      return;
-    }
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsOpen(false);
-      setSearchQuery('');
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < filteredOptions.length - 1 ? prev + 1 : 0
-      );
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredOptions.length - 1
-      );
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (filteredOptions[highlightedIndex] && !filteredOptions[highlightedIndex].disabled) {
-        handleSelect(filteredOptions[highlightedIndex].value);
-      }
-    }
+  const handleSelect = (val: string | number) => {
+    handleClose();
+    onChange(String(val));
+    triggerRef.current?.focus({ preventScroll: true });
   };
 
   const initialPaths = useMemo(
@@ -326,8 +259,12 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
       data-focus={isOpen}
       data-filled={Boolean(selectedOption !== undefined)}
       data-has-prefix={Boolean(prefix)}
-      style={{ width: typeof width === 'number' ? `${width}px` : width }}
-      onKeyDown={handleKeyDown}
+      data-rtl={isRtl ? 'true' : undefined}
+      style={{
+        width: typeof width === 'number' ? `${width}px` : width,
+        '--lbi-scale': String(S),
+        '--lbi-lift': `${H / 2}px`,
+      } as React.CSSProperties}
     >
       <div
         className="lbi-box"
@@ -359,22 +296,25 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           <path ref={gapRPathRef} className="lbi-gap" d={initialPaths.gapR} pathLength={1} />
         </svg>
 
-        <label
-          className="lbi-label pointer-events-none"
-          htmlFor={id}
-          ref={lab}
-          dir={isRtl ? 'rtl' : 'ltr'}
-        >
-          {labelSpans}
-        </label>
+        {label && (
+          <label
+            className="lbi-label pointer-events-none"
+            htmlFor={id}
+            ref={lab}
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
+            {labelSpans}
+          </label>
+        )}
 
         {prefix && (
-          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-black/60 dark:text-white/65">
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             {prefix}
           </div>
         )}
 
         <button
+          ref={triggerRef}
           type="button"
           id={id}
           data-no-liquid="true"
@@ -383,7 +323,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           onClick={() => {
             if (!disabled) setIsOpen((prev) => !prev);
           }}
-          className="w-full h-full flex items-center justify-between text-left rtl:text-right focus:outline-none cursor-pointer bg-transparent transition-opacity"
+          className="w-full h-full flex items-center justify-between text-start focus:outline-none cursor-pointer bg-transparent transition-opacity"
           style={{
             paddingInlineStart: prefix ? 38 : initialPaths.lx,
             paddingInlineEnd: Math.max(10, r),
@@ -391,7 +331,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          <div className="flex items-center gap-2 truncate pr-2 rtl:pr-0 rtl:pl-2">
+          <div className="flex items-center gap-[var(--s2,8px)] truncate pe-[var(--s2,8px)]">
             {selectedOption?.icon && (
               <span className="shrink-0 text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
                 {selectedOption.icon}
@@ -414,132 +354,97 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
           <ChevronDown
             size={16}
-            className={`shrink-0 text-[var(--text-2)] dark:text-[var(--text-dark-2)] transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]' : ''
-            }`}
+            data-atr-chev=""
+            style={{ transition: 'none' }}
+            className="shrink-0 text-[var(--text-2)] dark:text-[var(--text-dark-2)]"
           />
         </button>
 
-        {isOpen && (
-          <div
-            className={`sq-elev-pop absolute left-0 right-0 z-50 ${
-              openUpward ? 'bottom-full mb-[var(--pop-offset,8px)]' : 'top-full mt-[var(--pop-offset,8px)]'
-            }`}
-          >
-            <div
-              ref={popoverRef}
-              data-sq="card"
-              data-sq-border="solid"
-              className="relative bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
-              style={{
-                maxHeight: '230px',
-              }}
-            >
-              {(searchable || normalizedOptions.length >= 6) && (
-                <div className="p-2 border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#22201E]">
-                  <div
-                    data-sq="ctl-sm"
-                    data-sq-border="none"
-                    className="relative flex items-center bg-[#F5F1EC] dark:bg-[#2B2825]"
+        {name && <input type="hidden" name={name} value={controlledValue !== undefined ? String(controlledValue) : ''} />}
+
+        <LivePopoverPanel
+          anchor={triggerRef.current}
+          open={isOpen}
+          role="listbox"
+          aria-label={label || placeholder || 'Select'}
+          placement={isRtl ? 'bottom-end' : 'bottom-start'}
+          width="anchor"
+          focus={showSearch ? null : 'selected'}
+          className="max-h-[min(55vh,320px)]"
+          onRequestClose={handleClose}
+        >
+          {showSearch && (
+            <div className="pb-[var(--s2,8px)] mb-[var(--s1,4px)] border-b border-[var(--atr-line)]">
+              <div className="relative flex items-center rounded-[var(--r-ctl-sm,10px)] bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] border border-black/[0.06] dark:border-white/[0.08] transition-colors">
+                <Search
+                  size={14}
+                  className="absolute start-3 text-[var(--text-3)] pointer-events-none"
+                />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredOptions.length > 0 && !filteredOptions[0].disabled) {
+                      e.preventDefault();
+                      handleSelect(filteredOptions[0].value);
+                    }
+                  }}
+                  placeholder={defaultSearchPlaceholder}
+                  className="w-full h-[var(--btn-sm-h,32px)] ps-8 pe-8 t-body bg-transparent border-0 text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-3)] focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute end-2 text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white p-1 cursor-pointer"
+                    aria-label="Clear search"
                   >
-                    <Search
-                      size={16}
-                      className="absolute left-3 rtl:left-auto rtl:right-3 text-[var(--text-2)] dark:text-[var(--text-dark-2)] pointer-events-none"
-                    />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setHighlightedIndex(0);
-                      }}
-                      placeholder={defaultSearchPlaceholder}
-                      className="w-full h-[var(--btn-sm-h,32px)] pl-8 pr-8 t-body bg-transparent border-0 text-[var(--text-1)] dark:text-white focus:outline-none"
-                    />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        data-no-liquid="true"
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-2 rtl:right-auto rtl:left-2 text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white p-1 cursor-pointer"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <ul
-                className="p-[var(--s2,8px)] max-h-48 overflow-y-auto focus:outline-none t-body flex flex-col gap-[var(--s1,4px)]"
-                role="listbox"
-              >
-                {filteredOptions.length === 0 ? (
-                  <li className="px-4 py-3 text-center text-[var(--text-2)] dark:text-[var(--text-dark-2)] italic">
-                    {noOptionsText}
-                  </li>
-                ) : (
-                  filteredOptions.map((opt, idx) => {
-                    const isSelected =
-                      String(opt.value) === String(controlledValue);
-                    const isHighlighted = idx === highlightedIndex;
-
-                    return (
-                      <li
-                        key={String(opt.value)}
-                        role="option"
-                        aria-selected={isSelected}
-                        data-sq="row"
-                        data-sq-border="none"
-                        title={opt.tooltip || opt.sublabel || opt.label}
-                        onClick={() => {
-                          if (!opt.disabled) handleSelect(opt.value);
-                        }}
-                        onMouseEnter={() => setHighlightedIndex(idx)}
-                        className={`relative px-3 py-2 flex items-center justify-between cursor-pointer transition-colors ${
-                          opt.disabled
-                            ? 'opacity-40 cursor-not-allowed'
-                            : isSelected
-                            ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold'
-                            : isHighlighted
-                            ? 'bg-[#F3EDE7] dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white'
-                            : 'text-[var(--text-1)] dark:text-white/90'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 truncate pr-2">
-                          {opt.icon && (
-                            <span className="shrink-0">{opt.icon}</span>
-                          )}
-                          <div className="truncate flex flex-col">
-                            <div className="truncate font-medium">{opt.label}</div>
-                            {opt.sublabel && (
-                              <div className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
-                                {opt.sublabel}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {isSelected && (
-                          <Check
-                            size={16}
-                            className="shrink-0 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]"
-                            strokeWidth={2.5}
-                          />
-                        )}
-                      </li>
-                    );
-                  })
+                    <X size={12} />
+                  </button>
                 )}
-              </ul>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {filteredOptions.length === 0 ? (
+            <div className="px-3 py-3 text-center t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
+              {noOptionsText}
+            </div>
+          ) : (
+            filteredOptions.map((opt) => {
+              const isSelected =
+                String(opt.value) === String(controlledValue) && String(controlledValue ?? '') !== '';
+              const desc = opt.sublabel ?? opt.tooltip;
+              return (
+                <button
+                  key={String(opt.value)}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  data-atr-item=""
+                  tabIndex={-1}
+                  disabled={opt.disabled}
+                  title={opt.tooltip || opt.sublabel || opt.label}
+                  className={popoverClasses.item}
+                  onClick={() => handleSelect(opt.value)}
+                >
+                  {opt.icon && <span className="shrink-0">{opt.icon}</span>}
+                  <span className={popoverClasses.text}>
+                    <b>{opt.label}</b>
+                    {desc && <small>{desc}</small>}
+                  </span>
+                  {isSelected && <i className={popoverClasses.mark} aria-hidden="true" />}
+                </button>
+              );
+            })
+          )}
+        </LivePopoverPanel>
       </div>
     </div>
   );
 };
 
 export default LabelSelect;
-

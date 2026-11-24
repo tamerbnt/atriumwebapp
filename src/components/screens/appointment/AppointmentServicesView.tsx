@@ -22,7 +22,7 @@ import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -864,17 +864,16 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   onChange={setFormName}
                   placeholder="Ex: Balayage Californien & Gloss..."
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
                   field="Category"
+                  width="100%"
                   label="Catégorie"
                   value={formCategory}
-                  onChange={(val) =>
-                    setFormCategory(typeof val === 'string' ? (val as any) : val.target?.value || val)
-                  }
+                  onChange={(val) => setFormCategory(val as any)}
                   options={[
                     { value: 'Hair', label: 'Coiffure & Lissage' },
                     { value: 'Nails', label: 'Onglerie Russe' },
@@ -883,7 +882,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                     { value: 'Massage', label: 'Massages & Corps' },
                     { value: 'Barber', label: 'Barbier' },
                   ]}
-                  height={42}
+                  height={40}
                   corner={12}
                 />
                 <LabelInput
@@ -894,11 +893,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   value={String(formDuration)}
                   onChange={(v) => setFormDuration(parseInt(v, 10) || 30)}
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="Price"
                   label="Tarif Client (DZD)"
@@ -907,7 +906,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   value={String(formPrice)}
                   onChange={(v) => setFormPrice(parseFloat(v) || 0)}
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
                 <LabelInput
@@ -917,7 +916,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   value={String(formCommission)}
                   onChange={(v) => setFormCommission(parseFloat(v) || 0)}
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
               </div>
@@ -928,16 +927,16 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                 onChange={setFormDescription}
                 placeholder="Précisions techniques..."
                 width="100%"
-                height={42}
+                height={40}
                 corner={12}
               />
-              <div className="flex items-center justify-end gap-3 pt-3">
-                <AtriumButton type="button" variant="ghost" onClick={() => setIsServiceModalOpen(false)}>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setIsServiceModalOpen(false)}>
                   Annuler
-                </AtriumButton>
-                <AtriumButton type="submit" variant="primary">
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
                   Enregistrer
-                </AtriumButton>
+                </Button>
               </div>
               </form>
             </div>

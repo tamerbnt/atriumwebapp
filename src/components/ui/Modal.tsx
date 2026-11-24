@@ -20,7 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
-  subtitle,
+  subtitle: _deprecatedSubtitle,
   children,
   maxWidth = 'md',
   isLoading = false,
@@ -54,15 +54,10 @@ export const Modal: React.FC<ModalProps> = ({
         className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-[var(--s4,16px)] p-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-[var(--atr-divider)]">
-          <div className="flex flex-col gap-[var(--s1,4px)]">
-            <h2 className="t-dialog text-[var(--text-1)] dark:text-white">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">{subtitle}</p>
-            )}
-          </div>
+        <div className="flex items-center justify-between gap-[var(--s4,16px)] p-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] shrink-0">
+          <h2 className="t-dialog text-[var(--text-1)] dark:text-white truncate min-w-0">
+            {title}
+          </h2>
           <button
             type="button"
             data-no-liquid="true"

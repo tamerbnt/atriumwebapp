@@ -26,7 +26,8 @@ import {
   GarageInvoice,
   computeAlgerianTimbreFiscal,
 } from './garageData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1714,12 +1715,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </span>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="secondary" onClick={() => setIsTillModalOpen(false)}>
-              Fermer
-            </AtriumButton>
-            <AtriumButton
-              variant="primary"
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsTillModalOpen(false)}>
+              {isAr ? 'إغلاق' : 'Fermer'}
+            </Button>
+            <Button
+              type="button"
+              tone="accent"
+              size={40}
               onClick={() => {
                 showToast({
                   type: 'success',
@@ -1729,8 +1732,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 setIsTillModalOpen(false);
               }}
             >
-              Clôturer la Caisse (Z)
-            </AtriumButton>
+              {isAr ? 'إغلاق الصندوق (Z)' : 'Clôturer la Caisse (Z)'}
+            </Button>
           </div>
         </div>
       </KineticModalShell>

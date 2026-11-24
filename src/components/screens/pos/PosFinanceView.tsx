@@ -24,6 +24,7 @@ import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonFinanceAudit } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -932,87 +933,79 @@ export const PosFinanceView: React.FC = () => {
       <Modal
         isOpen={isExpenseModalOpen}
         onClose={() => setIsExpenseModalOpen(false)}
-        title={isAr ? 'تسجيل سحب نقدي من الصندوق' : 'Enregistrer une Sortie de Caisse'}
-        subtitle={`Session ${currentBranch.name}`}
+        title={isAr ? 'تسجيل سحب نقدي من الصندوق' : isEn ? 'Record Petty Cash Expense' : 'Enregistrer une Sortie de Caisse'}
       >
         <form onSubmit={handleAddExpense} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="Payee"
-            label={isAr ? 'المستفيد / الجهة الموردة' : 'Bénéficiaire / Fournisseur'}
+            label={isAr ? 'المستفيد / الجهة الموردة' : isEn ? 'Payee / Supplier' : 'Bénéficiaire / Fournisseur'}
             required
             value={expPayee}
             onChange={setExpPayee}
-            placeholder="Ex: Boulangerie, Fournisseur café, Quincaillerie..."
+            placeholder={isAr ? 'مثال: مخبزة، مورد قهوة...' : isEn ? 'e.g. Bakery, Coffee supplier...' : 'Ex: Boulangerie, Fournisseur café...'}
             width="100%"
-            height={44}
+            height={40}
             corner={12}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="Amount"
-              label={isAr ? 'المبلغ (د.ج)' : 'Montant (DZD)'}
+              label={isAr ? 'المبلغ (د.ج)' : isEn ? 'Amount (DZD)' : 'Montant (DZD)'}
               type="number"
               required
               value={expAmount ? String(expAmount) : ''}
               onChange={(v) => setExpAmount(parseFloat(v) || 0)}
               width="100%"
-              height={44}
+              height={40}
               corner={12}
             />
             <LabelSelect
               field="Category"
-              label={isAr ? 'التصنيف' : 'Catégorie de charge'}
+              label={isAr ? 'التصنيف' : isEn ? 'Category' : 'Catégorie de charge'}
               value={expCategory}
-              onChange={(val) => setExpCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+              onChange={(val) => setExpCategory(val as PosExpense['category'])}
               options={[
-                { value: 'Supplies', label: 'Fournitures & Emballages' },
-                { value: 'Supplier', label: 'Règlement Fournisseur' },
-                { value: 'Maintenance', label: 'Entretien & Réparation' },
-                { value: 'Transport', label: 'Livraison & Course' },
-                { value: 'StaffMeal', label: 'Collation / Repas équipe' },
-                { value: 'Other', label: 'Autre dépense' },
+                { value: 'Supplies', label: isAr ? 'لوازم وتغليف' : isEn ? 'Supplies & Packaging' : 'Fournitures & Emballages' },
+                { value: 'Supplier', label: isAr ? 'تسديد للمورد' : isEn ? 'Supplier Settlement' : 'Règlement Fournisseur' },
+                { value: 'Maintenance', label: isAr ? 'صيانة وإصلاح' : isEn ? 'Maintenance & Repair' : 'Entretien & Réparation' },
+                { value: 'Transport', label: isAr ? 'نقل وتوصيل' : isEn ? 'Delivery & Transport' : 'Livraison & Course' },
+                { value: 'StaffMeal', label: isAr ? 'وجبات الفريق' : isEn ? 'Staff Meals' : 'Collation / Repas équipe' },
+                { value: 'Other', label: isAr ? 'مصاريف أخرى' : isEn ? 'Other Expense' : 'Autre dépense' },
               ]}
-              height={44}
+              height={40}
               corner={12}
             />
           </div>
           <LabelSelect
             field="Method"
-            label={isAr ? 'طريقة السحب' : 'Mode de paiement'}
+            label={isAr ? 'طريقة السحب' : isEn ? 'Payment Method' : 'Mode de paiement'}
             value={expMethod}
-            onChange={(val) => setExpMethod(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+            onChange={(val) => setExpMethod(val as PosExpense['paymentMethod'])}
             options={[
-              { value: 'Cash', label: 'Espèces (Du tiroir-caisse)' },
-              { value: 'Card', label: 'Carte d’entreprise' },
-              { value: 'BaridiMob', label: 'Virement BaridiMob' },
+              { value: 'Cash', label: isAr ? 'نقداً (من درج الصندوق)' : isEn ? 'Cash (Drawer)' : 'Espèces (Du tiroir-caisse)' },
+              { value: 'Card', label: isAr ? 'بطاقة بنكية' : isEn ? 'Company Card' : 'Carte d’entreprise' },
+              { value: 'BaridiMob', label: isAr ? 'تحويل بريدي موب' : isEn ? 'BaridiMob Transfer' : 'Virement BaridiMob' },
             ]}
-            height={44}
+            height={40}
             corner={12}
           />
           <LabelInput
             field="Notes"
-            label={isAr ? 'ملاحظات أو رقم الفاتورة' : 'Notes / Réf reçu'}
+            label={isAr ? 'ملاحظات أو رقم الفاتورة' : isEn ? 'Notes / Receipt Ref' : 'Notes / Réf reçu'}
             value={expNotes}
             onChange={setExpNotes}
-            placeholder="Facture #412..."
+            placeholder={isAr ? 'فاتورة #412...' : isEn ? 'Receipt #412...' : 'Facture #412...'}
             width="100%"
-            height={44}
+            height={40}
             corner={12}
           />
-          <div className="flex items-center justify-end gap-3 pt-3">
-            <button
-              type="button"
-              onClick={() => setIsExpenseModalOpen(false)}
-              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-            >
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsExpenseModalOpen(false)}>
               {t('action_cancel')}
-            </button>
-            <button
-              type="submit"
-              className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
-            >
-              {isAr ? 'تأكيد السحب' : 'Valider la Dépense'}
-            </button>
+            </Button>
+            <Button type="submit" tone="accent" size={40}>
+              {isAr ? 'تأكيد السحب' : isEn ? 'Record Expense' : 'Valider la Dépense'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -1020,8 +1013,7 @@ export const PosFinanceView: React.FC = () => {
       <Modal
         isOpen={isZReportOpen}
         onClose={() => setIsZReportOpen(false)}
-        title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
-        subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
+        title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : isEn ? 'Z-Report · Daily Cash Closure' : 'Rapport Z · Clôture Journalière'}
       >
         <div className="space-y-4 tabular-nums t-cap leading-relaxed" dir="ltr">
           <div
@@ -1086,22 +1078,19 @@ export const PosFinanceView: React.FC = () => {
               SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+            <Button type="button" tone="soft" size={40} onClick={() => setIsZReportOpen(false)}>
+              {isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
+            </Button>
+            <Button
               type="button"
+              tone="accent"
+              size={40}
+              leading={<Printer size={14} />}
               onClick={() => window.print()}
-              className="h-10 px-4 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-2 cursor-pointer hover:opacity-90"
             >
-              <Printer size={14} />
-              <span>Imprimer Rapport Z 80mm</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsZReportOpen(false)}
-              className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] t-small font-semibold cursor-pointer"
-            >
-              Fermer
-            </button>
+              {isAr ? 'طباعة تقرير Z (80mm)' : isEn ? 'Print Z-Report 80mm' : 'Imprimer Rapport Z 80mm'}
+            </Button>
           </div>
         </div>
       </Modal>

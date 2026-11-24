@@ -28,6 +28,7 @@ import { calculateWorkerPieceworkWage } from '../../../utils/agriRules';
 import { AgriHarvestTicket, AgriDailyPointage } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -58,15 +59,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string => {
-  if (typeof v === 'string' || typeof v === 'number') return String(v);
-  if (v && typeof v === 'object' && 'target' in v) {
-    const tgt = (v as { target?: { value?: string } }).target;
-    if (tgt && typeof tgt.value === 'string') return tgt.value;
-  }
-  return String(v ?? '');
-};
 
 export const AgricultureHarvestView: React.FC = () => {
   const {
@@ -1476,22 +1468,15 @@ export const AgricultureHarvestView: React.FC = () => {
                   >
                     <Scale size={20} />
                   </div>
-                  <div>
-                    <h2 className="t-card font-semibold text-black dark:text-white">
-                      {ticketToEdit
-                        ? isAr
-                          ? 'تعديل وصل وزن المحصول'
-                          : 'Modifier le Bon de Pesée'
-                        : isAr
-                        ? 'تسجيل وصل وزن قبان جديد'
-                        : 'Nouveau Bon de Pesée Pont-Bascule'}
-                    </h2>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      {isAr
-                        ? 'قياس الحمولة الصافية والأسعار للطن'
-                        : 'Calcul automatique du poids net et net domaine'}
-                    </p>
-                  </div>
+                  <h2 className="t-card font-semibold text-black dark:text-white">
+                    {ticketToEdit
+                      ? isAr
+                        ? 'تعديل وصل وزن المحصول'
+                        : 'Modifier le Bon de Pesée'
+                      : isAr
+                      ? 'تسجيل وصل وزن قبان جديد'
+                      : 'Nouveau Bon de Pesée Pont-Bascule'}
+                  </h2>
                 </div>
                 <button
                   type="button"
@@ -1504,74 +1489,110 @@ export const AgricultureHarvestView: React.FC = () => {
               </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
               <LabelSelect
+                field="ParcelOrigin"
                 label={isAr ? 'القطعة الفلاحية المصدر' : "Parcelle d'Origine"}
                 value={parcelId}
-                onChange={(v) => setParcelId(extractStr(v))}
+                onChange={setParcelId}
                 options={parcels.map((p) => ({ value: p.id, label: p.name }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="CropDesignation"
                 label={isAr ? 'تعيين المحصول / الصنف *' : 'Désignation du Produit / Calibre *'}
                 placeholder="Ex: Tomates Industrielles Calibre 1"
                 value={crop}
-                onChange={(e) => setCrop(e.target.value)}
+                onChange={setCrop}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="VehiclePlate"
                   label={isAr ? 'رقم ترقيم الشاحنة' : 'Immatriculation Camion'}
                   value={vehiclePlate}
-                  onChange={(e) => setVehiclePlate(e.target.value)}
+                  onChange={setVehiclePlate}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="DriverName"
                   label={isAr ? 'اسم السائق' : 'Nom du Chauffeur'}
                   value={driverName}
-                  onChange={(e) => setDriverName(e.target.value)}
+                  onChange={setDriverName}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <LabelInput
+                  field="GrossWeight"
                   label={isAr ? 'الوزن القائم (كغ)' : 'Poids Brut (Kg)'}
                   type="number"
                   value={grossWeight}
-                  onChange={(e) => setGrossWeight(e.target.value)}
+                  onChange={setGrossWeight}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="TareWeight"
                   label={isAr ? 'الوزن الفارغ (كغ)' : 'Tare Camion (Kg)'}
                   type="number"
                   value={tareWeight}
-                  onChange={(e) => setTareWeight(e.target.value)}
+                  onChange={setTareWeight}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="CratesCount"
                   label={isAr ? 'عدد الصناديق' : 'Nb Caisses'}
                   type="number"
                   value={cratesCount}
-                  onChange={(e) => setCratesCount(e.target.value)}
+                  onChange={setCratesCount}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="UnitPrice"
                   label={isAr ? 'سعر الكيلوغرام (دج)' : 'Prix Unitaire DZD / Kg'}
                   type="number"
                   value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
+                  onChange={setUnitPrice}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="Market"
                   label={isAr ? 'سوق الجملة / المشتري' : 'Destination / Marché'}
                   value={market}
-                  onChange={(e) => setMarket(e.target.value)}
+                  onChange={setMarket}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} type="button">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+                <Button tone="soft" size={40} onClick={() => setIsModalOpen(false)} type="button">
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {ticketToEdit
                     ? isAr
                       ? 'حفظ التعديلات'
@@ -1579,7 +1600,7 @@ export const AgricultureHarvestView: React.FC = () => {
                     : isAr
                     ? 'تأكيد وصل الوزن'
                     : 'Valider la Pesée'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>
@@ -1606,11 +1627,9 @@ export const AgricultureHarvestView: React.FC = () => {
                   >
                     <Users size={20} />
                   </div>
-                  <div>
-                    <h2 className="t-card font-semibold text-black dark:text-white">
-                      {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
-                    </h2>
-                  </div>
+                  <h2 className="t-card font-semibold text-black dark:text-white">
+                    {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
+                  </h2>
                 </div>
                 <button
                   type="button"
@@ -1623,36 +1642,52 @@ export const AgricultureHarvestView: React.FC = () => {
               </div>
             <form onSubmit={handleSavePointage} className="space-y-4">
               <LabelSelect
+                field="PointageWorker"
                 label={isAr ? 'العامل السيزوني / التاشرون' : 'Ouvrier / Tâcheron'}
                 value={pointageWorkerId}
-                onChange={(v) => setPointageWorkerId(extractStr(v))}
+                onChange={setPointageWorkerId}
                 options={workers.map((w) => ({
                   value: w.id,
                   label: `${w.fullName} (${w.defaultPieceRateDzd || 40} DA/caisse)`,
                 }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelSelect
+                field="PointageParcel"
                 label={isAr ? 'القطعة الفلاحية' : "Parcelle d'Assignation"}
                 value={pointageParcelId}
-                onChange={(v) => setPointageParcelId(extractStr(v))}
+                onChange={setPointageParcelId}
                 options={parcels.map((pr) => ({
                   value: pr.id,
                   label: pr.name,
                 }))}
+                width="100%"
+                height={40}
+                corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="PointageCrates"
                   label={isAr ? 'عدد الصناديق الأولية' : 'Nombre de Caisses'}
                   type="number"
                   value={pointageCrates}
-                  onChange={(e) => setPointageCrates(e.target.value)}
+                  onChange={setPointageCrates}
+                  width="100%"
+                  height={40}
+                  corner={12}
                   required
                 />
                 <LabelInput
+                  field="PointageAdvance"
                   label={isAr ? 'تسبيق نقدي (دج)' : 'Acompte Espèces (DZD)'}
                   type="number"
                   value={pointageAdvance}
-                  onChange={(e) => setPointageAdvance(e.target.value)}
+                  onChange={setPointageAdvance}
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
               <div
@@ -1686,18 +1721,18 @@ export const AgricultureHarvestView: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
+                  tone="soft"
+                  size={40}
                   type="button"
                   onClick={() => setIsPointageModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {isAr ? 'تأكيد التسجيل' : 'Enregistrer le Pointage'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

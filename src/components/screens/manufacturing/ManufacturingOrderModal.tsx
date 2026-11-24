@@ -10,7 +10,7 @@ import {
 import { ManufacturingBom, ManufacturingOrder } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { validateStockAvailabilityForOf } from '../../../utils/manufacturingRules';
 import { useManufacturingData } from './manufacturingData';
 import { KineticModalShell } from '../../ui/kinetic';
@@ -22,16 +22,6 @@ interface ManufacturingOrderModalProps {
   onSave: (order: ManufacturingOrder) => void;
   orderToEdit?: ManufacturingOrder | null;
 }
-
-const extractStr = (v: unknown): string => {
-  if (typeof v === 'string') return v;
-  if (v && typeof v === 'object') {
-    const obj = v as { target?: { value?: unknown }; value?: unknown };
-    if (obj.target?.value !== undefined) return String(obj.target.value);
-    if (obj.value !== undefined) return String(obj.value);
-  }
-  return String(v ?? '');
-};
 
 export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = ({
   isOpen,
@@ -173,24 +163,36 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
           </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <LabelSelect
+            field="ofBomId"
             label={isAr ? 'المنتج النهائي والتركيبة (BOM)' : 'Produit & Nomenclature (BOM)'}
             value={bomId}
-            onChange={(v) => setBomId(extractStr(v))}
+            onChange={setBomId}
             options={bomOptions}
+            width="100%"
+            height={40}
+            corner={12}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="ofQuantity"
               label={isAr ? 'الكمية المستهدفة' : 'Quantité à fabriquer'}
               type="number"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={setQuantity}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="ofDueDate"
               label={isAr ? 'تاريخ التسليم المستهدف' : "Date d'échéance atelier"}
               type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={setDueDate}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
@@ -224,9 +226,10 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             </div>
           </div>
           <LabelSelect
+            field="ofStation"
             label={isAr ? 'محطة أو خط التشغيل' : "Poste / Ligne d'assemblage"}
             value={station}
-            onChange={(v) => setStation(extractStr(v))}
+            onChange={setStation}
             options={[
               { value: 'Poste 03 - Découpe & Usinage CNC', label: 'Poste 03 - Découpe & Usinage CNC' },
               { value: 'Presse Injection Plastique 350T', label: 'Presse Injection Plastique 350T' },
@@ -235,28 +238,39 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
               { value: 'Cabine Peinture & Vernis', label: 'Cabine Peinture & Vernis' },
               { value: 'Poste Contrôle Qualité Final', label: 'Poste Contrôle Qualité Final' },
             ]}
+            width="100%"
+            height={40}
+            corner={12}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
+              field="ofClientName"
               label={isAr ? 'اسم العميل / الوجهة' : 'Client ou Destination'}
               value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
+              onChange={setClientName}
               placeholder="Ex: Sonatrach, BNA, Sur stock..."
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
+              field="ofNotes"
               label={isAr ? 'تعليمات فنية للورشة' : 'Instructions techniques'}
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={setNotes}
               placeholder="Tolérances, priorité haute..."
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-            <AtriumButton type="button" variant="secondary" onClick={onClose}>
+            <Button type="button" tone="soft" size={40} onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton type="submit" variant="primary" icon={<Factory size={15} />}>
+            </Button>
+            <Button type="submit" tone="accent" size={40} leading={<Factory size={15} />}>
               {isAr ? 'إطلاق أمر التصنيع' : "Lancer l'Ordre de Fabrication"}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

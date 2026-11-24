@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { AlertTriangle, GitMerge, RotateCcw, Upload, Check } from 'lucide-react';
+import { AlertTriangle, GitMerge, RotateCcw, Upload } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { useRetainedModalValue } from '../ui/kinetic/KineticModalShell';
 import { AtriumButton } from '../ui/AtriumButton';
+import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { useAtriumSelector, resolveConcurrencyConflictAction, dismissConcurrencyConflictAction } from '../../services/store';
 
 const INTERNAL_IGNORE_KEYS = new Set([
@@ -129,28 +130,21 @@ export const ConcurrencyConflictModal: React.FC = () => {
     ? 'Conflit de modification concurrente'
     : 'Concurrent Edit Conflict';
 
-  const subtitleText = activeConflict
-    ? `${activeConflict.entityLabel || activeConflict.entityType || activeConflict.table} · ${
-        isAr ? 'تم تعديل هذا السجل من جهاز آخر أثناء التحرير' : isFr ? 'Cet enregistrement a été modifié ailleurs pendant votre édition' : 'This record was modified elsewhere while you were editing'
-      }`
-    : '';
-
   return (
     <Modal
       isOpen={Boolean(rawConflict)}
       onClose={() => activeConflict && dismissConcurrencyConflictAction(activeConflict.id)}
       title={titleText}
-      subtitle={subtitleText}
       maxWidth="xl"
     >
       {activeConflict && (
       <div className="flex flex-col gap-[var(--s4,16px)]">
-        {/* Unboxed inline conflict metadata */}
+        {/* Inline conflict metadata */}
         <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] pb-[var(--s3,12px)] border-b border-[var(--atr-line)] t-cap text-[var(--atr-ink-3)]">
           <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
             <AlertTriangle size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />
             <span className="t-small font-semibold text-[var(--atr-ink)]">
-              {activeConflict.entityType || activeConflict.table}
+              {activeConflict.entityLabel || activeConflict.entityType || activeConflict.table}
             </span>
             <span aria-hidden="true">·</span>
             <span className="tabular-nums">
@@ -172,12 +166,12 @@ export const ConcurrencyConflictModal: React.FC = () => {
           )}
         </div>
 
-        {/* Side-by-side field diff table */}
+        {/* Field diff rows using branded LiveSegmentedControl */}
         {diffRows.length === 0 ? (
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="p-[var(--s4,16px)] bg-[var(--atr-soft)] t-body text-[var(--atr-ink-3)]"
+            className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#292624] t-body text-[var(--atr-ink-3)]"
           >
             {isAr
               ? 'تم تحديث رقم النسخة على الخادم دون اختلاف في الحقول المرئية. يمكنك إعادة الحفظ أو اعتماد نسخة الخادم.'
@@ -189,90 +183,51 @@ export const ConcurrencyConflictModal: React.FC = () => {
           <div
             data-sq="table"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="overflow-hidden bg-[var(--atr-card)]"
+            className="overflow-hidden bg-[#F5F1EC] dark:bg-[#292624] divide-y divide-[var(--atr-line)]"
           >
-            <div className="grid grid-cols-12 gap-[var(--col-gap,16px)] px-[var(--s4,16px)] py-[var(--s2,8px)] h-[var(--head-h,36px)] items-center bg-[var(--atr-soft)] border-b border-[var(--atr-line)] t-small text-[var(--atr-ink-3)]">
-              <div className="col-span-4">
-                {isAr ? 'الحقل' : isFr ? 'Champ' : 'Field'}
-              </div>
-              <div className="col-span-4">
-                {isAr ? 'تعديلاتك غير المحفوظة' : isFr ? 'Vos modifications' : 'Your Unsaved Edits'}
-              </div>
-              <div className="col-span-4">
-                {isAr ? 'أحدث نسخة على الخادم' : isFr ? 'Dernier état serveur' : 'Latest Server State'}
-              </div>
-            </div>
-
-            <div className="divide-y divide-[var(--atr-line)] max-h-[300px] overflow-y-auto">
-              {diffRows.map((row) => {
-                const picked = selectedSourceByField[row.key] || 'local';
-                return (
-                  <div
-                    key={row.key}
-                    className="grid grid-cols-12 gap-[var(--col-gap,16px)] px-[var(--s4,16px)] py-[var(--s3,12px)] items-center"
-                  >
-                    <div className="col-span-4 t-label text-[var(--atr-ink)] truncate" title={row.label}>
-                      {row.label}
-                    </div>
-
-                    <div className="col-span-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedSourceByField((prev) => ({ ...prev, [row.key]: 'local' }))
-                        }
-                        data-sq="ctl-sm"
-                        style={
-                          {
-                            '--sq-stroke': picked === 'local' ? 'var(--atr-acc)' : 'var(--atr-line)',
-                          } as React.CSSProperties
-                        }
-                        className={`w-full text-left rtl:text-right h-[var(--btn-sm-h,32px)] px-[var(--s3,12px)] transition-colors cursor-pointer flex items-center justify-between gap-[var(--s2,8px)] ${
-                          picked === 'local'
-                            ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
-                            : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
-                        }`}
-                      >
-                        <span className="truncate t-small tabular-nums" title={row.localStr}>
-                          {row.localStr}
-                        </span>
-                        {picked === 'local' && <Check size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />}
-                      </button>
-                    </div>
-
-                    <div className="col-span-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedSourceByField((prev) => ({ ...prev, [row.key]: 'server' }))
-                        }
-                        data-sq="ctl-sm"
-                        style={
-                          {
-                            '--sq-stroke': picked === 'server' ? 'var(--atr-acc)' : 'var(--atr-line)',
-                          } as React.CSSProperties
-                        }
-                        className={`w-full text-left rtl:text-right h-[var(--btn-sm-h,32px)] px-[var(--s3,12px)] transition-colors cursor-pointer flex items-center justify-between gap-[var(--s2,8px)] ${
-                          picked === 'server'
-                            ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
-                            : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
-                        }`}
-                      >
-                        <span className="truncate t-small tabular-nums" title={row.serverStr}>
-                          {row.serverStr}
-                        </span>
-                        {picked === 'server' && <Check size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />}
-                      </button>
-                    </div>
+            {diffRows.map((row) => {
+              const picked = selectedSourceByField[row.key] || 'local';
+              return (
+                <div
+                  key={row.key}
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-[var(--s3,12px)] px-[var(--s4,16px)] py-[var(--s3,12px)] items-center"
+                >
+                  <div className="sm:col-span-4 t-label text-[var(--atr-ink)] truncate" title={row.label}>
+                    {row.label}
                   </div>
-                );
-              })}
-            </div>
+                  <div className="sm:col-span-8 min-w-0">
+                    <LiveSegmentedControl
+                      size="sm"
+                      fullWidth
+                      className="min-w-0 [&>button]:min-w-0 [&>button]:truncate"
+                      aria-label={row.label}
+                      value={picked}
+                      onValueChange={(val) =>
+                        setSelectedSourceByField((prev) => ({
+                          ...prev,
+                          [row.key]: val as 'local' | 'server',
+                        }))
+                      }
+                      options={[
+                        {
+                          value: 'local',
+                          label: `${isAr ? 'نسختك: ' : isFr ? 'Moi: ' : 'Mine: '}${row.localStr}`,
+                        },
+                        {
+                          value: 'server',
+                          label: `${isAr ? 'الخادم: ' : isFr ? 'Serveur: ' : 'Server: '}${row.serverStr}`,
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
         {/* Resolution actions */}
-        <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)] pt-[var(--s2,8px)] border-t border-[var(--atr-line)]">
+        <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)] pt-[var(--s3,12px)] border-t border-[var(--atr-line)]">
           <AtriumButton
             type="button"
             variant="secondary"

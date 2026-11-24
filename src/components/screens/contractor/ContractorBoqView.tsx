@@ -21,6 +21,7 @@ import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorBoqItem } from '../../../types';
@@ -52,13 +53,6 @@ import {
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string =>
-  typeof v === 'string'
-    ? v
-    : typeof v === 'number'
-    ? String(v)
-    : (v as { target?: { value?: string } })?.target?.value ?? '';
 
 export const ContractorBoqView: React.FC<any> = () => {
   const {
@@ -1064,11 +1058,6 @@ export const ContractorBoqView: React.FC<any> = () => {
                         ? isAr ? 'تعديل بند المقايسة' : 'Modifier le Poste BOQ'
                         : isAr ? 'إضافة بند إلى الكشف التقديري' : 'Nouveau Poste au Bordereau BOQ'}
                     </h2>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      {isAr
-                        ? 'تعريف وحدات العمل والأسعار الأحادية'
-                        : 'Définition du poste, prix unitaire et quantités contractuelles'}
-                    </p>
                   </div>
                 </div>
                 <button
@@ -1081,18 +1070,26 @@ export const ContractorBoqView: React.FC<any> = () => {
                 </button>
               </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="itemCode"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'رقم / كود البند *' : 'Code Poste / Article *'}
                   placeholder="01.01"
                   value={itemCode}
-                  onChange={(e) => setItemCode(e.target.value)}
+                  onChange={setItemCode}
                   required
                 />
                 <LabelSelect
+                  field="unit"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'الوحدة' : 'Unité de Mesure'}
                   value={unit}
-                  onChange={(v) => setUnit(extractStr(v) as ContractorBoqItem['unit'])}
+                  onChange={(v) => setUnit(v as ContractorBoqItem['unit'])}
                   options={[
                     { value: 'm3', label: 'm³ (Mètre cube)' },
                     { value: 'm2', label: 'm² (Mètre carré)' },
@@ -1105,42 +1102,54 @@ export const ContractorBoqView: React.FC<any> = () => {
                 />
               </div>
               <LabelInput
+                field="designation"
+                width="100%"
+                height={40}
+                corner={12}
                 label={isAr ? 'توصيف الأشغال والمواد *' : 'Désignation des Travaux *'}
                 placeholder="Ex: Béton armé dosé à 350 kg/m3 pour semelles"
                 value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
+                onChange={setDesignation}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
+                  field="plannedQty"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'الكمية التعاقدية المخططة' : 'Quantité Prévue'}
                   type="number"
                   value={plannedQty}
-                  onChange={(e) => setPlannedQty(e.target.value)}
+                  onChange={setPlannedQty}
                   required
                 />
                 <LabelInput
+                  field="unitPrice"
+                  width="100%"
+                  height={40}
+                  corner={12}
                   label={isAr ? 'السعر الأحادي (دج)' : 'Prix Unitaire (DZD)'}
                   type="number"
                   value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
+                  onChange={setUnitPrice}
                   required
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
+                <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
+                  tone="soft"
+                  size={40}
                   onClick={() => setIsModalOpen(false)}
                 >
                   {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
+                </Button>
+                <Button tone="accent" size={40} type="submit">
                   {itemToEdit
                     ? isAr ? 'حفظ التعديلات' : 'Enregistrer'
                     : isAr ? 'إضافة البند' : 'Ajouter au Bordereau'}
-                </AtriumButton>
+                </Button>
               </div>
             </form>
             </div>

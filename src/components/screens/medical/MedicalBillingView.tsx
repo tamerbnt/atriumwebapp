@@ -23,7 +23,9 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { MedicalConsultation } from '../../../types';
 import { useMedicalData } from './medicalData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1253,7 +1255,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   <h3 className="font-semibold text-black dark:text-white t-small">
                     Comptage Physique du Tiroir Caisse (Aujourd&apos;hui)
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
                       <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                         Espèces Attendues (Système)
@@ -1265,23 +1267,22 @@ export const MedicalBillingView: React.FC<any> = () => {
                         Base tickets modérateurs encaissés
                       </span>
                     </div>
-                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
-                      <label className="t-small text-black/55 dark:text-white/55 font-semibold block mb-1">
-                        Espèces Comptées Physiquement (DZD)
-                      </label>
-                      <div data-sq="ctl-sm" data-sq-border="none" className="bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-                        <input
-                          type="number"
-                          value={countedCash}
-                          onChange={(e) => setCountedCash(e.target.value)}
-                          className="lbi-field w-full px-2 py-2 bg-transparent border-0 tabular-nums font-semibold t-card text-black dark:text-white"
-                        />
-                      </div>
+                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
+                      <LabelInput
+                        field="countedCash"
+                        width="100%"
+                        height={40}
+                        corner={12}
+                        label="Espèces Comptées Physiquement (DZD)"
+                        type="number"
+                        value={countedCash}
+                        onChange={setCountedCash}
+                      />
                       {(() => {
                         const diff = (parseFloat(countedCash) || 0) - expectedCashTotal;
                         return (
                           <span
-                            className={`t-small font-semibold block mt-1 ${
+                            className={`t-small font-semibold block ${
                               diff === 0
                                 ? 'text-emerald-600'
                                 : diff > 0
@@ -1300,28 +1301,24 @@ export const MedicalBillingView: React.FC<any> = () => {
                       })()}
                     </div>
                   </div>
-                  <div>
-                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
-                      Observations et Justificatifs
-                    </label>
-                    <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-                      <textarea
-                        value={closureNotes}
-                        onChange={(e) => setClosureNotes(e.target.value)}
-                        rows={3}
-                        className="lbi-field w-full p-3 bg-transparent border-0 t-cap text-black dark:text-white"
-                      />
-                    </div>
-                  </div>
+                  <LabelTextarea
+                    field="closureNotes"
+                    width="100%"
+                    corner={12}
+                    label="Observations et Justificatifs"
+                    value={closureNotes}
+                    onChange={setClosureNotes}
+                    rows={3}
+                  />
                   <div className="flex justify-end pt-2">
-                    <AtriumButton
-                      variant="primary"
-                      size="md"
-                      icon={<Check size={14} />}
+                    <Button
+                      tone="accent"
+                      size={40}
+                      leading={<Check size={14} />}
                       onClick={handleSaveCashClosure}
                     >
-                      <span>Valider &amp; Signer la Clôture de Caisse</span>
-                    </AtriumButton>
+                      Valider &amp; Signer la Clôture de Caisse
+                    </Button>
                   </div>
                 </div>
               </div>

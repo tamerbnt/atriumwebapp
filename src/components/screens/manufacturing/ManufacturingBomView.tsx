@@ -26,7 +26,9 @@ import { formatMoney } from '../../../utils/rules';
 import { ManufacturingBom } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -906,28 +908,26 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'notes' && (
               <div className="space-y-3 t-cap">
-                <p className="text-black/55 dark:text-white/55 t-cap">
-                  Directives techniques d'usinage, tolérances et normes d'assemblage :
-                </p>
-                <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-                  <textarea
-                    rows={6}
-                    value={inspectorNotes}
-                    onChange={(e) => setInspectorNotes(e.target.value)}
-                    placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
-                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white t-cap outline-hidden resize-none"
-                  />
-                </div>
-                <AtriumButton
+                <LabelTextarea
+                  field="bomInspectorNotes"
+                  label={isAr ? 'توجيهات التصنيع والتجميع' : "Directives techniques d'usinage"}
+                  rows={6}
+                  value={inspectorNotes}
+                  onChange={setInspectorNotes}
+                  placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
+                  width="100%"
+                  corner={12}
+                />
+                <Button
                   type="button"
-                  variant="primary"
-                  size="sm"
+                  tone="accent"
+                  size={36}
                   className="w-full justify-center"
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
+                  leading={noteSaved ? <Check size={14} /> : <Save size={14} />}
                   onClick={handleSaveNotes}
                 >
                   {noteSaved ? (isAr ? 'تم الحفظ' : 'Consignes enregistrées') : isAr ? 'حفظ' : 'Enregistrer'}
-                </AtriumButton>
+                </Button>
               </div>
             )}
           </div>
@@ -943,20 +943,15 @@ export const ManufacturingBomView: React.FC<any> = () => {
       >
         <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-            <div className="flex items-center gap-2">
-              <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+            <div className="flex items-center gap-2.5">
+              <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0">
                 <Layers size={20} />
               </div>
-              <div>
-                <h2 className="t-card font-semibold text-black dark:text-white">
-                  {bomToEdit
-                    ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
-                    : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
-                </h2>
-                <p className="t-cap text-black/55 dark:text-white/55">
-                  {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
-                </p>
-              </div>
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                {bomToEdit
+                  ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
+                  : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
+              </h2>
             </div>
             <button
               type="button"
@@ -968,55 +963,79 @@ export const ManufacturingBomView: React.FC<any> = () => {
             </button>
           </div>
           <form onSubmit={handleSaveModal} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="bomCode"
                 label={isAr ? 'رمز التركيبة *' : 'Code BOM *'}
                 placeholder="BOM-TAB-01"
                 value={bomCode}
-                onChange={(e) => setBomCode(e.target.value)}
+                onChange={setBomCode}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="bomUnit"
                 label={isAr ? 'وحدة الإنتاج' : 'Unité de lot'}
                 placeholder="Unité, Lot de 10..."
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
+                onChange={setUnit}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
+              field="bomProductName"
               label={isAr ? 'اسم المنتج النهائي المصنّع *' : 'Produit Fini Fabriqué *'}
               placeholder="Ex: Table Réunion Chêne Massif 3.2m"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={setProductName}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelInput
+                field="bomBatchYield"
                 label={isAr ? 'الكمية المنتجة' : 'Rendement Lot'}
                 type="number"
                 value={batchYield}
-                onChange={(e) => setBatchYield(e.target.value)}
+                onChange={setBatchYield}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="bomLaborHours"
                 label={isAr ? 'ساعات العمل' : 'Heures MO'}
                 type="number"
                 value={laborHours}
-                onChange={(e) => setLaborHours(e.target.value)}
+                onChange={setLaborHours}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="bomEstimatedCost"
                 label={isAr ? 'التكلفة المعيارية' : 'Coût Total DZD'}
                 type="number"
                 value={estimatedCost}
-                onChange={(e) => setEstimatedCost(e.target.value)}
+                onChange={setEstimatedCost}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+              <Button type="button" tone="soft" size={40} onClick={() => setIsModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton variant="primary" size="sm" type="submit">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {bomToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إنشاء التركيبة' : 'Créer la BOM'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>

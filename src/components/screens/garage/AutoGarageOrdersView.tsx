@@ -18,8 +18,11 @@ import {
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder } from './garageData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AutoOrderModal } from './AutoOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -1140,25 +1143,23 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 <InspectorSection index={1} title={isAr ? 'مراقبة الجودة' : 'Contrôle Qualité & Clôture'}>
                   <div className="space-y-2">
                     {checklist.map((item) => (
-                      <label
+                      <div
                         key={item.id}
                         data-sq="ctl"
                         data-sq-border="none"
-                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#22201E] cursor-pointer t-cap"
+                        className="flex items-center justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-[#22201E] t-cap"
                       >
-                        <input
-                          type="checkbox"
-                          checked={item.done}
-                          onChange={() => {
-                            const updated = checklist.map((c) => (c.id === item.id ? { ...c, done: !c.done } : c));
-                            updateOrder({ ...order, technicianChecklist: updated });
-                          }}
-                          className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
-                        />
                         <span className={item.done ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'}>
                           {item.label}
                         </span>
-                      </label>
+                        <LiveSwitch
+                          checked={item.done}
+                          onCheckedChange={(checked) => {
+                            const updated = checklist.map((c) => (c.id === item.id ? { ...c, done: checked } : c));
+                            updateOrder({ ...order, technicianChecklist: updated });
+                          }}
+                        />
+                      </div>
                     ))}
                   </div>
                 </InspectorSection>
@@ -1283,56 +1284,41 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             </button>
           </div>
           <form onSubmit={handleRequisitionSubmit} className="space-y-4">
-            <div>
-              <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
-                {isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <select
-                  value={selectedPartId}
-                  onChange={(e) => setSelectedPartId(e.target.value)}
-                  className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white focus:outline-none"
-                  required
-                >
-                  <option value="">-- Choisir une pièce disponible --</option>
-                  {parts.map((p) => (
-                    <option key={p.id} value={p.id} disabled={p.stockQuantity <= 0}>
-                      {p.name} ({p.sku}) · Stock: {p.stockQuantity} {p.unit || 'pcs'} · {p.sellingPriceDzd.toLocaleString()} DA
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
-                {isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
-              </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <input
-                  type="number"
-                  min="1"
-                  value={selectedPartQty}
-                  onChange={(e) => setSelectedPartQty(e.target.value)}
-                  className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums focus:outline-none"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-              <AtriumButton variant="secondary" onClick={() => setIsRequisitionModalOpen(false)}>
+            <LabelSelect
+              field="requisitionPartId"
+              label={isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
+              value={selectedPartId}
+              onChange={setSelectedPartId}
+              options={[
+                { value: '', label: isAr ? '-- اختر قطعة متوفرة --' : '-- Choisir une pièce disponible --' },
+                ...parts.map((p) => ({
+                  value: p.id,
+                  label: `${p.name} (${p.sku}) · Stock: ${p.stockQuantity} ${p.unit || 'pcs'} · ${p.sellingPriceDzd.toLocaleString()} DA`,
+                })),
+              ]}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              field="requisitionPartQty"
+              label={isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
+              type="number"
+              min="1"
+              value={selectedPartQty}
+              onChange={setSelectedPartQty}
+              width="100%"
+              height={40}
+              corner={12}
+              required
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsRequisitionModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton type="submit" variant="primary">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {isAr ? 'تأكيد الصرف' : 'Valider la sortie'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>

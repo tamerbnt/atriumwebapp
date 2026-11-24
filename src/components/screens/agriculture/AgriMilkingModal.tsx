@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { X, Milk, AlertTriangle, Check, Thermometer } from 'lucide-react';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
 import {
   useAtriumSelector,
@@ -125,39 +126,57 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
           </div>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             <LabelInput
+              field="SessionDate"
               label={isAr ? 'تاريخ الحلب *' : 'Date de la Traite *'}
               type="date"
               value={sessionDate}
-              onChange={(e) => setSessionDate(e.target.value)}
+              onChange={setSessionDate}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
-            <LabelSelect
-              label={isAr ? 'فترة الحلب *' : 'Période de Traite *'}
-              value={sessionPeriod}
-              onChange={(val) => setSessionPeriod(val as 'morning' | 'evening')}
-              options={[
-                { value: 'morning', label: isAr ? 'حلب الصباح (05:00 - 07:00)' : 'Traite du Matin (05:00 - 07:00)' },
-                { value: 'evening', label: isAr ? 'حلب المساء (16:30 - 18:30)' : 'Traite du Soir (16:30 - 18:30)' },
-              ]}
-            />
+            <div className="space-y-1">
+              <span className="block t-cap font-semibold text-black/55 dark:text-white/55">
+                {isAr ? 'فترة الحلب *' : 'Période de Traite *'}
+              </span>
+              <LiveSegmentedControl
+                size="md"
+                fullWidth
+                value={sessionPeriod}
+                onChange={(val) => setSessionPeriod(val as 'morning' | 'evening')}
+                options={[
+                  { value: 'morning', label: isAr ? 'الصباح' : 'Matin (05h)' },
+                  { value: 'evening', label: isAr ? 'المساء' : 'Soir (16h30)' },
+                ]}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelInput
+              field="TotalTankLiters"
               label={isAr ? 'إجمالي لترات الحلب بالخزان *' : 'Volume Total Trait (Litres) *'}
               type="number"
               value={totalTankLiters}
-              onChange={(e) => setTotalTankLiters(e.target.value)}
+              onChange={setTotalTankLiters}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="TankTemperature"
               label={isAr ? 'حرارة الخزان (°C) *' : 'Température Tank Réfrigéré (°C) *'}
               type="number"
               step="0.1"
               value={tankTemperature}
-              onChange={(e) => setTankTemperature(e.target.value)}
+              onChange={setTankTemperature}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
@@ -201,10 +220,14 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             </div>
 
             <LabelInput
+              field="RejectedWithholdingLiters"
               label={isAr ? 'اللترات المعزولة المهدورة (غير مطابقة) *' : 'Litres Écartés / Jetés (Non-Conformes) *'}
               type="number"
               value={rejectedWithholdingLiters}
-              onChange={(e) => setRejectedWithholdingLiters(e.target.value)}
+              onChange={setRejectedWithholdingLiters}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <p className="t-cap text-black/55 dark:text-white/55">
@@ -216,32 +239,48 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelSelect
+              field="DestinationDairy"
               label={isAr ? 'الملبنة المستلمة المعتمدة *' : 'Laiterie Destinataire Agréée *'}
               value={destinationDairy}
-              onChange={(val) => setDestinationDairy(val)}
+              onChange={setDestinationDairy}
               options={dairyOptions}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
+              field="DairyDeliverySlipNo"
               label={isAr ? 'رقم وصل التسليم (BL)' : 'N° Bon de Livraison Laiterie'}
               value={dairyDeliverySlipNo}
-              onChange={(e) => setDairyDeliverySlipNo(e.target.value)}
+              onChange={setDairyDeliverySlipNo}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelInput
+              field="FatContentMg"
               label={isAr ? 'نسبة المادة الدسمة (غ/ل)' : 'Matière Grasse (g/L)'}
               type="number"
               step="0.1"
               value={fatContentMg}
-              onChange={(e) => setFatContentMg(e.target.value)}
+              onChange={setFatContentMg}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
+              field="Density"
               label={isAr ? 'الكثافة (Densité)' : 'Densité'}
               type="number"
               step="0.001"
               value={density}
-              onChange={(e) => setDensity(e.target.value)}
+              onChange={setDensity}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -264,13 +303,13 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="ghost" size="sm" onClick={onClose} type="button">
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+            <Button tone="soft" size={40} onClick={onClose} type="button">
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+            </Button>
+            <Button tone="accent" size={40} type="submit" leading={<Check size={14} />}>
               {isAr ? 'تأكيد وقيد جلسة الحلب' : 'Valider la Session de Traite'}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

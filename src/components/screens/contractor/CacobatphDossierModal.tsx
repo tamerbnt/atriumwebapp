@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Cloud, Printer, X, ShieldCheck, CheckCircle2, AlertTriangle, Users, Calendar, Download } from 'lucide-react';
 import { showToast, useAtriumSelector } from '../../../services/store';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface CacobatphDossierModalProps {
@@ -21,7 +20,6 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 	const isAr = language === "ar";
 	const [onmBulletin, setOnmBulletin] = React.useState(dailyLog?.onmBulletinReference || "ONM-METEO-DZ-2026-8841");
 	const [stoppageHours, setStoppageHours] = React.useState(String(dailyLog?.stoppageHours || 5));
-	const [weatherType, setWeatherType] = React.useState("HeavyRain");
 	const [workerCount, setWorkerCount] = React.useState("24");
 	const [cacobatphCenter, setCacobatphCenter] = React.useState("Agence Régionale Alger Centre");
 	const handlePrint = () => {
@@ -48,7 +46,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 </div>
 </div>
 <div className="flex items-center gap-2">
-<AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الملف" : "Imprimer Bordereau"}</AtriumButton>
+<Button tone="accent" size={36} onClick={handlePrint} leading={<Printer size={15} />}>{isAr ? "طباعة الملف" : "Imprimer Bordereau"}</Button>
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
@@ -105,13 +103,13 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 </div>
 </div>
 <div className="space-y-3 pt-2 border-t border-black/[0.10] print:hidden">
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label="N° Bulletin Météorologique ONM" value={onmBulletin} onChange={(e) => setOnmBulletin(e.target.value)} required />
-<LabelInput label="Heures d'arrêt de travail" type="number" value={stoppageHours} onChange={(e) => setStoppageHours(e.target.value)} required />
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<LabelInput field="onmBulletin" width="100%" height={40} corner={12} label="N° Bulletin Météorologique ONM" value={onmBulletin} onChange={setOnmBulletin} required />
+<LabelInput field="stoppageHours" width="100%" height={40} corner={12} label="Heures d'arrêt de travail" type="number" value={stoppageHours} onChange={setStoppageHours} required />
 </div>
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label="Nombre d'ouvriers indemnisables" type="number" value={workerCount} onChange={(e) => setWorkerCount(e.target.value)} />
-<LabelInput label="Agence régionale CACOBATPH" value={cacobatphCenter} onChange={(e) => setCacobatphCenter(e.target.value)} />
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<LabelInput field="workerCount" width="100%" height={40} corner={12} label="Nombre d'ouvriers indemnisables" type="number" value={workerCount} onChange={setWorkerCount} />
+<LabelInput field="cacobatphCenter" width="100%" height={40} corner={12} label="Agence régionale CACOBATPH" value={cacobatphCenter} onChange={setCacobatphCenter} />
 </div>
 </div>
 <div className="space-y-2">
@@ -173,8 +171,8 @@ h
 </div>
 </div>
 <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)] print:hidden">
-<AtriumButton variant="outline" onClick={onClose}>{isAr ? "إلغاء" : "Fermer"}</AtriumButton>
-<AtriumButton variant="primary" onClick={handleValidateDossier} icon={<CheckCircle2 size={15} />}>{isAr ? "اعتماد وإرسال إلى CACOBATPH" : "Valider & Enregistrer Dossier"}</AtriumButton>
+<Button tone="soft" size={40} onClick={onClose}>{isAr ? "إلغاء" : "Fermer"}</Button>
+<Button tone="accent" size={40} onClick={handleValidateDossier} leading={<CheckCircle2 size={15} />}>{isAr ? "اعتماد وإرسال إلى CACOBATPH" : "Valider & Enregistrer Dossier"}</Button>
 </div>
 </div>
 </KineticModalShell>

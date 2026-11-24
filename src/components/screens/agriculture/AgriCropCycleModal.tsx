@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sprout, Calendar, Layers, ShieldCheck, Check } from 'lucide-react';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriCropCycle, AgriParcel, AgriCyclePhase } from '../../../types';
@@ -172,80 +172,120 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelSelect
+              field="Parcel"
               label={isAr ? 'القطعة الفلاحية المخصصة *' : 'Parcelle Cadastrale *'}
               value={parcelId}
               onChange={(val) => setParcelId(val)}
               options={parcelOptions}
+              width="100%"
+              height={40}
+              corner={12}
             />
 
             <LabelSelect
+              field="CurrentPhase"
               label={isAr ? 'مرحلة الدورة الحالية *' : 'Phase Actuelle du Cycle *'}
               value={currentPhase}
               onChange={(val) => setCurrentPhase(val as AgriCyclePhase)}
               options={phaseOptions}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <LabelInput
+              field="CropName"
               label={isAr ? 'المحصول الفلاحي *' : 'Désignation de la Culture *'}
               placeholder="Ex: Tomates Maraîchères, Blé Dur, Pommes de Terre"
               value={cropName}
-              onChange={(e) => setCropName(e.target.value)}
+              onChange={setCropName}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="Variety"
               label={isAr ? 'الصنف / السلالة *' : 'Variété / Cultivar *'}
               placeholder="Ex: Marmande F1, Spunta, Simeto"
               value={variety}
-              onChange={(e) => setVariety(e.target.value)}
+              onChange={setVariety}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <LabelInput
+              field="CampaignYear"
               label={isAr ? 'السنة / الحملة' : 'Campagne Agricole'}
               type="number"
               value={campaignYear}
-              onChange={(e) => setCampaignYear(e.target.value)}
+              onChange={setCampaignYear}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="SurfaceAllocatedHa"
               label={isAr ? 'المساحة المخصصة (هكتار) *' : 'Surface Allouée (ha) *'}
               type="number"
               step="0.1"
               value={surfaceAllocatedHa}
-              onChange={(e) => setSurfaceAllocatedHa(e.target.value)}
+              onChange={setSurfaceAllocatedHa}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="SeedLotNumber"
               label={isAr ? 'رقم حصة البذور' : 'N° Lot Semence Certifiée'}
               placeholder="Ex: CCLS-2026-88"
               value={seedLotNumber}
-              onChange={(e) => setSeedLotNumber(e.target.value)}
+              onChange={setSeedLotNumber}
+              width="100%"
+              height={40}
+              corner={12}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <LabelInput
+              field="SeedQuantityKg"
               label={isAr ? 'كمية البذور (كغ)' : 'Semence Utilisée (Kg)'}
               type="number"
               value={seedQuantityKg}
-              onChange={(e) => setSeedQuantityKg(e.target.value)}
+              onChange={setSeedQuantityKg}
+              width="100%"
+              height={40}
+              corner={12}
             />
             <LabelInput
+              field="SowingDate"
               label={isAr ? 'تاريخ البذر / الشتل *' : 'Date de Semis / Plantation *'}
               type="date"
               value={sowingDate}
-              onChange={(e) => setSowingDate(e.target.value)}
+              onChange={setSowingDate}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
             <LabelInput
+              field="ProjectedHarvestDate"
               label={isAr ? 'تاريخ الجني المتوقع *' : 'Date Récolte Prévue *'}
               type="date"
               value={projectedHarvestDate}
-              onChange={(e) => setProjectedHarvestDate(e.target.value)}
+              onChange={setProjectedHarvestDate}
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
           </div>
@@ -260,52 +300,72 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="ProjectedYieldQtx"
                 label={isAr ? 'المحصول المتوقع (قنطار) *' : 'Rendement Prévu (Quintaux) *'}
                 type="number"
                 value={projectedYieldQtx}
-                onChange={(e) => setProjectedYieldQtx(e.target.value)}
+                onChange={setProjectedYieldQtx}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="ActualYieldQtx"
                 label={isAr ? 'المحصول المحقق فعلياً (قنطار)' : 'Rendement Réalisé (Quintaux)'}
                 type="number"
                 placeholder="Ex: 1150"
                 value={actualYieldQtx}
-                onChange={(e) => setActualYieldQtx(e.target.value)}
+                onChange={setActualYieldQtx}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <LabelInput
+                field="InputCost"
                 label={isAr ? 'تكلفة الأسمدة والبذور (دج)' : 'Intrants & Semences (DZD)'}
                 type="number"
                 value={inputCost}
-                onChange={(e) => setInputCost(e.target.value)}
+                onChange={setInputCost}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="LaborCost"
                 label={isAr ? 'أجور العمال والتجميع (دج)' : 'Main d’Œuvre Tâcherons (DZD)'}
                 type="number"
                 value={laborCost}
-                onChange={(e) => setLaborCost(e.target.value)}
+                onChange={setLaborCost}
+                width="100%"
+                height={40}
+                corner={12}
               />
               <LabelInput
+                field="MachineryCost"
                 label={isAr ? 'الوقود والعتاد (دج)' : 'Carburant & Matériel (DZD)'}
                 type="number"
                 value={machineryCost}
-                onChange={(e) => setMachineryCost(e.target.value)}
+                onChange={setMachineryCost}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
-            <AtriumButton variant="ghost" size="sm" onClick={onClose} type="button">
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[var(--atr-divider)]">
+            <Button tone="soft" size={40} onClick={onClose} type="button">
               {isAr ? 'إلغاء' : 'Annuler'}
-            </AtriumButton>
-            <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+            </Button>
+            <Button tone="accent" size={40} type="submit" leading={<Check size={14} />}>
               {cycleToEdit
                 ? (isAr ? 'حفظ التعديلات' : 'Enregistrer Modifications')
                 : (isAr ? 'تأكيد فتح الدورة' : 'Valider le Cycle de Culture')}
-            </AtriumButton>
+            </Button>
           </div>
         </form>
       </div>

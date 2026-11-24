@@ -24,6 +24,7 @@ import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules'
 import { RawMaterialStockItem, MaterialTransferVoucher } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -48,16 +49,6 @@ import {
   downloadCsvSafe,
   useRetainedModalValue,
 } from '../../ui/kinetic';
-
-const extractStr = (v: unknown): string => {
-  if (typeof v === 'string') return v;
-  if (v && typeof v === 'object') {
-    const obj = v as { target?: { value?: unknown }; value?: unknown };
-    if (obj.target?.value !== undefined) return String(obj.target.value);
-    if (obj.value !== undefined) return String(obj.value);
-  }
-  return String(v ?? '');
-};
 
 export const ManufacturingMaterialsView: React.FC<any> = () => {
   const { language, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
@@ -1382,12 +1373,22 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             </button>
           </div>
           <form onSubmit={handleSaveMaterial} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <LabelInput label="Code SKU" value={sku} onChange={(e) => setSku(e.target.value)} required />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="matSku"
+                label="Code SKU"
+                value={sku}
+                onChange={setSku}
+                width="100%"
+                height={40}
+                corner={12}
+                required
+              />
               <LabelSelect
+                field="matCategory"
                 label={isAr ? 'الصنف الصناعي' : 'Catégorie'}
                 value={category}
-                onChange={(v) => setCategory(extractStr(v) as RawMaterialStockItem['category'])}
+                onChange={(v) => setCategory(v as RawMaterialStockItem['category'])}
                 options={[
                   { value: 'Wood', label: 'Bois & Dérivés' },
                   { value: 'Metals', label: 'Métallurgie & Aciers' },
@@ -1396,63 +1397,90 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   { value: 'Textiles', label: 'Textiles & Confection' },
                   { value: 'Hardware', label: 'Quincaillerie & Visserie' },
                 ]}
+                width="100%"
+                height={40}
+                corner={12}
               />
             </div>
             <LabelInput
+              field="matName"
               label={isAr ? 'اسم المادة والمواصفات' : 'Désignation de la matière'}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={setName}
               placeholder="Ex: Bois Chêne Brut Séché 50mm..."
+              width="100%"
+              height={40}
+              corner={12}
               required
             />
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <LabelInput
+                field="matStock"
                 label={isAr ? 'الكمية' : 'Stock Initial'}
                 type="number"
                 step="any"
                 value={stock}
-                onChange={(e) => setStock(e.target.value)}
+                onChange={setStock}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="matUnit"
                 label={isAr ? 'الوحدة' : 'Unité'}
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
+                onChange={setUnit}
                 placeholder="kg, m³, Pièce..."
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="matMinThreshold"
                 label={isAr ? 'عتبة التنبيه' : 'Seuil Mini'}
                 type="number"
                 step="any"
                 value={minThreshold}
-                onChange={(e) => setMinThreshold(e.target.value)}
+                onChange={setMinThreshold}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="matUnitCost"
                 label={isAr ? 'سعر الوحدة PMP (دج)' : 'Coût Unitaire PMP (DZD)'}
                 type="number"
                 value={unitCostDzd}
-                onChange={(e) => setUnitCostDzd(e.target.value)}
+                onChange={setUnitCostDzd}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="matLocation"
                 label={isAr ? 'موقع التخزين (الرف/الممر)' : 'Emplacement Casier'}
                 value={warehouseLocation}
-                onChange={(e) => setWarehouseLocation(e.target.value)}
+                onChange={setWarehouseLocation}
                 placeholder="Ex: Rack A-02..."
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton type="button" variant="secondary" onClick={() => setIsMaterialModalOpen(false)}>
+              <Button type="button" tone="soft" size={40} onClick={() => setIsMaterialModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton type="submit" variant="primary">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {isAr ? 'حفظ المادة' : 'Enregistrer'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>
@@ -1480,54 +1508,76 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             </button>
           </div>
           <form onSubmit={handleCreateVoucher} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="t-small font-semibold text-black/70 dark:text-white/75 block">
+                {isAr ? 'نوع السند' : 'Type de Bon'}
+              </label>
+              <LiveSegmentedControl
+                value={voucherType}
+                onChange={(v) => setVoucherType(v as 'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert')}
+                options={[
+                  { value: 'BonDeSortie', label: isAr ? 'صرف (BSM)' : 'Sortie (BSM)' },
+                  { value: 'BonDeReception', label: isAr ? 'استلام (BR)' : 'Réception (BR)' },
+                  { value: 'BonDeTransfert', label: isAr ? 'تحويل (BT)' : 'Transfert (BT)' },
+                ]}
+                size="sm"
+                fullWidth
+              />
+            </div>
             <LabelSelect
-              label={isAr ? 'نوع السند' : 'Type de Bon'}
-              value={voucherType}
-              onChange={(v) => setVoucherType(extractStr(v) as 'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert')}
-              options={[
-                { value: 'BonDeSortie', label: 'Bon de Sortie Magasin (BSM) vers Atelier' },
-                { value: 'BonDeReception', label: 'Bon de Réception Fournisseur (BR) avec calcul PMP' },
-                { value: 'BonDeTransfert', label: 'Bon de Transfert Inter-Dépôts (BT)' },
-              ]}
-            />
-            <LabelSelect
+              field="voucherMaterialId"
               label={isAr ? 'المادة الأولية المعنية' : 'Matière Première'}
               value={voucherMaterialId}
-              onChange={(v) => setVoucherMaterialId(extractStr(v))}
+              onChange={setVoucherMaterialId}
               options={materials.map((m) => ({
                 value: m.id,
                 label: `${m.name} (${m.sku} - Stock: ${m.currentStock} ${m.unit})`,
               }))}
+              width="100%"
+              height={40}
+              corner={12}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
+                field="voucherQty"
                 label={isAr ? 'الكمية المنقولة' : 'Quantité du Bon'}
                 type="number"
                 step="any"
                 value={voucherQty}
-                onChange={(e) => setVoucherQty(e.target.value)}
+                onChange={setVoucherQty}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
               <LabelInput
+                field="voucherRecipient"
                 label={isAr ? 'المستلم / المشغل' : 'Bénéficiaire / Demandeur'}
                 value={voucherRecipient}
-                onChange={(e) => setVoucherRecipient(e.target.value)}
+                onChange={setVoucherRecipient}
+                width="100%"
+                height={40}
+                corner={12}
                 required
               />
             </div>
             <LabelInput
+              field="voucherNotes"
               label={isAr ? 'سبب التحويل / رقم أمر التصنيع' : 'Motif / N° Ordre de Fabrication lié'}
               value={voucherNotes}
-              onChange={(e) => setVoucherNotes(e.target.value)}
+              onChange={setVoucherNotes}
               placeholder="Ex: Sortie pour OF-2026-0089..."
+              width="100%"
+              height={40}
+              corner={12}
             />
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-              <AtriumButton type="button" variant="secondary" onClick={() => setIsVoucherModalOpen(false)}>
+              <Button type="button" tone="soft" size={40} onClick={() => setIsVoucherModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton type="submit" variant="primary">
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
                 {isAr ? 'إصدار وطباعة السند' : 'Valider & Imprimer le Bon'}
-              </AtriumButton>
+              </Button>
             </div>
           </form>
         </div>
@@ -1544,28 +1594,21 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-3">
-                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0">
                   <Printer size={20} />
                 </div>
-                <div>
-                  <h3 className="font-semibold t-card text-black dark:text-white">{retainedPrintableVoucher.voucherNumber}</h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    Document officiel d'inventaire • Décret exécutif N° 05-468
-                  </p>
-                </div>
+                <h3 className="font-semibold t-card text-black dark:text-white">{retainedPrintableVoucher.voucherNumber}</h3>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
+                  tone="accent"
+                  size={36}
+                  leading={<Printer size={14} />}
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Printer size={14} />
-                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                </button>
+                  {isAr ? 'طباعة' : 'Imprimer'}
+                </Button>
                 <button
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
@@ -1589,7 +1632,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                       : 'Bon de Transfert Interne (BT)'}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedPrintableVoucher.voucherNumber}</div>
                   <div className="t-cap text-black/55 mt-0.5">Date : {retainedPrintableVoucher.transferDate?.split('T')[0]}</div>
                 </div>
@@ -1607,10 +1650,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                 <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-black/[0.12]">
                   <tr>
-                    <th className="p-2 text-left">Désignation Matière</th>
+                    <th className="p-2 text-start">Désignation Matière</th>
                     <th className="p-2 text-center w-24">Quantité</th>
-                    <th className="p-2 text-right w-28">Prix PMP</th>
-                    <th className="p-2 text-right w-28">Total DZD</th>
+                    <th className="p-2 text-end w-28">Prix PMP</th>
+                    <th className="p-2 text-end w-28">Total DZD</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.10]">
@@ -1620,8 +1663,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                       <td className="p-2 text-center tabular-nums font-semibold">
                         {item.quantity} {item.unit}
                       </td>
-                      <td className="p-2 text-right tabular-nums">{formatMoney(item.unitCostDzd, language)}</td>
-                      <td className="p-2 text-right tabular-nums font-semibold">
+                      <td className="p-2 text-end tabular-nums">{formatMoney(item.unitCostDzd, language)}</td>
+                      <td className="p-2 text-end tabular-nums font-semibold">
                         {formatMoney(item.quantity * item.unitCostDzd, language)}
                       </td>
                     </tr>
@@ -1632,7 +1675,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 <span>Total Mouvement : </span>
                 <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(retainedPrintableVoucher.totalValueDzd, language)}</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
                 <div>
                   <span className="text-black/55 t-cap block">Visa Magasinier (Émetteur)</span>
                   <div className="h-10 flex items-center justify-center text-black/75 italic">M. Amine T.</div>

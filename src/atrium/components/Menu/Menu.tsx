@@ -50,7 +50,7 @@ export interface MenuProps {
  * Keyboard: Enter / Space / ↓ opens on the first row, ↑ on the last. ↑ ↓ Home End move, type to jump,
  * Esc closes and returns focus to the trigger.
  */
-export function Menu({ trigger, items, header, placement = 'bottom-end', open, defaultOpen, onOpenChange, ...rest }: MenuProps) {
+export function Menu({ trigger, items, placement = 'bottom-end', open, defaultOpen, onOpenChange, ...rest }: MenuProps) {
   const popup = usePopup({ open, defaultOpen, onOpenChange, haspopup: 'menu' });
   const { panelProps } = popup;
 
@@ -58,7 +58,7 @@ export function Menu({ trigger, items, header, placement = 'bottom-end', open, d
     <>
       {trigger(popup.getTriggerProps() as MenuTriggerProps, { open: popup.open })}
       {popup.show ? (
-        <LiquidPanel {...panelProps} role="menu" aria-label={rest['aria-label']} placement={placement} header={header}>
+        <LiquidPanel {...panelProps} role="menu" aria-label={rest['aria-label']} placement={placement}>
           {items.map((it, i) =>
             it.type === 'separator' ? (
               <div key={it.id ?? `sep-${i}`} className={s.hr} role="separator" />
