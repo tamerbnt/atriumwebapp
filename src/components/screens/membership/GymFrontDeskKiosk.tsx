@@ -27,6 +27,9 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { EmptyState } from '../../../atrium/components/EmptyState';
+import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -834,154 +837,78 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                 </button>
               </div>
               <form onSubmit={handleCreateWalkIn} className="space-y-4">
-                <div>
-                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
-                    {isRtl ? 'اسم الزائر' : 'Nom du visiteur'}
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
-                  >
-                    <input
-                      type="text"
-                      required
-                      value={walkInName}
-                      onChange={(e) => setWalkInName(e.target.value)}
-                      placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium text-black dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
-                    {isRtl ? 'رقم الهاتف (اختياري)' : 'Numéro de téléphone (optionnel)'}
-                  </label>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
-                  >
-                    <input
-                      type="tel"
-                      value={walkInPhone}
-                      onChange={(e) => setWalkInPhone(e.target.value)}
-                      placeholder="0550 12 34 56"
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium text-black dark:text-white focus:outline-none"
-                      dir="ltr"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
+                <LabelInput
+                  label={isRtl ? 'اسم الزائر' : 'Nom du visiteur'}
+                  value={walkInName}
+                  onChange={setWalkInName}
+                  placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
+                  required
+                />
+                <LabelInput
+                  label={isRtl ? 'رقم الهاتف (اختياري)' : 'Numéro de téléphone (optionnel)'}
+                  type="tel"
+                  value={walkInPhone}
+                  onChange={setWalkInPhone}
+                  placeholder="0550 12 34 56"
+                />
+                <div className="space-y-2">
+                  <label className="block t-cap font-semibold text-black/65 dark:text-white/65">
                     {isRtl ? 'مبلغ الحصة (د.ج)' : 'Tarif de la séance (DZD)'}
                   </label>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    {['500', '800', '1000'].map((amt) => (
-                      <button
-                        key={amt}
-                        type="button"
-                        data-no-liquid="true"
-                        data-sq="ctl"
-                        data-sq-border={walkInAmount === amt ? 'solid' : 'none'}
-                        onClick={() => setWalkInAmount(amt)}
-                        className={`py-2 t-small font-semibold tabular-nums transition-all cursor-pointer ${
-                          walkInAmount === amt
-                            ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                            : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
-                        }`}
-                      >
-                        {amt} DA
-                      </button>
-                    ))}
-                  </div>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
-                  >
-                    <input
-                      type="number"
-                      required
-                      value={walkInAmount}
-                      onChange={(e) => setWalkInAmount(e.target.value)}
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold tabular-nums text-black dark:text-white focus:outline-none"
-                      dir="ltr"
-                    />
-                  </div>
+                  <LiveSegmentedControl
+                    size="md"
+                    fullWidth
+                    value={['500', '800', '1000'].includes(walkInAmount) ? walkInAmount : ''}
+                    onValueChange={setWalkInAmount}
+                    aria-label={isRtl ? 'مبلغ الحصة' : 'Tarif de la séance'}
+                    options={[
+                      { value: '500', label: '500 DA' },
+                      { value: '800', label: '800 DA' },
+                      { value: '1000', label: '1 000 DA' },
+                    ]}
+                  />
+                  <LabelInput
+                    label={isRtl ? 'المبلغ المخصص (د.ج)' : 'Montant personnalisé (DZD)'}
+                    type="number"
+                    required
+                    value={walkInAmount}
+                    onChange={setWalkInAmount}
+                  />
                 </div>
-                <div>
-                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
+                <div className="space-y-1.5">
+                  <label className="block t-cap font-semibold text-black/65 dark:text-white/65">
                     {isRtl ? 'طريقة الدفع' : 'Mode de Paiement'}
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      data-sq="ctl"
-                      data-sq-border={walkInPaymentMethod === 'cash' ? 'solid' : 'none'}
-                      onClick={() => setWalkInPaymentMethod('cash')}
-                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                        walkInPaymentMethod === 'cash'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
-                      }`}
-                    >
-                      <Banknote size={14} />
-                      <span>{isRtl ? 'نقداً' : 'Espèces'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      data-sq="ctl"
-                      data-sq-border={walkInPaymentMethod === 'baridimob' ? 'solid' : 'none'}
-                      onClick={() => setWalkInPaymentMethod('baridimob')}
-                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                        walkInPaymentMethod === 'baridimob'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
-                      }`}
-                    >
-                      <span>BaridiMob</span>
-                    </button>
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      data-sq="ctl"
-                      data-sq-border={walkInPaymentMethod === 'cib' ? 'solid' : 'none'}
-                      onClick={() => setWalkInPaymentMethod('cib')}
-                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                        walkInPaymentMethod === 'cib'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
-                      }`}
-                    >
-                      <CreditCard size={14} />
-                      <span>CIB</span>
-                    </button>
-                  </div>
+                  <LiveSegmentedControl
+                    size="md"
+                    fullWidth
+                    value={walkInPaymentMethod}
+                    onValueChange={(v) => setWalkInPaymentMethod(v as 'cash' | 'baridimob' | 'cib')}
+                    aria-label={isRtl ? 'طريقة الدفع' : 'Mode de Paiement'}
+                    options={[
+                      { value: 'cash', label: isRtl ? 'نقداً' : 'Espèces', icon: <Banknote size={14} /> },
+                      { value: 'baridimob', label: 'BaridiMob' },
+                      { value: 'cib', label: 'CIB', icon: <CreditCard size={14} /> },
+                    ]}
+                  />
                 </div>
-                <div className="pt-2 flex gap-2">
-                  <button
+                <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-end gap-2">
+                  <Button
                     type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl"
-                    data-sq-border="none"
+                    tone="soft"
+                    size={40}
                     onClick={() => setIsWalkInModalOpen(false)}
-                    className="flex-1 py-2 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] t-small font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
                   >
                     {isRtl ? 'إلغاء' : 'Annuler'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
-                    data-no-liquid="true"
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    tone="accent"
+                    size={40}
+                    leading={<Printer size={14} />}
                   >
-                    <Printer size={14} />
-                    <span>{isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}</span>
-                  </button>
+                    {isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}
+                  </Button>
                 </div>
               </form>
         </div>

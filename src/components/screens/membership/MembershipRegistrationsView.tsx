@@ -965,13 +965,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             ? "Valider l'adhésion et créer l'adhérent"
             : 'Convert Lead to Active Member'
         }
-        subtitle={
-          language === 'ar'
-            ? `ترقية ${conversionLead?.fullName} إلى مشترك رسمي في ${currentBranch?.name || 'الفرع'}`
-            : language === 'fr'
-            ? `Finaliser l'inscription de ${conversionLead?.fullName} au sein de ${currentBranch?.name || 'Atrium 1'}`
-            : `Promote ${conversionLead?.fullName} to official member status in ${currentBranch?.name || 'Atrium 1'}`
-        }
       >
         {conversionLead && (
           <div className="space-y-4">
@@ -1004,7 +997,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 field="MembershipPlan"
                 label={`${t('member_field_plan_package', language)} *`}
                 value={selectedPlanId}
-                onChange={(val) => setSelectedPlanId(val?.target?.value ?? String(val))}
+                onChange={(val) => setSelectedPlanId(val)}
                 options={plans.map((p) => ({
                   value: p.id,
                   label: p.name,
@@ -1014,7 +1007,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 }))}
                 searchable
                 width="100%"
-                height={46}
+                height={40}
                 corner={12}
               />
             </div>

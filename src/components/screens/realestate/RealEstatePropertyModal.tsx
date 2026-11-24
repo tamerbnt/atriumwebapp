@@ -10,6 +10,8 @@ import {
 import { RealEstateProperty, PropertyLegalTitleType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { calculateTitleStrengthScore } from '../../../utils/realEstateRules';
 import { KineticModalShell } from '../../ui/kinetic';
@@ -22,8 +24,6 @@ interface RealEstatePropertyModalProps {
 }
 
 
-
-const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
 
 export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({ isOpen, onClose, onSave, propertyToEdit }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
@@ -157,22 +157,29 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div className="flex items-center gap-2 border-b border-[var(--atr-divider)] pb-2">
-<button type="button" onClick={() => setActiveTab("general")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold transition-colors cursor-pointer ${activeTab === "general" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825]"}`}>1. Descriptif & Mandant</button>
-<button type="button" onClick={() => setActiveTab("cadastre")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "cadastre" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825]"}`}>
-<ShieldCheck className="w-3.5 h-3.5" />
-<span>2. Passeport Foncier & Titre Légal</span>
-<span className={`t-small px-2 py-0.5 rounded-full font-semibold tabular-nums ${activeTab === "cadastre" ? "bg-white/20 text-white" : titleStrength.score >= 80 ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
-{titleStrength.score}
-/100
-</span>
-</button>
+<div className="pb-1">
+<LiveSegmentedControl
+  size="md"
+  fullWidth
+  value={activeTab}
+  onValueChange={setActiveTab}
+  aria-label="Sections du bien"
+  options={[
+    { value: "general", label: "1. Descriptif & Mandant" },
+    {
+      value: "cadastre",
+      label: "2. Passeport Foncier & Titre Légal",
+      icon: <ShieldCheck className="w-3.5 h-3.5" />,
+      count: `${titleStrength.score}/100`,
+    },
+  ]}
+/>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
 {activeTab === "general" ? /* @__PURE__ */ <>
-<LabelInput label="Titre Commercial de l'Annonce" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Appartement F4 Haut Standing Hydra" required />
+<LabelInput label="Titre Commercial de l'Annonce" value={title} onChange={setTitle} placeholder="Ex: Appartement F4 Haut Standing Hydra" required />
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelSelect label="Type de Bien" value={propertyType} onChange={(val) => setPropertyType(extractStr(val) as RealEstateProperty['propertyType'])} options={[
+<LabelSelect label="Type de Bien" value={propertyType} onChange={(val) => setPropertyType(val as RealEstateProperty['propertyType'])} options={[
 										{
 											value: "Apartment",
 											label: "Appartement"
@@ -198,29 +205,29 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 											label: "Terrain"
 										}
 									]} />
-<LabelSelect label="Opération" value={listingType} onChange={(val) => setListingType(extractStr(val) as RealEstateProperty['listingType'])} options={[{
+<LabelSelect label="Opération" value={listingType} onChange={(val) => setListingType(val as RealEstateProperty['listingType'])} options={[{
 										value: "Rental",
 										label: "Location"
 									}, {
 										value: "Sale",
 										label: "Vente"
 									}]} />
-<LabelInput type="number" label={listingType === "Rental" ? "Loyer Mensuel (DZD)" : "Prix de Vente (DZD)"} value={priceDzd} onChange={(e) => setPriceDzd(e.target.value)} required />
+<LabelInput type="number" label={listingType === "Rental" ? "Loyer Mensuel (DZD)" : "Prix de Vente (DZD)"} value={priceDzd} onChange={setPriceDzd} required />
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-<LabelInput type="number" label="Superficie (m²)" value={surfaceM2} onChange={(e) => setSurfaceM2(e.target.value)} required />
-<LabelInput type="number" label="Nombre de Pièces" value={roomsCount} onChange={(e) => setRoomsCount(e.target.value)} required />
+<LabelInput type="number" label="Superficie (m²)" value={surfaceM2} onChange={setSurfaceM2} required />
+<LabelInput type="number" label="Nombre de Pièces" value={roomsCount} onChange={setRoomsCount} required />
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-<LabelInput label="Adresse Exacte" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Ex: Résidence Les Pins, Djenane El Malik" required />
-<LabelInput label="Commune, Wilaya" value={cityWilaya} onChange={(e) => setCityWilaya(e.target.value)} placeholder="Ex: Hydra, Alger" required />
+<LabelInput label="Adresse Exacte" value={address} onChange={setAddress} placeholder="Ex: Résidence Les Pins, Djenane El Malik" required />
+<LabelInput label="Commune, Wilaya" value={cityWilaya} onChange={setCityWilaya} placeholder="Ex: Hydra, Alger" required />
 </div>
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3">
 <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">Coordonnées Propriétaire Mandant</div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelInput label="Nom du Propriétaire" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
-<LabelInput label="Téléphone" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} required />
-<LabelInput label="N° CNI (Optionnel)" value={ownerNationalId} onChange={(e) => setOwnerNationalId(e.target.value)} />
+<LabelInput label="Nom du Propriétaire" value={ownerName} onChange={setOwnerName} required />
+<LabelInput label="Téléphone" value={ownerPhone} onChange={setOwnerPhone} required />
+<LabelInput label="N° CNI (Optionnel)" value={ownerNationalId} onChange={setOwnerNationalId} />
 </div>
 </div>
 </> : /* @__PURE__ */ <>
@@ -244,7 +251,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <LabelSelect label="Nature Juridique du Titre" value={legalTitleType} onChange={(val) => {
-									const nextVal = extractStr(val) as PropertyLegalTitleType;
+									const nextVal = val as PropertyLegalTitleType;
 									setLegalTitleType(nextVal);
 									setIsIndivision(nextVal === "Bien_Dans_Indivision");
 								}} options={[
@@ -265,40 +272,40 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 										label: "Papier Timbré / Coutume (Régularisation)"
 									}
 								]} />
-<div className="flex items-center gap-4 pt-5">
-<label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasLivretFoncier} onChange={(e) => setHasLivretFoncier(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>Livret Foncier Délivré</span>
-</label>
-<label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasNegativeCertificate} onChange={(e) => setHasNegativeCertificate(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>Certificat Négatif Valide</span>
-</label>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[var(--r-ctl,12px)] bg-[#F5F1EC] dark:bg-[#292624]">
+<span className="t-small font-medium">Livret Foncier Délivré</span>
+<LiveSwitch checked={hasLivretFoncier} onCheckedChange={setHasLivretFoncier} aria-label="Livret Foncier Délivré" />
+</div>
+<div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[var(--r-ctl,12px)] bg-[#F5F1EC] dark:bg-[#292624]">
+<span className="t-small font-medium">Certificat Négatif Valide</span>
+<LiveSwitch checked={hasNegativeCertificate} onCheckedChange={setHasNegativeCertificate} aria-label="Certificat Négatif Valide" />
 </div>
 </div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelInput label="N° Livret Foncier" value={livretFoncierNumber} onChange={(e) => setLivretFoncierNumber(e.target.value)} placeholder="Ex: LF-1601-2018-0941" />
-<LabelInput label="Volume de Publication" value={volumeNumber} onChange={(e) => setVolumeNumber(e.target.value)} placeholder="Ex: Vol. 142" />
-<LabelInput label="Case d'Inscription" value={caseNumber} onChange={(e) => setCaseNumber(e.target.value)} placeholder="Ex: Case 18" />
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelInput label="Section Cadastrale" value={cadastralSection} onChange={(e) => setCadastralSection(e.target.value)} placeholder="Ex: Section 04" />
-<LabelInput label="Numéro d'Îlot" value={cadastralIlot} onChange={(e) => setCadastralIlot(e.target.value)} placeholder="Ex: Îlot 22" />
-<LabelInput label="Numéro de Lot" value={cadastralLot} onChange={(e) => setCadastralLot(e.target.value)} placeholder="Ex: Lot 14" />
+<LabelInput label="N° Livret Foncier" value={livretFoncierNumber} onChange={setLivretFoncierNumber} placeholder="Ex: LF-1601-2018-0941" />
+<LabelInput label="Volume de Publication" value={volumeNumber} onChange={setVolumeNumber} placeholder="Ex: Vol. 142" />
+<LabelInput label="Case d'Inscription" value={caseNumber} onChange={setCaseNumber} placeholder="Ex: Case 18" />
+</div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+<LabelInput label="Section Cadastrale" value={cadastralSection} onChange={setCadastralSection} placeholder="Ex: Section 04" />
+<LabelInput label="Numéro d'Îlot" value={cadastralIlot} onChange={setCadastralIlot} placeholder="Ex: Îlot 22" />
+<LabelInput label="Numéro de Lot" value={cadastralLot} onChange={setCadastralLot} placeholder="Ex: Lot 14" />
 </div>
 {isIndivision && /* @__PURE__ */ <div data-sq="card" data-sq-border="none" className="p-3 bg-amber-50 dark:bg-amber-950/30 space-y-2">
 <div className="t-small font-semibold text-amber-800 dark:text-amber-300">Spécificités Indivision & Héritage</div>
-<LabelInput label="Numéro d'Enregistrement de la Fridha Notariée" value={fridhaNumber} onChange={(e) => setFridhaNumber(e.target.value)} placeholder="Ex: FRIDHA-NOT-2025-0819" />
+<LabelInput label="Numéro d'Enregistrement de la Fridha Notariée" value={fridhaNumber} onChange={setFridhaNumber} placeholder="Ex: FRIDHA-NOT-2025-0819" />
 </div>}
-<div className="flex items-center gap-4 pt-2">
-<label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasCertificatConformite} onChange={(e) => setHasCertificatConformite(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>Certificat de Conformité (Loi 08-15)</span>
-</label>
-<label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={isEligibleBankMortgage} onChange={(e) => setIsEligibleBankMortgage(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>Dossier Éligible Crédit Bancaire</span>
-</label>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+<div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[var(--r-ctl,12px)] bg-[#F5F1EC] dark:bg-[#292624]">
+<span className="t-small font-medium">Certificat de Conformité (Loi 08-15)</span>
+<LiveSwitch checked={hasCertificatConformite} onCheckedChange={setHasCertificatConformite} aria-label="Certificat de Conformité (Loi 08-15)" />
+</div>
+<div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[var(--r-ctl,12px)] bg-[#F5F1EC] dark:bg-[#292624]">
+<span className="t-small font-medium">Dossier Éligible Crédit Bancaire</span>
+<LiveSwitch checked={isEligibleBankMortgage} onCheckedChange={setIsEligibleBankMortgage} aria-label="Dossier Éligible Crédit Bancaire" />
+</div>
 </div>
 </>}
 <div className="flex items-center justify-between pt-4 border-t border-[var(--atr-divider)]">

@@ -198,9 +198,6 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   ? t('trading_entity_modal_new_supplier')
                   : t('trading_entity_modal_new_client')}
               </h2>
-              <p className="t-cap text-black/55 dark:text-white/55">
-                {t('trading_entity_modal_sub')}
-              </p>
             </div>
           </div>
           <button
@@ -227,14 +224,14 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 label={t('trading_entity_company_name')}
                 placeholder="Ex: SARL Maghreb Travaux & Distribution"
                 value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
+                onChange={setCompanyName}
                 required
               />
 
               <LabelSelect
                 label={t('trading_entity_sector')}
                 value={sector}
-                onChange={(val) => setSector(typeof val === 'string' ? val : val?.target?.value || val)}
+                onChange={setSector}
                 options={[
                   "BTPH & Gros Œuvre",
                   "Second Œuvre & Rénovation",
@@ -251,7 +248,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 label={t('trading_entity_email')}
                 placeholder="direction@entreprise.dz"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={setEmail}
               />
 
               <LabelInput
@@ -259,7 +256,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 label={t('trading_entity_phone')}
                 placeholder="+213 21 00 00 00"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
               />
 
               <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -268,7 +265,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                     label={t('trading_entity_address')}
                     placeholder="Rue, Zone Industrielle, Lot N°..."
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={setAddress}
                   />
                 </div>
                 <div>
@@ -276,7 +273,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                     label={t('trading_entity_city')}
                     placeholder="Alger, Oran..."
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={setCity}
                   />
                 </div>
               </div>
@@ -301,7 +298,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_rc')}
                   placeholder="Ex: 16/00-0982341B20"
                   value={rc}
-                  onChange={(e) => setRc(e.target.value)}
+                  onChange={setRc}
                 />
               </div>
 
@@ -310,7 +307,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_nif')}
                   placeholder="Ex: 002016098234185"
                   value={nif}
-                  onChange={(e) => setNif(e.target.value)}
+                  onChange={setNif}
                 />
               </div>
 
@@ -319,7 +316,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_nis')}
                   placeholder="Ex: 0020160900142"
                   value={nis}
-                  onChange={(e) => setNis(e.target.value)}
+                  onChange={setNis}
                 />
               </div>
 
@@ -328,7 +325,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_ai')}
                   placeholder="Ex: 16041289045"
                   value={ai}
-                  onChange={(e) => setAi(e.target.value)}
+                  onChange={setAi}
                 />
               </div>
             </div>
@@ -338,7 +335,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 label={t('trading_entity_rib')}
                 placeholder="Ex: 00100 00123 0000123456 42 (Banque Nationale d'Algérie)"
                 value={ribCcp}
-                onChange={(e) => setRibCcp(e.target.value)}
+                onChange={setRibCcp}
               />
             </div>
           </div>
@@ -356,7 +353,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_contact_name')}
                   placeholder="Ex: Mourad Hadj-Said"
                   value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
+                  onChange={setContactName}
                 />
               </div>
 
@@ -365,7 +362,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_contact_role')}
                   placeholder="Ex: Responsable des Achats"
                   value={contactRole}
-                  onChange={(e) => setContactRole(e.target.value)}
+                  onChange={setContactRole}
                 />
               </div>
 
@@ -375,7 +372,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_contact_mobile')}
                   placeholder="+213 550 00 00 00"
                   value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
+                  onChange={setContactPhone}
                 />
               </div>
 
@@ -385,7 +382,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   label={t('trading_entity_contact_email')}
                   placeholder="m.hadjsaid@entreprise.dz"
                   value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
+                  onChange={setContactEmail}
                 />
               </div>
             </div>
@@ -403,7 +400,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 <LabelSelect
                   label={t('trading_entity_payment_terms_days')}
                   value={paymentTermsDays}
-                  onChange={(val) => setPaymentTermsDays(Number(typeof val === 'object' && val?.target ? val.target.value : val))}
+                  onChange={(val) => setPaymentTermsDays(Number(val) || 0)}
                   options={[
                     { value: 0, label: "Comptant à la livraison (0 jour)" },
                     { value: 15, label: "15 jours net" },
@@ -423,7 +420,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                       label={t('trading_entity_credit_limit')}
                       value={creditLimit}
                       step={50000}
-                      onChange={(e) => setCreditLimit(parseFloat(e.target.value) || 0)}
+                      onChange={(val) => setCreditLimit(parseFloat(val) || 0)}
                     />
                   </div>
 
@@ -431,7 +428,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                     <LabelSelect
                       label={t('trading_entity_payment_pref')}
                       value={defaultPaymentMethod}
-                      onChange={(val) => setDefaultPaymentMethod(typeof val === 'string' ? val : val?.target?.value || val)}
+                      onChange={setDefaultPaymentMethod}
                       options={[
                         { value: "Virement bancaire", label: "Virement bancaire" },
                         { value: "Chèque barré", label: "Chèque barré" },

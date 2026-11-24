@@ -164,7 +164,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
 <div className="flex items-center justify-between gap-3">
 <span className="t-small font-semibold text-amber-700 dark:text-amber-400">Sur-réservation d'urgence (Bypass de conflit)</span>
-<LiveSwitch checked={isEmergencyBypass} onCheckedChange={setIsEmergencyBypass} ariaLabel="Sur-réservation d'urgence" />
+<LiveSwitch checked={isEmergencyBypass} onCheckedChange={setIsEmergencyBypass} aria-label="Sur-réservation d'urgence" />
 </div>
 {isEmergencyBypass && /* @__PURE__ */ <div className="pt-1 animate-in fade-in duration-150">
 <LabelInput field="emergencyBypassReason" width="100%" height={40} corner={12} label="Justification Clinique Obligatoire" value={emergencyBypassReason} onChange={setEmergencyBypassReason} placeholder="ex: Détresse respiratoire aiguë, douleur thoracique suspecte..." required />

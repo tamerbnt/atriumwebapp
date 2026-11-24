@@ -247,11 +247,11 @@ Palette de Style & Sécurité
 </div>
 <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>
-<LiveSwitch checked={formData.showWatermark} onCheckedChange={(checked) => setFormData({ ...formData, showWatermark: checked })} ariaLabel="Filigrane Caducée" />
+<LiveSwitch checked={formData.showWatermark} onCheckedChange={(checked) => setFormData({ ...formData, showWatermark: checked })} aria-label="Filigrane Caducée" />
 </div>
 <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Afficher le Cachet / Tampon Numérique Officiel</span>
-<LiveSwitch checked={formData.isStampEnabled} onCheckedChange={(checked) => setFormData({ ...formData, isStampEnabled: checked })} ariaLabel="Cachet Numérique Officiel" />
+<LiveSwitch checked={formData.isStampEnabled} onCheckedChange={(checked) => setFormData({ ...formData, isStampEnabled: checked })} aria-label="Cachet Numérique Officiel" />
 </div>
 </div>
 <div className="space-y-3">

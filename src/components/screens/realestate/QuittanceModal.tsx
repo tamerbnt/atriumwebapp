@@ -16,8 +16,6 @@ interface QuittanceModalProps {
   selectedLease?: RealEstateLease | null;
 }
 
-const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
-
 export const QuittanceModal: React.FC<QuittanceModalProps> = ({
   isOpen,
   onClose,
@@ -54,8 +52,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
     setNotes('');
   }, [isOpen, selectedLease]);
 
-  const handleLeaseChange = (rawLeaseId: any) => {
-    const newLeaseId = extractStr(rawLeaseId);
+  const handleLeaseChange = (newLeaseId: string) => {
     setLeaseId(newLeaseId);
     const chosen = leases.find((l) => l.id === newLeaseId);
     if (chosen) {
@@ -159,7 +156,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           <LabelSelect
             label="Bail Locatif Concerné"
             value={leaseId}
-            onChange={(val) => handleLeaseChange(val)}
+            onChange={handleLeaseChange}
             options={activeLeases.map((l) => ({
               value: l.id,
               label: `${l.propertyTitle} — Locataire: ${l.tenantName} (${l.monthlyRentDzd.toLocaleString()} DZD)`,
@@ -171,7 +168,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             <LabelSelect
               label="Mois de Facturation"
               value={periodMonth.toString()}
-              onChange={(val) => setPeriodMonth(Number(extractStr(val)))}
+              onChange={(val) => setPeriodMonth(Number(val))}
               options={monthNames.map((m, idx) => ({
                 value: (idx + 1).toString(),
                 label: m,
@@ -182,7 +179,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               type="number"
               label="Année"
               value={periodYear}
-              onChange={(e) => setPeriodYear(Number(e.target.value))}
+              onChange={(v) => setPeriodYear(Number(v))}
               required
             />
           </div>
@@ -193,7 +190,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               type="number"
               label="Loyer Mensuel Principal (DZD)"
               value={rentAmountDzd}
-              onChange={(e) => setRentAmountDzd(Number(e.target.value))}
+              onChange={(v) => setRentAmountDzd(Number(v))}
               required
             />
 
@@ -201,13 +198,13 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               type="number"
               label="Charges Locatives (DZD)"
               value={chargesDzd}
-              onChange={(e) => setChargesDzd(Number(e.target.value))}
+              onChange={(v) => setChargesDzd(Number(v))}
             />
 
             <LabelSelect
               label="Mode de Règlement"
               value={paymentMethod}
-              onChange={(val) => setPaymentMethod(extractStr(val) as 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob')}
+              onChange={(val) => setPaymentMethod(val as 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob')}
               options={[
                 { value: 'Cash', label: 'Espèces (Timbre Fiscal Applicable)' },
                 { value: 'BaridiMob', label: 'BaridiMob / Virement Postal (Exonéré)' },
@@ -259,7 +256,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           <LabelInput
             label="Notes de Paiement & Référence Reçu"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={setNotes}
             placeholder="Ex: Paiement reçu en agence le 02 du mois, aucun arriéré restant..."
           />
 

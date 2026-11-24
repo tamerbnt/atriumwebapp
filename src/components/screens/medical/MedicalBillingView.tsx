@@ -24,6 +24,7 @@ import { formatMoney } from '../../../utils/rules';
 import { MedicalConsultation } from '../../../types';
 import { useMedicalData } from './medicalData';
 import { Button } from '@/atrium/core';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';

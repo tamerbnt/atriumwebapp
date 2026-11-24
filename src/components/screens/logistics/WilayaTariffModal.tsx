@@ -3,6 +3,7 @@ import { MapPin, X, Save, RotateCcw } from 'lucide-react';
 import { useAtriumSelector } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
 import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
 import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { KineticModalShell } from '../../ui/kinetic';
@@ -249,86 +250,42 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap">
-                  <div>
-                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
-                      {isAr ? 'توصيل للمنزل (DZD)' : 'Domicile (DZD)'}
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
-                        type="number"
-                        value={rule.homeBasePriceDzd}
-                        onChange={(e) =>
-                          handleUpdate(z.id, 'homeBasePriceDzd', parseFloat(e.target.value) || 0)
-                        }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 t-cap">
+                  <LabelInput
+                    type="number"
+                    label={isAr ? 'توصيل للمنزل (DZD)' : 'Domicile (DZD)'}
+                    value={rule.homeBasePriceDzd}
+                    onChange={(val) =>
+                      handleUpdate(z.id, 'homeBasePriceDzd', parseFloat(val) || 0)
+                    }
+                  />
 
-                  <div>
-                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
-                      {isAr ? 'استلام مكتب Stop-Desk' : 'Stop-Desk (DZD)'}
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
-                        type="number"
-                        value={rule.stopDeskBasePriceDzd}
-                        onChange={(e) =>
-                          handleUpdate(z.id, 'stopDeskBasePriceDzd', parseFloat(e.target.value) || 0)
-                        }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold text-emerald-600 dark:text-emerald-400"
-                      />
-                    </div>
-                  </div>
+                  <LabelInput
+                    type="number"
+                    label={isAr ? 'استلام مكتب Stop-Desk' : 'Stop-Desk (DZD)'}
+                    value={rule.stopDeskBasePriceDzd}
+                    onChange={(val) =>
+                      handleUpdate(z.id, 'stopDeskBasePriceDzd', parseFloat(val) || 0)
+                    }
+                  />
 
-                  <div>
-                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
-                      {isAr ? 'زيادة الكيلوغرام (+DZD/kg)' : '+ Par Kg supp.'}
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
-                        type="number"
-                        value={rule.overweightPerKgDzd}
-                        onChange={(e) =>
-                          handleUpdate(z.id, 'overweightPerKgDzd', parseFloat(e.target.value) || 0)
-                        }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                      />
-                    </div>
-                  </div>
+                  <LabelInput
+                    type="number"
+                    label={isAr ? 'زيادة الكيلوغرام (+DZD/kg)' : '+ Par Kg supp.'}
+                    value={rule.overweightPerKgDzd}
+                    onChange={(val) =>
+                      handleUpdate(z.id, 'overweightPerKgDzd', parseFloat(val) || 0)
+                    }
+                  />
 
-                  <div>
-                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
-                      {isAr ? 'عناية هشة (+DZD)' : 'Fragile (+DZD)'}
-                    </label>
-                    <div
-                      data-sq="ctl"
-                      data-sq-border="none"
-                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                    >
-                      <input
-                        type="number"
-                        value={rule.fragileHandlingSurchargeDzd}
-                        onChange={(e) =>
-                          handleUpdate(z.id, 'fragileHandlingSurchargeDzd', parseFloat(e.target.value) || 0)
-                        }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                      />
-                    </div>
-                  </div>
+                  <LabelInput
+                    type="number"
+                    label={isAr ? 'عناية هشة (+DZD)' : 'Fragile (+DZD)'}
+                    value={rule.fragileHandlingSurchargeDzd}
+                    onChange={(val) =>
+                      handleUpdate(z.id, 'fragileHandlingSurchargeDzd', parseFloat(val) || 0)
+                    }
+                  />
                 </div>
               </div>
             );

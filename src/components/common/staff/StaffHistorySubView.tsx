@@ -20,6 +20,7 @@ import { useUndoHistory } from '../../../services/undoEngine';
 import { EmbeddedUndoHistoryPanel } from '../../ui/EmbeddedUndoHistoryPanel';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSelect } from '../../ui/live/LiveSelect';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -417,25 +418,21 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           onSearchChange={setSearchPunchQuery}
           searchPlaceholder={isAr ? 'بحث...' : isEn ? 'Search...' : 'Rechercher...'}
           headerActions={
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="h-[var(--btn-h,40px)] bg-[#F5F1EC] dark:bg-[#2B2825] flex items-center"
-            >
-              <select
-                value={selectedStaffFilter}
-                onChange={(e) => setSelectedStaffFilter(e.target.value)}
-                title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
-                className="h-full px-[var(--s3,12px)] t-btn bg-transparent text-[var(--text-1)] dark:text-white focus:outline-none cursor-pointer"
-              >
-                <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
-                {staffList.map((s) => (
-                  <option key={s.id} value={s.id} title={s.fullName}>
-                    {compactFilterLabel(s.fullName).label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <LiveSelect
+              size="md"
+              tone="soft"
+              value={selectedStaffFilter}
+              onValueChange={setSelectedStaffFilter}
+              aria-label={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
+              options={[
+                { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
+                ...staffList.map((s) => ({
+                  value: s.id,
+                  label: compactFilterLabel(s.fullName).label,
+                  tooltip: s.fullName,
+                })),
+              ]}
+            />
           }
           pinnedIds={pinnedLogIds}
           onPinToggle={(idOrItem) => {

@@ -37,6 +37,7 @@ import {
   Ban,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
@@ -1893,7 +1894,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     value={purchaseTitle}
                     onChange={setPurchaseTitle}
                     required
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                   <LabelInput
@@ -1903,15 +1904,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     value={purchaseAmount}
                     onChange={setPurchaseAmount}
                     required
-                    height={44}
+                    height={40}
                     corner={12}
                   />
                   <FilterSelect
                     label={isAr ? 'طبيعة الشراء' : isEn ? 'Category' : "Nature de l'Achat"}
                     value={purchaseCategory}
-                    onChange={(val) =>
-                      setPurchaseCategory(typeof val === 'string' ? val : val.target?.value || String(val))
-                    }
+                    onChange={setPurchaseCategory}
                     options={[
                       {
                         value: 'materials',
@@ -2445,16 +2444,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <X className="w-4 h-4" />
             </button>
           </div>
-          <textarea
+          <LabelTextarea
+            field="CorrectionNote"
+            label={isAr ? 'تفاصيل التعديل المطلوب' : 'Modifications requises'}
             rows={4}
             value={correctionNote}
-            onChange={(e) => setCorrectionNote(e.target.value)}
+            onChange={setCorrectionNote}
             placeholder={
               isAr
                 ? 'اذكر التعديلات المطلوبة...'
                 : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
             }
-            className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
           />
           <div className="flex justify-end gap-2">
             <AtriumButton

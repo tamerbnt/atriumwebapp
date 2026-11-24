@@ -1093,29 +1093,29 @@ export const LogisticsManifestsView: React.FC<any> = () => {
               label={isAr ? 'اسم السائق / الموزع *' : 'Nom du Chauffeur / Coursier *'}
               placeholder="Ex: Mourad Brahimi"
               value={driverName}
-              onChange={(e) => setDriverName(e.target.value)}
+              onChange={setDriverName}
               required
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'هاتف السائق' : 'Téléphone Chauffeur'}
                 value={driverPhone}
-                onChange={(e) => setDriverPhone(e.target.value)}
+                onChange={setDriverPhone}
                 required
               />
               <LabelInput
                 label={isAr ? 'ترقيم المركبة' : 'Immatriculation Véhicule'}
                 value={vehiclePlate}
-                onChange={(e) => setVehiclePlate(e.target.value)}
+                onChange={setVehiclePlate}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'المنطقة أو الولاية' : 'Zone / Wilaya'}
                 placeholder="Ex: Alger Ouest, Oran Centre..."
                 value={zoneWilaya}
-                onChange={(e) => setZoneWilaya(e.target.value)}
+                onChange={setZoneWilaya}
                 required
               />
               <LabelSelect

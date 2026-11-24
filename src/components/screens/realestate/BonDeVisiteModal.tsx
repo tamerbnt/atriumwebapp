@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, MapPin, CheckCircle, RotateCcw, Share2, Shield, AlertTriangle } from 'lucide-react';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateProperty, BonDeVisiteRecord } from '../../../types';
 import { KineticModalShell } from '../../ui/kinetic';
 
@@ -167,9 +168,9 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 </div>
 <form onSubmit={handleSubmit} className="space-y-5">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelInput label="Nom & Prénom de l'Acquéreur" value={clientFullName} onChange={(e) => setClientFullName(e.target.value)} placeholder="Ex: Sofiane Medjahed" required />
-<LabelInput label="Téléphone Portable" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Ex: 0550 49 11 22" required />
-<LabelInput label="N° CNI (18 Chiffres)" value={clientNationalId} onChange={(e) => setClientNationalId(e.target.value)} placeholder="Ex: 109823487192837461" required />
+<LabelInput label="Nom & Prénom de l'Acquéreur" value={clientFullName} onChange={setClientFullName} placeholder="Ex: Sofiane Medjahed" required />
+<LabelInput label="Téléphone Portable" value={clientPhone} onChange={setClientPhone} placeholder="Ex: 0550 49 11 22" required />
+<LabelInput label="N° CNI (18 Chiffres)" value={clientNationalId} onChange={setClientNationalId} placeholder="Ex: 109823487192837461" required />
 </div>
 <div data-sq="card" data-sq-border="none" className="p-3 bg-[#FDF4F0] dark:bg-[#2B2825] flex items-center justify-between">
 <div className="flex items-center gap-2">
@@ -206,19 +207,21 @@ m)
 </p>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-<div>
-<label className="block t-small font-semibold text-black dark:text-white mb-2">Impression de Visite</label>
-<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white t-small font-medium focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow">
-<option value="Interested">Très Intéressé (Candidat Solide)</option>
-<option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>
-<option value="OfferSubmitted">Offre Ferme Soumise</option>
-<option value="PriceTooHigh">Prix jugé trop élevé</option>
-<option value="Unfavorable">Défavorable (Ne correspond pas)</option>
-</select>
+<LabelSelect
+  label="Impression de Visite"
+  value={clientImpression}
+  onChange={(val) => setClientImpression(val as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')}
+  options={[
+    { value: "Interested", label: "Très Intéressé (Candidat Solide)" },
+    { value: "NeedsNegotiation", label: "Intéressé sous réserve de négociation" },
+    { value: "OfferSubmitted", label: "Offre Ferme Soumise" },
+    { value: "PriceTooHigh", label: "Prix jugé trop élevé" },
+    { value: "Unfavorable", label: "Défavorable (Ne correspond pas)" },
+  ]}
+/>
+<LabelInput type="number" label="Proposition de Prix Client (DZD)" value={counterOfferDzd} onChange={(v) => setCounterOfferDzd(Number(v))} />
 </div>
-<LabelInput type="number" label="Proposition de Prix Client (DZD)" value={counterOfferDzd} onChange={(e) => setCounterOfferDzd(Number(e.target.value))} />
-</div>
-<LabelInput label="Notes de Visite & Remarques du Négociateur" value={feedbackNotes} onChange={(e) => setFeedbackNotes(e.target.value)} placeholder="Ex: Travaux peinture à prévoir, visite seconde fois avec son conjoint..." />
+<LabelInput label="Notes de Visite & Remarques du Négociateur" value={feedbackNotes} onChange={setFeedbackNotes} placeholder="Ex: Travaux peinture à prévoir, visite seconde fois avec son conjoint..." />
 <div className="flex items-center justify-between pt-4 border-t border-[var(--atr-divider)]">
 <div className="flex items-center gap-2 t-small text-emerald-600 font-semibold">
 <CheckCircle className="w-4 h-4" />

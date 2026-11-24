@@ -1073,18 +1073,18 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             value={newTitle}
             onChange={setNewTitle}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="Category"
               label={t('schedule_field_category', language)}
               value={newCategory}
               onChange={setNewCategory}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="Capacity"
@@ -1092,19 +1092,19 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
               value={String(newCapacity)}
               onChange={(val) => setNewCapacity(parseInt(val, 10) || 0)}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="StartTime"
               label={t('schedule_field_start_time', language)}
               value={newStartTime}
               onChange={setNewStartTime}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="EndTime"
@@ -1112,19 +1112,19 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
               value={newEndTime}
               onChange={setNewEndTime}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="Trainer"
               label={t('schedule_field_trainer', language)}
               value={newTrainer}
               onChange={setNewTrainer}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="Room"
@@ -1132,8 +1132,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
               value={newRoom}
               onChange={setNewRoom}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
           <div className="flex justify-end gap-3 pt-3">

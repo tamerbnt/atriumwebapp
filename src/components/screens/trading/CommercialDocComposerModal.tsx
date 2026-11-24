@@ -32,6 +32,8 @@ import {
 } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSelect } from '../../ui/live/LiveSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney, calculateCommercialTotals } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -295,53 +297,28 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <h2 className="t-pod font-semibold text-black dark:text-white">{isEditDisplay ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
 <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small tabular-nums font-medium bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{generatedDocNumber}</span>
 </div>
-<p className="t-cap text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
 </div>
 </div>
 <button onClick={onClose} data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors"><X size={20} /></button>
 </div>
 <div className="p-6 overflow-y-auto space-y-6 flex-1 t-body">
 <div>
-<label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-2">{t("trading_composer_doc_type")}</label>
-<div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-{[
-								{
-									type: "devis",
-									label: t("trading_doc_devis"),
-									badge: "DEV"
-								},
-								{
-									type: "commande",
-									label: t("trading_doc_commande"),
-									badge: "BC"
-								},
-								{
-									type: "bl",
-									label: t("trading_doc_bl"),
-									badge: "BL"
-								},
-								{
-									type: "facture",
-									label: t("trading_doc_facture"),
-									badge: "FAC"
-								},
-								{
-									type: "avoir",
-									label: t("trading_doc_avoir"),
-									badge: "AV"
-								}
-							].map((item) => {
-								const isSelected = docType === item.type;
-								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} data-sq="ctl" data-sq-border={isSelected ? "solid" : "none"} className={`flex items-center justify-center gap-2 px-3 py-2 t-small font-medium transition-all cursor-pointer ${isSelected ? "[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold" : "bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75"}`}>
-<span className="w-2 h-2 rounded-full bg-current opacity-70" />
-<span>{item.label}</span>
-</button>;
-							})}
-</div>
+<LabelSelect
+label={t("trading_composer_doc_type")}
+value={docType}
+onChange={(val) => setDocType(val as CommercialDocType)}
+options={[
+								{ value: "devis", label: t("trading_doc_devis"), sublabel: "DEV" },
+								{ value: "commande", label: t("trading_doc_commande"), sublabel: "BC" },
+								{ value: "bl", label: t("trading_doc_bl"), sublabel: "BL" },
+								{ value: "facture", label: t("trading_doc_facture"), sublabel: "FAC" },
+								{ value: "avoir", label: t("trading_doc_avoir"), sublabel: "AV" },
+							]}
+/>
 </div>
 <div data-sq="card" data-sq-border="none" className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F5F1EC]/70 dark:bg-[#22201E]">
 <div className="md:col-span-1">
-<LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={(val) => setClientId(typeof val === "string" ? val : val?.target?.value || val)} options={b2bClients.map((c) => ({
+<LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={setClientId} options={b2bClients.map((c) => ({
 											value: c.id,
 											label: `${c.companyName} ${c.city ? `(${c.city})` : ""}`
 										}))} />
@@ -365,7 +342,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>}
 </div>
 <div>
-<LabelSelect label={t("trading_composer_depot_label")} value={depotId} onChange={(val) => setDepotId(typeof val === "string" ? val : val?.target?.value || val)} options={warehouses.map((w) => ({
+<LabelSelect label={t("trading_composer_depot_label")} value={depotId} onChange={setDepotId} options={warehouses.map((w) => ({
 										value: w.id,
 										label: `${w.code} — ${w.name}`
 									}))} />
@@ -379,15 +356,14 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 </div>
 <div className="space-y-3">
-<div className="grid grid-cols-2 gap-2">
-<LabelInput type="date" label={t("trading_composer_issue_date")} value={date} onChange={(e) => setDate(e.target.value)} />
-<LabelInput type="date" label={t("trading_composer_due_date")} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<LabelInput type="date" label={t("trading_composer_issue_date")} value={date} onChange={setDate} />
+<LabelInput type="date" label={t("trading_composer_due_date")} value={dueDate} onChange={setDueDate} />
 </div>
-<div className="grid grid-cols-2 gap-2">
-<LabelSelect label={t("trading_composer_payment_method")} value={paymentMethod} onChange={(val) => {
-												const v = typeof val === "string" ? val : val?.target?.value || val;
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<LabelSelect label={t("trading_composer_payment_method")} value={paymentMethod} onChange={(v) => {
 												setPaymentMethod(v);
-												if (String(v).toLowerCase().includes("espèces")) setIsCashFiscalStampEnabled(true);
+												if (v.toLowerCase().includes("espèces")) setIsCashFiscalStampEnabled(true);
 											}} options={[
 												{
 													value: "Virement bancaire",
@@ -410,7 +386,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 													label: "Traite / Effet commercial"
 												}
 											]} />
-<LabelSelect label={t("trading_composer_payment_terms")} value={paymentTerms} onChange={(val) => setPaymentTerms(typeof val === "string" ? val : val?.target?.value || val)} options={[
+<LabelSelect label={t("trading_composer_payment_terms")} value={paymentTerms} onChange={setPaymentTerms} options={[
 												{
 													value: "Comptant",
 													label: "Comptant à livraison"
@@ -468,52 +444,76 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </thead>
 <tbody className="divide-y divide-[var(--atr-divider)]">
 {items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
-<td className="p-2 space-y-1">
-<select className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-2 py-1 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
-<option value="">-- Choisir dans le catalogue --</option>
-{products.map((p) => /* @__PURE__ */ <option key={p.id} value={p.id}>
-{p.sku ? `[${p.sku}] ` : ""}
-{p.name}
-{" ("}
-{p.price?.amount}
-{" DA)"}
-</option>)}
-</select>
-<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-2 py-1 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow" />
+<td className="p-2 space-y-1.5">
+<LiveSelect
+size="sm"
+tone="soft"
+aria-label="Article / Service"
+className="w-full justify-between"
+placeholder="-- Choisir dans le catalogue --"
+value={item.productId || ""}
+onValueChange={(val) => handleProductSelect(idx, val)}
+options={products.map((p) => ({
+value: p.id,
+label: `${p.sku ? `[${p.sku}] ` : ""}${p.name} (${p.price?.amount} DA)`
+}))}
+/>
+<LabelInput
+label="Désignation détaillée / référence"
+value={item.description}
+onChange={(val) => handleItemChange(idx, "description", val)}
+height={40}
+/>
 </td>
-<td className="p-2">
-<select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-1 py-1 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow">
-<option value="u">u</option>
-<option value="pcs">pcs</option>
-<option value="sac">sac</option>
-<option value="barre">barre</option>
-<option value="fut">fût</option>
-<option value="tonne">tonne</option>
-<option value="m">m</option>
-<option value="m²">m²</option>
-<option value="pack">pack</option>
-<option value="carton">carton</option>
-<option value="forfait">forfait</option>
-</select>
+<td className="p-2 align-top">
+<LiveSelect
+size="sm"
+tone="soft"
+aria-label="Unité"
+className="w-full justify-between"
+value={item.unit}
+onValueChange={(val) => handleItemChange(idx, "unit", val)}
+options={[
+{ value: "u", label: "u" },
+{ value: "pcs", label: "pcs" },
+{ value: "sac", label: "sac" },
+{ value: "barre", label: "barre" },
+{ value: "fut", label: "fût" },
+{ value: "tonne", label: "tonne" },
+{ value: "m", label: "m" },
+{ value: "m²", label: "m²" },
+{ value: "pack", label: "pack" },
+{ value: "carton", label: "carton" },
+{ value: "forfait", label: "forfait" }
+]}
+/>
 </td>
-<td className="p-2">
-<input type="number" min="0.01" step="any" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-2 py-1 text-right tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow" />
+<td className="p-2 align-top">
+<input type="number" min="0.01" step="any" aria-label="Quantité" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full h-8 t-cap rounded-[var(--r-check,6px)] border-0 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)] focus:bg-[var(--lbi-bg-focus,#FFFFFF)] dark:focus:bg-[var(--lbi-bg-focus,#2E2B28)] px-2 py-1 text-end tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-colors" />
 </td>
-<td className="p-2">
-<input type="number" min="0" step="any" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-2 py-1 text-right tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow" />
+<td className="p-2 align-top">
+<input type="number" min="0" step="any" aria-label="P.U. HT" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full h-8 t-cap rounded-[var(--r-check,6px)] border-0 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)] focus:bg-[var(--lbi-bg-focus,#FFFFFF)] dark:focus:bg-[var(--lbi-bg-focus,#2E2B28)] px-2 py-1 text-end tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-colors" />
 </td>
-<td className="p-2">
-<select value={item.tvaPercent} onChange={(e) => handleItemChange(idx, "tvaPercent", parseInt(e.target.value, 10))} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-1 py-1 text-right tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow">
-<option value="19">19%</option>
-<option value="9">9%</option>
-<option value="0">0%</option>
-</select>
+<td className="p-2 align-top">
+<LiveSelect
+size="sm"
+tone="soft"
+aria-label="TVA %"
+className="w-full justify-between"
+value={String(item.tvaPercent)}
+onValueChange={(val) => handleItemChange(idx, "tvaPercent", parseInt(val, 10))}
+options={[
+{ value: "19", label: "19%" },
+{ value: "9", label: "9%" },
+{ value: "0", label: "0%" }
+]}
+/>
 </td>
-<td className="p-2">
-<input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] px-2 py-1 text-right tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow" />
+<td className="p-2 align-top">
+<input type="number" min="0" max="100" aria-label="Remise %" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full h-8 t-cap rounded-[var(--r-check,6px)] border-0 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)] focus:bg-[var(--lbi-bg-focus,#FFFFFF)] dark:focus:bg-[var(--lbi-bg-focus,#2E2B28)] px-2 py-1 text-end tabular-nums text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-colors" />
 </td>
-<td className="p-2 text-right tabular-nums font-semibold text-black dark:text-white">{formatMoney(item.totalHt)}</td>
-<td className="p-2 text-center">
+<td className="p-2 text-end tabular-nums font-semibold text-black dark:text-white align-top pt-3">{formatMoney(item.totalHt)}</td>
+<td className="p-2 text-center align-top pt-2.5">
 <button type="button" onClick={() => removeItemRow(idx)} disabled={items.length <= 1} className="p-1 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-black/55 dark:disabled:hover:text-white/55 transition-colors"><Trash2 size={14} /></button>
 </td>
 </tr>)}
@@ -532,29 +532,27 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 {showAdvancedOptions && /* @__PURE__ */ <div className="p-4 bg-white/80 dark:bg-[#22201E] space-y-4 border-t border-[var(--atr-divider)]">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div>
-<LabelInput type="number" label={t("trading_composer_general_discount")} value={generalDiscountPercent} min={0} max={100} step={0.5} onChange={(e) => setGeneralDiscountPercent(parseFloat(e.target.value) || 0)} />
+<LabelInput type="number" label={t("trading_composer_general_discount")} value={generalDiscountPercent} min={0} max={100} step={0.5} onChange={(val) => setGeneralDiscountPercent(parseFloat(val) || 0)} />
 <p className="t-cap text-black/55 dark:text-white/55 mt-1">S'applique après les remises à la ligne.</p>
 </div>
 <div>
-<LabelInput type="number" label={t("trading_composer_guarantee_retention")} value={guaranteeRetentionPercent} min={0} max={20} step={1} onChange={(e) => setGuaranteeRetentionPercent(parseFloat(e.target.value) || 0)} />
+<LabelInput type="number" label={t("trading_composer_guarantee_retention")} value={guaranteeRetentionPercent} min={0} max={20} step={1} onChange={(val) => setGuaranteeRetentionPercent(parseFloat(val) || 0)} />
 <p className="t-cap text-black/55 dark:text-white/55 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
 </div>
 <div className="flex flex-col justify-end">
-<label data-sq="ctl-sm" data-sq-border="none" className="flex items-center gap-2 cursor-pointer p-3 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] transition-colors">
-<input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<div data-sq="ctl-sm" data-sq-border="none" className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]">
 <span className="t-small font-medium text-black/70 dark:text-white/75">{t("trading_composer_fiscal_stamp")}</span>
-</label>
+<LiveSwitch checked={isCashFiscalStampEnabled} onCheckedChange={setIsCashFiscalStampEnabled} aria-label={t("trading_composer_fiscal_stamp")} />
+</div>
 </div>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-<LabelInput label={t("trading_composer_notes_top")} placeholder="Ex: Marché N° 14/2026 — Chantier Nouvelle Ville Sidi Abdellah" value={notesTop} onChange={(e) => setNotesTop(e.target.value)} />
-<LabelInput label={t("trading_composer_notes_bottom")} placeholder="Ex: Marchandise vendue agréée, aucun retour après 48h..." value={notesBottom} onChange={(e) => setNotesBottom(e.target.value)} />
+<LabelInput label={t("trading_composer_notes_top")} placeholder="Ex: Marché N° 14/2026 — Chantier Nouvelle Ville Sidi Abdellah" value={notesTop} onChange={setNotesTop} />
+<LabelInput label={t("trading_composer_notes_bottom")} placeholder="Ex: Marchandise vendue agréée, aucun retour après 48h..." value={notesBottom} onChange={setNotesBottom} />
 </div>
-<div className="pt-1">
-<label className="flex items-center gap-2 cursor-pointer t-cap text-black/70 dark:text-white/75">
-<input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>{t("trading_composer_include_stamp")}</span>
-</label>
+<div className="pt-1 flex items-center justify-between gap-3">
+<span className="t-cap text-black/70 dark:text-white/75">{t("trading_composer_include_stamp")}</span>
+<LiveSwitch checked={includeStampSignature} onCheckedChange={setIncludeStampSignature} aria-label={t("trading_composer_include_stamp")} />
 </div>
 </div>}
 </div>

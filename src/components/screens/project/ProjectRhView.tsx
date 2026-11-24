@@ -1129,8 +1129,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   required
                   placeholder={t('pm_rh_field_fullname_ph')}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <LabelInput
@@ -1142,8 +1142,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     value={phone}
                     onChange={setPhone}
                     width="100%"
-                    height={46}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
                   <LabelInput
                     field="Age"
@@ -1152,8 +1152,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     value={age}
                     onChange={(v) => setAge(String(v || ''))}
                     width="100%"
-                    height={46}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -1161,15 +1161,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     field="Wilaya"
                     label={t('pm_rh_field_wilaya')}
                     value={wilayaCode}
-                    onChange={(val) =>
-                      setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)
-                    }
+                    onChange={setWilayaCode}
                     options={ALGERIAN_WILAYAS.map((w) => ({
                       value: w.code,
                       label: `${w.code} - ${w.nameFr}`,
                     }))}
-                    height={46}
-                    corner={14}
+                    height={40}
+                    corner={12}
                     searchable
                   />
                   <LabelInput
@@ -1178,8 +1176,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     value={commune}
                     onChange={setCommune}
                     width="100%"
-                    height={46}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
                 </div>
                 <div
@@ -1200,7 +1198,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                         onChange={setCcpNumber}
                         required
                         width="100%"
-                        height={44}
+                        height={40}
                         corner={12}
                       />
                     </div>
@@ -1212,7 +1210,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       onChange={setCcpKey}
                       required
                       width="100%"
-                      height={44}
+                      height={40}
                       corner={12}
                     />
                   </div>
@@ -1224,8 +1222,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   value={photoUrl}
                   onChange={setPhotoUrl}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <AtriumButton type="submit" variant="primary" className="w-full">
                   Envoyer ma Candidature →
@@ -1265,10 +1263,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     value={fullName}
                     onChange={setFullName}
                     width="100%"
-                    height={46}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <LabelInput
                       field="Telephone"
                       label={t('pm_rh_field_phone')}
@@ -1278,27 +1276,25 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       value={phone}
                       onChange={setPhone}
                       width="100%"
-                      height={46}
-                      corner={14}
+                      height={40}
+                      corner={12}
                     />
                     <LabelSelect
                       field="Wilaya"
                       label={t('pm_rh_field_wilaya')}
                       value={wilayaCode}
-                      onChange={(val) =>
-                        setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)
-                      }
+                      onChange={setWilayaCode}
                       options={ALGERIAN_WILAYAS.map((w) => ({
                         value: w.code,
                         label: `${w.code} - ${w.nameFr}`,
                       }))}
-                      height={46}
-                      corner={14}
+                      height={40}
+                      corner={12}
                       searchable
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
                       <LabelInput
                         field="CCP"
                         label={t('pm_rh_field_ccp_hint')}
@@ -1306,8 +1302,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                         value={ccpNumber}
                         onChange={setCcpNumber}
                         width="100%"
-                        height={46}
-                        corner={14}
+                        height={40}
+                        corner={12}
                       />
                     </div>
                     <LabelInput
@@ -1317,8 +1313,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       value={ccpKey}
                       onChange={setCcpKey}
                       width="100%"
-                      height={46}
-                      corner={14}
+                      height={40}
+                      corner={12}
                     />
                   </div>
                 </div>

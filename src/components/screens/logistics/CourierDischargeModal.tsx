@@ -9,6 +9,8 @@ import { CourierCashDischarge, LogisticsManifest } from '../../../types';
 import { computeCourierDischargeBalance } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface CourierDischargeModalProps {
@@ -236,121 +238,46 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 t-cap">
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Billets 2 000 DZD
-                </label>
-                <div className="flex items-center gap-2">
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                  >
-                    <input
-                      type="number"
-                      min="0"
-                      value={n2000}
-                      onChange={(e) => setN2000(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                    />
-                  </div>
-                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
-                    = {formatMoney(n2000 * 2000, language)}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Billets 1 000 DZD
-                </label>
-                <div className="flex items-center gap-2">
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                  >
-                    <input
-                      type="number"
-                      min="0"
-                      value={n1000}
-                      onChange={(e) => setN1000(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                    />
-                  </div>
-                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
-                    = {formatMoney(n1000 * 1000, language)}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Billets 500 DZD
-                </label>
-                <div className="flex items-center gap-2">
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                  >
-                    <input
-                      type="number"
-                      min="0"
-                      value={n500}
-                      onChange={(e) => setN500(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                    />
-                  </div>
-                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
-                    = {formatMoney(n500 * 500, language)}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Billets 200 DZD
-                </label>
-                <div className="flex items-center gap-2">
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                  >
-                    <input
-                      type="number"
-                      min="0"
-                      value={n200}
-                      onChange={(e) => setN200(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                    />
-                  </div>
-                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
-                    = {formatMoney(n200 * 200, language)}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Pièces de monnaie (Total)
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    min="0"
-                    value={coins}
-                    onChange={(e) => setCoins(parseFloat(e.target.value) || 0)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 t-cap">
+              <LabelInput
+                label="Billets 2 000 DZD"
+                type="number"
+                min="0"
+                value={n2000}
+                onChange={(v) => setN2000(parseInt(v, 10) || 0)}
+                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n2000 * 2000, language)}</span>}
+              />
+              <LabelInput
+                label="Billets 1 000 DZD"
+                type="number"
+                min="0"
+                value={n1000}
+                onChange={(v) => setN1000(parseInt(v, 10) || 0)}
+                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n1000 * 1000, language)}</span>}
+              />
+              <LabelInput
+                label="Billets 500 DZD"
+                type="number"
+                min="0"
+                value={n500}
+                onChange={(v) => setN500(parseInt(v, 10) || 0)}
+                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n500 * 500, language)}</span>}
+              />
+              <LabelInput
+                label="Billets 200 DZD"
+                type="number"
+                min="0"
+                value={n200}
+                onChange={(v) => setN200(parseInt(v, 10) || 0)}
+                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n200 * 200, language)}</span>}
+              />
+              <LabelInput
+                label="Pièces de monnaie (Total)"
+                type="number"
+                min="0"
+                value={coins}
+                onChange={(v) => setCoins(parseFloat(v) || 0)}
+              />
             </div>
           </div>
 
@@ -360,20 +287,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             data-sq-border="none"
             className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
           >
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={courierSigned}
-                onChange={(e) => setCourierSigned(e.target.checked)}
-                className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
-              />
+            <div className="flex items-center justify-between gap-3">
               <span className="t-small font-semibold text-black dark:text-white">
                 {isAr
                   ? 'أؤكد إمضاء وموافقة السائق على المبالغ المحصلة والمسلمة للصندوق'
                   : 'Je confirme la signature conjointe du chauffeur attestant de la remise effective des fonds'}
               </span>
-            </label>
-            <p className="t-cap text-black/55 dark:text-white/55 pl-7">
+              <LiveSwitch
+                checked={courierSigned}
+                onCheckedChange={setCourierSigned}
+                aria-label={isAr ? 'موافقة السائق' : 'Signature conjointe du chauffeur'}
+              />
+            </div>
+            <p className="t-cap text-black/55 dark:text-white/55">
               {isAr
                 ? 'إصدار محضر تبرئة الذمة يلغي مسؤولية السائق ويحول المبالغ إلى رصيد خزينة المركز'
                 : 'L\'approbation génère le bon de décharge légal et transfère la responsabilité au coffre du Hub.'}

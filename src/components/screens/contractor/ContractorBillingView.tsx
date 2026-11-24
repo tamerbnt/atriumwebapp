@@ -1041,7 +1041,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                 <LiveSwitch
                   checked={hasBankCaution}
                   onCheckedChange={setHasBankCaution}
-                  ariaLabel={isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
+                  aria-label={isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
                 />
               </div>
               <div>

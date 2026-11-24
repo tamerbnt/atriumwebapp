@@ -47,6 +47,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -2021,33 +2022,30 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   corner={12}
                 />
                 <div className="pt-2 space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-black/70 dark:text-white/75">
-                    <input
-                      type="checkbox"
+                  <div className="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]" data-sq="ctl-sm" data-sq-border="none">
+                    <span className="t-cap font-semibold text-black/75 dark:text-white/80">{t('shop_toggle_tax')}</span>
+                    <LiveSwitch
                       checked={receiptConfig.showTaxBreakdown}
-                      onChange={(e) => updateReceiptConfig({ showTaxBreakdown: e.target.checked })}
-                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
+                      onCheckedChange={(checked) => updateReceiptConfig({ showTaxBreakdown: checked })}
+                      aria-label={t('shop_toggle_tax')}
                     />
-                    <span>{t('shop_toggle_tax')}</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-black/70 dark:text-white/75">
-                    <input
-                      type="checkbox"
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]" data-sq="ctl-sm" data-sq-border="none">
+                    <span className="t-cap font-semibold text-black/75 dark:text-white/80">{t('shop_toggle_cashier')}</span>
+                    <LiveSwitch
                       checked={receiptConfig.showCashier}
-                      onChange={(e) => updateReceiptConfig({ showCashier: e.target.checked })}
-                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
+                      onCheckedChange={(checked) => updateReceiptConfig({ showCashier: checked })}
+                      aria-label={t('shop_toggle_cashier')}
                     />
-                    <span>{t('shop_toggle_cashier')}</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-black/70 dark:text-white/75">
-                    <input
-                      type="checkbox"
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]" data-sq="ctl-sm" data-sq-border="none">
+                    <span className="t-cap font-semibold text-black/75 dark:text-white/80">{t('shop_toggle_barcode')}</span>
+                    <LiveSwitch
                       checked={receiptConfig.showBarcode}
-                      onChange={(e) => updateReceiptConfig({ showBarcode: e.target.checked })}
-                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
+                      onCheckedChange={(checked) => updateReceiptConfig({ showBarcode: checked })}
+                      aria-label={t('shop_toggle_barcode')}
                     />
-                    <span>{t('shop_toggle_barcode')}</span>
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2434,9 +2432,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         title={t('shop_modal_checkout_title')}
       >
         <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-          <LiveSegmentedControl<'single' | 'split'>
+          <LiveSegmentedControl
             value={checkoutMode}
-            onChange={setCheckoutMode}
+            onChange={(v) => setCheckoutMode(v as 'single' | 'split')}
             options={[
               { value: 'single', label: t('shop_mode_single'), icon: <Banknote size={14} /> },
               { value: 'split', label: t('shop_mode_split'), icon: <Split size={14} /> },
@@ -2447,7 +2445,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           {checkoutMode === 'single' && (
             <div className="space-y-3">
               <div className="t-small font-semibold text-black/70 dark:text-white/75">{t('shop_tender_method_label')}</div>
-              <LiveSegmentedControl<string>
+              <LiveSegmentedControl
                 value={singlePaymentMethod}
                 onChange={setSinglePaymentMethod}
                 options={[
@@ -2805,9 +2803,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 {retainedProductForAdjust.name}
               </div>
             )}
-            <LiveSegmentedControl<'add' | 'remove' | 'set'>
+            <LiveSegmentedControl
               value={adjustMode}
-              onChange={setAdjustMode}
+              onChange={(v) => setAdjustMode(v as 'add' | 'remove' | 'set')}
               options={[
                 { value: 'add', label: t('shop_adjust_restock') },
                 { value: 'remove', label: t('shop_adjust_damage') },

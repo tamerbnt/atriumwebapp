@@ -22,8 +22,6 @@ interface RealEstateLeaseModalProps {
 
 
 
-const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
-
 export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOpen, onClose, properties, onSave }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
 	  (s) => ({
@@ -101,19 +99,19 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
-<LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={(val) => setPropertyId(extractStr(val))} options={propOptions} />
+<LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={setPropertyId} options={propOptions} />
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<LabelInput label={language === "ar" ? "اسم المستأجر" : "Locataire (Preneur)"} value={tenantName} onChange={(e) => setTenantName(e.target.value)} placeholder="Ex: Anis Belhadj" required />
-<LabelInput label={language === "ar" ? "هاتف المستأجر" : "Téléphone"} value={tenantPhone} onChange={(e) => setTenantPhone(e.target.value)} placeholder="0555..." />
+<LabelInput label={language === "ar" ? "اسم المستأجر" : "Locataire (Preneur)"} value={tenantName} onChange={setTenantName} placeholder="Ex: Anis Belhadj" required />
+<LabelInput label={language === "ar" ? "هاتف المستأجر" : "Téléphone"} value={tenantPhone} onChange={setTenantPhone} placeholder="0555..." />
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<LabelInput label={language === "ar" ? "تاريخ بداية العقد" : "Date de début"} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-<LabelInput label={language === "ar" ? "تاريخ نهاية العقد" : "Date d'échéance"} type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+<LabelInput label={language === "ar" ? "تاريخ بداية العقد" : "Date de début"} type="date" value={startDate} onChange={setStartDate} />
+<LabelInput label={language === "ar" ? "تاريخ نهاية العقد" : "Date d'échéance"} type="date" value={endDate} onChange={setEndDate} />
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<LabelInput label={language === "ar" ? "الكراء الشهري (د.ج)" : "Loyer / mois (DA)"} type="number" value={monthlyRent} onChange={(e) => setMonthlyRent(e.target.value)} />
-<LabelInput label={language === "ar" ? "مبلغ الضمان (Caution)" : "Dépôt de garantie"} type="number" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
-<LabelSelect label={language === "ar" ? "دورية الدفع" : "Périodicité"} value={frequency} onChange={(val) => setFrequency(extractStr(val))} options={[
+<LabelInput label={language === "ar" ? "الكراء الشهري (د.ج)" : "Loyer / mois (DA)"} type="number" value={monthlyRent} onChange={setMonthlyRent} />
+<LabelInput label={language === "ar" ? "مبلغ الضمان (Caution)" : "Dépôt de garantie"} type="number" value={deposit} onChange={setDeposit} />
+<LabelSelect label={language === "ar" ? "دورية الدفع" : "Périodicité"} value={frequency} onChange={setFrequency} options={[
 									{
 										value: "Monthly",
 										label: language === "ar" ? "شهري" : "Mensuel"

@@ -26,6 +26,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
@@ -388,7 +389,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   field="BookableSpace"
                   label={t('venue_modal_field_space')}
                   value={selectedUnitId}
-                  onChange={(val) => setSelectedUnitId(val?.target?.value ?? String(val))}
+                  onChange={setSelectedUnitId}
                   options={rentableUnits.map((u) => ({
                     value: u.id,
                     label: u.name,
@@ -407,7 +408,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 label={t('venue_modal_field_date')}
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={setStartDate}
                 required
               />
 
@@ -416,7 +417,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 label={t('venue_modal_field_start_time')}
                 type="time"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={setStartTime}
                 required
               />
 
@@ -425,7 +426,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 label={`${t('venue_modal_field_end_time')} (${t('venue_modal_duration_label', { hours: durationHours })})`}
                 type="time"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                onChange={setEndTime}
                 required
               />
             </div>
@@ -443,7 +444,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   field="ExistingRenter"
                   label={t('venue_modal_select_existing')}
                   value={selectedRenterId}
-                  onChange={(val) => handleSelectRenter(val?.target?.value ?? String(val))}
+                  onChange={handleSelectRenter}
                   options={[
                     { value: '', label: t('venue_modal_renter_walkin_opt') },
                     ...rentalRenters.map((r) => ({
@@ -513,8 +514,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   value={purpose}
                   onChange={setPurpose}
                   width="100%"
-                  height={44}
-                  corner={14}
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
@@ -527,7 +528,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   min="1"
                   max={selectedUnit?.capacity ? selectedUnit.capacity + 50 : 500}
                   value={attendeeCount}
-                  onChange={(e) => setAttendeeCount(Number(e.target.value))}
+                  onChange={(val) => setAttendeeCount(Number(val) || 1)}
                 />
                 {selectedUnit?.capacity && attendeeCount > selectedUnit.capacity && (
                   <p className="t-cap text-amber-500 mt-1">
@@ -541,7 +542,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   field="ReservationStatus"
                   label={t('venue_modal_field_status')}
                   value={status}
-                  onChange={(val) => setStatus((val?.target?.value ?? String(val)) as BookingStatus)}
+                  onChange={(val) => setStatus(val as BookingStatus)}
                   options={[
                     { value: 'Confirmed', label: t('venue_filter_confirmed') },
                     { value: 'CheckedIn', label: t('venue_filter_in_use') },
@@ -604,7 +605,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   value={newAddonName}
                   onChange={setNewAddonName}
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
               </div>
@@ -615,9 +616,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   type="number"
                   placeholder="0"
                   value={newAddonPrice || ''}
-                  onChange={(val) => setNewAddonPrice(Number(val?.target?.value ?? val))}
+                  onChange={(val) => setNewAddonPrice(Number(val) || 0)}
                   width="100%"
-                  height={42}
+                  height={40}
                   corner={12}
                 />
               </div>
@@ -626,7 +627,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={handleAddAddon}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="w-full sm:w-auto h-[42px] px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-2 shrink-0 mt-3 sm:mt-0 cursor-pointer"
+                className="w-full sm:w-auto h-[40px] px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-2 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
                 <Plus size={14} /> {t('venue_modal_btn_add_addon')}
               </button>
@@ -646,7 +647,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   label={t('venue_modal_field_deposit')}
                   type="number"
                   value={depositAmount}
-                  onChange={(e) => setDepositAmount(Number(e.target.value))}
+                  onChange={(val) => setDepositAmount(Number(val) || 0)}
                 />
               </div>
 
@@ -655,7 +656,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   field="EscrowStatus"
                   label={t('venue_modal_field_deposit_status')}
                   value={depositStatus}
-                  onChange={(val) => setDepositStatus((val?.target?.value ?? String(val)) as DepositStatus)}
+                  onChange={(val) => setDepositStatus(val as DepositStatus)}
                   options={[
                     { value: 'Held', label: t('venue_held_status') },
                     { value: 'Pending', label: t('status_pending') },
@@ -674,7 +675,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   label={t('venue_modal_field_paid_amount')}
                   type="number"
                   value={paidAmount}
-                  onChange={(e) => setPaidAmount(Number(e.target.value))}
+                  onChange={(val) => setPaidAmount(Number(val) || 0)}
                 />
               </div>
             </div>
@@ -713,16 +714,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
-            {/* Contract Signed Checkbox */}
-            <label className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75 cursor-pointer pt-1">
-              <input
-                type="checkbox"
+            {/* Contract Signed Switch */}
+            <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]" data-sq="ctl" data-sq-border="none">
+              <span className="t-cap font-medium text-black/75 dark:text-white/80">{t('venue_modal_field_contract_signed')}</span>
+              <LiveSwitch
                 checked={contractSigned}
-                onChange={(e) => setContractSigned(e.target.checked)}
-                className="w-4 h-4 rounded-[var(--r-check,6px)] border-black/[0.16] dark:border-white/[0.18] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+                onCheckedChange={setContractSigned}
+                aria-label={t('venue_modal_field_contract_signed')}
               />
-              <span>{t('venue_modal_field_contract_signed')}</span>
-            </label>
+            </div>
           </div>
         </form>
 

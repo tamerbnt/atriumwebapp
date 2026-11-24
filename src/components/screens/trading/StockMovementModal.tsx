@@ -19,6 +19,7 @@ import {
 import { StockMovementVoucher, StockVoucherType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -214,61 +215,40 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-2">
               {t('trading_stock_dir')}
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setType('entree');
-                  setReason('reception_achat');
-                }}
-                data-sq="ctl"
-                data-sq-border={type === 'entree' ? 'solid' : 'none'}
-                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
-                  type === 'entree'
-                    ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold'
-                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
-                }`}
-              >
-                <TrendingUp size={16} />
-                <span>{t('trading_stock_be')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setType('sortie');
-                  setReason('sortie_client');
-                }}
-                data-sq="ctl"
-                data-sq-border={type === 'sortie' ? 'solid' : 'none'}
-                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
-                  type === 'sortie'
-                    ? '[--sq-stroke:#F43F5E] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-semibold'
-                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
-                }`}
-              >
-                <TrendingDown size={16} />
-                <span>{t('trading_stock_bs')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setType('transfert');
-                  setReason('transfert');
-                }}
-                data-sq="ctl"
-                data-sq-border={type === 'transfert' ? 'solid' : 'none'}
-                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
-                  type === 'transfert'
-                    ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
-                }`}
-              >
-                <ArrowRight size={16} />
-                <span>{t('trading_stock_bt')}</span>
-              </button>
-            </div>
+            <LiveSegmentedControl
+              aria-label={t('trading_stock_dir')}
+              size="md"
+              fullWidth
+              value={type}
+              onValueChange={(next) => {
+                const nextType = next as StockVoucherType;
+                setType(nextType);
+                setReason(
+                  nextType === 'entree'
+                    ? 'reception_achat'
+                    : nextType === 'sortie'
+                    ? 'sortie_client'
+                    : 'transfert'
+                );
+              }}
+              options={[
+                {
+                  value: 'entree',
+                  label: t('trading_stock_be'),
+                  icon: <TrendingUp size={15} />,
+                },
+                {
+                  value: 'sortie',
+                  label: t('trading_stock_bs'),
+                  icon: <TrendingDown size={15} />,
+                },
+                {
+                  value: 'transfert',
+                  label: t('trading_stock_bt'),
+                  icon: <ArrowRight size={15} />,
+                },
+              ]}
+            />
           </div>
 
           {/* Depots & Reason */}
@@ -277,7 +257,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <LabelSelect
                 label={type === 'transfert' ? t('trading_stock_depot_source') : t('trading_stock_depot_concerned')}
                 value={depotSourceId}
-                onChange={(val) => setDepotSourceId(typeof val === 'string' ? val : val?.target?.value || val)}
+                onChange={setDepotSourceId}
                 options={warehouses.map((w) => ({
                   value: w.id,
                   label: `${w.code} — ${w.name}`,
@@ -290,7 +270,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 <LabelSelect
                   label={t('trading_stock_depot_target')}
                   value={depotTargetId}
-                  onChange={(val) => setDepotTargetId(typeof val === 'string' ? val : val?.target?.value || val)}
+                  onChange={setDepotTargetId}
                   placeholder="-- Choisir le dépôt cible --"
                   options={warehouses
                     .filter((w) => w.id !== depotSourceId)
@@ -305,7 +285,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 <LabelSelect
                   label={t('trading_stock_reason')}
                   value={reason}
-                  onChange={(val) => setReason((typeof val === 'string' ? val : val?.target?.value || val) as any)}
+                  onChange={(val) => setReason(val as any)}
                   options={
                     type === 'entree'
                       ? [
@@ -327,7 +307,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 type="date"
                 label={t('trading_stock_date')}
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={setDate}
                 required
               />
             </div>
@@ -336,7 +316,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <LabelInput
                 label={t('trading_stock_operator')}
                 value={operatorName}
-                onChange={(e) => setOperatorName(e.target.value)}
+                onChange={setOperatorName}
               />
             </div>
           </div>
@@ -371,7 +351,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                     <LabelSelect
                       label="Article"
                       value={it.productId}
-                      onChange={(val) => handleProductSelect(idx, typeof val === 'string' ? val : val?.target?.value || val)}
+                      onChange={(val) => handleProductSelect(idx, val)}
                       options={products.map((p) => ({
                         value: p.id,
                         label: `${p.sku ? `[${p.sku}] ` : ''}${p.name} (Stock: ${p.stockQuantity})`,
@@ -385,7 +365,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                       min="1"
                       label={`Qté (${it.unit})`}
                       value={it.quantity}
-                      onChange={(e) => handleItemChange(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                      onChange={(val) => handleItemChange(idx, 'quantity', parseFloat(val) || 0)}
                     />
                   </div>
 
@@ -410,7 +390,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               label={t('trading_stock_observations')}
               placeholder="Ex: Entrée suite à livraison BR-2026-0028"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={setNotes}
             />
           </div>
 

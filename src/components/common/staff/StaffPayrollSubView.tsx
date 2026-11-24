@@ -16,6 +16,7 @@ import {
   StaffPayrollSlipRecord,
 } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSelect } from '../../ui/live/LiveSelect';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { SalaryAdvanceModal } from './SalaryAdvanceModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -296,32 +297,30 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           data-sq="card"
           className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E]"
         >
-          <div className="flex items-center gap-[var(--s3,12px)]">
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="flex items-center gap-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] px-[var(--s3,12px)] h-[var(--btn-h,40px)]"
-            >
-              <Calendar className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="bg-transparent t-btn text-[var(--text-1)] dark:text-white focus:outline-hidden cursor-pointer"
-              >
-                {months.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="bg-transparent t-btn text-[var(--text-1)] dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
-              >
-                <option value={2026}>2026</option>
-                <option value={2025}>2025</option>
-              </select>
+          <div className="flex items-center gap-[var(--s3,12px)] flex-wrap">
+            <div className="flex items-center gap-[var(--s2,8px)]">
+              <LiveSelect
+                size="md"
+                tone="soft"
+                value={String(selectedMonth)}
+                onValueChange={(v) => setSelectedMonth(Number(v))}
+                aria-label={isAr ? 'الشهر' : isEn ? 'Month' : 'Mois'}
+                options={months.map((m) => ({
+                  value: String(m.value),
+                  label: m.label,
+                }))}
+              />
+              <LiveSelect
+                size="md"
+                tone="soft"
+                value={String(selectedYear)}
+                onValueChange={(v) => setSelectedYear(Number(v))}
+                aria-label={isAr ? 'السنة' : isEn ? 'Year' : 'Année'}
+                options={[
+                  { value: '2026', label: '2026' },
+                  { value: '2025', label: '2025' },
+                ]}
+              />
             </div>
 
             {activeRun ? (

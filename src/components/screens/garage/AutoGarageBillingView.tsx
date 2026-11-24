@@ -27,6 +27,7 @@ import {
   computeAlgerianTimbreFiscal,
 } from './garageData';
 import { Button } from '@/atrium/core';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';

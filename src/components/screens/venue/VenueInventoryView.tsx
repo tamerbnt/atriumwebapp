@@ -24,6 +24,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -1223,18 +1224,13 @@ export const VenueInventoryView: React.FC = () => {
                 value={amenitiesStr}
                 onChange={(v) => setAmenitiesStr(extractStr(v))}
               />
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  {t('venue_inv_desc')}
-                </label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Description commerciale de l'espace..."
-                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
-                />
-              </div>
+              <LabelTextarea
+                label={t('venue_inv_desc')}
+                rows={2}
+                value={description}
+                onChange={setDescription}
+                placeholder="Description commerciale de l'espace..."
+              />
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"

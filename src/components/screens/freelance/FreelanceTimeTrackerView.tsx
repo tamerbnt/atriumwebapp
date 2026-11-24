@@ -980,8 +980,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               field="Client"
               label={t('free_invoice_client', language)}
               value={selectedClientId}
-              onChange={(val) => {
-                const cId = extractStr(val);
+              onChange={(cId) => {
                 setSelectedClientId(cId);
                 const firstProj = freelanceProjects.find((p) => p.clientId === cId);
                 if (firstProj) setSelectedProjectId(firstProj.id);
@@ -991,20 +990,20 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
               }))}
               placeholder={t('free_deliv_ph_select_client', language)}
-              height={46}
+              height={40}
               corner={12}
             />
             <LabelSelect
               field="Project"
               label={t('free_time_project_label', language)}
               value={selectedProjectId}
-              onChange={(val) => setSelectedProjectId(extractStr(val))}
+              onChange={(val) => setSelectedProjectId(val)}
               options={availableProjects.map((p) => ({
                 value: p.id,
                 label: p.title,
               }))}
               placeholder={t('free_time_ph_select_project', language)}
-              height={46}
+              height={40}
               corner={12}
             />
             <LabelInput
@@ -1012,30 +1011,28 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               label={t('free_time_working_on', language)}
               placeholder={t('free_time_live_what_working_on', language)}
               value={taskDescription}
-              onChange={(v) => setTaskDescription(extractStr(v))}
+              onChange={(v) => setTaskDescription(v)}
               width="100%"
-              height={46}
+              height={40}
               corner={12}
             />
             <div className="flex items-center justify-between sm:justify-end gap-4 pt-4 sm:pt-0">
-              <label className="flex items-center gap-2 cursor-pointer text-white/80">
-                <input
-                  type="checkbox"
+              <div className="flex items-center gap-2 text-white/85">
+                <LiveSwitch
                   checked={isBillable}
-                  onChange={(e) => setIsBillable(e.target.checked)}
-                  className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-0"
+                  onCheckedChange={setIsBillable}
+                  aria-label={t('free_time_billable', language)}
                 />
                 <span>{t('free_time_billable', language)}</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer text-white/80">
-                <input
-                  type="checkbox"
+              </div>
+              <div className="flex items-center gap-2 text-white/85">
+                <LiveSwitch
                   checked={isPomodoro}
-                  onChange={(e) => setIsPomodoro(e.target.checked)}
-                  className="rounded-[var(--r-check,6px)] text-amber-500 focus:ring-0"
+                  onCheckedChange={setIsPomodoro}
+                  aria-label={t('free_topbar_pomodoro', language)}
                 />
                 <span>{t('free_topbar_pomodoro', language)} (25m)</span>
-              </label>
+              </div>
             </div>
           </div>
         )}

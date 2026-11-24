@@ -24,6 +24,8 @@ import { LogisticsShipment } from '../../../types';
 import { localizeStatus } from '../../../utils/rules';
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSelect } from '../../ui/live/LiveSelect';
+import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -717,24 +719,17 @@ export const LogisticsScannerView: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <select
-                    value={selectedBagId}
-                    onChange={(e) => setSelectedBagId(e.target.value)}
-                    aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 t-small tabular-nums font-semibold"
-                  >
-                    {bags.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.bagCode} (W{b.destinationHubWilaya})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LiveSelect
+                  size="md"
+                  tone="soft"
+                  value={selectedBagId}
+                  onValueChange={setSelectedBagId}
+                  aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
+                  options={bags.map((b) => ({
+                    value: b.id,
+                    label: `${b.bagCode} (W${b.destinationHubWilaya})`,
+                  }))}
+                />
 
                 {activeBag.status === 'Open' && (
                   <AtriumButton
@@ -1142,26 +1137,14 @@ export const LogisticsScannerView: React.FC = () => {
                   : `Veuillez saisir le numéro unique gravé sur le collier de scellé plastique pour le sac ${retainedActiveBag.bagCode} :`}
               </p>
 
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  Numéro de Scellé (Ex: SL-994821)
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="text"
-                    value={securitySealInput}
-                    onChange={(e) => setSecuritySealInput(e.target.value)}
-                    placeholder="SL-XXXXXX"
-                    className="lbi-field w-full bg-transparent border-0 px-4 py-2 tabular-nums font-semibold t-label text-center outline-hidden"
-                    required
-                    autoFocus
-                  />
-                </div>
-              </div>
+              <LabelInput
+                label="Numéro de Scellé (Ex: SL-994821)"
+                value={securitySealInput}
+                onChange={setSecuritySealInput}
+                placeholder="SL-XXXXXX"
+                required
+                autoFocus
+              />
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton

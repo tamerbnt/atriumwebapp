@@ -15,8 +15,6 @@ interface NotarySimulatorModalProps {
 
 
 
-const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
-
 export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOpen, onClose, defaultPriceDzd = 2e7, propertyTitle = "Simulation d'Acquisition Immobilière" }) => {
 	const [priceDzd, setPriceDzd] = React.useState(defaultPriceDzd);
 	const [propertyType, setPropertyType] = React.useState("Residential");
@@ -41,8 +39,8 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOp
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-<LabelInput type="number" label="Prix Déclaré du Bien (DZD)" value={priceDzd} onChange={(e) => setPriceDzd(Number(e.target.value))} required />
-<LabelSelect label="Typologie Fiscale du Bien" value={propertyType} onChange={(val) => setPropertyType(extractStr(val))} options={[
+<LabelInput type="number" label="Prix Déclaré du Bien (DZD)" value={priceDzd} onChange={(v) => setPriceDzd(Number(v))} required />
+<LabelSelect label="Typologie Fiscale du Bien" value={propertyType} onChange={setPropertyType} options={[
 							{
 								value: "Residential",
 								label: "Habitation Bâtie (Droits 2.5%)"

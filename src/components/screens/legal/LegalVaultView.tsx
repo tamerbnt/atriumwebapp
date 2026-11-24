@@ -1229,19 +1229,19 @@ export const LegalVaultView: React.FC<any> = () => {
           </div>
 
           <form onSubmit={handleSaveModal} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'رمز الوثيقة *' : 'Code Pièce *'}
                 placeholder="DOC-2026-081"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={setCode}
                 required
               />
               <LabelInput
                 label={isAr ? 'رقم الملف / القضية *' : 'Réf Dossier *'}
                 placeholder="DOS-2026-0091"
                 value={matterReference}
-                onChange={(e) => setMatterReference(e.target.value)}
+                onChange={setMatterReference}
                 required
               />
             </div>
@@ -1250,7 +1250,7 @@ export const LegalVaultView: React.FC<any> = () => {
               label={isAr ? 'عنوان وتعيين الوثيقة *' : 'Intitulé de la Pièce *'}
               placeholder="Ex: Contrat Commercial Original & Avenants"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={setTitle}
               required
             />
 

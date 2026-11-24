@@ -1134,27 +1134,27 @@ export const TradingInventoryView: React.FC = () => {
                 label="Code Dépôt *"
                 placeholder="Ex: DEP-03"
                 value={depotCode}
-                onChange={(e) => setDepotCode(e.target.value)}
+                onChange={setDepotCode}
                 required
               />
               <LabelInput
                 label="Nom du Dépôt / Hangar *"
                 placeholder="Ex: Dépôt Annaba Port"
                 value={depotName}
-                onChange={(e) => setDepotName(e.target.value)}
+                onChange={setDepotName}
                 required
               />
               <LabelInput
                 label="Adresse Logistique"
                 placeholder="Ex: Quai Ouest, Zone Portuaire"
                 value={depotAddress}
-                onChange={(e) => setDepotAddress(e.target.value)}
+                onChange={setDepotAddress}
               />
               <LabelInput
                 label="Ville"
                 placeholder="Ex: Annaba"
                 value={depotCity}
-                onChange={(e) => setDepotCity(e.target.value)}
+                onChange={setDepotCity}
               />
               <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setNewDepotModalOpen(false)}>

@@ -30,6 +30,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -1084,14 +1085,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 field="Project"
                 label="Projet / Campagne"
                 value={selectedProjectId}
-                onChange={(val) =>
-                  setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)
-                }
+                onChange={setSelectedProjectId}
                 options={pmProjects.map((p) => ({
                   value: p.id,
                   label: `${p.title} (${p.clientName})`,
                 }))}
-                height={46}
+                height={40}
                 corner={12}
               />
               <LabelInput
@@ -1101,16 +1100,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 value={artworkTitle}
                 onChange={setArtworkTitle}
                 required
-                height={46}
+                height={40}
                 corner={12}
               />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <FilterSelect
                   label="Format Fichier"
                   value={fileFormat}
-                  onChange={(val) =>
-                    setFileFormat(typeof val === 'string' ? val : val.target?.value || val)
-                  }
+                  onChange={setFileFormat}
                   options={[
                     { value: 'pdf', label: 'PDF', tooltip: 'PDF Haute Résolution' },
                     { value: 'ai', label: 'Illustrator', tooltip: 'Adobe Illustrator (.ai)' },
@@ -1121,9 +1118,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 <FilterSelect
                   label="Espace Colorimétrique"
                   value={colorSpace}
-                  onChange={(val) =>
-                    setColorSpace(typeof val === 'string' ? val : val.target?.value || val)
-                  }
+                  onChange={setColorSpace}
                   options={[
                     { value: 'CMJN', label: 'CMJN', tooltip: 'CMJN (Quadrichromie)' },
                     { value: 'RVB', label: 'RVB', tooltip: 'RVB (Rejeté imprimeur)' },
@@ -1136,7 +1131,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   value={resolutionDpi}
                   onChange={setResolutionDpi}
                   required
-                  height={46}
+                  height={40}
                   corner={12}
                 />
               </div>
@@ -1153,11 +1148,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     Indispensable pour éviter tout liseré blanc au massicotage.
                   </p>
                 </div>
-                <input
-                  type="checkbox"
+                <LiveSwitch
                   checked={hasBleedIncluded}
-                  onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                  className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] cursor-pointer"
+                  onCheckedChange={setHasBleedIncluded}
+                  aria-label="Fond Perdu & Traits de Coupe (+3mm)"
                 />
               </div>
               <AtriumButton

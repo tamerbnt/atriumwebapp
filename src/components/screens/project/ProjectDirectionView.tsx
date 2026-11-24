@@ -45,6 +45,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
@@ -1860,23 +1861,21 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     value={newProjectTitle}
                     onChange={setNewProjectTitle}
                     width="100%"
-                    height={48}
-                    corner={14}
+                    height={40}
+                    corner={12}
                   />
                 </div>
                 <LabelSelect
                   field="Client"
                   label={t('pm_dir_field_client')}
                   value={newProjectClientId}
-                  onChange={(val) =>
-                    setNewProjectClientId(typeof val === 'string' ? val : val.target?.value || val)
-                  }
+                  onChange={setNewProjectClientId}
                   options={pmClients.map((c) => ({
                     value: c.id,
                     label: `${c.name} (${c.wilaya})`,
                   }))}
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="BudgetCap"
@@ -1885,8 +1884,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   value={newProjectBudgetCap}
                   onChange={setNewProjectBudgetCap}
                   width="100%"
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="MaxField"
@@ -1895,8 +1894,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   value={newProjectMaxField}
                   onChange={setNewProjectMaxField}
                   width="100%"
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="Margin"
@@ -1905,20 +1904,18 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   value={newProjectMargin}
                   onChange={setNewProjectMargin}
                   width="100%"
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <div className="sm:col-span-2">
-                  <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">
-                    {t('pm_dir_field_scope')}
-                  </label>
-                  <textarea
+                  <LabelTextarea
+                    field="Scope"
+                    label={t('pm_dir_field_scope')}
                     rows={4}
                     required
                     placeholder={t('pm_dir_field_scope_ph')}
                     value={newProjectScope}
-                    onChange={(e) => setNewProjectScope(e.target.value)}
-                    className="w-full px-4 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
+                    onChange={setNewProjectScope}
                   />
                 </div>
                 <LabelInput
@@ -1928,8 +1925,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   value={newProjectStartDate}
                   onChange={setNewProjectStartDate}
                   width="100%"
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="EndDate"
@@ -1938,36 +1935,32 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   value={newProjectEndDate}
                   onChange={setNewProjectEndDate}
                   width="100%"
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelSelect
                   field="LeadPM"
                   label={t('pm_dir_field_pm')}
                   value={newProjectPmId}
-                  onChange={(val) =>
-                    setNewProjectPmId(typeof val === 'string' ? val : val.target?.value || val)
-                  }
+                  onChange={setNewProjectPmId}
                   options={[
                     { value: 'stf_pm_01', label: 'Amine Meziane (Senior PM)' },
                     { value: 'stf_pm_02', label: 'Samy Cherif (Event Lead)' },
                   ]}
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelSelect
                   field="LeadCrea"
                   label={t('pm_dir_field_crea')}
                   value={newProjectCreaId}
-                  onChange={(val) =>
-                    setNewProjectCreaId(typeof val === 'string' ? val : val.target?.value || val)
-                  }
+                  onChange={setNewProjectCreaId}
                   options={[
                     { value: 'stf_crea_01', label: 'Lina Hadj-Ali (Directrice Artistique)' },
                     { value: 'stf_crea_02', label: 'Rachid Benali (Infographiste Print)' },
                   ]}
-                  height={48}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
               <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
@@ -2482,12 +2475,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           <p className="t-cap text-black/55 dark:text-white/55">
             Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
           </p>
-          <textarea
+          <LabelTextarea
+            field="RejectionReason"
+            label="Motif du rejet"
             rows={3}
             value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
+            onChange={setRejectionReason}
             placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
-            className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/40 transition-shadow"
           />
           <div className="flex justify-end gap-2">
             <button

@@ -18,6 +18,7 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { KineticModalShell } from '../../ui/kinetic';
 
@@ -252,102 +253,69 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
           {/* Shipper & Delivery Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <LabelInput
               label={isAr ? 'التاجر / المتجر المرسل' : 'Marchand / Expéditeur'}
               value={merchantName}
-              onChange={(e) => setMerchantName(e.target.value)}
+              onChange={setMerchantName}
               placeholder="Ex: Boutique E-commerce..."
             />
 
             <div>
-              <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
+              <label className="block t-cap font-semibold text-black/65 dark:text-white/65 mb-1">
                 {isAr ? 'طريقة الاستلام' : 'Mode de Livraison'}
               </label>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="flex bg-[#F5F1EC] dark:bg-[#191716] p-[3px]"
-              >
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="thumb"
-                  data-sq-border="none"
-                  onClick={() => setDeliveryMode('HomeDelivery')}
-                  className={`flex-1 py-2 t-small font-semibold transition-all cursor-pointer ${
-                    deliveryMode === 'HomeDelivery'
-                      ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
-                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {isAr ? 'توصيل للمنزل' : 'À Domicile'}
-                </button>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="thumb"
-                  data-sq-border="none"
-                  onClick={() => setDeliveryMode('StopDesk')}
-                  className={`flex-1 py-2 t-small font-semibold transition-all cursor-pointer ${
-                    deliveryMode === 'StopDesk'
-                      ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-on-dark,#FF8F63)]'
-                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {isAr ? 'استلام Stop-Desk' : 'Stop-Desk'}
-                </button>
-              </div>
+              <LiveSegmentedControl
+                size="md"
+                fullWidth
+                value={deliveryMode}
+                onValueChange={(v) => setDeliveryMode(v as 'HomeDelivery' | 'StopDesk')}
+                aria-label={isAr ? 'طريقة الاستلام' : 'Mode de Livraison'}
+                options={[
+                  { value: 'HomeDelivery', label: isAr ? 'توصيل للمنزل' : 'À Domicile' },
+                  { value: 'StopDesk', label: isAr ? 'استلام Stop-Desk' : 'Stop-Desk' },
+                ]}
+              />
             </div>
           </div>
 
           {/* Recipient Information with Operator Badge */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <LabelInput
               label={isAr ? 'اسم المستلم' : 'Destinataire (Nom & Prénom)'}
               value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
+              onChange={setRecipientName}
               placeholder="Ex: Abdelkader Meziani"
               required
             />
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="t-small font-semibold text-black/70 dark:text-white/75">
-                  {isAr ? 'هاتف المستلم' : 'Téléphone'}
-                </label>
-                {recipientPhone.trim() && (
-                  <span
-                    className={`t-small font-semibold px-2 py-1 rounded-full ${
-                      phoneValidation.operator === 'Mobilis'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                        : phoneValidation.operator === 'Djezzy'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                        : phoneValidation.operator === 'Ooredoo'
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
-                        : phoneValidation.operator === 'Fixe'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                    }`}
-                  >
-                    {phoneValidation.valid ? phoneValidation.operator : 'Format Invalide'}
-                  </span>
-                )}
-              </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-              >
-                <input
-                  type="text"
-                  value={recipientPhone}
-                  onChange={(e) => setRecipientPhone(e.target.value)}
-                  placeholder="0555 41 22 33"
-                  className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 t-small tabular-nums font-medium outline-hidden"
-                  required
-                />
-              </div>
+              <LabelInput
+                label={isAr ? 'هاتف المستلم' : 'Téléphone'}
+                value={recipientPhone}
+                onChange={setRecipientPhone}
+                placeholder="0555 41 22 33"
+                required
+                suffix={
+                  recipientPhone.trim() ? (
+                    <span
+                      className={`t-cap font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                        phoneValidation.operator === 'Mobilis'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : phoneValidation.operator === 'Djezzy'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                          : phoneValidation.operator === 'Ooredoo'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                          : phoneValidation.operator === 'Fixe'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                      }`}
+                    >
+                      {phoneValidation.valid ? phoneValidation.operator : 'Format Invalide'}
+                    </span>
+                  ) : undefined
+                }
+              />
             </div>
           </div>
 
@@ -362,7 +330,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             <LabelInput
               label={isAr ? 'العنوان والبلدية' : 'Adresse & Commune'}
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={setAddress}
               placeholder="Cité, Bâtiment..."
               required
             />
@@ -384,95 +352,49 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 t-cap">
-              <div>
-                <label className="t-cap text-black/55 dark:text-white/55 block">Poids Réel (kg)</label>
-                <div
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
-                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-2 tabular-nums font-semibold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="t-cap text-black/55 dark:text-white/55 block">Longueur (cm)</label>
-                <div
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
-                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    value={lengthCm}
-                    onChange={(e) => setLengthCm(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-2 tabular-nums"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="t-cap text-black/55 dark:text-white/55 block">Largeur (cm)</label>
-                <div
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
-                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    value={widthCm}
-                    onChange={(e) => setWidthCm(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-2 tabular-nums"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="t-cap text-black/55 dark:text-white/55 block">Hauteur (cm)</label>
-                <div
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
-                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    value={heightCm}
-                    onChange={(e) => setHeightCm(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-2 tabular-nums"
-                  />
-                </div>
-              </div>
+              <LabelInput
+                label="Poids Réel (kg)"
+                type="number"
+                step="0.1"
+                min="0.1"
+                value={weightKg}
+                onChange={setWeightKg}
+              />
+              <LabelInput
+                label="Longueur (cm)"
+                type="number"
+                value={lengthCm}
+                onChange={setLengthCm}
+              />
+              <LabelInput
+                label="Largeur (cm)"
+                type="number"
+                value={widthCm}
+                onChange={setWidthCm}
+              />
+              <LabelInput
+                label="Hauteur (cm)"
+                type="number"
+                value={heightCm}
+                onChange={setHeightCm}
+              />
             </div>
           </div>
 
           {/* Pricing & Fiscal Stamp Breakdown Card */}
           <div data-sq="card" data-sq-border="none" data-surface="dark" className="p-4 bg-[#191716] text-white space-y-2">
-            <div className="flex items-center justify-between t-cap border-b border-white/[0.12] pb-2">
+            <div className="flex items-center justify-between gap-3 t-cap border-b border-white/[0.12] pb-2">
               <span className="text-white/80">
                 {isAr ? 'مبلغ السلعة COD' : 'Montant à Encaisser (COD)'}
               </span>
-              <div className="flex items-center gap-1">
-                <div
-                  data-sq="ctl-sm"
-                  data-sq-border="none"
-                  data-surface="dark"
-                  className="w-28 bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/40 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    value={codAmount}
-                    onChange={(e) => setCodAmount(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1 text-right tabular-nums font-semibold text-white t-small"
-                  />
-                </div>
-                <span className="tabular-nums t-cap">DZD</span>
+              <div className="flex items-center gap-2 w-40">
+                <LabelInput
+                  label="COD (DZD)"
+                  type="number"
+                  value={codAmount}
+                  onChange={setCodAmount}
+                  suffix={<span className="t-cap text-white/65">DZD</span>}
+                />
               </div>
             </div>
 

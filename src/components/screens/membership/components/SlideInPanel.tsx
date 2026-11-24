@@ -5,8 +5,6 @@ import { computePanelMetrics } from '../motion/adherentsMath';
 import { LiveSegmentedControl } from '../../../ui/live/LiveSegmentedControl';
 import { Button } from '@/atrium/core';
 import { useAtriumSelector } from '../../../../services/store';
-import { Button } from '@/atrium/core';
-import { useAtriumSelector } from '../../../../services/store';
 
 export interface SlideInTab {
   id: string;

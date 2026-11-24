@@ -1907,9 +1907,9 @@ export const PosInventoryView: React.FC<any> = () => {
                 {retainedProductForAdjust.name} · {retainedProductForAdjust.stockQuantity} {retainedProductForAdjust.unit || 'pcs'}
               </div>
             )}
-            <LiveSegmentedControl<'add' | 'remove' | 'set'>
+            <LiveSegmentedControl
               value={adjustMode}
-              onChange={setAdjustMode}
+              onChange={(v) => setAdjustMode(v as 'add' | 'remove' | 'set')}
               options={[
                 { value: 'add', label: `+ ${isAr ? 'إضافة تموين' : isEn ? 'Add' : 'Ajouter'}` },
                 { value: 'remove', label: `- ${isAr ? 'خصم / تلف' : isEn ? 'Remove' : 'Retirer (Casse)'}` },

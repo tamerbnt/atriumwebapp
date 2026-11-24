@@ -878,32 +878,32 @@ export const TradingPurchasesView: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleCreatePo} className="space-y-4 t-cap">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelSelect
                   label="Fournisseur *"
                   value={supplierId}
-                  onChange={(val) => setSupplierId(typeof val === 'string' ? val : val?.target?.value || '')}
+                  onChange={setSupplierId}
                   options={b2bSuppliers.map((s) => ({ value: s.id, label: s.supplierName }))}
                 />
                 <LabelSelect
                   label="Dépôt de Destination *"
                   value={depotId}
-                  onChange={(val) => setDepotId(typeof val === 'string' ? val : val?.target?.value || '')}
+                  onChange={setDepotId}
                   options={warehouses.map((w) => ({ value: w.id, label: `${w.code} — ${w.name}` }))}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   type="date"
                   label="Date de Livraison Souhaitée"
                   value={deliveryExpectedDate}
-                  onChange={(e) => setDeliveryExpectedDate(e.target.value)}
+                  onChange={setDeliveryExpectedDate}
                 />
                 <LabelInput
                   label="Observations / Mention Bon de Pesée"
                   placeholder="Ex: Livraison par semi-remorque citerne..."
                   value={poNotes}
-                  onChange={(e) => setPoNotes(e.target.value)}
+                  onChange={setPoNotes}
                 />
               </div>
               <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
@@ -914,8 +914,7 @@ export const TradingPurchasesView: React.FC = () => {
                       <LabelSelect
                         label="Article"
                         value={it.productId}
-                        onChange={(val) => {
-                          const prodId = typeof val === 'string' ? val : val?.target?.value || '';
+                        onChange={(prodId) => {
                           const prod = products.find((p) => p.id === prodId);
                           if (!prod) return;
                           setPoItems([
@@ -944,8 +943,8 @@ export const TradingPurchasesView: React.FC = () => {
                         min={1}
                         label="Quantité"
                         value={it.orderedQty}
-                        onChange={(e) => {
-                          const q = parseFloat(e.target.value) || 0;
+                        onChange={(val) => {
+                          const q = parseFloat(val) || 0;
                           setPoItems([{ ...it, orderedQty: q, totalHt: q * it.unitCostHt }]);
                         }}
                       />

@@ -25,6 +25,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -1041,28 +1042,25 @@ export const VenueRentersView: React.FC = () => {
                 value={idDocNumber}
                 onChange={(v) => setIdDocNumber(extractStr(v))}
               />
-              <div>
-                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
-                  {isAr
+              <LabelTextarea
+                label={
+                  isAr
                     ? 'ملاحظات وتفضيلات الحجز'
                     : isFr
                     ? 'Remarques & Préférences'
-                    : 'Notes & Preferences'}
-                </label>
-                <textarea
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={
-                    isAr
-                      ? 'متطلبات تقنية، سجل المدفوعات...'
-                      : isFr
-                      ? 'Exigences techniques, historique...'
-                      : 'Technical needs, catering...'
-                  }
-                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
-                />
-              </div>
+                    : 'Notes & Preferences'
+                }
+                rows={3}
+                value={notes}
+                onChange={setNotes}
+                placeholder={
+                  isAr
+                    ? 'متطلبات تقنية، سجل المدفوعات...'
+                    : isFr
+                    ? 'Exigences techniques, historique...'
+                    : 'Technical needs, catering...'
+                }
+              />
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"

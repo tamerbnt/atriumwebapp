@@ -887,7 +887,7 @@ export const TradingFinanceView: React.FC = () => {
               <LabelSelect
                 label="Mode de Règlement Encaissé *"
                 value={settleMethod}
-                onChange={(val) => setSettleMethod(typeof val === 'string' ? val : val?.target?.value || '')}
+                onChange={setSettleMethod}
                 options={[
                   { value: 'Virement bancaire', label: 'Virement bancaire' },
                   { value: 'Chèque barré', label: 'Chèque barré' },
@@ -900,13 +900,13 @@ export const TradingFinanceView: React.FC = () => {
                 label="N° Chèque / Référence Virement"
                 placeholder="Ex: CHQ-0091823"
                 value={settleRef}
-                onChange={(e) => setSettleRef(e.target.value)}
+                onChange={setSettleRef}
               />
               <LabelInput
                 type="date"
                 label="Date d'Encaissement *"
                 value={settleDate}
-                onChange={(e) => setSettleDate(e.target.value)}
+                onChange={setSettleDate}
                 required
               />
               <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">

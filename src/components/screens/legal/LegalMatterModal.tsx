@@ -186,14 +186,14 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             <LabelInput
               label={isAr ? 'عنوان القضية (فرنسية)' : 'Intitulé du Dossier (Français)'}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={setTitle}
               placeholder="ex: Recouvrement créance SARL Atlas c/ BTP"
               required
             />
             <LabelInput
               label={isAr ? 'عنوان القضية (عربية - إلزامي للمحكمة)' : 'Intitulé en Arabe (Tribunal)'}
               value={titleAr}
-              onChange={(e) => setTitleAr(e.target.value)}
+              onChange={setTitleAr}
               placeholder="مثال: تحصيل دين تجاري ضد ش.ذ.أ"
               className="text-right"
             />
@@ -216,7 +216,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
               label={isAr ? 'المبلغ المبدئي للأتعاب (دج)' : "Convention d'Honoraires (DZD)"}
               type="number"
               value={retainer}
-              onChange={(e) => setRetainer(e.target.value)}
+              onChange={setRetainer}
               required
             />
           </div>
@@ -230,14 +230,14 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
               <LabelInput
                 label={isAr ? 'اسم الموكل (فرنسية)' : 'Nom du Client (Français)'}
                 value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
+                onChange={setClientName}
                 placeholder="ex: SARL Atlas"
                 required
               />
               <LabelInput
                 label={isAr ? 'اسم الموكل (عربية)' : 'Nom du Client (Arabe)'}
                 value={clientNameAr}
-                onChange={(e) => setClientNameAr(e.target.value)}
+                onChange={setClientNameAr}
                 placeholder="مثال: شركة أطلس ذ.م.م"
                 className="text-right"
               />
@@ -246,13 +246,13 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
               <LabelInput
                 label={isAr ? 'الهاتف' : 'Téléphone'}
                 value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value)}
+                onChange={setClientPhone}
                 placeholder="0555 00 00 00"
               />
               <LabelInput
                 label={isAr ? 'الرقم التعريفي الوطني (NIN/NIF)' : 'Identifiant National (NIN 18 / NIF 15)'}
                 value={clientNinOrNif}
-                onChange={(e) => setClientNinOrNif(e.target.value)}
+                onChange={setClientNinOrNif}
                 placeholder="197516010045678912"
               />
             </div>
@@ -262,13 +262,13 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             <LabelInput
               label={isAr ? 'الطرف الخصم' : 'Partie Adverse'}
               value={adverseParty}
-              onChange={(e) => setAdverseParty(e.target.value)}
+              onChange={setAdverseParty}
               placeholder="ex: SPA BTP Méditerranée"
             />
             <LabelInput
               label={isAr ? 'المحكمة المختصة' : 'Juridiction / Tribunal'}
               value={jurisdiction}
-              onChange={(e) => setJurisdiction(e.target.value)}
+              onChange={setJurisdiction}
             />
           </div>
 
@@ -276,20 +276,20 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             <LabelInput
               label={isAr ? 'الغرفة أو القسم' : 'Chambre / Section'}
               value={chamber}
-              onChange={(e) => setChamber(e.target.value)}
+              onChange={setChamber}
             />
             <LabelInput
               type="date"
               label={isAr ? 'تاريخ الجلسة القادمة' : 'Prochaine Audience'}
               value={hearingDate}
-              onChange={(e) => setHearingDate(e.target.value)}
+              onChange={setHearingDate}
             />
           </div>
 
           <LabelInput
             label={isAr ? 'ملاحظات وتوجيهات الاستراتيجية القانونية' : 'Notes & Stratégie Juridique'}
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={setNotes}
             placeholder="Éléments clés, pièces manquantes..."
           />
 

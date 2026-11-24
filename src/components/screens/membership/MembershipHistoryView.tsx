@@ -920,7 +920,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
               field="RefundReason"
               label={language === 'ar' ? 'سبب الاسترجاع *' : language === 'fr' ? 'Motif *' : 'Reason *'}
               value={refundReason}
-              onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
+              onChange={(val) => setRefundReason(val)}
               options={[
                 'Customer return / exchange',
                 'Wrong item rung up by cashier',
@@ -929,7 +929,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
                 'Pricing / discount adjustment',
               ]}
               width="100%"
-              height={46}
+              height={40}
               corner={12}
             />
             <div className="flex items-center justify-end gap-3 pt-2">

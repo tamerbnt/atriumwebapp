@@ -3,6 +3,7 @@ import { X, FileText, CheckCircle, Calculator, ShieldCheck } from 'lucide-react'
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { RealEstateProperty, RealEstateMandate, MandateType } from '../../../types';
 import { calculateMandateCommission } from '../../../utils/realEstateRules';
 import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
@@ -17,8 +18,6 @@ interface MandateModalProps {
 }
 
 
-
-const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
 
 export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
 	const businessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
@@ -66,8 +65,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	start.setMonth(start.getMonth() + Number(durationMonths));
 	const endDate = start.toISOString().split("T")[0];
 	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode as any, commissionRatePercent, 0, configuredTvaRate);
-	const handlePropertyChange = (rawVal: any) => {
-		const newPropId = extractStr(rawVal);
+	const handlePropertyChange = (newPropId: string) => {
 		setPropertyId(newPropId);
 		const chosen = properties.find((p: any) => p.id === newPropId);
 		if (chosen) {
@@ -138,12 +136,12 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<LabelSelect label="Bien Immobilier Rattaché" value={propertyId} onChange={(val) => handlePropertyChange(val)} options={properties.map((p: any) => ({
+<LabelSelect label="Bien Immobilier Rattaché" value={propertyId} onChange={handlePropertyChange} options={properties.map((p: any) => ({
 								value: p.id,
 								label: `${p.title} (${p.cityWilaya})`
 							}))} />
 <LabelSelect label="Nature du Mandat" value={mandateType} onChange={(val) => {
-								const nextType = extractStr(val) as MandateType;
+								const nextType = val as MandateType;
 								setMandateType(nextType);
 								setIsExclusive(nextType.includes("Exclusif"));
 							}} options={[
@@ -175,19 +173,19 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <span>Identité Légale du Mandant (Propriétaire)</span>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelInput label="Nom & Prénom" value={ownerFullName} onChange={(e) => setOwnerFullName(e.target.value)} required />
-<LabelInput label="N° Téléphone" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} required />
-<LabelInput label="N° CNI / Passeport (18 Chiffres)" value={ownerNationalId} onChange={(e) => setOwnerNationalId(e.target.value)} required />
+<LabelInput label="Nom & Prénom" value={ownerFullName} onChange={setOwnerFullName} required />
+<LabelInput label="N° Téléphone" value={ownerPhone} onChange={setOwnerPhone} required />
+<LabelInput label="N° CNI / Passeport (18 Chiffres)" value={ownerNationalId} onChange={setOwnerNationalId} required />
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-<LabelInput type="date" label="Date de Délivrance CNI" value={ownerIdIssueDate} onChange={(e) => setOwnerIdIssueDate(e.target.value)} />
-<LabelInput label="Daïra / Commune Émettrice" value={ownerIdIssueDaira} onChange={(e) => setOwnerIdIssueDaira(e.target.value)} />
+<LabelInput type="date" label="Date de Délivrance CNI" value={ownerIdIssueDate} onChange={setOwnerIdIssueDate} />
+<LabelInput label="Daïra / Commune Émettrice" value={ownerIdIssueDaira} onChange={setOwnerIdIssueDaira} />
 </div>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-<LabelInput type="number" label="Prix Demandé Mandant (DZD)" value={askingPriceDzd} onChange={(e) => setAskingPriceDzd(Number(e.target.value))} required />
-<LabelInput type="number" label="Prix Seuil Minimal Acceptable (DZD)" value={minimumAcceptablePriceDzd} onChange={(e) => setMinimumAcceptablePriceDzd(Number(e.target.value))} />
-<LabelSelect label="Mode Calcul Commission" value={commissionMode} onChange={(val) => setCommissionMode(extractStr(val) as 'DecreeTranches' | 'FlatPercent' | 'FixedAmount')} options={[
+<LabelInput type="number" label="Prix Demandé Mandant (DZD)" value={askingPriceDzd} onChange={(v) => setAskingPriceDzd(Number(v))} required />
+<LabelInput type="number" label="Prix Seuil Minimal Acceptable (DZD)" value={minimumAcceptablePriceDzd} onChange={(v) => setMinimumAcceptablePriceDzd(Number(v))} />
+<LabelSelect label="Mode Calcul Commission" value={commissionMode} onChange={(val) => setCommissionMode(val as 'DecreeTranches' | 'FlatPercent' | 'FixedAmount')} options={[
 									{
 										value: "DecreeTranches",
 										label: "Barème Décret 09-18 (3% / 2% / 1%)"
@@ -203,8 +201,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								]} />
 </div>
 {commissionMode === "FlatPercent" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<LabelInput type="number" step="0.1" label="Taux de Commission (%)" value={commissionRatePercent} onChange={(e) => setCommissionRatePercent(Number(e.target.value))} />
-<LabelSelect label="Charge de la Commission" value={commissionPayer} onChange={(val) => setCommissionPayer(extractStr(val) as 'Seller' | 'Buyer' | 'Split50_50')} options={[
+<LabelInput type="number" step="0.1" label="Taux de Commission (%)" value={commissionRatePercent} onChange={(v) => setCommissionRatePercent(Number(v))} />
+<LabelSelect label="Charge de la Commission" value={commissionPayer} onChange={(val) => setCommissionPayer(val as 'Seller' | 'Buyer' | 'Split50_50')} options={[
 								{
 									value: "Split50_50",
 									label: "Partage 50% Vendeur / 50% Acquéreur"
@@ -249,8 +247,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-<LabelInput type="date" label="Date d'Effet du Mandat" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-<LabelSelect label="Durée du Mandat" value={durationMonths.toString()} onChange={(val) => setDurationMonths(Number(extractStr(val)))} options={[
+<LabelInput type="date" label="Date d'Effet du Mandat" value={startDate} onChange={setStartDate} required />
+<LabelSelect label="Durée du Mandat" value={durationMonths.toString()} onChange={(val) => setDurationMonths(Number(val))} options={[
 									{
 										value: "3",
 										label: "3 Mois (Standard Légal Vente)"
@@ -264,14 +262,12 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 										label: "12 Mois (Gestion Locative)"
 									}
 								]} />
-<div className="flex items-center gap-3 pt-5">
-<label className="flex items-center gap-2 cursor-pointer t-label font-medium">
-<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
-<span>Mandat d'Exclusivité Accordé</span>
-</label>
+<div className="flex items-center justify-between gap-3 px-3 py-2 rounded-[var(--r-ctl,12px)] bg-[#F5F1EC] dark:bg-[#292624]">
+<span className="t-small font-medium text-black dark:text-white">Mandat d'Exclusivité Accordé</span>
+<LiveSwitch checked={isExclusive} onCheckedChange={setIsExclusive} aria-label="Mandat d'Exclusivité Accordé" />
 </div>
 </div>
-<LabelInput label="Conditions Particulières / Observations (Optionnel)" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Clés remises à l'agence, visites le samedi après-midi uniquement..." />
+<LabelInput label="Conditions Particulières / Observations (Optionnel)" value={notes} onChange={setNotes} placeholder="Ex: Clés remises à l'agence, visites le samedi après-midi uniquement..." />
 <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Enregistrer au Registre Officiel</AtriumButton>

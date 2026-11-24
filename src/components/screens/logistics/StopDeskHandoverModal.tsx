@@ -103,22 +103,25 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 {shipment.destinationWilaya}
 </div>
 </div>
-<div className="space-y-2">
-<label className="block t-small font-semibold text-black dark:text-white">{isAr ? "رمز التحقق السري (SMS OTP)" : "Code de Retrait OTP (4 Chiffres)"}</label>
-<div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="none" className={`w-full bg-[#F5F1EC] dark:bg-[#2B2825] transition-shadow ${otpError ? "ring-2 ring-red-500/60" : "focus-within:ring-2 focus-within:ring-[#d4522f]/30"}`}>
-<input type="text" maxLength={6} value={enteredOtp} onChange={(e) => {
-											setEnteredOtp(e.target.value);
+<div className="flex items-center gap-3">
+<div className="flex-1 min-w-0">
+<LabelInput
+label={isAr ? "رمز التحقق السري (SMS OTP)" : "Code de Retrait OTP (4 Chiffres)"}
+value={enteredOtp}
+onChange={(v) => {
+											setEnteredOtp(v.slice(0, 6));
 											setOtpError(false);
-										}} placeholder="Ex: 7492" className={`lbi-field w-full bg-transparent border-0 px-4 py-2 text-center tabular-nums t-pod font-semibold ${otpError ? "text-red-600" : ""}`} required />
+										}}
+placeholder="Ex: 7492"
+error={otpError ? (isAr ? "الرمز غير صحيح" : "Code OTP incorrect") : undefined}
+required
+/>
 </div>
 <span className="t-cap text-black/55 dark:text-white/55 tabular-nums shrink-0">
 {"(Test: "}
 {expectedOtp}
 )
 </span>
-</div>
-{otpError && /* @__PURE__ */ <span className="t-cap text-red-600 block">{isAr ? "الرمز غير صحيح" : "Code OTP incorrect"}</span>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <LabelSelect label={isAr ? "نوع وثيقة الهوية" : "Pièce d'Identité"} value={idType} onChange={(val) => setIdType(val)} options={[
@@ -135,7 +138,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 										label: isAr ? "جواز السفر" : "Passeport"
 									}
 								]} />
-<LabelInput label={isAr ? "رقم الوثيقة الثبوتية" : "Numéro de la Pièce"} value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="Ex: 1192837401" required />
+<LabelInput label={isAr ? "رقم الوثيقة الثبوتية" : "Numéro de la Pièce"} value={idNumber} onChange={setIdNumber} placeholder="Ex: 1192837401" required />
 </div>
 <div data-sq="card" data-sq-border="none" data-surface="dark" className="p-4 bg-[#191716] text-white space-y-2">
 <div className="flex justify-between t-cap text-white/80">

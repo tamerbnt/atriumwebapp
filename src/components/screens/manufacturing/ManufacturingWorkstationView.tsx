@@ -26,6 +26,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { LiveSelect } from '../../ui/live/LiveSelect';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -290,30 +291,28 @@ export const ManufacturingWorkstationView: React.FC = () => {
         icon={<Wrench size={22} />}
         title={isAr ? 'المحطة 03' : isEn ? 'Station 03' : 'Poste 03'}
         secondaryActions={
-          <div data-sq="ctl" data-sq-border="none" className="min-w-[230px] h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
-            <select
-              value={selectedOrderId}
-              onChange={(e) => {
-                setSelectedOrderId(e.target.value);
-                setElapsedSeconds(0);
-                setIsRunning(false);
-              }}
-              aria-label={
-                isAr
-                  ? 'اختيار أمر التصنيع'
-                  : isEn
-                  ? 'Select Manufacturing Order'
-                  : 'Sélectionner Ordre de Fabrication'
-              }
-              className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold text-black dark:text-white cursor-pointer outline-none"
-            >
-              {orders.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.orderNumber} - {o.productName} ({o.actualQuantityProduced || o.quantityProduced || 0}/{o.targetQuantity})
-                </option>
-              ))}
-            </select>
-          </div>
+          <LiveSelect
+            size="md"
+            tone="soft"
+            className="min-w-[230px]"
+            value={selectedOrderId}
+            onValueChange={(val) => {
+              setSelectedOrderId(val);
+              setElapsedSeconds(0);
+              setIsRunning(false);
+            }}
+            aria-label={
+              isAr
+                ? 'اختيار أمر التصنيع'
+                : isEn
+                ? 'Select Manufacturing Order'
+                : 'Sélectionner Ordre de Fabrication'
+            }
+            options={orders.map((o) => ({
+              value: o.id,
+              label: `${o.orderNumber} - ${o.productName} (${o.actualQuantityProduced || o.quantityProduced || 0}/${o.targetQuantity})`,
+            }))}
+          />
         }
         primaryAction={{
           label: andonActive

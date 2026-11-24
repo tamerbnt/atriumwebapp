@@ -29,6 +29,7 @@ import {
 import { LabelInput } from '../../ui/LabelInput';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSelect } from '../../ui/live/LiveSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -1119,18 +1120,17 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <select
+                      <LiveSelect
                         value={selectedMission?.id || ''}
-                        onChange={(e) => setSelectedMissionId(e.target.value)}
+                        onValueChange={setSelectedMissionId}
                         aria-label={isAr ? 'اختيار المهمة' : 'Sélectionner la mission'}
-                        className="h-9 px-3 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] t-small font-semibold text-black dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
-                      >
-                        {pmMissions.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.code} · {m.title} ({m.wilayaName})
-                          </option>
-                        ))}
-                      </select>
+                        size="md"
+                        tone="soft"
+                        options={pmMissions.map((m) => ({
+                          value: m.id,
+                          label: `${m.code} · ${m.title} (${m.wilayaName})`,
+                        }))}
+                      />
                     </div>
                     <div className="t-cap text-black/55 dark:text-white/55">
                       {selectedMission?.venueName} · {selectedMission?.startDate} (
@@ -1444,7 +1444,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   value={expenseTitle}
                   onChange={setExpenseTitle}
                   required
-                  height={44}
+                  height={40}
                   corner={12}
                 />
                 <LabelInput
@@ -1454,15 +1454,13 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   value={expenseAmount}
                   onChange={setExpenseAmount}
                   required
-                  height={44}
+                  height={40}
                   corner={12}
                 />
                 <FilterSelect
                   label={isAr ? 'فئة المصاريف' : isEn ? 'Category' : 'Catégorie de Frais'}
                   value={expenseCategory}
-                  onChange={(val) =>
-                    setExpenseCategory(typeof val === 'string' ? val : val.target?.value || String(val))
-                  }
+                  onChange={setExpenseCategory}
                   options={[
                     {
                       value: 'materials',

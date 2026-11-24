@@ -1393,13 +1393,13 @@ export const LegalTrustView: React.FC<any> = () => {
                           label={isAr ? 'رقم المجلد *' : 'Volume *'}
                           placeholder="Vol. 418"
                           value={cadastralVolume}
-                          onChange={(e) => setCadastralVolume(e.target.value)}
+                          onChange={setCadastralVolume}
                         />
                         <LabelInput
                           label={isAr ? 'رقم الشهر *' : 'Numéro *'}
                           placeholder="N° 22"
                           value={cadastralNumber}
-                          onChange={(e) => setCadastralNumber(e.target.value)}
+                          onChange={setCadastralNumber}
                         />
                       </div>
                       <InspectorWideButton
@@ -1426,7 +1426,7 @@ export const LegalTrustView: React.FC<any> = () => {
                       type="password"
                       placeholder="••••"
                       value={notaryPin}
-                      onChange={(e) => setNotaryPin(e.target.value)}
+                      onChange={setNotaryPin}
                     />
                     <LabelInput
                       label={
@@ -1437,7 +1437,7 @@ export const LegalTrustView: React.FC<any> = () => {
                       type="number"
                       placeholder={esc.currentBalanceDzd.toString()}
                       value={releaseAmount || ''}
-                      onChange={(e) => setReleaseAmount(Number(e.target.value))}
+                      onChange={(v) => setReleaseAmount(Number(v))}
                     />
                     <InspectorWideButton
                       label={isAr ? 'فك القفل المزدوج وإصدار أمر التحويل' : 'Débloquer & Émettre Virement'}
@@ -1881,14 +1881,14 @@ export const LegalTrustView: React.FC<any> = () => {
                   label={isAr ? 'مرجع الوثيقة' : 'Réf Pièce Justificative'}
                   placeholder="FAC-2026-092"
                   value={scfRefPiece}
-                  onChange={(e) => setScfRefPiece(e.target.value)}
+                  onChange={setScfRefPiece}
                 />
               </div>
               <LabelInput
                 label={isAr ? 'البيان المحاسبي *' : "Libellé de l'écriture *"}
                 placeholder="Ex: Facturation honoraires audit légal"
                 value={scfLibelle}
-                onChange={(e) => setScfLibelle(e.target.value)}
+                onChange={setScfLibelle}
                 required
               />
               <div className="grid grid-cols-2 gap-3">
@@ -1896,7 +1896,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   label={isAr ? 'المبلغ الصافي الخاضع (HT) *' : 'Montant HT (Prestation) *'}
                   type="number"
                   value={scfDebitAmount}
-                  onChange={(e) => setScfDebitAmount(Number(e.target.value))}
+                  onChange={(v) => setScfDebitAmount(Number(v))}
                   required
                 />
                 <LabelSelect
@@ -2358,20 +2358,20 @@ export const LegalTrustView: React.FC<any> = () => {
                 label={isAr ? 'اسم الموكل / الدافع *' : 'Nom du Client / Payeur *'}
                 placeholder="Ex: Hadj Amine Mansouri"
                 value={receiptClientName}
-                onChange={(e) => setReceiptClientName(e.target.value)}
+                onChange={setReceiptClientName}
                 required
               />
               <LabelInput
                 label={isAr ? 'موضوع الدفعة / القضية' : 'Objet du Versement'}
                 placeholder="Ex: Provision sur honoraires dossier 26/01482"
                 value={receiptMatterTitle}
-                onChange={(e) => setReceiptMatterTitle(e.target.value)}
+                onChange={setReceiptMatterTitle}
               />
               <LabelInput
                 label={isAr ? 'المبلغ الصافي الخاضع (HT) بالدينار *' : 'Montant HT (DZD) *'}
                 type="number"
                 value={receiptAmountHt}
-                onChange={(e) => setReceiptAmountHt(Number(e.target.value))}
+                onChange={(v) => setReceiptAmountHt(Number(v))}
                 required
               />
               {(() => {

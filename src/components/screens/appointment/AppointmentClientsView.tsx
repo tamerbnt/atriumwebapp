@@ -885,17 +885,17 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                           onChange={setNewFormulaText}
                           placeholder="Ex: Base 6.1 (40g) + Oxy 20vol"
                           width="100%"
-                          height={42}
+                          height={40}
                           corner={12}
                         />
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <LabelSelect
                             field="Stylist"
                             label="Styliste"
                             value={newFormulaStylist}
-                            onChange={(val) => setNewFormulaStylist(typeof val === 'string' ? val : String(val))}
+                            onChange={setNewFormulaStylist}
                             options={salonStylists.map((s) => ({ value: s.fullName, label: s.fullName }))}
-                            height={42}
+                            height={40}
                             corner={12}
                           />
                           <LabelInput
@@ -905,7 +905,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                             onChange={setNewFormulaNotes}
                             placeholder="Pose: 35 min"
                             width="100%"
-                            height={42}
+                            height={40}
                             corner={12}
                           />
                         </div>

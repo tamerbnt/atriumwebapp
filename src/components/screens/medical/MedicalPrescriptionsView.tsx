@@ -1505,7 +1505,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     <LiveSwitch
                       checked={overrideConfirmed}
                       onCheckedChange={setOverrideConfirmed}
-                      ariaLabel="Confirmation médecin"
+                      aria-label="Confirmation médecin"
                     />
                   </div>
                 </div>

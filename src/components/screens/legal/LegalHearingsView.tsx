@@ -1335,49 +1335,49 @@ export const LegalHearingsView: React.FC<any> = () => {
               }))}
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'تاريخ الجلسة' : "Date d'Audience"}
                 type="date"
                 value={formHearingDate}
-                onChange={(e) => setFormHearingDate(e.target.value)}
+                onChange={setFormHearingDate}
                 required
               />
               <LabelInput
                 label={isAr ? 'ساعة النداء' : "Heure d'Appel"}
                 type="time"
                 value={formHearingTime}
-                onChange={(e) => setFormHearingTime(e.target.value)}
+                onChange={setFormHearingTime}
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'المحكمة / المجلس' : 'Juridiction / Tribunal'}
                 value={formCourtName}
-                onChange={(e) => setFormCourtName(e.target.value)}
+                onChange={setFormCourtName}
                 required
               />
               <LabelInput
                 label={isAr ? 'قاعة الجلسة' : "Salle d'Audience"}
                 value={formCourtRoom}
-                onChange={(e) => setFormCourtRoom(e.target.value)}
+                onChange={setFormCourtRoom}
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'الغرفة المختصة' : 'Chambre / Section'}
                 value={formChamber}
-                onChange={(e) => setFormChamber(e.target.value)}
+                onChange={setFormChamber}
                 required
               />
               <LabelInput
                 label={isAr ? 'القاضي رئيس الجلسة' : 'Président du Siège'}
                 value={formBenchJudge}
-                onChange={(e) => setFormBenchJudge(e.target.value)}
+                onChange={setFormBenchJudge}
                 required
               />
             </div>
@@ -1385,7 +1385,7 @@ export const LegalHearingsView: React.FC<any> = () => {
             <LabelInput
               label={isAr ? 'الهدف الإجرائي من الجلسة' : 'Démarche & Objet (Plaidoirie, RPP, etc.)'}
               value={formPurpose}
-              onChange={(e) => setFormPurpose(e.target.value)}
+              onChange={setFormPurpose}
               required
             />
 

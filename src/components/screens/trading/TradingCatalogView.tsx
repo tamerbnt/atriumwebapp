@@ -963,20 +963,20 @@ export const TradingCatalogView: React.FC = () => {
                 label="Désignation Commerciale *"
                 placeholder="Ex: Ciment Portland CPJ-42.5"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={setName}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   label="Référence / SKU"
                   placeholder="Ex: MAT-CIM-50"
                   value={sku}
-                  onChange={(e) => setSku(e.target.value)}
+                  onChange={setSku}
                 />
                 <LabelSelect
                   label="Unité de Mesure"
                   value={unit}
-                  onChange={(val) => setUnit(typeof val === 'string' ? val : val?.target?.value || 'u')}
+                  onChange={setUnit}
                   options={[
                     { value: 'u', label: 'u (Unité)' },
                     { value: 'pcs', label: 'pcs (Pièces)' },
@@ -991,13 +991,13 @@ export const TradingCatalogView: React.FC = () => {
                   ]}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <LabelInput
                   type="number"
                   label="Prix Vente HT (DA) *"
                   value={priceAmount}
                   step={10}
-                  onChange={(e) => setPriceAmount(parseFloat(e.target.value) || 0)}
+                  onChange={(val) => setPriceAmount(parseFloat(val) || 0)}
                   required
                 />
                 <LabelInput
@@ -1005,12 +1005,12 @@ export const TradingCatalogView: React.FC = () => {
                   label="Coût d'Achat HT"
                   value={costAmount}
                   step={10}
-                  onChange={(e) => setCostAmount(parseFloat(e.target.value) || 0)}
+                  onChange={(val) => setCostAmount(parseFloat(val) || 0)}
                 />
                 <LabelSelect
                   label="Taux TVA"
                   value={taxRate}
-                  onChange={(val) => setTaxRate(Number(typeof val === 'object' && val?.target ? val.target.value : val))}
+                  onChange={(val) => setTaxRate(Number(val))}
                   options={[
                     { value: 19, label: '19% (Standard)' },
                     { value: 9, label: '9% (Réduit)' },
