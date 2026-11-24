@@ -4,6 +4,7 @@ import { StaffMember } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface SalaryAdvanceModalProps {
   isOpen: boolean;
@@ -34,8 +35,6 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'ccp' | 'bank_transfer'>('cash');
   const [reason, setReason] = useState<string>('');
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const staff = staffList.find((s) => s.id === selectedStaffId);
@@ -56,13 +55,12 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
   const selectedStaff = staffList.find((s) => s.id === selectedStaffId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="sq-elev-pop max-w-lg w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative [--sq-stroke:var(--sq-stroke-pop)]"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-lg" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative [--sq-stroke:var(--sq-stroke-pop)]"
+      >
           <div className="flex items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0">
               <div
@@ -194,8 +192,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               </AtriumButton>
             </div>
           </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

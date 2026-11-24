@@ -361,21 +361,17 @@ export const AutoGarageDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isOrderModalOpen && (
-        <AutoOrderModal
-          isOpen={isOrderModalOpen}
-          vehicles={vehicles}
-          onClose={() => setIsOrderModalOpen(false)}
-          onSave={addOrder}
-        />
-      )}
-      {isVehicleModalOpen && (
-        <AutoVehicleModal
-          isOpen={isVehicleModalOpen}
-          onClose={() => setIsVehicleModalOpen(false)}
-          onSave={addVehicle}
-        />
-      )}
+      <AutoOrderModal
+        isOpen={isOrderModalOpen}
+        vehicles={vehicles}
+        onClose={() => setIsOrderModalOpen(false)}
+        onSave={addOrder}
+      />
+      <AutoVehicleModal
+        isOpen={isVehicleModalOpen}
+        onClose={() => setIsVehicleModalOpen(false)}
+        onSave={addVehicle}
+      />
     </DashboardBentoFrame>
   );
 };

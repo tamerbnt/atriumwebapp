@@ -25,6 +25,7 @@ import {
   extractInitials,
   computeInitialsColor,
 } from '../../ui/kinetic';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface StaffAttendanceSubViewProps {
   staffList: StaffMember[];
@@ -654,14 +655,17 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         }}
       />
 
-      {isManualModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-[#1F1D1B]/45 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col gap-[var(--modal-gap,20px)]"
-            >
+      <KineticModalShell
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[9990]"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col gap-[var(--modal-gap,20px)]"
+        >
               <h4 className="t-dialog text-[var(--text-1)] dark:text-white">
                 {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
               </h4>
@@ -759,10 +763,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   <AtriumButton type="submit">{isAr ? 'حفظ' : isEn ? 'Save' : 'Valider'}</AtriumButton>
                 </div>
               </form>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

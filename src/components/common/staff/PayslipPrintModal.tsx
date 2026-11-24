@@ -3,6 +3,7 @@ import { X, Printer, Download, Building, ShieldCheck, CheckCircle2 } from 'lucid
 import { StaffPayrollSlipRecord } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { numberToAlgerianWordsFR } from '../../../utils/algerianPayroll';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface PayslipPrintModalProps {
   isOpen: boolean;
@@ -15,11 +16,11 @@ interface PayslipPrintModalProps {
 export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
   isOpen,
   onClose,
-  slip,
+  slip: rawSlip,
   businessName = 'ATRIUM FITNESS & WELLNESS CLUB',
   language,
 }) => {
-  if (!isOpen || !slip) return null;
+  const slip = useRetainedModalValue(isOpen ? rawSlip : null);
 
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -28,16 +29,22 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
     window.print();
   };
 
-  const amountInWords = numberToAlgerianWordsFR(slip.netAPayer);
+  const amountInWords = slip ? numberToAlgerianWordsFR(slip.netAPayer) : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="sq-elev-pop max-w-3xl w-full">
+    <KineticModalShell
+      isOpen={isOpen && Boolean(rawSlip)}
+      onClose={onClose}
+      maxWidthClass="max-w-3xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      {slip && (
         <div
           data-sq="panel"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'var(--sq-stroke-pop)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative"
+          className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative print:p-0 print:shadow-none"
         >
           {/* Header Toolbar (hidden on print) */}
           <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] print:hidden">
@@ -225,8 +232,8 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    </div>
+        </div>
+      )}
+    </KineticModalShell>
   );
 };

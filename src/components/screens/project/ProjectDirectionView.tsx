@@ -65,6 +65,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -83,6 +84,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 import {
   BulletChart,
@@ -925,6 +927,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       setRejectionReason('');
     }
   };
+
+  const retainedReceiptUrl = useRetainedModalValue(selectedReceiptUrl);
 
   if (showSkeleton && (pmProjects.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -2392,112 +2396,118 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         </ScreenPod>
       )}
 
-      {selectedReceiptUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  Justificatif Fiscal de Paiement
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="w-full h-72 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
+      <KineticModalShell
+        isOpen={Boolean(selectedReceiptUrl)}
+        onClose={() => setSelectedReceiptUrl(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedReceiptUrl && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                Justificatif Fiscal de Paiement
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptUrl(null)}
+                data-sq="ctl-sm"
+                className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
               >
-                <img
-                  src={selectedReceiptUrl}
-                  alt="Scan Justificatif"
-                  width={512}
-                  height={288}
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
-                >
-                  Fermer
-                </button>
-              </div>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {rejectionModalId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-md w-full">
             <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              data-sq="ctl"
+              data-sq-border="none"
+              className="w-full h-72 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="t-label font-semibold text-red-600 flex items-center gap-2">
-                  <Ban className="w-4 h-4" />
-                  Motif du Rejet de la Dépense
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setRejectionModalId(null)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="t-cap text-black/55 dark:text-white/55">
-                Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
-              </p>
-              <textarea
-                rows={3}
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
-                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/40 transition-shadow"
+              <img
+                src={retainedReceiptUrl}
+                alt="Scan Justificatif"
+                width={512}
+                height={288}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
               />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRejectionModalId(null)}
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRejectConfirm}
-                  data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
-                >
-                  Confirmer le Rejet
-                </button>
-              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptUrl(null)}
+                data-sq="ctl"
+                className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
+              >
+                Fermer
+              </button>
             </div>
           </div>
+        )}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(rejectionModalId)}
+        onClose={() => setRejectionModalId(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="t-label font-semibold text-red-600 flex items-center gap-2">
+              <Ban className="w-4 h-4" />
+              Motif du Rejet de la Dépense
+            </h3>
+            <button
+              type="button"
+              onClick={() => setRejectionModalId(null)}
+              data-sq="ctl-sm"
+              className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="t-cap text-black/55 dark:text-white/55">
+            Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
+          </p>
+          <textarea
+            rows={3}
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
+            className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/40 transition-shadow"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setRejectionModalId(null)}
+              className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={handleRejectConfirm}
+              data-sq="ctl"
+              className="px-4 py-2 t-small font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
+            >
+              Confirmer le Rejet
+            </button>
+          </div>
         </div>
-      )}
+      </KineticModalShell>
       </div>
     </ScreenFocusProvider>
   );

@@ -206,6 +206,12 @@ export function computeBulkBarMetrics(barX: number, barTarget: number): BulkBarM
   };
 }
 
+export const MODAL_SPRING_COEFFS = { k: 0.28, d: 0.5 } as const;
+export const KINETIC_MODAL_START_SCALE = 0.86;
+export const KINETIC_MODAL_SCALE_RANGE = 0.14;
+export const KINETIC_MODAL_CLOSE_X_THRESHOLD = 1.5;
+export const KINETIC_MODAL_SETTLE_EPSILON = 0.08;
+
 export interface ModalMetrics {
   p: number;
   opacity: number;
@@ -213,14 +219,15 @@ export interface ModalMetrics {
 }
 
 export function computeKineticModalMetrics(springX: number, reducedMotion: boolean): ModalMetrics {
+  const p = clamp(springX / 100, 0, 1.05);
+  const opacity = clamp(p * 1.6, 0, 1);
   if (reducedMotion) {
-    return { p: 1, opacity: 1, scale: 1 };
+    return { p, opacity, scale: 1 };
   }
-  const p = springX / 100;
   return {
     p,
-    opacity: clamp(p * 1.25, 0, 1),
-    scale: clamp(0.72 + 0.28 * p, 0.72, 1.06),
+    opacity,
+    scale: clamp(KINETIC_MODAL_START_SCALE + KINETIC_MODAL_SCALE_RANGE * p, KINETIC_MODAL_START_SCALE, 1.03),
   };
 }
 
@@ -240,18 +247,34 @@ export function computeKineticModalTransformOrigin(
   if (!triggerRect || !dialogRect || dialogRect.width <= 0 || dialogRect.height <= 0) {
     return 'center center';
   }
+  if (triggerRect.width <= 0 || triggerRect.height <= 0) {
+    return 'center center';
+  }
+  const triggerRight = triggerRect.left + triggerRect.width;
+  const triggerBottom = triggerRect.top + triggerRect.height;
+  if (
+    triggerBottom <= 0 ||
+    triggerRect.top >= viewportHeight ||
+    triggerRight <= 0 ||
+    triggerRect.left >= viewportWidth
+  ) {
+    return 'center center';
+  }
+
   const triggerCenterX = triggerRect.left + triggerRect.width / 2;
   const triggerCenterY = triggerRect.top + triggerRect.height / 2;
-  const dialogLeft =
-    dialogRect.left || Math.max(0, (viewportWidth - dialogRect.width) / 2);
-  const dialogTop =
-    dialogRect.top || Math.max(0, (viewportHeight - dialogRect.height) / 2);
+  const dialogLeft = Number.isFinite(dialogRect.left)
+    ? dialogRect.left
+    : Math.max(0, (viewportWidth - dialogRect.width) / 2);
+  const dialogTop = Number.isFinite(dialogRect.top)
+    ? dialogRect.top
+    : Math.max(0, (viewportHeight - dialogRect.height) / 2);
 
   return `${Math.round(triggerCenterX - dialogLeft)}px ${Math.round(triggerCenterY - dialogTop)}px`;
 }
 
 export function shouldFinishModalClosing(springX: number, springTarget: number): boolean {
-  return springTarget === 0 && springX <= 0.5;
+  return springTarget === 0 && springX <= KINETIC_MODAL_CLOSE_X_THRESHOLD;
 }
 
 export interface KineticSlotColumnInput {

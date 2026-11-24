@@ -16,6 +16,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface B2bEntityModalProps {
   isOpen: boolean;
@@ -164,11 +165,22 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="sq-elev-pop relative w-full max-w-3xl my-auto">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-3xl"
+      scrimClassName="bg-black/60"
+      ariaLabel={
+        isEdit
+          ? isSupplier
+            ? t('trading_entity_modal_edit_supplier')
+            : t('trading_entity_modal_edit_client')
+          : isSupplier
+          ? t('trading_entity_modal_new_supplier')
+          : t('trading_entity_modal_new_client')
+      }
+    >
       <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
@@ -455,7 +467,6 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

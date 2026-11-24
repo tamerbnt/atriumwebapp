@@ -16,12 +16,12 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { EmptyState } from '../../../atrium/components/EmptyState';
-import { KineticEmptyStateMotion } from '../../ui/kinetic';
+import { KineticEmptyStateMotion, KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface MedicalLabViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  patient: MedicalPatient;
+  patient?: MedicalPatient | null;
   labRecords: MedicalLabRecord[];
   practitioners: MedicalPractitioner[];
   onAddLabRecord: (record: MedicalLabRecord) => void;
@@ -29,8 +29,9 @@ interface MedicalLabViewerModalProps {
 
 
 
-export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ isOpen, onClose, patient, labRecords, practitioners, onAddLabRecord }) => {
-	const patientLabs = labRecords.filter((l: any) => l.patientId === patient.id);
+export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ isOpen, onClose, patient: rawPatient, labRecords, practitioners, onAddLabRecord }) => {
+	const patient = useRetainedModalValue(isOpen ? rawPatient : null);
+	const patientLabs = patient ? labRecords.filter((l: any) => l.patientId === patient.id) : [];
 	const [activeTab, setActiveTab] = React.useState("list");
 	const [testCategory, setTestCategory] = React.useState("Biochimie Sanguine");
 	const [doctorId, setDoctorId] = React.useState(practitioners[0]?.id || "");
@@ -39,9 +40,14 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 	const [hbA1cVal, setHbA1cVal] = React.useState("6.8");
 	const [crpVal, setCrpVal] = React.useState("4.2");
 	const [clinicalConclusion, setClinicalConclusion] = React.useState("Bilan biologique globalement satisfaisant.");
-	if (!isOpen) return null;
+	React.useEffect(() => {
+		if (!isOpen) return;
+		setActiveTab("list");
+		setDoctorId(practitioners[0]?.id || "");
+	}, [isOpen, rawPatient?.id]);
 	const handleCreateLab = (e: any) => {
 		e.preventDefault();
+		if (!patient) return;
 		const doc = practitioners.find((p: any) => p.id === doctorId);
 		const glyNum = parseFloat(glycemieVal) || 1;
 		const creatNum = parseFloat(creatinineVal) || 10;
@@ -98,9 +104,16 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 		});
 		setActiveTab("list");
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="sq-elev-pop w-full max-w-3xl">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[88vh] overflow-hidden">
+	return (
+		<KineticModalShell
+			isOpen={isOpen && Boolean(rawPatient)}
+			onClose={onClose}
+			maxWidthClass="max-w-3xl"
+			scrimClassName="bg-black/60"
+			ariaLabel="Dossier Biologique & Imagerie Médicale"
+		>
+			{patient && (
+				<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[88vh] overflow-hidden">
 <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Microscope size={20} /></div>
@@ -245,7 +258,8 @@ Rapport d'Imagerie (
 </div>
 </form>}
 </div>
-</div>
-</div>
-</div>;
+				</div>
+			)}
+		</KineticModalShell>
+	);
 };

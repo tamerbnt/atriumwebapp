@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Calendar,
   Clock,
@@ -50,6 +50,19 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
   const [bailiffName, setBailiffName] = useState('Maître Farouk Ziane');
   const [domicileCategory, setDomicileCategory] = useState<DomicileCategory>('local');
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setSelectedMatterId(matters[0]?.id || '');
+    setCaseNumber('26/01482');
+    setCourtJurisdiction("Tribunal de Sidi M'Hamed");
+    setChamber('Chambre Commerciale 2');
+    setRecourseType('appel_commercial');
+    setNotificationDate(new Date().toISOString().split('T')[0]);
+    setBailiffName('Maître Farouk Ziane');
+    setDomicileCategory('local');
+    setNotes('');
+  }, [isOpen]);
 
   // Live preview calculation
   const preview = React.useMemo(() => {

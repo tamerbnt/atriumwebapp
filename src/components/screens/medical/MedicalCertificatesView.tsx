@@ -33,6 +33,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -45,6 +46,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const getInitials2 = (name: string): string => {
@@ -465,6 +467,8 @@ export const MedicalCertificatesView: React.FC<any> = () => {
     [getCertTypeLabel, getCertBranchName, isAr, isFr]
   );
 
+  const retainedActivePrintCert = useRetainedModalValue(activePrintCert);
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: certificates.length > 0,
@@ -836,10 +840,14 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         )}
       />
 
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="sq-elev-pop w-full max-w-lg">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+      <KineticModalShell
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden max-h-[92vh]">
               <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#22201E]">
                 <div className="flex items-center gap-3">
                   <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
@@ -1013,21 +1021,25 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+      </KineticModalShell>
 
-      {activePrintCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="printable-document bg-white text-black w-full max-w-xl rounded-[var(--r-panel,28px)] border border-black/[0.14] shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
+      <KineticModalShell
+        isOpen={Boolean(activePrintCert)}
+        onClose={() => setActivePrintCert(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedActivePrintCert && (
+          <div className="printable-document bg-white text-black w-full rounded-[var(--r-panel,28px)] border border-black/[0.14] shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
             <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
               <div>
                 <h2 className="t-pod font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                  {activePrintCert.doctorName}
+                  {retainedActivePrintCert.doctorName}
                 </h2>
                 <p className="t-small font-semibold text-black">
-                  {activePrintCert.doctorSpecialty}
+                  {retainedActivePrintCert.doctorSpecialty}
                 </p>
                 <p className="t-cap text-black/55">
                   Polyclinique El-Chifa · 14 Rue Didouche Mourad, Alger
@@ -1041,54 +1053,54 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
             <div className="text-center my-6">
               <span className="t-label font-semibold px-4 py-2 border-2 border-black/80 rounded-[var(--r-ctl-sm,10px)] inline-block">
-                {getCertTypeLabel(activePrintCert.certificateType)}
+                {getCertTypeLabel(retainedActivePrintCert.certificateType)}
               </span>
             </div>
 
             <div className="space-y-4 t-cap leading-relaxed text-black">
               <p>
-                Je soussigné, <strong>{activePrintCert.doctorName}</strong>, certifie avoir examiné
+                Je soussigné, <strong>{retainedActivePrintCert.doctorName}</strong>, certifie avoir examiné
                 ce jour le/la nommé(e) :
               </p>
               <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-black/[0.12] space-y-1 tabular-nums">
                 <p>
-                  <strong>Nom &amp; Prénom :</strong> {activePrintCert.patientName}
+                  <strong>Nom &amp; Prénom :</strong> {retainedActivePrintCert.patientName}
                 </p>
-                {activePrintCert.patientDob && (
+                {retainedActivePrintCert.patientDob && (
                   <p>
-                    <strong>Date de naissance :</strong> {activePrintCert.patientDob}
+                    <strong>Date de naissance :</strong> {retainedActivePrintCert.patientDob}
                   </p>
                 )}
-                {activePrintCert.patientEmployer && (
+                {retainedActivePrintCert.patientEmployer && (
                   <p>
-                    <strong>Employeur :</strong> {activePrintCert.patientEmployer}
+                    <strong>Employeur :</strong> {retainedActivePrintCert.patientEmployer}
                   </p>
                 )}
               </div>
               <p>Et déclare que son état de santé justifie les constatations suivantes :</p>
               <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-black/[0.12] italic">
-                &ldquo;{activePrintCert.clinicalFindings}&rdquo;
+                &ldquo;{retainedActivePrintCert.clinicalFindings}&rdquo;
               </div>
 
-              {activePrintCert.certificateType === 'ArretDeTravail' && (
+              {retainedActivePrintCert.certificateType === 'ArretDeTravail' && (
                 <div className="p-3 rounded-[var(--r-ctl,12px)] bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold space-y-1">
                   <p>
                     En conséquence, je prescris un{' '}
-                    <strong>ARRÊT DE TRAVAIL DE {activePrintCert.durationDays} JOURS</strong>.
+                    <strong>ARRÊT DE TRAVAIL DE {retainedActivePrintCert.durationDays} JOURS</strong>.
                   </p>
                   <p className="t-cap font-normal">
-                    Période : Du {activePrintCert.startDate} au {activePrintCert.endDate} inclus.
+                    Période : Du {retainedActivePrintCert.startDate} au {retainedActivePrintCert.endDate} inclus.
                   </p>
                   <p className="t-cap tabular-nums text-emerald-700">
-                    Date de reprise effective du travail : {activePrintCert.resumptionDate}.
+                    Date de reprise effective du travail : {retainedActivePrintCert.resumptionDate}.
                   </p>
                 </div>
               )}
 
-              {activePrintCert.certificateType === 'CertificatDescriptifITT' && (
+              {retainedActivePrintCert.certificateType === 'CertificatDescriptifITT' && (
                 <div className="p-3 rounded-[var(--r-ctl,12px)] bg-amber-50 border border-amber-200 text-amber-900 font-semibold">
                   Incapacité Totale de Travail (ITT) fixée à :{' '}
-                  <strong>{activePrintCert.ittDays} jours</strong>, sous réserve de complications
+                  <strong>{retainedActivePrintCert.ittDays} jours</strong>, sous réserve de complications
                   ultérieures.
                 </div>
               )}
@@ -1104,17 +1116,17 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 <QrCode size={40} className="text-black" />
                 <div className="t-cap tabular-nums text-black/55">
                   <p className="font-semibold text-black/75">AUTHENTICITÉ VÉRIFIÉE</p>
-                  <p>{activePrintCert.qrHash}</p>
+                  <p>{retainedActivePrintCert.qrHash}</p>
                 </div>
               </div>
               <div className="text-center w-36">
                 <span className="t-cap text-black/55 block mb-1">Cachet &amp; Signature</span>
                 <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-[var(--r-ctl-sm,10px)] p-2 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
                   <span className="t-small font-semibold">
-                    {activePrintCert.doctorName}
+                    {retainedActivePrintCert.doctorName}
                   </span>
                   <span className="t-small font-semibold">
-                    {activePrintCert.doctorSpecialty}
+                    {retainedActivePrintCert.doctorSpecialty}
                   </span>
                 </div>
               </div>
@@ -1133,8 +1145,8 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               </AtriumButton>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

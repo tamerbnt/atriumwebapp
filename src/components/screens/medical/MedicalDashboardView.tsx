@@ -372,28 +372,22 @@ export const MedicalDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isPatientModalOpen && (
-        <MedicalPatientModal
-          isOpen={isPatientModalOpen}
-          onClose={() => setIsPatientModalOpen(false)}
-          onSave={addPatient}
-        />
-      )}
-      {isConsultationModalOpen && (
-        <MedicalConsultationModal
-          isOpen={isConsultationModalOpen}
-          onClose={() => setIsConsultationModalOpen(false)}
-          onSave={addConsultation}
-        />
-      )}
-      {isTvModalOpen && (
-        <MedicalWaitingRoomTvModal
-          isOpen={isTvModalOpen}
-          onClose={() => setIsTvModalOpen(false)}
-          consultations={consultations || []}
-          practitioners={practitioners || []}
-        />
-      )}
+      <MedicalPatientModal
+        isOpen={isPatientModalOpen}
+        onClose={() => setIsPatientModalOpen(false)}
+        onSave={addPatient}
+      />
+      <MedicalConsultationModal
+        isOpen={isConsultationModalOpen}
+        onClose={() => setIsConsultationModalOpen(false)}
+        onSave={addConsultation}
+      />
+      <MedicalWaitingRoomTvModal
+        isOpen={isTvModalOpen}
+        onClose={() => setIsTvModalOpen(false)}
+        consultations={consultations || []}
+        practitioners={practitioners || []}
+      />
     </DashboardBentoFrame>
   );
 };

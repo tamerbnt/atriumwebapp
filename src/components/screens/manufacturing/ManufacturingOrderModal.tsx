@@ -13,6 +13,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { validateStockAvailabilityForOf } from '../../../utils/manufacturingRules';
 import { useManufacturingData } from './manufacturingData';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface ManufacturingOrderModalProps {
   isOpen: boolean;
@@ -90,8 +91,6 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
     return validateStockAvailabilityForOf(selectedBom.components, parsedQty, materials);
   }, [selectedBom, parsedQty, materials]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBom) {
@@ -138,9 +137,18 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-xl"
+      scrimClassName="bg-black/60"
+      ariaLabel={
+        orderToEdit
+          ? isAr ? 'تعديل أمر التصنيع' : "Modifier l'Ordre de Fabrication"
+          : isAr ? 'أمر تصنيع جديد (OF)' : 'Nouvel Ordre de Fabrication (OF)'
+      }
+    >
+      <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-3">
               <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
@@ -251,8 +259,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

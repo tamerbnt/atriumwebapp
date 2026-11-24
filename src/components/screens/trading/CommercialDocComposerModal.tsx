@@ -35,6 +35,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney, calculateCommercialTotals } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface CommercialDocComposerModalProps {
   isOpen: boolean;
@@ -92,6 +93,43 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 			totalTtc: Math.round((products[0]?.price?.amount || 1e3) * 1.19)
 		}];
 	});
+	const retainedEditingDoc = useRetainedModalValue(isOpen ? editingDoc ?? null : null);
+	const isEditDisplay = !!(isOpen ? editingDoc : retainedEditingDoc);
+	React.useEffect(() => {
+		if (!isOpen) return;
+		setDocType(editingDoc?.type || initialType);
+		setClientId(editingDoc?.clientId || b2bClients[0]?.id || "");
+		setDepotId(editingDoc?.depotId || warehouses[0]?.id || "depot_01");
+		setDate(editingDoc?.date || (new Date()).toISOString().split("T")[0]);
+		setValidityDays(editingDoc?.validityDays || 30);
+		setDueDate(editingDoc?.dueDate || "");
+		setPaymentMethod(editingDoc?.paymentMethod || "Virement bancaire");
+		setPaymentTerms(editingDoc?.paymentTerms || "30 jours");
+		setShowAdvancedOptions((editingDoc?.generalDiscountPercent || 0) > 0 || (editingDoc?.guaranteeRetentionPercent || 0) > 0 || !!editingDoc?.notesTop || !!editingDoc?.notesBottom);
+		setGeneralDiscountPercent(editingDoc?.generalDiscountPercent || 0);
+		setGuaranteeRetentionPercent(editingDoc?.guaranteeRetentionPercent || 0);
+		setIsCashFiscalStampEnabled(editingDoc?.timbreFiscal !== void 0 ? editingDoc.timbreFiscal > 0 : editingDoc?.paymentMethod?.toLowerCase().includes("espèces") || false);
+		setNotesTop(editingDoc?.notesTop || "");
+		setNotesBottom(editingDoc?.notesBottom || "");
+		setIncludeStampSignature(editingDoc?.includeStampSignature ?? true);
+		if (editingDoc?.items && editingDoc.items.length > 0) {
+			setItems(editingDoc.items);
+		} else {
+			setItems([{
+				id: `item_${Date.now()}_1`,
+				productId: products[0]?.id || "",
+				description: products[0]?.name || "Article standard",
+				isService: false,
+				quantity: 1,
+				unit: "u",
+				unitPriceHt: products[0]?.price?.amount || 1e3,
+				tvaPercent: 19,
+				discountPercent: 0,
+				totalHt: products[0]?.price?.amount || 1e3,
+				totalTtc: Math.round((products[0]?.price?.amount || 1e3) * 1.19)
+			}]);
+		}
+	}, [isOpen, editingDoc, initialType]);
 	const selectedClient = React.useMemo(() => {
 		return b2bClients.find((c) => c.id === clientId) || b2bClients[0];
 	}, [b2bClients, clientId]);
@@ -240,16 +278,21 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 		}
 		onClose();
 	};
-	if (!isOpen) return null;
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto">
-<div className="sq-elev-pop relative w-full max-w-5xl my-auto">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-5xl"
+			scrimClassName="bg-black/60"
+			ariaLabel={isEditDisplay ? t("trading_composer_edit_title") : t("trading_composer_title")}
+		>
+			<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><FileText size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="t-pod font-semibold text-black dark:text-white">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
+<h2 className="t-pod font-semibold text-black dark:text-white">{isEditDisplay ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
 <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small tabular-nums font-medium bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{generatedDocNumber}</span>
 </div>
 <p className="t-cap text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
@@ -576,7 +619,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </AtriumButton>
 </div>
 </div>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

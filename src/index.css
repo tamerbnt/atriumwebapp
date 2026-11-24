@@ -327,10 +327,32 @@
   display: none !important;
 }
 
-.member-modal-dialog {
-  contain: layout paint;
+.member-modal-dialog,
+.kinetic-modal-dialog {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  border-radius: var(--r-panel, 28px);
+  box-shadow: 0 8px 20px rgba(23, 19, 15, 0.08), 0 22px 48px rgba(23, 19, 15, 0.16);
+}
+
+.dark .member-modal-dialog,
+.dark .kinetic-modal-dialog,
+[data-theme="dark"] .member-modal-dialog,
+[data-theme="dark"] .kinetic-modal-dialog,
+[data-atrium-theme="dark"] .member-modal-dialog,
+[data-atrium-theme="dark"] .kinetic-modal-dialog {
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.58);
+}
+
+.kinetic-modal-dialog.sq-elev-pop,
+.kinetic-modal-dialog .sq-elev-pop,
+.member-modal-dialog.sq-elev-pop {
+  filter: none !important;
+}
+
+.kinetic-modal-dialog[data-fullscreen="true"] {
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .scrim-inspector {

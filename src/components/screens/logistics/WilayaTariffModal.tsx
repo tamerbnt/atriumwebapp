@@ -5,6 +5,7 @@ import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/log
 import { AtriumButton } from '../../ui/AtriumButton';
 import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
 import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface WilayaTariffModalProps {
   isOpen: boolean;
@@ -71,8 +72,6 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       cancelled = true;
     };
   }, [isOpen, activeBranchId]);
-
-  if (!isOpen) return null;
 
   const handleUpdate = (zone: WilayaZone, field: keyof TariffRule, val: number) => {
     setTariffRules((prev) => ({
@@ -187,8 +186,13 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-4xl w-full">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-4xl"
+      scrimClassName="bg-black/50"
+      ariaLabel={isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
+    >
       <div
         data-sq="panel"
         data-sq-border="solid"
@@ -347,7 +351,6 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
           </div>
         </div>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

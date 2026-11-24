@@ -37,6 +37,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -50,6 +51,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const playSound = (type: 'success' | 'error') => {
@@ -579,6 +581,8 @@ export const LogisticsScannerView: React.FC = () => {
     [isAr, isEn, branchesById, currentBranch, language]
   );
 
+  const retainedActiveBag = useRetainedModalValue(activeBag);
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: shipments.length > 0,
@@ -1101,13 +1105,18 @@ export const LogisticsScannerView: React.FC = () => {
         }}
       />
 
-      {isSealModalOpen && activeBag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="sq-elev-pop max-w-md w-full">
+      <KineticModalShell
+        isOpen={isSealModalOpen && Boolean(activeBag)}
+        onClose={() => setIsSealModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedActiveBag && (
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[92vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
               <div className="flex items-center gap-2">
@@ -1129,8 +1138,8 @@ export const LogisticsScannerView: React.FC = () => {
             <form onSubmit={handleSealActiveBag} className="space-y-4">
               <p className="t-cap text-black/55 dark:text-white/55">
                 {isAr
-                  ? `أدخل رقم القفل البلاستيكي الفريد لغلق الكيس ${activeBag.bagCode} المتوجه إلى ولاية ${activeBag.destinationHubWilaya}:`
-                  : `Veuillez saisir le numéro unique gravé sur le collier de scellé plastique pour le sac ${activeBag.bagCode} :`}
+                  ? `أدخل رقم القفل البلاستيكي الفريد لغلق الكيس ${retainedActiveBag.bagCode} المتوجه إلى ولاية ${retainedActiveBag.destinationHubWilaya}:`
+                  : `Veuillez saisir le numéro unique gravé sur le collier de scellé plastique pour le sac ${retainedActiveBag.bagCode} :`}
               </p>
 
               <div>
@@ -1169,9 +1178,8 @@ export const LogisticsScannerView: React.FC = () => {
               </div>
             </form>
           </div>
-          </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

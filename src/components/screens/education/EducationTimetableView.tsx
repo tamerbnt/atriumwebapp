@@ -42,6 +42,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -951,14 +952,18 @@ export const EducationTimetableView: React.FC = () => {
         }}
       />
 
-      {isAddSessionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="sq-elev-pop w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
-            >
+      <KineticModalShell
+        isOpen={isAddSessionModalOpen}
+        onClose={() => setIsAddSessionModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <CalendarIcon size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -1029,19 +1034,16 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
 
-      {isRollCallOpen && rollCallSession && (
-        <RollCallModal
-          session={rollCallSession}
-          onClose={() => {
-            setIsRollCallOpen(false);
-            setRollCallSession(null);
-          }}
-        />
-      )}
+      <RollCallModal
+        isOpen={isRollCallOpen && Boolean(rollCallSession)}
+        session={rollCallSession}
+        onClose={() => {
+          setIsRollCallOpen(false);
+          setRollCallSession(null);
+        }}
+      />
     </div>
   );
 };

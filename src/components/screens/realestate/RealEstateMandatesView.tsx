@@ -771,14 +771,12 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         )}
       />
 
-      {isMandateModalOpen && (
-        <MandateModal
-          isOpen={isMandateModalOpen}
-          onClose={() => setIsMandateModalOpen(false)}
-          onSave={(newMnd) => addMandate(newMnd)}
-          properties={properties}
-        />
-      )}
+      <MandateModal
+        isOpen={isMandateModalOpen}
+        onClose={() => setIsMandateModalOpen(false)}
+        onSave={(newMnd) => addMandate(newMnd)}
+        properties={properties}
+      />
     </div>
   );
 };

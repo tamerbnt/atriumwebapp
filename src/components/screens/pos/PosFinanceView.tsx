@@ -1017,96 +1017,94 @@ export const PosFinanceView: React.FC = () => {
         </form>
       </Modal>
 
-      {isZReportOpen && (
-        <Modal
-          isOpen={true}
-          onClose={() => setIsZReportOpen(false)}
-          title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
-          subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
-        >
-          <div className="space-y-4 tabular-nums t-cap leading-relaxed" dir="ltr">
-            <div
-              data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-white text-black [--sq-stroke:rgba(23,19,15,0.12)] space-y-2"
-            >
-              <div className="text-center font-semibold pb-2 border-b border-dashed border-black/[0.22]">
-                <div className="t-label font-semibold">RAPPORT Z - CLÔTURE DE CAISSE</div>
-                <div className="t-cap text-black/75">{currentBranch.name}</div>
-                <div className="t-cap text-black/55">{new Date().toLocaleString()}</div>
-                <div className="t-cap text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
+      <Modal
+        isOpen={isZReportOpen}
+        onClose={() => setIsZReportOpen(false)}
+        title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
+        subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
+      >
+        <div className="space-y-4 tabular-nums t-cap leading-relaxed" dir="ltr">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-white text-black [--sq-stroke:rgba(23,19,15,0.12)] space-y-2"
+          >
+            <div className="text-center font-semibold pb-2 border-b border-dashed border-black/[0.22]">
+              <div className="t-label font-semibold">RAPPORT Z - CLÔTURE DE CAISSE</div>
+              <div className="t-cap text-black/75">{currentBranch.name}</div>
+              <div className="t-cap text-black/55">{new Date().toLocaleString()}</div>
+              <div className="t-cap text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
+            </div>
+            <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+              <div className="flex justify-between">
+                <span>FOND DE CAISSE INITIAL :</span>
+                <span className="font-semibold">{formatMoney(openingFloat)}</span>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-                <div className="flex justify-between">
-                  <span>FOND DE CAISSE INITIAL :</span>
-                  <span className="font-semibold">{formatMoney(openingFloat)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>VENTES BRUTES :</span>
-                  <span className="font-semibold">{formatMoney(financeTotals.totalGrossSales)}</span>
-                </div>
-                <div className="flex justify-between text-red-600">
-                  <span>SORTIES DE CAISSE :</span>
-                  <span>-{formatMoney(financeTotals.totalCashPayouts)}</span>
-                </div>
-                <div className="flex justify-between pt-1 font-semibold t-label">
-                  <span>SOLDE THÉORIQUE ATTENDU :</span>
-                  <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
-                </div>
+              <div className="flex justify-between">
+                <span>VENTES BRUTES :</span>
+                <span className="font-semibold">{formatMoney(financeTotals.totalGrossSales)}</span>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-                <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
-                <div className="flex justify-between">
-                  <span>ESPÈCES :</span>
-                  <span className="font-semibold">{formatMoney(financeTotals.cashSales)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>CARTE CIB / EDAHABIA :</span>
-                  <span className="font-semibold">{formatMoney(financeTotals.cardSales)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>BARIDIMOB / VIREMENT :</span>
-                  <span className="font-semibold">{formatMoney(financeTotals.baridiMobSales)}</span>
-                </div>
+              <div className="flex justify-between text-red-600">
+                <span>SORTIES DE CAISSE :</span>
+                <span>-{formatMoney(financeTotals.totalCashPayouts)}</span>
               </div>
-              {financeTotals.hasCounted && (
-                <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-                  <div className="flex justify-between font-semibold">
-                    <span>ESPÈCES PHYSICOMPTÉES :</span>
-                    <span>{formatMoney(financeTotals.actualCounted)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>ÉCART DE CAISSE :</span>
-                    <span className={financeTotals.cashVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-red-700 font-semibold'}>
-                      {financeTotals.cashVariance >= 0 ? `+${formatMoney(financeTotals.cashVariance)}` : formatMoney(financeTotals.cashVariance)}
-                    </span>
-                  </div>
-                </div>
-              )}
-              <div className="pt-2 t-cap text-center text-black/75">
-                SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
+              <div className="flex justify-between pt-1 font-semibold t-label">
+                <span>SOLDE THÉORIQUE ATTENDU :</span>
+                <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="h-10 px-4 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-2 cursor-pointer hover:opacity-90"
-              >
-                <Printer size={14} />
-                <span>Imprimer Rapport Z 80mm</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsZReportOpen(false)}
-                className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] t-small font-semibold cursor-pointer"
-              >
-                Fermer
-              </button>
+            <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+              <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
+              <div className="flex justify-between">
+                <span>ESPÈCES :</span>
+                <span className="font-semibold">{formatMoney(financeTotals.cashSales)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>CARTE CIB / EDAHABIA :</span>
+                <span className="font-semibold">{formatMoney(financeTotals.cardSales)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>BARIDIMOB / VIREMENT :</span>
+                <span className="font-semibold">{formatMoney(financeTotals.baridiMobSales)}</span>
+              </div>
+            </div>
+            {financeTotals.hasCounted && (
+              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+                <div className="flex justify-between font-semibold">
+                  <span>ESPÈCES PHYSICOMPTÉES :</span>
+                  <span>{formatMoney(financeTotals.actualCounted)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>ÉCART DE CAISSE :</span>
+                  <span className={financeTotals.cashVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-red-700 font-semibold'}>
+                    {financeTotals.cashVariance >= 0 ? `+${formatMoney(financeTotals.cashVariance)}` : formatMoney(financeTotals.cashVariance)}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className="pt-2 t-cap text-center text-black/75">
+              SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
             </div>
           </div>
-        </Modal>
-      )}
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="h-10 px-4 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-2 cursor-pointer hover:opacity-90"
+            >
+              <Printer size={14} />
+              <span>Imprimer Rapport Z 80mm</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsZReportOpen(false)}
+              className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] t-small font-semibold cursor-pointer"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

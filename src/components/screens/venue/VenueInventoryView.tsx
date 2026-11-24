@@ -37,6 +37,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -1117,14 +1118,18 @@ export const VenueInventoryView: React.FC = () => {
         }}
       />
 
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="sq-elev-pop w-full max-w-xl">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden animate-in zoom-in-95 duration-200"
-            >
+      <KineticModalShell
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden max-h-[92vh] overflow-y-auto"
+        >
             <div className="p-6 border-b border-[var(--atr-divider)] flex items-center justify-between">
               <div>
                 <h3 className="t-pod font-semibold text-black dark:text-white">
@@ -1245,10 +1250,8 @@ export const VenueInventoryView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
 
       <BookingModal
         isOpen={isBookingModalOpen}

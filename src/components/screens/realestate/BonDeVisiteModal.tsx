@@ -3,6 +3,7 @@ import { X, MapPin, CheckCircle, RotateCcw, Share2, Shield, AlertTriangle } from
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { RealEstateProperty, BonDeVisiteRecord } from '../../../types';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface BonDeVisiteModalProps {
   isOpen: boolean;
@@ -34,7 +35,6 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 	React.useEffect(() => {
 		if (isOpen) handleCaptureGps();
 	}, [isOpen]);
-	if (!isOpen) return null;
 	const handleCaptureGps = () => {
 		if (typeof navigator !== "undefined" && "geolocation" in navigator) {
 			setIsGpsLoading(true);
@@ -128,9 +128,15 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 		});
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="sq-elev-pop relative w-full max-w-2xl my-8">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-2xl"
+			scrimClassName="bg-black/60"
+			ariaLabel="Bon de Visite Numérique Certifié"
+		>
+			<div data-sq="panel" data-sq-border="solid" className="relative w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
 <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-5">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Shield className="w-5 h-5" /></div>
@@ -224,7 +230,7 @@ m)
 </div>
 </div>
 </form>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

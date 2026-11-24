@@ -32,6 +32,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -43,6 +44,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
@@ -402,6 +404,8 @@ export const TradingFinanceView: React.FC = () => {
     ],
     [t, isAr, isEn, branchesById, currentBranch, language]
   );
+
+  const retainedSettlementDoc = useRetainedModalValue(settlementDoc);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -840,10 +844,15 @@ export const TradingFinanceView: React.FC = () => {
         }}
       />
 
-      {settlementDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop relative w-full max-w-md">
-          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+      <KineticModalShell
+        isOpen={Boolean(settlementDoc)}
+        onClose={() => setSettlementDoc(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedSettlementDoc && (
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                 <CheckCircle size={18} className="text-emerald-600" />
@@ -863,15 +872,15 @@ export const TradingFinanceView: React.FC = () => {
             <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-2 tabular-nums">
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
-                <span className="font-semibold text-black dark:text-white">{settlementDoc.docNumber}</span>
+                <span className="font-semibold text-black dark:text-white">{retainedSettlementDoc.docNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Client :</span>
-                <span className="text-black dark:text-white">{settlementDoc.clientName}</span>
+                <span className="text-black dark:text-white">{retainedSettlementDoc.clientName}</span>
               </div>
               <div className="flex justify-between text-emerald-600 font-semibold t-label pt-2 border-t border-[var(--atr-divider)]">
                 <span className="font-sans">Montant Net :</span>
-                <span>{formatMoney(settlementDoc.netToPay)}</span>
+                <span>{formatMoney(retainedSettlementDoc.netToPay)}</span>
               </div>
             </div>
             <form onSubmit={handleConfirmSettlement} className="space-y-3 t-cap">
@@ -910,9 +919,8 @@ export const TradingFinanceView: React.FC = () => {
               </div>
             </form>
           </div>
-          </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

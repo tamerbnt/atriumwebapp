@@ -332,19 +332,15 @@ export const LogisticsDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isShipModalOpen && (
-        <LogisticsShipmentModal
-          isOpen={isShipModalOpen}
-          onClose={() => setIsShipModalOpen(false)}
-          onSave={addShipment}
-        />
-      )}
-      {isTariffModalOpen && (
-        <WilayaTariffModal
-          isOpen={isTariffModalOpen}
-          onClose={() => setIsTariffModalOpen(false)}
-        />
-      )}
+      <LogisticsShipmentModal
+        isOpen={isShipModalOpen}
+        onClose={() => setIsShipModalOpen(false)}
+        onSave={addShipment}
+      />
+      <WilayaTariffModal
+        isOpen={isTariffModalOpen}
+        onClose={() => setIsTariffModalOpen(false)}
+      />
     </DashboardBentoFrame>
   );
 };

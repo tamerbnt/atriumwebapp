@@ -3,6 +3,7 @@ import { PMCcpSlip } from '../../../types/index';
 import { Printer, X, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface CcpSlipModalProps {
   isOpen: boolean;
@@ -13,12 +14,12 @@ interface CcpSlipModalProps {
 
 export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
   isOpen,
-  slip,
+  slip: rawSlip,
   onClose,
   onMarkPrinted,
 }) => {
   const { t, language, isRtl } = useTranslation();
-  if (!isOpen || !slip) return null;
+  const slip = useRetainedModalValue(isOpen ? rawSlip : null);
 
   const handlePrint = () => {
     if (onMarkPrinted && slip) {
@@ -28,12 +29,18 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="sq-elev-pop max-w-3xl w-full">
+    <KineticModalShell
+      isOpen={isOpen && Boolean(rawSlip)}
+      onClose={onClose}
+      maxWidthClass="max-w-3xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      {slip && (
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden flex flex-col max-h-[90vh]"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden flex flex-col max-h-[90vh] print:max-h-none print:shadow-none"
         >
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#22201E]">
@@ -226,7 +233,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
           </button>
         </div>
         </div>
-      </div>
-    </div>
+      )}
+    </KineticModalShell>
   );
 };

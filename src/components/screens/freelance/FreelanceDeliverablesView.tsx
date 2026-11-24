@@ -65,6 +65,8 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
+  useRetainedModalValue,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -861,6 +863,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
     hasCachedData: freelanceProjects.length > 0,
   });
 
+  const retainedDeliverableToEdit = useRetainedModalValue(deliverableToEdit);
+  const retainedDeliverableToDelete = useRetainedModalValue(deliverableToDelete);
+  const retainedProjectToDelete = useRetainedModalValue(projectToDelete);
+
   if (showSkeleton && (freelanceProjects.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonKanbanPipeline
@@ -1563,276 +1569,288 @@ export const FreelanceDeliverablesView: React.FC = () => {
       />
 
       {/* Add Deliverable Modal */}
-      {isAddDeliverableModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+      <KineticModalShell
+        isOpen={isAddDeliverableModalOpen}
+        onClose={() => setIsAddDeliverableModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_deliv_btn_new', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_deliv_btn_new', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAddDeliverableModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_deliv_btn_new', language)}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddDeliverableModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <form onSubmit={handleCreateDeliverable} className="space-y-4 t-cap">
-              <LabelSelect
-                label={`${t('free_deliv_field_project', language)} *`}
-                value={targetProjectId || freelanceProjects[0]?.id || ''}
-                onChange={(val) => setTargetProjectId(extractStr(val))}
-                options={freelanceProjects.map((p) => ({
-                  value: p.id,
-                  label: `${p.title} (${p.clientName})`,
-                }))}
-                placeholder={t('free_deliv_ph_select_project', language)}
-              />
-              <LabelInput
-                id="deliverable-title"
-                label={t('free_deliv_field_title', language)}
-                required
-                placeholder={t('free_deliv_ph_title', language)}
-                value={deliverableTitle}
-                onChange={(e) => setDeliverableTitle(extractStr(e))}
-              />
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {t('free_deliv_field_tags', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    placeholder={t('free_deliv_ph_desc', language)}
-                    value={deliverableDescription}
-                    onChange={(e) => setDeliverableDescription(e.target.value)}
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  id="deliverable-estimated-hours"
-                  label={t('free_deliv_field_est_hours', language)}
-                  type="number"
-                  min={1}
-                  required
-                  value={String(estimatedHours)}
-                  onChange={(e) => setEstimatedHours(Number(extractStr(e)) || 1)}
-                />
-                <LabelInput
-                  id="deliverable-due-date"
-                  label={t('free_deliv_field_due_date', language)}
-                  type="date"
-                  required
-                  value={dueDate}
-                  onChange={(e) => setDueDate(extractStr(e))}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setIsAddDeliverableModalOpen(false)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  {t('free_clients_cancel', language)}
-                </button>
-                <button
-                  type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  {t('free_deliv_btn_new', language)}
-                </button>
-              </div>
-            </form>
-            </div>
+              <X size={16} />
+            </button>
           </div>
-        </div>
-      )}
-
-      {/* Add Project Modal */}
-      {isAddProjectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_deliv_field_project', language)}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddProjectModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close"
+          <form onSubmit={handleCreateDeliverable} className="space-y-4 t-cap">
+            <LabelSelect
+              label={`${t('free_deliv_field_project', language)} *`}
+              value={targetProjectId || freelanceProjects[0]?.id || ''}
+              onChange={(val) => setTargetProjectId(extractStr(val))}
+              options={freelanceProjects.map((p) => ({
+                value: p.id,
+                label: `${p.title} (${p.clientName})`,
+              }))}
+              placeholder={t('free_deliv_ph_select_project', language)}
+            />
+            <LabelInput
+              id="deliverable-title"
+              label={t('free_deliv_field_title', language)}
+              required
+              placeholder={t('free_deliv_ph_title', language)}
+              value={deliverableTitle}
+              onChange={(e) => setDeliverableTitle(extractStr(e))}
+            />
+            <div>
+              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
+                {t('free_deliv_field_tags', language)}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
               >
-                <X size={16} />
-              </button>
+                <textarea
+                  rows={2}
+                  placeholder={t('free_deliv_ph_desc', language)}
+                  value={deliverableDescription}
+                  onChange={(e) => setDeliverableDescription(e.target.value)}
+                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                />
+              </div>
             </div>
-            <form onSubmit={handleCreateProject} className="space-y-4 t-cap">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelSelect
-                  label={`${t('free_invoice_client', language)} *`}
-                  value={newProjectData.clientId}
-                  onChange={(val) =>
-                    setNewProjectData({ ...newProjectData, clientId: extractStr(val) })
-                  }
-                  options={freelanceClients.map((c) => ({
-                    value: c.id,
-                    label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
-                  }))}
-                  placeholder={t('free_deliv_ph_select_client', language)}
-                />
-                <LabelSelect
-                  label={t('free_deliv_field_pricing', language)}
-                  value={newProjectData.pricingModel}
-                  onChange={(val) =>
-                    setNewProjectData({
-                      ...newProjectData,
-                      pricingModel: extractStr(val) as PricingModel,
-                    })
-                  }
-                  options={[
-                    { value: 'Fixed', label: t('free_deliv_pricing_fixed', language) },
-                    { value: 'Hourly', label: t('free_deliv_pricing_hourly', language) },
-                    { value: 'Retainer', label: t('free_deliv_pricing_retainer', language) },
-                  ]}
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                id="new-project-title"
-                label={t('free_deliv_field_title', language)}
+                id="deliverable-estimated-hours"
+                label={t('free_deliv_field_est_hours', language)}
+                type="number"
+                min={1}
                 required
-                placeholder={t('free_deliv_ph_proj_title', language)}
-                value={newProjectData.title}
-                onChange={(e) => setNewProjectData({ ...newProjectData, title: extractStr(e) })}
+                value={String(estimatedHours)}
+                onChange={(e) => setEstimatedHours(Number(extractStr(e)) || 1)}
               />
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {t('free_deliv_field_tags', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    placeholder={t('free_deliv_ph_proj_desc', language)}
-                    value={newProjectData.description}
-                    onChange={(e) =>
-                      setNewProjectData({ ...newProjectData, description: e.target.value })
-                    }
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <LabelSelect
-                  label={t('free_clients_currency', language)}
-                  value={newProjectData.currency}
-                  onChange={(val) =>
-                    setNewProjectData({
-                      ...newProjectData,
-                      currency: extractStr(val) as CurrencyCode,
-                    })
-                  }
-                  options={[
-                    { value: 'DZD', label: 'DZD' },
-                    { value: 'EUR', label: 'EUR' },
-                    { value: 'USD', label: 'USD' },
-                  ]}
-                />
-                <LabelInput
-                  id="new-project-budget"
-                  label={t('free_prop_total_quote', language)}
-                  type="number"
-                  value={String(newProjectData.budget)}
-                  onChange={(e) =>
-                    setNewProjectData({ ...newProjectData, budget: Number(extractStr(e)) || 0 })
-                  }
-                />
-                <LabelInput
-                  id="new-project-hours"
-                  label={t('free_deliv_field_est_hours', language)}
-                  type="number"
-                  value={String(newProjectData.estimatedHours)}
-                  onChange={(e) =>
-                    setNewProjectData({
-                      ...newProjectData,
-                      estimatedHours: Number(extractStr(e)) || 0,
-                    })
-                  }
-                />
-              </div>
               <LabelInput
-                id="new-project-deadline"
+                id="deliverable-due-date"
                 label={t('free_deliv_field_due_date', language)}
                 type="date"
-                value={newProjectData.deadline}
-                onChange={(e) => setNewProjectData({ ...newProjectData, deadline: extractStr(e) })}
+                required
+                value={dueDate}
+                onChange={(e) => setDueDate(extractStr(e))}
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  {t('free_clients_cancel', language)}
-                </button>
-                <button
-                  type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  {t('free_deliv_field_project', language)}
-                </button>
-              </div>
-            </form>
             </div>
-          </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setIsAddDeliverableModalOpen(false)}
+                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                {t('free_clients_cancel', language)}
+              </button>
+              <button
+                type="submit"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                {t('free_deliv_btn_new', language)}
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
+
+      {/* Add Project Modal */}
+      <KineticModalShell
+        isOpen={isAddProjectModalOpen}
+        onClose={() => setIsAddProjectModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_deliv_field_project', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_deliv_field_project', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAddProjectModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateProject} className="space-y-4 t-cap">
+            <div className="grid grid-cols-2 gap-3">
+              <LabelSelect
+                label={`${t('free_invoice_client', language)} *`}
+                value={newProjectData.clientId}
+                onChange={(val) =>
+                  setNewProjectData({ ...newProjectData, clientId: extractStr(val) })
+                }
+                options={freelanceClients.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
+                }))}
+                placeholder={t('free_deliv_ph_select_client', language)}
+              />
+              <LabelSelect
+                label={t('free_deliv_field_pricing', language)}
+                value={newProjectData.pricingModel}
+                onChange={(val) =>
+                  setNewProjectData({
+                    ...newProjectData,
+                    pricingModel: extractStr(val) as PricingModel,
+                  })
+                }
+                options={[
+                  { value: 'Fixed', label: t('free_deliv_pricing_fixed', language) },
+                  { value: 'Hourly', label: t('free_deliv_pricing_hourly', language) },
+                  { value: 'Retainer', label: t('free_deliv_pricing_retainer', language) },
+                ]}
+              />
+            </div>
+            <LabelInput
+              id="new-project-title"
+              label={t('free_deliv_field_title', language)}
+              required
+              placeholder={t('free_deliv_ph_proj_title', language)}
+              value={newProjectData.title}
+              onChange={(e) => setNewProjectData({ ...newProjectData, title: extractStr(e) })}
+            />
+            <div>
+              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
+                {t('free_deliv_field_tags', language)}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
+              >
+                <textarea
+                  rows={2}
+                  placeholder={t('free_deliv_ph_proj_desc', language)}
+                  value={newProjectData.description}
+                  onChange={(e) =>
+                    setNewProjectData({ ...newProjectData, description: e.target.value })
+                  }
+                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <LabelSelect
+                label={t('free_clients_currency', language)}
+                value={newProjectData.currency}
+                onChange={(val) =>
+                  setNewProjectData({
+                    ...newProjectData,
+                    currency: extractStr(val) as CurrencyCode,
+                  })
+                }
+                options={[
+                  { value: 'DZD', label: 'DZD' },
+                  { value: 'EUR', label: 'EUR' },
+                  { value: 'USD', label: 'USD' },
+                ]}
+              />
+              <LabelInput
+                id="new-project-budget"
+                label={t('free_prop_total_quote', language)}
+                type="number"
+                value={String(newProjectData.budget)}
+                onChange={(e) =>
+                  setNewProjectData({ ...newProjectData, budget: Number(extractStr(e)) || 0 })
+                }
+              />
+              <LabelInput
+                id="new-project-hours"
+                label={t('free_deliv_field_est_hours', language)}
+                type="number"
+                value={String(newProjectData.estimatedHours)}
+                onChange={(e) =>
+                  setNewProjectData({
+                    ...newProjectData,
+                    estimatedHours: Number(extractStr(e)) || 0,
+                  })
+                }
+              />
+            </div>
+            <LabelInput
+              id="new-project-deadline"
+              label={t('free_deliv_field_due_date', language)}
+              type="date"
+              value={newProjectData.deadline}
+              onChange={(e) => setNewProjectData({ ...newProjectData, deadline: extractStr(e) })}
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setIsAddProjectModalOpen(false)}
+                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                {t('free_clients_cancel', language)}
+              </button>
+              <button
+                type="submit"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                {t('free_deliv_field_project', language)}
+              </button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
 
       {/* Edit Deliverable Modal */}
-      {deliverableToEdit && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={Boolean(deliverableToEdit)}
+        onClose={() => setDeliverableToEdit(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_deliv_edit', language)}
+      >
+        {retainedDeliverableToEdit && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_deliv_edit', language)}
                 </h3>
                 <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                  {deliverableToEdit.project.title} · {deliverableToEdit.project.clientName}
+                  {retainedDeliverableToEdit.project.title} · {retainedDeliverableToEdit.project.clientName}
                 </p>
               </div>
               <button
@@ -1920,143 +1938,156 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </button>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       {/* Delete Deliverable Modal */}
-      {deliverableToDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
-                >
-                  <AlertTriangle size={20} />
-                </div>
-                <div>
-                  <h3 className="t-card font-semibold text-black dark:text-white">
-                    {t('free_deliv_delete', language)}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    {deliverableToDelete.title}
-                  </p>
-                </div>
+      <KineticModalShell
+        isOpen={Boolean(deliverableToDelete)}
+        onClose={() => setDeliverableToDelete(null)}
+        role="alertdialog"
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_deliv_delete', language)}
+      >
+        {retainedDeliverableToDelete && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle size={20} />
               </div>
-              <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
-                {isAr
-                  ? `هل أنت متأكد من حذف التسليمة "${deliverableToDelete.title}"؟`
-                  : isFr
-                  ? `Supprimer définitivement le livrable "${deliverableToDelete.title}" ?`
-                  : `Permanently remove deliverable "${deliverableToDelete.title}"?`}
-              </p>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setDeliverableToDelete(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  {t('common_cancel', language)}
-                </button>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => {
-                    deleteDeliverable(
-                      deliverableToDelete.projectId,
-                      deliverableToDelete.deliverableId
-                    );
-                    if (selectedDeliverableItem?.id === deliverableToDelete.deliverableId) {
-                      setSelectedDeliverableItem(null);
-                    }
-                    setDeliverableToDelete(null);
-                  }}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
-                >
-                  {t('common_delete', language)}
-                </button>
+              <div>
+                <h3 className="t-card font-semibold text-black dark:text-white">
+                  {t('free_deliv_delete', language)}
+                </h3>
+                <p className="t-cap text-black/55 dark:text-white/55">
+                  {retainedDeliverableToDelete.title}
+                </p>
               </div>
             </div>
+            <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
+              {isAr
+                ? `هل أنت متأكد من حذف التسليمة "${retainedDeliverableToDelete.title}"؟`
+                : isFr
+                ? `Supprimer définitivement le livrable "${retainedDeliverableToDelete.title}" ?`
+                : `Permanently remove deliverable "${retainedDeliverableToDelete.title}"?`}
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setDeliverableToDelete(null)}
+                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                {t('common_cancel', language)}
+              </button>
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => {
+                  if (!deliverableToDelete) return;
+                  deleteDeliverable(
+                    deliverableToDelete.projectId,
+                    deliverableToDelete.deliverableId
+                  );
+                  if (selectedDeliverableItem?.id === deliverableToDelete.deliverableId) {
+                    setSelectedDeliverableItem(null);
+                  }
+                  setDeliverableToDelete(null);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
+              >
+                {t('common_delete', language)}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       {/* Delete Project Modal */}
-      {projectToDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
-                >
-                  <AlertTriangle size={20} />
-                </div>
-                <div>
-                  <h3 className="t-card font-semibold text-black dark:text-white">
-                    {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    {projectToDelete.title} · {projectToDelete.clientName}
-                  </p>
-                </div>
+      <KineticModalShell
+        isOpen={Boolean(projectToDelete)}
+        onClose={() => setProjectToDelete(null)}
+        role="alertdialog"
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
+      >
+        {retainedProjectToDelete && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle size={20} />
               </div>
-              <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
-                {isAr
-                  ? `هل أنت متأكد من حذف مشروع "${projectToDelete.title}" وكافة تسليماته؟`
-                  : isFr
-                  ? `Supprimer le projet "${projectToDelete.title}" et tous ses livrables ?`
-                  : `Delete project "${projectToDelete.title}" and all associated deliverables?`}
-              </p>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setProjectToDelete(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  {t('common_cancel', language)}
-                </button>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => {
-                    deleteFreelanceProject(projectToDelete.id);
-                    setSelectedProjectId('all');
-                    setProjectToDelete(null);
-                  }}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
-                >
-                  {t('common_delete', language)}
-                </button>
+              <div>
+                <h3 className="t-card font-semibold text-black dark:text-white">
+                  {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
+                </h3>
+                <p className="t-cap text-black/55 dark:text-white/55">
+                  {retainedProjectToDelete.title} · {retainedProjectToDelete.clientName}
+                </p>
               </div>
             </div>
+            <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
+              {isAr
+                ? `هل أنت متأكد من حذف مشروع "${retainedProjectToDelete.title}" وكافة تسليماته؟`
+                : isFr
+                ? `Supprimer le projet "${retainedProjectToDelete.title}" et tous ses livrables ?`
+                : `Delete project "${retainedProjectToDelete.title}" and all associated deliverables?`}
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setProjectToDelete(null)}
+                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                {t('common_cancel', language)}
+              </button>
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => {
+                  if (!projectToDelete) return;
+                  deleteFreelanceProject(projectToDelete.id);
+                  setSelectedProjectId('all');
+                  setProjectToDelete(null);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
+              >
+                {t('common_delete', language)}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

@@ -27,6 +27,7 @@ import {
 import { rentalService } from '../../../lib/supabase/services/rentalService';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import { RentalBooking } from '../../../types/index';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface VenueCloudSyncModalProps {
   isOpen: boolean;
@@ -291,16 +292,19 @@ ON CONFLICT (id) DO NOTHING;
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="sq-elev-pop max-w-2xl w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] flex flex-col overflow-hidden"
-        >
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] flex flex-col overflow-hidden"
+      >
         {/* Header */}
         <div className="px-6 py-5 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -609,8 +613,7 @@ ON CONFLICT (id) DO NOTHING;
             Close
           </button>
         </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

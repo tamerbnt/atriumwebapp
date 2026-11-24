@@ -11,6 +11,7 @@ import { RealEstateProperty, RealEstateLease } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface RealEstateLeaseModalProps {
   isOpen: boolean;
@@ -41,7 +42,17 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 	const [monthlyRent, setMonthlyRent] = React.useState("180000");
 	const [deposit, setDeposit] = React.useState("360000");
 	const [frequency, setFrequency] = React.useState("Annual");
-	if (!isOpen) return null;
+	React.useEffect(() => {
+		if (!isOpen) return;
+		setPropertyId(properties[0]?.id || "");
+		setTenantName("");
+		setTenantPhone("");
+		setStartDate("2026-06-01");
+		setEndDate("2027-05-31");
+		setMonthlyRent("180000");
+		setDeposit("360000");
+		setFrequency("Annual");
+	}, [isOpen]);
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
 		const prop = properties.find((p: any) => p.id === propertyId) || properties[0];
@@ -73,9 +84,15 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 		value: p.id,
 		label: `${p.title} (${p.cityWilaya})`
 	}));
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-<div className="sq-elev-pop max-w-lg w-full">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-lg"
+			scrimClassName="bg-black/50"
+			ariaLabel={language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}
+		>
+			<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
 <div className="flex items-center gap-2">
 <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Key size={16} /></div>
@@ -120,7 +137,7 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <AtriumButton type="submit" variant="primary" icon={<Key size={14} />}>{language === "ar" ? "تحرير العقد" : "Établir le Contrat"}</AtriumButton>
 </div>
 </form>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

@@ -370,12 +370,11 @@ export const EducationDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {selectedSessionForRollCall && (
-        <RollCallModal
-          session={(eduSessions || []).find((s) => s.id === selectedSessionForRollCall) || null}
-          onClose={() => setSelectedSessionForRollCall(null)}
-        />
-      )}
+      <RollCallModal
+        isOpen={Boolean(selectedSessionForRollCall)}
+        session={(eduSessions || []).find((s) => s.id === selectedSessionForRollCall) || null}
+        onClose={() => setSelectedSessionForRollCall(null)}
+      />
     </DashboardBentoFrame>
   );
 };

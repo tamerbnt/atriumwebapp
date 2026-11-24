@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   X,
   CheckCircle2,
@@ -24,14 +24,17 @@ import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface RollCallModalProps {
+  isOpen?: boolean;
   session?: EduSession | null;
   cohortId?: string;
   onClose: () => void;
 }
 
 export const RollCallModal: React.FC<RollCallModalProps> = ({
+  isOpen = true,
   session,
   cohortId: propCohortId,
   onClose,
@@ -72,6 +75,34 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     (a) => a.sessionId === selectedSessionId
   );
 
+  const buildRollStateForSession = useCallback(
+    (targetCohortId: string, targetSessionId: string) => {
+      const targetEnrolledIds = eduEnrollments
+        .filter((e) => e.cohortId === targetCohortId && e.status === 'Active')
+        .map((e) => e.studentId);
+      const targetStudents = eduStudents.filter((s) => targetEnrolledIds.includes(s.id));
+      const targetExisting = eduAttendance.filter((a) => a.sessionId === targetSessionId);
+      const initial: Record<
+        string,
+        { status: AttendanceStatus; minutesLate?: number; excuseNote?: string }
+      > = {};
+      targetStudents.forEach((st) => {
+        const existing = targetExisting.find((r) => r.studentId === st.id);
+        if (existing) {
+          initial[st.id] = {
+            status: existing.status,
+            minutesLate: existing.minutesLate,
+            excuseNote: existing.excuseNote,
+          };
+        } else {
+          initial[st.id] = { status: 'Present' };
+        }
+      });
+      return initial;
+    },
+    [eduEnrollments, eduStudents, eduAttendance]
+  );
+
   const [rollState, setRollState] = useState<
     Record<
       string,
@@ -81,25 +112,17 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         excuseNote?: string;
       }
     >
-  >(() => {
-    const initial: Record<
-      string,
-      { status: AttendanceStatus; minutesLate?: number; excuseNote?: string }
-    > = {};
-    studentsInCohort.forEach((st) => {
-      const existing = existingRecords.find((r) => r.studentId === st.id);
-      if (existing) {
-        initial[st.id] = {
-          status: existing.status,
-          minutesLate: existing.minutesLate,
-          excuseNote: existing.excuseNote,
-        };
-      } else {
-        initial[st.id] = { status: 'Present' };
-      }
-    });
-    return initial;
-  });
+  >(() => buildRollStateForSession(selectedCohortId, selectedSessionId));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const nextCohortId = session?.cohortId || propCohortId || (eduCohorts[0]?.id || '');
+    const nextCohortSessions = eduSessions.filter((s) => s.cohortId === nextCohortId);
+    const nextSessionId = session?.id || nextCohortSessions[0]?.id || '';
+    setSelectedCohortId(nextCohortId);
+    setSelectedSessionId(nextSessionId);
+    setRollState(buildRollStateForSession(nextCohortId, nextSessionId));
+  }, [isOpen, session, propCohortId]);
 
   const activeCohort = eduCohorts.find((c) => c.id === selectedCohortId);
   const activeSession = eduSessions.find((s) => s.id === selectedSessionId);
@@ -163,13 +186,12 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="sq-elev-pop w-full max-w-2xl">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-2xl" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-[#22201E]">
           <div>
@@ -200,7 +222,9 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                 const nextCohortId = val?.target?.value ?? String(val);
                 setSelectedCohortId(nextCohortId);
                 const nextCohortSessions = eduSessions.filter((s) => s.cohortId === nextCohortId);
-                setSelectedSessionId(nextCohortSessions[0]?.id || '');
+                const nextSessionId = nextCohortSessions[0]?.id || '';
+                setSelectedSessionId(nextSessionId);
+                setRollState(buildRollStateForSession(nextCohortId, nextSessionId));
               }}
               options={eduCohorts.map((c) => ({
                 value: c.id,
@@ -216,7 +240,11 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
               field="Session"
               label={t('edu_label_session')}
               value={selectedSessionId}
-              onChange={(val) => setSelectedSessionId(val?.target?.value ?? String(val))}
+              onChange={(val) => {
+                const nextSessionId = val?.target?.value ?? String(val);
+                setSelectedSessionId(nextSessionId);
+                setRollState(buildRollStateForSession(selectedCohortId, nextSessionId));
+              }}
               options={
                 cohortSessions.length === 0
                   ? [{ value: '', label: t('edu_no_sessions') }]
@@ -338,8 +366,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

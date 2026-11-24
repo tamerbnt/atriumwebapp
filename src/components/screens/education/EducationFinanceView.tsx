@@ -35,6 +35,8 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
+  useRetainedModalValue,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -635,6 +637,9 @@ export const EducationFinanceView: React.FC = () => {
     hasCachedData: eduEnrollments.length > 0,
   });
 
+  const retainedPaymentEnrollment = useRetainedModalValue(selectedEnrollmentForPayment);
+  const retainedReceipt = useRetainedModalValue(receiptToPrint);
+
   if (showSkeleton && (eduEnrollments.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
@@ -1014,14 +1019,19 @@ export const EducationFinanceView: React.FC = () => {
         }}
       />
 
-      {selectedEnrollmentForPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={Boolean(selectedEnrollmentForPayment)}
+        onClose={() => setSelectedEnrollmentForPayment(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {retainedPaymentEnrollment && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_payment_modal_title')}
@@ -1040,21 +1050,21 @@ export const EducationFinanceView: React.FC = () => {
                 data-sq-border="solid"
                 className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-1"
               >
-                <div className="font-semibold text-black dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
+                <div className="font-semibold text-black dark:text-white">{retainedPaymentEnrollment.studentName}</div>
                 <div className="text-black/55 dark:text-white/55">
-                  {t('edu_label_cohort')}: {selectedEnrollmentForPayment.cohortName}
+                  {t('edu_label_cohort')}: {retainedPaymentEnrollment.cohortName}
                 </div>
                 <div className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-                  {t('edu_fin_receivables')}: {formatMoney(selectedEnrollmentForPayment.balanceDue)}
+                  {t('edu_fin_receivables')}: {formatMoney(retainedPaymentEnrollment.balanceDue)}
                 </div>
               </div>
-              {selectedEnrollmentForPayment.installments && selectedEnrollmentForPayment.installments.length > 0 && (
+              {retainedPaymentEnrollment.installments && retainedPaymentEnrollment.installments.length > 0 && (
                 <div className="space-y-2">
                   <label className="t-small font-semibold text-black/70 dark:text-white/75">
                     Sélectionner l'échéance à solder
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {selectedEnrollmentForPayment.installments.map((inst, idx) => (
+                    {retainedPaymentEnrollment.installments.map((inst, idx) => (
                       <button
                         key={idx}
                         type="button"
@@ -1085,7 +1095,7 @@ export const EducationFinanceView: React.FC = () => {
                 label={t('edu_field_pay_amount')}
                 type="number"
                 min="1"
-                max={selectedEnrollmentForPayment.balanceDue}
+                max={retainedPaymentEnrollment.balanceDue}
                 value={paymentAmount}
                 onChange={(v) => setPaymentAmount(parseInt(extractStr(v), 10) || 0)}
                 required
@@ -1118,19 +1128,23 @@ export const EducationFinanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
-      {receiptToPrint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-sm">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={Boolean(receiptToPrint)}
+        onClose={() => setReceiptToPrint(null)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {retainedReceipt && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 Official Tuition Receipt
@@ -1148,7 +1162,7 @@ export const EducationFinanceView: React.FC = () => {
                 {currentBusiness?.displayName || 'Atlas Academy'}
               </div>
               <div className="t-cap text-black/55 dark:text-white/55">
-                Receipt #{receiptToPrint.receiptNumber} · {receiptToPrint.date}
+                Receipt #{retainedReceipt.receiptNumber} · {retainedReceipt.date}
               </div>
             </div>
             <div
@@ -1160,22 +1174,22 @@ export const EducationFinanceView: React.FC = () => {
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'المترشح / المتدرب:' : isEn ? 'Learner:' : 'Apprenant :'}
                 </span>
-                <span className="font-semibold text-black dark:text-white">{receiptToPrint.studentName}</span>
+                <span className="font-semibold text-black dark:text-white">{retainedReceipt.studentName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'الفوج / الدورة التدريبية:' : isEn ? 'Cohort / Course:' : 'Promotion / Formation :'}
                 </span>
-                <span className="font-semibold text-black dark:text-white">{receiptToPrint.cohortName}</span>
+                <span className="font-semibold text-black dark:text-white">{retainedReceipt.cohortName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">{t('edu_field_pay_method')}:</span>
-                <span className="font-semibold">{receiptToPrint.method}</span>
+                <span className="font-semibold">{retainedReceipt.method}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold t-label">
                 <span>{isAr ? 'المبلغ المسدد:' : isEn ? 'Amount Paid:' : 'Montant payé :'}</span>
                 <span className="text-emerald-600 dark:text-emerald-400">
-                  {formatMoney(receiptToPrint.amount)}
+                  {formatMoney(retainedReceipt.amount)}
                 </span>
               </div>
             </div>
@@ -1191,10 +1205,9 @@ export const EducationFinanceView: React.FC = () => {
                 Print Official Receipt
               </AtriumButton>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

@@ -38,6 +38,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -1612,14 +1613,18 @@ export const AgricultureLivestockView: React.FC = () => {
         }}
       />
 
-      {isAnimalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-lg">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={isAnimalModalOpen}
+        onClose={() => setIsAnimalModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h2 className="t-card font-semibold text-black dark:text-white">
                   {animalToEdit
@@ -1742,9 +1747,7 @@ export const AgricultureLivestockView: React.FC = () => {
               </div>
             </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
 
       <AgriMilkingModal
         isOpen={isMilkingModalOpen}

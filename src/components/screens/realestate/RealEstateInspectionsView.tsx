@@ -1054,17 +1054,15 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         )}
       />
 
-      {isBonDeVisiteModalOpen && (
-        <BonDeVisiteModal
-          isOpen={isBonDeVisiteModalOpen}
-          onClose={() => setIsBonDeVisiteModalOpen(false)}
-          properties={properties}
-          onSave={(visit) => {
-            addVisit(visit);
-            setIsBonDeVisiteModalOpen(false);
-          }}
-        />
-      )}
+      <BonDeVisiteModal
+        isOpen={isBonDeVisiteModalOpen}
+        onClose={() => setIsBonDeVisiteModalOpen(false)}
+        properties={properties}
+        onSave={(visit) => {
+          addVisit(visit);
+          setIsBonDeVisiteModalOpen(false);
+        }}
+      />
     </div>
   );
 };

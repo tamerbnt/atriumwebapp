@@ -37,6 +37,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -51,6 +52,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
@@ -523,6 +525,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
     ],
     [t, language, isAr, isFr, branchesById, currentBranch]
   );
+
+  const retainedPrintedBooking = useRetainedModalValue(printedBooking);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -1143,21 +1147,26 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         }}
       />
 
-      {printedBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-xl w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6"
-            >
+      <KineticModalShell
+        isOpen={Boolean(printedBooking)}
+        onClose={() => setPrintedBooking(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedPrintedBooking && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto"
+          >
             <div className="flex justify-between items-center border-b border-[var(--atr-divider)] pb-4">
               <div>
                 <h3 className="t-pod font-semibold text-black dark:text-white">
                   {t('venue_voucher_title')}
                 </h3>
                 <span className="t-cap tabular-nums text-black/55 dark:text-white/55">
-                  {t('venue_voucher_ref', language, { id: printedBooking.id })}
+                  {t('venue_voucher_ref', language, { id: retainedPrintedBooking.id })}
                 </span>
               </div>
               <button
@@ -1181,16 +1190,16 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     {t('venue_voucher_renter_name')}
                   </span>
                   <span className="font-semibold text-black dark:text-white">
-                    {printedBooking.renterName}
+                    {retainedPrintedBooking.renterName}
                   </span>
                 </div>
-                {printedBooking.renterCompany && (
+                {retainedPrintedBooking.renterCompany && (
                   <div className="flex justify-between">
                     <span className="text-black/55 dark:text-white/55">
                       {t('venue_voucher_company')}
                     </span>
                     <span className="font-medium text-black dark:text-white">
-                      {printedBooking.renterCompany}
+                      {retainedPrintedBooking.renterCompany}
                     </span>
                   </div>
                 )}
@@ -1199,7 +1208,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     {t('venue_voucher_phone')}
                   </span>
                   <span className="tabular-nums text-black dark:text-white">
-                    {printedBooking.renterPhone}
+                    {retainedPrintedBooking.renterPhone}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -1207,7 +1216,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     {t('venue_voucher_space')}
                   </span>
                   <span className="font-semibold text-black dark:text-white">
-                    {printedBooking.unitName}
+                    {retainedPrintedBooking.unitName}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -1215,8 +1224,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     {t('venue_voucher_window')}
                   </span>
                   <span className="tabular-nums text-black dark:text-white">
-                    {printedBooking.startDateTime.replace('T', ' ').slice(0, 16)} -{' '}
-                    {printedBooking.endDateTime.split('T')[1]?.slice(0, 5)}
+                    {retainedPrintedBooking.startDateTime.replace('T', ' ').slice(0, 16)} -{' '}
+                    {retainedPrintedBooking.endDateTime.split('T')[1]?.slice(0, 5)}
                   </span>
                 </div>
               </div>
@@ -1228,16 +1237,16 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 <div className="flex justify-between font-semibold text-black dark:text-white">
                   <span>{t('venue_voucher_total_hire')}</span>
                   <span className="tabular-nums">
-                    {formatCurrencyAmount(printedBooking.totalAmount, printedBooking.currency)}
+                    {formatCurrencyAmount(retainedPrintedBooking.totalAmount, retainedPrintedBooking.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-black/70 dark:text-white/75">
                   <span>{t('venue_voucher_caution_held')}</span>
                   <span className="font-medium text-emerald-600 tabular-nums">
-                    {formatCurrencyAmount(printedBooking.depositAmount, printedBooking.currency)} (
-                    {printedBooking.depositStatus === 'Held'
+                    {formatCurrencyAmount(retainedPrintedBooking.depositAmount, retainedPrintedBooking.currency)} (
+                    {retainedPrintedBooking.depositStatus === 'Held'
                       ? t('venue_held_status')
-                      : printedBooking.depositStatus === 'Refunded'
+                      : retainedPrintedBooking.depositStatus === 'Refunded'
                       ? t('venue_refunded_status')
                       : t('venue_deducted_status')}
                     )
@@ -1246,7 +1255,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 <div className="flex justify-between text-black/70 dark:text-white/75">
                   <span>{t('venue_voucher_balance_due')}</span>
                   <span className="font-medium tabular-nums">
-                    {formatCurrencyAmount(printedBooking.balanceDue, printedBooking.currency)}
+                    {formatCurrencyAmount(retainedPrintedBooking.balanceDue, retainedPrintedBooking.currency)}
                   </span>
                 </div>
               </div>
@@ -1269,10 +1278,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 <Printer size={14} /> {t('venue_btn_print_agreement')}
               </button>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       <BookingModal
         isOpen={isBookingModalOpen}

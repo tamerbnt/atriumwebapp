@@ -22,6 +22,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface StockMovementModalProps {
   isOpen: boolean;
@@ -175,11 +176,14 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="sq-elev-pop relative w-full max-w-2xl my-auto">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      scrimClassName="bg-black/60"
+      ariaLabel={t('trading_stock_modal_title')}
+    >
       <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
@@ -440,7 +444,6 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

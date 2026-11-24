@@ -48,6 +48,8 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
+  useRetainedModalValue,
   ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
@@ -805,6 +807,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     hasCachedData: orders.length > 0 || invoices.length > 0,
   });
 
+  const retainedOrderToSettle = useRetainedModalValue(orderToSettle);
+  const retainedPrintInvoice = useRetainedModalValue(activePrintInvoice);
+
   if (showSkeleton && (orders.length === 0 && invoices.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
@@ -1366,13 +1371,19 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         }}
       />
 
-      {isPaymentModalOpen && orderToSettle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="sq-elev-pop max-w-lg w-full">
+      <KineticModalShell
+        isOpen={isPaymentModalOpen && Boolean(orderToSettle)}
+        onClose={() => setIsPaymentModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={isAr ? 'تسوية المستحقات وإصدار الفاتورة' : 'Règlement Financier & Facturation'}
+      >
+        {retainedOrderToSettle && (
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-5"
           >
             <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <div className="flex items-center gap-2">
@@ -1388,7 +1399,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                     {isAr ? 'تسوية المستحقات وإصدار الفاتورة' : 'Règlement Financier & Facturation'}
                   </h3>
                   <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
-                    {orderToSettle.orderNumber} · {orderToSettle.vehiclePlate}
+                    {retainedOrderToSettle.orderNumber} · {retainedOrderToSettle.vehiclePlate}
                   </span>
                 </div>
               </div>
@@ -1468,17 +1479,17 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               >
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Main d'œuvre :</span>
-                  <span>{formatMoney(orderToSettle.laborCostDzd || defaultLaborFallback, language)}</span>
+                  <span>{formatMoney(retainedOrderToSettle.laborCostDzd || defaultLaborFallback, language)}</span>
                 </div>
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Pièces utilisées :</span>
-                  <span>{formatMoney(orderToSettle.partsCostDzd || 15500, language)}</span>
+                  <span>{formatMoney(retainedOrderToSettle.partsCostDzd || 15500, language)}</span>
                 </div>
                 {billingType === 'facture_dgi' && configuredTvaRate > 0 && (
                   <div className="flex justify-between text-black/55 dark:text-white/55">
                     <span>TVA Réglementaire ({configuredTvaRate}%) :</span>
                     <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-                      {formatMoney((orderToSettle.finalCostDzd || defaultLaborFallback + 15500) * (configuredTvaRate / 100), language)}
+                      {formatMoney((retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) * (configuredTvaRate / 100), language)}
                     </span>
                   </div>
                 )}
@@ -1488,7 +1499,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                     <span className="font-semibold">
                       {formatMoney(
                         computeAlgerianTimbreFiscal(
-                          (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                          (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
                             (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
                           'especes'
                         ),
@@ -1501,11 +1512,11 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   <span>Net à Payer Client :</span>
                   <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {formatMoney(
-                      (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                      (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
                         (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1) +
                         (applyTimbre && paymentMethod === 'especes'
                           ? computeAlgerianTimbreFiscal(
-                              (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                              (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
                                 (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
                               'especes'
                             )
@@ -1525,13 +1536,19 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
             </form>
           </div>
-          </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
-      {isPrintModalOpen && activePrintInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
-          <div className="printable-document bg-white rounded-[var(--r-panel,28px)] max-w-2xl w-full p-8 shadow-2xl border border-black/[0.14] text-black space-y-6 max-h-[90vh] overflow-y-auto">
+      <KineticModalShell
+        isOpen={isPrintModalOpen && Boolean(activePrintInvoice)}
+        onClose={() => setIsPrintModalOpen(false)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/70"
+        ariaLabel={retainedPrintInvoice?.invoiceNumber || 'Invoice Preview'}
+      >
+        {retainedPrintInvoice && (
+          <div className="printable-document bg-white rounded-[var(--r-panel,28px)] w-full p-8 shadow-2xl border border-black/[0.14] text-black space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between border-b pb-4 border-black/[0.14]">
               <div>
                 <h2 className="t-dialog font-semibold text-black">ATRIUM AUTO GARAGE & FLEET DZ</h2>
@@ -1548,27 +1565,27 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
               <div className="text-right">
                 <span className="tabular-nums t-card font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                  {activePrintInvoice.invoiceNumber}
+                  {retainedPrintInvoice.invoiceNumber}
                 </span>
                 <span className="t-cap text-black/55 block tabular-nums">
-                  {new Date(activePrintInvoice.issuedAt).toLocaleDateString()}
+                  {new Date(retainedPrintInvoice.issuedAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 p-4 rounded-[var(--r-card,16px)] bg-neutral-50 t-cap tabular-nums">
               <div>
                 <span className="text-black/55 block">Client / Bénéficiaire :</span>
-                <span className="font-semibold text-black block t-label">{activePrintInvoice.clientName}</span>
-                <span className="text-black/55">{activePrintInvoice.clientPhone}</span>
-                {activePrintInvoice.clientNif && (
-                  <span className="text-black/55 block">NIF Client: {activePrintInvoice.clientNif}</span>
+                <span className="font-semibold text-black block t-label">{retainedPrintInvoice.clientName}</span>
+                <span className="text-black/55">{retainedPrintInvoice.clientPhone}</span>
+                {retainedPrintInvoice.clientNif && (
+                  <span className="text-black/55 block">NIF Client: {retainedPrintInvoice.clientNif}</span>
                 )}
               </div>
               <div>
                 <span className="text-black/55 block">Véhicule Pris en Charge :</span>
-                <span className="font-semibold text-black block t-label">{activePrintInvoice.vehiclePlate}</span>
-                <span className="text-black/55">{activePrintInvoice.vehicleModel}</span>
-                <span className="text-black/55 block">Réf OR: {activePrintInvoice.orderNumber}</span>
+                <span className="font-semibold text-black block t-label">{retainedPrintInvoice.vehiclePlate}</span>
+                <span className="text-black/55">{retainedPrintInvoice.vehicleModel}</span>
+                <span className="text-black/55 block">Réf OR: {retainedPrintInvoice.orderNumber}</span>
               </div>
             </div>
             <table className="w-full t-cap tabular-nums">
@@ -1581,16 +1598,16 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <tbody className="divide-y divide-black/[0.10]">
                 <tr>
                   <td className="py-2">Main d'œuvre mécanique spécialisée & diagnostic</td>
-                  <td className="py-2 text-right font-semibold">{activePrintInvoice.laborTotalHt.toLocaleString()} DA</td>
+                  <td className="py-2 text-right font-semibold">{retainedPrintInvoice.laborTotalHt.toLocaleString()} DA</td>
                 </tr>
                 <tr>
                   <td className="py-2">Pièces de rechange et lubrifiants certifiés conformes</td>
-                  <td className="py-2 text-right font-semibold">{activePrintInvoice.partsTotalHt.toLocaleString()} DA</td>
+                  <td className="py-2 text-right font-semibold">{retainedPrintInvoice.partsTotalHt.toLocaleString()} DA</td>
                 </tr>
-                {activePrintInvoice.discountHt > 0 && (
+                {retainedPrintInvoice.discountHt > 0 && (
                   <tr className="text-emerald-700">
                     <td className="py-2">Remise commerciale accordée</td>
-                    <td className="py-2 text-right font-semibold">-{activePrintInvoice.discountHt.toLocaleString()} DA</td>
+                    <td className="py-2 text-right font-semibold">-{retainedPrintInvoice.discountHt.toLocaleString()} DA</td>
                   </tr>
                 )}
               </tbody>
@@ -1599,28 +1616,28 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <div className="w-64 space-y-2 t-cap tabular-nums">
                 <div className="flex justify-between text-black/55">
                   <span>Total HT :</span>
-                  <span>{activePrintInvoice.subtotalHt.toLocaleString()} DA</span>
+                  <span>{retainedPrintInvoice.subtotalHt.toLocaleString()} DA</span>
                 </div>
-                {activePrintInvoice.tvaAmount > 0 && (
+                {retainedPrintInvoice.tvaAmount > 0 && (
                   <div className="flex justify-between text-black/55">
-                    <span>TVA ({activePrintInvoice.tvaRate}%) :</span>
-                    <span>{activePrintInvoice.tvaAmount.toLocaleString()} DA</span>
+                    <span>TVA ({retainedPrintInvoice.tvaRate}%) :</span>
+                    <span>{retainedPrintInvoice.tvaAmount.toLocaleString()} DA</span>
                   </div>
                 )}
-                {activePrintInvoice.timbreFiscal > 0 && (
+                {retainedPrintInvoice.timbreFiscal > 0 && (
                   <div className="flex justify-between text-amber-700 font-semibold">
                     <span>Timbre Fiscal (Espèces) :</span>
-                    <span>{activePrintInvoice.timbreFiscal.toLocaleString()} DA</span>
+                    <span>{retainedPrintInvoice.timbreFiscal.toLocaleString()} DA</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-black/[0.16] t-label font-semibold text-black">
                   <span>Net à Payer :</span>
-                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedPrintInvoice.netToPayDzd.toLocaleString()} DA</span>
                 </div>
               </div>
             </div>
             <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] t-cap text-black/75 italic border border-black/[0.09]">
-              Arrêté la présente facture à la somme de : {activePrintInvoice.netToPayDzd.toLocaleString()} Dinars Algériens.
+              Arrêté la présente facture à la somme de : {retainedPrintInvoice.netToPayDzd.toLocaleString()} Dinars Algériens.
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-black/[0.14]">
               <div className="text-center w-40 border border-black/[0.16] rounded-[var(--r-ctl,12px)] p-2 h-20 t-cap text-black/55">
@@ -1636,84 +1653,87 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
-      {isTillModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="sq-elev-pop max-w-md w-full">
-          <div
-            data-sq="panel"
-            data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-          >
-            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
-              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
-                <Wallet size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                <span>Point de Caisse Journalier (Z de Caisse)</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsTillModalOpen(false)}
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-              >
-                <X size={16} />
-              </button>
+      <KineticModalShell
+        isOpen={isTillModalOpen}
+        onClose={() => setIsTillModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel="Point de Caisse Journalier (Z de Caisse)"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+              <Wallet size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              <span>Point de Caisse Journalier (Z de Caisse)</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsTillModalOpen(false)}
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="space-y-3 t-cap tabular-nums">
+            <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
+              <span>Total Espèces en Caisse :</span>
+              <span className="font-semibold text-emerald-600">
+                {formatMoney(
+                  invoices.filter((i) => i.paymentMethod === 'especes').reduce((acc, i) => acc + i.netToPayDzd, 0),
+                  language
+                )}
+              </span>
             </div>
-            <div className="space-y-3 t-cap tabular-nums">
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
-                <span>Total Espèces en Caisse :</span>
-                <span className="font-semibold text-emerald-600">
-                  {formatMoney(
-                    invoices.filter((i) => i.paymentMethod === 'especes').reduce((acc, i) => acc + i.netToPayDzd, 0),
-                    language
-                  )}
-                </span>
-              </div>
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
-                <span>Total Cartes CIB / Dahabia :</span>
-                <span className="font-semibold text-blue-600">
-                  {formatMoney(
-                    invoices.filter((i) => i.paymentMethod === 'cib_dahabia').reduce((acc, i) => acc + i.netToPayDzd, 0),
-                    language
-                  )}
-                </span>
-              </div>
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
-                <span>Total Chèques & Virements :</span>
-                <span className="font-semibold text-black dark:text-white">
-                  {formatMoney(
-                    invoices
-                      .filter((i) => i.paymentMethod === 'cheque' || i.paymentMethod === 'virement')
-                      .reduce((acc, i) => acc + i.netToPayDzd, 0),
-                    language
-                  )}
-                </span>
-              </div>
+            <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
+              <span>Total Cartes CIB / Dahabia :</span>
+              <span className="font-semibold text-blue-600">
+                {formatMoney(
+                  invoices.filter((i) => i.paymentMethod === 'cib_dahabia').reduce((acc, i) => acc + i.netToPayDzd, 0),
+                  language
+                )}
+              </span>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-              <AtriumButton variant="secondary" onClick={() => setIsTillModalOpen(false)}>
-                Fermer
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
-                onClick={() => {
-                  showToast({
-                    type: 'success',
-                    title: 'Z de Caisse',
-                    message: 'Session de caisse clôturée et rapport Z imprimé',
-                  });
-                  setIsTillModalOpen(false);
-                }}
-              >
-                Clôturer la Caisse (Z)
-              </AtriumButton>
+            <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
+              <span>Total Chèques & Virements :</span>
+              <span className="font-semibold text-black dark:text-white">
+                {formatMoney(
+                  invoices
+                    .filter((i) => i.paymentMethod === 'cheque' || i.paymentMethod === 'virement')
+                    .reduce((acc, i) => acc + i.netToPayDzd, 0),
+                  language
+                )}
+              </span>
             </div>
           </div>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+            <AtriumButton variant="secondary" onClick={() => setIsTillModalOpen(false)}>
+              Fermer
+            </AtriumButton>
+            <AtriumButton
+              variant="primary"
+              onClick={() => {
+                showToast({
+                  type: 'success',
+                  title: 'Z de Caisse',
+                  message: 'Session de caisse clôturée et rapport Z imprimé',
+                });
+                setIsTillModalOpen(false);
+              }}
+            >
+              Clôturer la Caisse (Z)
+            </AtriumButton>
           </div>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

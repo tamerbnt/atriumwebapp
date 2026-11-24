@@ -50,6 +50,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1046,140 +1047,144 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         }}
       />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full">
-          <div
-            data-sq="panel"
-            data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
-                >
-                  <Truck size={20} />
-                </div>
-                <h2 className="t-card font-semibold text-black dark:text-white">
-                  {manifestToEdit
-                    ? isAr ? 'تعديل ورقة الطريق' : 'Modifier le Manifeste'
-                    : isAr ? 'إنشاء ورقة طريق جديدة' : 'Nouvelle Feuille de Route'}
-                </h2>
-              </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+      <KineticModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+        ariaLabel={
+          manifestToEdit
+            ? isAr ? 'تعديل ورقة الطريق' : 'Modifier le Manifeste'
+            : isAr ? 'إنشاء ورقة طريق جديدة' : 'Nouvelle Feuille de Route'
+        }
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+            <div className="flex items-center gap-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
               >
-                <X size={18} />
-              </button>
+                <Truck size={20} />
+              </div>
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                {manifestToEdit
+                  ? isAr ? 'تعديل ورقة الطريق' : 'Modifier le Manifeste'
+                  : isAr ? 'إنشاء ورقة طريق جديدة' : 'Nouvelle Feuille de Route'}
+              </h2>
             </div>
-            <form onSubmit={handleSaveModal} className="space-y-4">
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveModal} className="space-y-4">
+            <LabelInput
+              label={isAr ? 'اسم السائق / الموزع *' : 'Nom du Chauffeur / Coursier *'}
+              placeholder="Ex: Mourad Brahimi"
+              value={driverName}
+              onChange={(e) => setDriverName(e.target.value)}
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                label={isAr ? 'اسم السائق / الموزع *' : 'Nom du Chauffeur / Coursier *'}
-                placeholder="Ex: Mourad Brahimi"
-                value={driverName}
-                onChange={(e) => setDriverName(e.target.value)}
+                label={isAr ? 'هاتف السائق' : 'Téléphone Chauffeur'}
+                value={driverPhone}
+                onChange={(e) => setDriverPhone(e.target.value)}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'هاتف السائق' : 'Téléphone Chauffeur'}
-                  value={driverPhone}
-                  onChange={(e) => setDriverPhone(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'ترقيم المركبة' : 'Immatriculation Véhicule'}
-                  value={vehiclePlate}
-                  onChange={(e) => setVehiclePlate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'المنطقة أو الولاية' : 'Zone / Wilaya'}
-                  placeholder="Ex: Alger Ouest, Oran Centre..."
-                  value={zoneWilaya}
-                  onChange={(e) => setZoneWilaya(e.target.value)}
-                  required
-                />
-                <LabelSelect
-                  label={isAr ? 'الحالة' : 'Statut'}
-                  value={status}
-                  onChange={(v) => setStatus(extractStr(v) as LogisticsManifest['status'])}
-                  options={[
-                    { value: 'Dispatched', label: 'En Tournée (Dispatched)' },
-                    { value: 'Completed', label: 'Clôturée (Completed)' },
-                  ]}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {manifestToEdit
-                    ? isAr ? 'حفظ التعديلات' : 'Enregistrer'
-                    : isAr ? 'تأكيد إصدار الورقة' : 'Émettre le Manifeste'}
-                </AtriumButton>
-              </div>
-            </form>
-          </div>
-          </div>
+              <LabelInput
+                label={isAr ? 'ترقيم المركبة' : 'Immatriculation Véhicule'}
+                value={vehiclePlate}
+                onChange={(e) => setVehiclePlate(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'المنطقة أو الولاية' : 'Zone / Wilaya'}
+                placeholder="Ex: Alger Ouest, Oran Centre..."
+                value={zoneWilaya}
+                onChange={(e) => setZoneWilaya(e.target.value)}
+                required
+              />
+              <LabelSelect
+                label={isAr ? 'الحالة' : 'Statut'}
+                value={status}
+                onChange={(v) => setStatus(extractStr(v) as LogisticsManifest['status'])}
+                options={[
+                  { value: 'Dispatched', label: 'En Tournée (Dispatched)' },
+                  { value: 'Completed', label: 'Clôturée (Completed)' },
+                ]}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsModalOpen(false)}
+              >
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" type="submit">
+                {manifestToEdit
+                  ? isAr ? 'حفظ التعديلات' : 'Enregistrer'
+                  : isAr ? 'تأكيد إصدار الورقة' : 'Émettre le Manifeste'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
 
-      {isPrintModalOpen && manifestToPrint && (
-        <TransportManifestPrintModal
-          isOpen={isPrintModalOpen}
-          onClose={() => setIsPrintModalOpen(false)}
-          manifest={manifestToPrint}
-        />
-      )}
+      <TransportManifestPrintModal
+        isOpen={isPrintModalOpen && Boolean(manifestToPrint)}
+        onClose={() => setIsPrintModalOpen(false)}
+        manifest={manifestToPrint}
+      />
 
-      {isDischargeModalOpen && manifestToDischarge && (
-        <CourierDischargeModal
-          isOpen={isDischargeModalOpen}
-          onClose={() => setIsDischargeModalOpen(false)}
-          manifest={manifestToDischarge}
-          onSaveDischarge={(d) => {
-            runUndoBatch(
-              {
-                operationType: 'status',
-                vertical: 'logistics_delivery',
-                summary: pickLocalizedText(language, {
-                  fr: `Décharge ${d.dischargeNumber} & clôture ${manifestToDischarge.manifestNumber}`,
-                  en: `Discharge ${d.dischargeNumber} & closed ${manifestToDischarge.manifestNumber}`,
-                  ar: `تصفية ${d.dischargeNumber} وإغلاق ${manifestToDischarge.manifestNumber}`,
-                }),
-                toastTitle: pickLocalizedText(language, {
-                  fr: 'Feuilles de Route',
-                  en: 'Dispatch Manifests',
-                  ar: 'أوراق الطريق',
-                }),
-              },
-              () => {
-                addDischarge(d);
-                updateManifest({
-                  ...manifestToDischarge,
-                  status: 'Completed',
-                  totalCodCollectedDzd: d.actualCashTurnedInDzd,
-                });
-              }
-            );
-          }}
-        />
-      )}
+      <CourierDischargeModal
+        isOpen={isDischargeModalOpen && Boolean(manifestToDischarge)}
+        onClose={() => setIsDischargeModalOpen(false)}
+        manifest={manifestToDischarge}
+        onSaveDischarge={(d) => {
+          if (!manifestToDischarge) return;
+          runUndoBatch(
+            {
+              operationType: 'status',
+              vertical: 'logistics_delivery',
+              summary: pickLocalizedText(language, {
+                fr: `Décharge ${d.dischargeNumber} & clôture ${manifestToDischarge.manifestNumber}`,
+                en: `Discharge ${d.dischargeNumber} & closed ${manifestToDischarge.manifestNumber}`,
+                ar: `تصفية ${d.dischargeNumber} وإغلاق ${manifestToDischarge.manifestNumber}`,
+              }),
+              toastTitle: pickLocalizedText(language, {
+                fr: 'Feuilles de Route',
+                en: 'Dispatch Manifests',
+                ar: 'أوراق الطريق',
+              }),
+            },
+            () => {
+              addDischarge(d);
+              updateManifest({
+                ...manifestToDischarge,
+                status: 'Completed',
+                totalCodCollectedDzd: d.actualCashTurnedInDzd,
+              });
+            }
+          );
+        }}
+      />
     </div>
   );
 };

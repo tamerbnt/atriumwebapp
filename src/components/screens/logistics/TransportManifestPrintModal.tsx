@@ -9,16 +9,17 @@ import {
 import { LogisticsManifest } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface TransportManifestPrintModalProps {
   isOpen: boolean;
   onClose: () => void;
-  manifest: LogisticsManifest;
+  manifest: LogisticsManifest | null;
 }
 
 
 
-export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalProps> = ({ isOpen, onClose, manifest }) => {
+export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalProps> = ({ isOpen, onClose, manifest: rawManifest }) => {
 	const { language, currentBusiness } = useAtriumSelector(
 	  (s) => ({
 	    language: s.language,
@@ -27,14 +28,21 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 	  shallowEqualObjects
 	);
 	const isAr = language === "ar";
-	if (!isOpen) return null;
+	const manifest = useRetainedModalValue(isOpen ? rawManifest : null);
 	const handlePrint = () => {
 		window.print();
 	};
-	const offlineHash = `ALG-LVR-SEC-${manifest.manifestNumber}-${manifest.vehiclePlate}-${manifest.totalShipmentsCount}`;
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="sq-elev-pop max-w-3xl w-full">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[95vh] flex flex-col">
+	const offlineHash = manifest ? `ALG-LVR-SEC-${manifest.manifestNumber}-${manifest.vehiclePlate}-${manifest.totalShipmentsCount}` : "";
+	return (
+		<KineticModalShell
+			isOpen={isOpen && Boolean(rawManifest)}
+			onClose={onClose}
+			maxWidthClass="max-w-3xl"
+			scrimClassName="bg-black/60"
+			ariaLabel={isAr ? "بيان الشحن القانوني (المرسوم التنفيذي 05-468)" : "Lettre de Voiture Routière (Décret 05-468)"}
+		>
+			{manifest && (
+				<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[95vh] flex flex-col print:p-0 print:shadow-none print:max-h-none">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0 print:hidden">
 <div className="flex items-center gap-2">
 <ShieldCheck size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -180,6 +188,7 @@ Document officiel à présenter à toute réquisition des services de Gendarmeri
 </div>
 </div>
 </div>
-</div>
-</div>;
+			)}
+		</KineticModalShell>
+	);
 };

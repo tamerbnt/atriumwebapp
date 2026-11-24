@@ -19,6 +19,7 @@ import {
 } from '../../services/store';
 import { StaffMember } from '../../types/index';
 import { t } from '../../utils/i18n';
+import { KineticModalShell } from '../ui/kinetic/KineticModalShell';
 
 interface FastSwitchModalProps {
   isOpen: boolean;
@@ -44,8 +45,6 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [pinInput, setPinInput] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const handleDigit = (digit: string) => {
     if (pinInput.length < 4) {
@@ -93,13 +92,19 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/75 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-150">
-      <div className="w-full max-w-md sq-elev-pop">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] text-white p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
-        >
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-md"
+      zIndexClass="z-[9992]"
+      scrimClassName="bg-black/72"
+      ariaLabel={t('fast_switch_title_lock', language)}
+    >
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="relative w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] text-white p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] select-none"
+      >
           {/* Header */}
           <div className="flex items-center justify-between pb-[var(--s3,12px)] border-b border-white/[0.06]">
             <div className="flex items-center gap-[var(--s3,12px)]">
@@ -262,8 +267,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               <span>{t('topbar_logout', language)}</span>
             </button>
           </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

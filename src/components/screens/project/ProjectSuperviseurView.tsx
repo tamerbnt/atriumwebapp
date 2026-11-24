@@ -44,6 +44,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   KineticFilterModal,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -1730,13 +1731,14 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         )}
       />
 
-      {showPhoneSimulator && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-        >
-          <div className="relative">
+      <KineticModalShell
+        isOpen={showPhoneSimulator}
+        onClose={() => setShowPhoneSimulator(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div className="relative flex flex-col items-center">
             <button
               type="button"
               onClick={() => setShowPhoneSimulator(false)}
@@ -1793,9 +1795,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 </div>
               </div>
             </MobilePhoneSimulator>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

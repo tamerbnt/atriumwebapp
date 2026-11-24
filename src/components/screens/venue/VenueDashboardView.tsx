@@ -350,12 +350,10 @@ export const VenueDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isBookingModalOpen && (
-        <BookingModal
-          isOpen={isBookingModalOpen}
-          onClose={() => setIsBookingModalOpen(false)}
-        />
-      )}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
     </DashboardBentoFrame>
   );
 };

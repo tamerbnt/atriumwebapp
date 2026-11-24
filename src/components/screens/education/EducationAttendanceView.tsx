@@ -41,6 +41,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -1191,14 +1192,18 @@ export const EducationAttendanceView: React.FC = () => {
         }}
       />
 
-      {isGradeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6"
-            >
+      <KineticModalShell
+        isOpen={isGradeModalOpen}
+        onClose={() => setIsGradeModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[92vh] overflow-y-auto"
+        >
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_grade_modal_title')}
@@ -1294,16 +1299,13 @@ export const EducationAttendanceView: React.FC = () => {
               </div>
             </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
 
-      {isRollCallOpen && (
-        <RollCallModal
-          cohortId={selectedCohortId === 'all' ? eduCohorts[0]?.id : selectedCohortId}
-          onClose={() => setIsRollCallOpen(false)}
-        />
-      )}
+      <RollCallModal
+        isOpen={isRollCallOpen}
+        cohortId={selectedCohortId === 'all' ? eduCohorts[0]?.id : selectedCohortId}
+        onClose={() => setIsRollCallOpen(false)}
+      />
     </div>
   );
 };

@@ -48,6 +48,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1135,126 +1136,129 @@ export const FreelanceFinanceView: React.FC = () => {
       />
 
       {/* Add Expense Modal */}
-      {isAddExpenseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+      <KineticModalShell
+        isOpen={isAddExpenseModalOpen}
+        onClose={() => setIsAddExpenseModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_fin_modal_expense_title', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_fin_modal_expense_title', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAddExpenseModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_fin_modal_expense_title', language)}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddExpenseModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <form onSubmit={handleCreateExpense} className="space-y-4 t-cap">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  field="Vendor"
-                  label={`${t('free_fin_vendor_label', language)} *`}
-                  required
-                  placeholder={t('free_fin_ph_vendor', language)}
-                  value={vendor}
-                  onChange={(v) => setVendor(extractStr(v))}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-                <LabelSelect
-                  field="Category"
-                  label={`${t('free_fin_expense_category', language)} *`}
-                  value={category}
-                  onChange={(val) => setCategory(extractStr(val) as ExpenseCategory)}
-                  options={[
-                    { value: 'Software', label: t('free_fin_expense_software', language) },
-                    { value: 'Office', label: t('free_fin_expense_workspace', language) },
-                    { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
-                    {
-                      value: 'Subcontractor',
-                      label: t('free_fin_expense_subcontractor', language),
-                    },
-                    { value: 'Travel', label: t('free_fin_expense_travel', language) },
-                    { value: 'Other', label: t('free_fin_expense_other', language) },
-                  ]}
-                  height={46}
-                  corner={12}
-                />
-              </div>
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateExpense} className="space-y-4 t-cap">
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                field="Description"
-                label={`${t('free_fin_expense_desc', language)} *`}
+                field="Vendor"
+                label={`${t('free_fin_vendor_label', language)} *`}
                 required
-                placeholder={t('free_fin_ph_expense_desc_full', language)}
-                value={description}
-                onChange={(v) => setDescription(extractStr(v))}
+                placeholder={t('free_fin_ph_vendor', language)}
+                value={vendor}
+                onChange={(v) => setVendor(extractStr(v))}
                 width="100%"
                 height={46}
                 corner={12}
               />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  field="Amount"
-                  label={`${t('common_amount', language)} *`}
-                  type="number"
-                  required
-                  value={String(amount)}
-                  onChange={(val) => setAmount(Number(extractStr(val)) || 0)}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-                <LabelSelect
-                  field="Currency"
-                  label={`${t('common_currency', language)} *`}
-                  value={currency}
-                  onChange={(val) => setCurrency(extractStr(val) as CurrencyCode)}
-                  options={[
-                    { value: 'EUR', label: 'EUR (€)' },
-                    { value: 'USD', label: 'USD ($)' },
-                    { value: 'DZD', label: 'DZD (DA)' },
-                  ]}
-                  height={46}
-                  corner={12}
-                />
-              </div>
-              <div className="pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-black/70 dark:text-white/75 font-medium">
-                  <input
-                    type="checkbox"
-                    checked={isTaxDeductible}
-                    onChange={(e) => setIsTaxDeductible(e.target.checked)}
-                    className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-0"
-                  />
-                  <span>{t('free_fin_tax_deductible_prompt', language)}</span>
-                </label>
-              </div>
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsAddExpenseModalOpen(false)}
-                >
-                  {t('action_cancel', language)}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
-                  {t('free_fin_btn_save_expense', language)}
-                </AtriumButton>
-              </div>
-            </form>
+              <LabelSelect
+                field="Category"
+                label={`${t('free_fin_expense_category', language)} *`}
+                value={category}
+                onChange={(val) => setCategory(extractStr(val) as ExpenseCategory)}
+                options={[
+                  { value: 'Software', label: t('free_fin_expense_software', language) },
+                  { value: 'Office', label: t('free_fin_expense_workspace', language) },
+                  { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
+                  {
+                    value: 'Subcontractor',
+                    label: t('free_fin_expense_subcontractor', language),
+                  },
+                  { value: 'Travel', label: t('free_fin_expense_travel', language) },
+                  { value: 'Other', label: t('free_fin_expense_other', language) },
+                ]}
+                height={46}
+                corner={12}
+              />
             </div>
-          </div>
+            <LabelInput
+              field="Description"
+              label={`${t('free_fin_expense_desc', language)} *`}
+              required
+              placeholder={t('free_fin_ph_expense_desc_full', language)}
+              value={description}
+              onChange={(v) => setDescription(extractStr(v))}
+              width="100%"
+              height={46}
+              corner={12}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                field="Amount"
+                label={`${t('common_amount', language)} *`}
+                type="number"
+                required
+                value={String(amount)}
+                onChange={(val) => setAmount(Number(extractStr(val)) || 0)}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+              <LabelSelect
+                field="Currency"
+                label={`${t('common_currency', language)} *`}
+                value={currency}
+                onChange={(val) => setCurrency(extractStr(val) as CurrencyCode)}
+                options={[
+                  { value: 'EUR', label: 'EUR (€)' },
+                  { value: 'USD', label: 'USD ($)' },
+                  { value: 'DZD', label: 'DZD (DA)' },
+                ]}
+                height={46}
+                corner={12}
+              />
+            </div>
+            <div className="pt-2">
+              <label className="flex items-center gap-2 cursor-pointer text-black/70 dark:text-white/75 font-medium">
+                <input
+                  type="checkbox"
+                  checked={isTaxDeductible}
+                  onChange={(e) => setIsTaxDeductible(e.target.checked)}
+                  className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-0"
+                />
+                <span>{t('free_fin_tax_deductible_prompt', language)}</span>
+              </label>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => setIsAddExpenseModalOpen(false)}
+              >
+                {t('action_cancel', language)}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" glow type="submit">
+                {t('free_fin_btn_save_expense', language)}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

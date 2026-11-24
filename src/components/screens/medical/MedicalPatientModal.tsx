@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import {
   showToast,
@@ -12,6 +12,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface MedicalPatientModalProps {
   isOpen: boolean;
@@ -46,8 +47,23 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   const [emergencyContact, setEmergencyContact] = useState(patientToEdit?.emergencyContact || '');
   const [emergencyPhone, setEmergencyPhone] = useState(patientToEdit?.emergencyPhone || '');
   const [notes, setNotes] = useState(patientToEdit?.notes || '');
+  const retainedPatientToEdit = useRetainedModalValue(isOpen ? patientToEdit ?? null : null);
+  const displayPatientToEdit = isOpen ? patientToEdit : retainedPatientToEdit;
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    setFullName(patientToEdit?.fullName || '');
+    setNationalId(patientToEdit?.nationalId || '');
+    setPhone(patientToEdit?.phone || '');
+    setDob(patientToEdit?.dateOfBirth || '1990-01-01');
+    setGender(patientToEdit?.gender || 'Male');
+    setBloodGroup(patientToEdit?.bloodGroup || 'O+');
+    setAllergies(patientToEdit?.allergies?.join(', ') || '');
+    setChronicConditions(patientToEdit?.chronicConditions?.join(', ') || '');
+    setEmergencyContact(patientToEdit?.emergencyContact || '');
+    setEmergencyPhone(patientToEdit?.emergencyPhone || '');
+    setNotes(patientToEdit?.notes || '');
+  }, [isOpen, patientToEdit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,13 +119,22 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-lg w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
-        >
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-lg"
+      scrimClassName="bg-black/50"
+      ariaLabel={
+        displayPatientToEdit
+          ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
+          : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')
+      }
+    >
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
+      >
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div
@@ -120,7 +145,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
                 <UserPlus size={16} />
               </div>
               <h3 className="font-semibold t-label text-black dark:text-white">
-                {patientToEdit
+                {displayPatientToEdit
                   ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
                   : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
               </h3>
@@ -233,8 +258,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

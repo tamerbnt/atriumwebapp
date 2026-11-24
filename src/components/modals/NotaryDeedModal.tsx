@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   BookOpen,
   Scale,
@@ -55,6 +55,24 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
   const [ilot, setIlot] = useState('18');
   const [lotNumber, setLotNumber] = useState('Lot 12 - Bloc B');
   const [livretFoncierNumber, setLivretFoncierNumber] = useState('LF-16/04-0982');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setActType('vente_immobiliere');
+    setTitleFr('Vente Immobilière Appartement F4 Haut Standing');
+    setTitleAr('عقد بيع عقاري لشقة ذات 4 غرف عالية الطراز');
+    setTransactionValueDzd(12000000);
+    setVendorName('Hadj Amine Mansouri');
+    setVendorNin('197516010045678912');
+    setPurchaserName('Dr. Mourad Belkacem');
+    setPurchaserNin('198216010098765432');
+    setWilaya('Alger');
+    setCommune('El Biar');
+    setSection('04');
+    setIlot('18');
+    setLotNumber('Lot 12 - Bloc B');
+    setLivretFoncierNumber('LF-16/04-0982');
+  }, [isOpen]);
 
   // Tariff calculation
   const tariff = useMemo(() => {

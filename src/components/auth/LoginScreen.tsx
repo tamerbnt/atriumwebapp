@@ -27,6 +27,7 @@ import { t } from '../../utils/i18n';
 import { FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { AtriumButton } from '../ui/AtriumButton';
+import { KineticModalShell } from '../ui/kinetic/KineticModalShell';
 
 interface LoginScreenProps {
   onStartOnboarding: () => void;
@@ -502,48 +503,50 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       </div>
 
       {/* Forgot Password Modal */}
-      {forgotPasswordOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-[var(--s4,16px)] bg-black/70 backdrop-blur-xs">
-          <div className="w-full max-w-sm sq-elev-pop">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
-            >
-              <h3 className="t-dialog font-medium">
-                {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
-              </h3>
-              <p className="t-body text-[var(--text-dark-2,#A99E92)]">
-                {language === 'ar'
-                  ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
-                  : language === 'fr'
-                  ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
-                  : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
-              </p>
-              <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-[#1D1B19] [--sq-stroke:var(--sq-stroke-obsidian)] t-small text-white/75"
-              >
-                {language === 'ar'
-                  ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
-                  : language === 'fr'
-                  ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
-                  : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
-              </div>
-              <button
-                type="button"
-                data-sq="ctl"
-                data-sq-border="none"
-                onClick={() => setForgotPasswordOpen(false)}
-                className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-[var(--brand-fill,#C9461F)] text-white t-btn font-semibold cursor-pointer"
-              >
-                {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
-              </button>
-            </div>
+      <KineticModalShell
+        isOpen={forgotPasswordOpen}
+        onClose={() => setForgotPasswordOpen(false)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-[9992]"
+        scrimClassName="bg-black/70"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
+        >
+          <h3 className="t-dialog font-medium">
+            {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
+          </h3>
+          <p className="t-body text-[var(--text-dark-2,#A99E92)]">
+            {language === 'ar'
+              ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
+              : language === 'fr'
+              ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
+              : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
+          </p>
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-[#1D1B19] [--sq-stroke:var(--sq-stroke-obsidian)] t-small text-white/75"
+          >
+            {language === 'ar'
+              ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
+              : language === 'fr'
+              ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
+              : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
           </div>
+          <button
+            type="button"
+            data-sq="ctl"
+            data-sq-border="none"
+            onClick={() => setForgotPasswordOpen(false)}
+            className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-[var(--brand-fill,#C9461F)] text-white t-btn font-semibold cursor-pointer"
+          >
+            {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
+          </button>
         </div>
-      )}
+      </KineticModalShell>
 
     </div>
   );

@@ -190,13 +190,19 @@ export class Sp {
   tune: number;
   private listeners = new Set<SpringListener>();
 
-  constructor(x: number, tune = 24) {
+  constructor(x: number, tune: number | { k: number; d: number } = 24) {
     this._x = x;
     this._t = x;
-    this.tune = tune;
-    const coeff = computeSpringCoefficients(tune);
-    this.k = coeff.k;
-    this.d = coeff.d;
+    if (typeof tune === 'number') {
+      this.tune = tune;
+      const coeff = computeSpringCoefficients(tune);
+      this.k = coeff.k;
+      this.d = coeff.d;
+    } else {
+      this.tune = 0;
+      this.k = tune.k;
+      this.d = tune.d;
+    }
     activeSprings.add(this);
   }
 

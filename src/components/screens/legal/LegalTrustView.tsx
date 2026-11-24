@@ -62,6 +62,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1829,124 +1830,127 @@ export const LegalTrustView: React.FC<any> = () => {
           }}
         />
 
-        {isSCFModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="sq-elev-pop max-w-lg w-full">
-              <div
-                data-sq="panel"
-                data-sq-border="solid"
-                className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
-              >
-              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-                <div className="flex items-center gap-2">
-                  <Scale size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  <h2 className="t-card font-semibold text-black dark:text-white">
-                    {isAr
-                      ? 'تسجيل قيد محاسبي مزدوج (SCF)'
-                      : "Saisie d'une Écriture Comptable SCF"}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setIsSCFModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
+        <KineticModalShell
+          isOpen={isSCFModalOpen}
+          onClose={() => setIsSCFModalOpen(false)}
+          maxWidthClass="max-w-lg"
+          zIndexClass="z-50"
+          scrimClassName="bg-black/50"
+          ariaLabel={isAr ? 'تسجيل قيد محاسبي مزدوج (SCF)' : "Saisie d'une Écriture Comptable SCF"}
+        >
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] w-full max-h-[92vh] overflow-y-auto p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+              <div className="flex items-center gap-2">
+                <Scale size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {isAr
+                    ? 'تسجيل قيد محاسبي مزدوج (SCF)'
+                    : "Saisie d'une Écriture Comptable SCF"}
+                </h2>
               </div>
-              <form onSubmit={handleSaveSCFEntry} className="space-y-3 t-cap">
-                <div className="grid grid-cols-2 gap-3">
-                  <LabelSelect
-                    label={isAr ? 'دفتر اليومية' : 'Code Journal'}
-                    value={scfJournal}
-                    onChange={(v) =>
-                      setScfJournal(extractStr(v) as SCFJournalEntry['journalCode'])
-                    }
-                    options={[
-                      { value: 'VE', label: 'VE - Ventes' },
-                      { value: 'CA', label: 'CA - Caisse' },
-                      { value: 'BQ', label: 'BQ - Banque' },
-                      { value: 'OD', label: 'OD - Opérations Diverses' },
-                    ]}
-                  />
-                  <LabelInput
-                    label={isAr ? 'مرجع الوثيقة' : 'Réf Pièce Justificative'}
-                    placeholder="FAC-2026-092"
-                    value={scfRefPiece}
-                    onChange={(e) => setScfRefPiece(e.target.value)}
-                  />
-                </div>
+              <button
+                type="button"
+                data-no-liquid="true"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setIsSCFModalOpen(false)}
+                className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveSCFEntry} className="space-y-3 t-cap">
+              <div className="grid grid-cols-2 gap-3">
+                <LabelSelect
+                  label={isAr ? 'دفتر اليومية' : 'Code Journal'}
+                  value={scfJournal}
+                  onChange={(v) =>
+                    setScfJournal(extractStr(v) as SCFJournalEntry['journalCode'])
+                  }
+                  options={[
+                    { value: 'VE', label: 'VE - Ventes' },
+                    { value: 'CA', label: 'CA - Caisse' },
+                    { value: 'BQ', label: 'BQ - Banque' },
+                    { value: 'OD', label: 'OD - Opérations Diverses' },
+                  ]}
+                />
                 <LabelInput
-                  label={isAr ? 'البيان المحاسبي *' : "Libellé de l'écriture *"}
-                  placeholder="Ex: Facturation honoraires audit légal"
-                  value={scfLibelle}
-                  onChange={(e) => setScfLibelle(e.target.value)}
+                  label={isAr ? 'مرجع الوثيقة' : 'Réf Pièce Justificative'}
+                  placeholder="FAC-2026-092"
+                  value={scfRefPiece}
+                  onChange={(e) => setScfRefPiece(e.target.value)}
+                />
+              </div>
+              <LabelInput
+                label={isAr ? 'البيان المحاسبي *' : "Libellé de l'écriture *"}
+                placeholder="Ex: Facturation honoraires audit légal"
+                value={scfLibelle}
+                onChange={(e) => setScfLibelle(e.target.value)}
+                required
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'المبلغ الصافي الخاضع (HT) *' : 'Montant HT (Prestation) *'}
+                  type="number"
+                  value={scfDebitAmount}
+                  onChange={(e) => setScfDebitAmount(Number(e.target.value))}
                   required
                 />
-                <div className="grid grid-cols-2 gap-3">
-                  <LabelInput
-                    label={isAr ? 'المبلغ الصافي الخاضع (HT) *' : 'Montant HT (Prestation) *'}
-                    type="number"
-                    value={scfDebitAmount}
-                    onChange={(e) => setScfDebitAmount(Number(e.target.value))}
-                    required
-                  />
-                  <LabelSelect
-                    label={isAr ? 'نسبة الرسم TVA' : 'Taux TVA'}
-                    value={scfTvaRate.toString()}
-                    onChange={(v) => setScfTvaRate(Number(extractStr(v)))}
-                    options={[
-                      { value: '19', label: '19% (Taux Normal)' },
-                      { value: '9', label: '9% (Taux Réduit)' },
-                      { value: '0', label: '0% (Exonéré)' },
-                    ]}
-                  />
-                </div>
-                <div
-                  data-sq="card"
-                  data-sq-border="none"
-                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
-                >
-                  <div className="flex justify-between">
-                    <span>Compte 706000 (Crédit HT):</span>
-                    <span className="font-semibold">{formatMoney(scfDebitAmount, language)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Compte 445700 (TVA {scfTvaRate}%):</span>
-                    <span className="font-semibold">
-                      {formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                    <span>Compte 411000 (Débit TTC):</span>
-                    <span>
-                      {formatMoney(
-                        scfDebitAmount + Math.round(scfDebitAmount * (scfTvaRate / 100)),
-                        language
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-                  <AtriumButton
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => setIsSCFModalOpen(false)}
-                  >
-                    {isAr ? 'إلغاء' : 'Annuler'}
-                  </AtriumButton>
-                  <AtriumButton variant="primary" size="sm" type="submit">
-                    {isAr ? 'تسجيل القيد' : 'Enregistrer au Grand Livre'}
-                  </AtriumButton>
-                </div>
-              </form>
+                <LabelSelect
+                  label={isAr ? 'نسبة الرسم TVA' : 'Taux TVA'}
+                  value={scfTvaRate.toString()}
+                  onChange={(v) => setScfTvaRate(Number(extractStr(v)))}
+                  options={[
+                    { value: '19', label: '19% (Taux Normal)' },
+                    { value: '9', label: '9% (Taux Réduit)' },
+                    { value: '0', label: '0% (Exonéré)' },
+                  ]}
+                />
               </div>
-            </div>
+              <div
+                data-sq="card"
+                data-sq-border="none"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
+              >
+                <div className="flex justify-between">
+                  <span>Compte 706000 (Crédit HT):</span>
+                  <span className="font-semibold">{formatMoney(scfDebitAmount, language)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Compte 445700 (TVA {scfTvaRate}%):</span>
+                  <span className="font-semibold">
+                    {formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                  <span>Compte 411000 (Débit TTC):</span>
+                  <span>
+                    {formatMoney(
+                      scfDebitAmount + Math.round(scfDebitAmount * (scfTvaRate / 100)),
+                      language
+                    )}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setIsSCFModalOpen(false)}
+                >
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {isAr ? 'تسجيل القيد' : 'Enregistrer au Grand Livre'}
+                </AtriumButton>
+              </div>
+            </form>
           </div>
-        )}
+        </KineticModalShell>
       </div>
     );
   }
@@ -2317,106 +2321,109 @@ export const LegalTrustView: React.FC<any> = () => {
           }}
         />
 
-        {isNewReceiptModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="sq-elev-pop max-w-lg w-full">
-              <div
-                data-sq="panel"
-                data-sq-border="solid"
-                className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+        <KineticModalShell
+          isOpen={isNewReceiptModalOpen}
+          onClose={() => setIsNewReceiptModalOpen(false)}
+          maxWidthClass="max-w-lg"
+          zIndexClass="z-50"
+          scrimClassName="bg-black/50"
+          ariaLabel={isAr ? 'قبض مبلغ نقدي مع طابع المادة 317' : 'Encaissement Espèces & Timbre Art. 317'}
+        >
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] w-full max-h-[92vh] overflow-y-auto p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {isAr
+                    ? 'قبض مبلغ نقدي مع طابع المادة 317'
+                    : 'Encaissement Espèces & Timbre Art. 317'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                data-no-liquid="true"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setIsNewReceiptModalOpen(false)}
+                className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
               >
-              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-                <div className="flex items-center gap-2">
-                  <CreditCard size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  <h2 className="t-card font-semibold text-black dark:text-white">
-                    {isAr
-                      ? 'قبض مبلغ نقدي مع طابع المادة 317'
-                      : 'Encaissement Espèces & Timbre Art. 317'}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setIsNewReceiptModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <form onSubmit={handleSaveCashReceipt} className="space-y-3 t-cap">
-                <LabelInput
-                  label={isAr ? 'اسم الموكل / الدافع *' : 'Nom du Client / Payeur *'}
-                  placeholder="Ex: Hadj Amine Mansouri"
-                  value={receiptClientName}
-                  onChange={(e) => setReceiptClientName(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'موضوع الدفعة / القضية' : 'Objet du Versement'}
-                  placeholder="Ex: Provision sur honoraires dossier 26/01482"
-                  value={receiptMatterTitle}
-                  onChange={(e) => setReceiptMatterTitle(e.target.value)}
-                />
-                <LabelInput
-                  label={isAr ? 'المبلغ الصافي الخاضع (HT) بالدينار *' : 'Montant HT (DZD) *'}
-                  type="number"
-                  value={receiptAmountHt}
-                  onChange={(e) => setReceiptAmountHt(Number(e.target.value))}
-                  required
-                />
-                {(() => {
-                  const ht = Number(receiptAmountHt) || 0;
-                  const tva = Math.round(ht * 0.19);
-                  const ttc = ht + tva;
-                  const stamp = calculateArticle317Stamp(ttc, 'especes');
-                  const netCollected = ttc + stamp;
-                  return (
-                    <div
-                      data-sq="card"
-                      data-sq-border="none"
-                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
-                    >
-                      <div className="flex justify-between">
-                        <span>Montant HT:</span>
-                        <span>{formatMoney(ht, language)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>TVA (19%):</span>
-                        <span>{formatMoney(tva, language)}</span>
-                      </div>
-                      <div className="flex justify-between text-amber-600 font-semibold">
-                        <span>Timbre Fiscal Progressif (Art. 317):</span>
-                        <span>+{formatMoney(stamp, language)}</span>
-                      </div>
-                      <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold t-label text-emerald-600">
-                        <span>Total Net à Encaisser en Espèces:</span>
-                        <span>{formatMoney(netCollected, language)}</span>
-                      </div>
-                      <p className="t-cap text-black/55 dark:text-white/55 font-sans mt-1">
-                        Droit de timbre gradué (Art. 317) : Exonéré &lt; 500 DA, 20-200 DA, puis 1% plafonné à 2 500 DA.
-                      </p>
-                    </div>
-                  );
-                })()}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-                  <AtriumButton
-                    variant="ghost"
-                    size="sm"
-                    type="button"
-                    onClick={() => setIsNewReceiptModalOpen(false)}
-                  >
-                    {isAr ? 'إلغاء' : 'Annuler'}
-                  </AtriumButton>
-                  <AtriumButton variant="primary" size="sm" type="submit">
-                    {isAr ? 'توليد الوصل والقبض' : "Valider l'Encaissement"}
-                  </AtriumButton>
-                </div>
-              </form>
-              </div>
+                <X size={18} />
+              </button>
             </div>
+            <form onSubmit={handleSaveCashReceipt} className="space-y-3 t-cap">
+              <LabelInput
+                label={isAr ? 'اسم الموكل / الدافع *' : 'Nom du Client / Payeur *'}
+                placeholder="Ex: Hadj Amine Mansouri"
+                value={receiptClientName}
+                onChange={(e) => setReceiptClientName(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'موضوع الدفعة / القضية' : 'Objet du Versement'}
+                placeholder="Ex: Provision sur honoraires dossier 26/01482"
+                value={receiptMatterTitle}
+                onChange={(e) => setReceiptMatterTitle(e.target.value)}
+              />
+              <LabelInput
+                label={isAr ? 'المبلغ الصافي الخاضع (HT) بالدينار *' : 'Montant HT (DZD) *'}
+                type="number"
+                value={receiptAmountHt}
+                onChange={(e) => setReceiptAmountHt(Number(e.target.value))}
+                required
+              />
+              {(() => {
+                const ht = Number(receiptAmountHt) || 0;
+                const tva = Math.round(ht * 0.19);
+                const ttc = ht + tva;
+                const stamp = calculateArticle317Stamp(ttc, 'especes');
+                const netCollected = ttc + stamp;
+                return (
+                  <div
+                    data-sq="card"
+                    data-sq-border="none"
+                    className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
+                  >
+                    <div className="flex justify-between">
+                      <span>Montant HT:</span>
+                      <span>{formatMoney(ht, language)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>TVA (19%):</span>
+                      <span>{formatMoney(tva, language)}</span>
+                    </div>
+                    <div className="flex justify-between text-amber-600 font-semibold">
+                      <span>Timbre Fiscal Progressif (Art. 317):</span>
+                      <span>+{formatMoney(stamp, language)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold t-label text-emerald-600">
+                      <span>Total Net à Encaisser en Espèces:</span>
+                      <span>{formatMoney(netCollected, language)}</span>
+                    </div>
+                    <p className="t-cap text-black/55 dark:text-white/55 font-sans mt-1">
+                      Droit de timbre gradué (Art. 317) : Exonéré &lt; 500 DA, 20-200 DA, puis 1% plafonné à 2 500 DA.
+                    </p>
+                  </div>
+                );
+              })()}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setIsNewReceiptModalOpen(false)}
+                >
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {isAr ? 'توليد الوصل والقبض' : "Valider l'Encaissement"}
+                </AtriumButton>
+              </div>
+            </form>
           </div>
-        )}
+        </KineticModalShell>
 
         <CashClosureModal
           isOpen={isClosureModalOpen}

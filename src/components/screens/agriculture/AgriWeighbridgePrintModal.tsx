@@ -8,6 +8,7 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { AgriWeighbridgeTicket } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface AgriWeighbridgePrintModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ interface AgriWeighbridgePrintModalProps {
 export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps> = ({
   isOpen,
   onClose,
-  ticket,
+  ticket: rawTicket,
 }) => {
   const { language, currentBusiness } = useAtriumSelector(
     (s) => ({
@@ -28,22 +29,27 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
     shallowEqualObjects
   );
   const isAr = language === 'ar';
-
-  if (!isOpen || !ticket) return null;
+  const ticket = useRetainedModalValue(isOpen ? rawTicket : null);
 
   const handlePrint = () => {
     window.print();
   };
 
-  const isCash = ticket.paymentMethod === 'cash' || (ticket.paymentMethod as any) === 'especes';
+  const isCash = ticket ? (ticket.paymentMethod === 'cash' || (ticket.paymentMethod as any) === 'especes') : false;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="sq-elev-pop max-w-2xl w-full">
+    <KineticModalShell
+      isOpen={isOpen && Boolean(rawTicket)}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      {ticket && (
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto print:p-0 print:shadow-none print:max-h-none"
         >
           {/* Modal Controls */}
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
@@ -234,7 +240,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
         </div>
         </div>
-      </div>
-    </div>
+      )}
+    </KineticModalShell>
   );
 };

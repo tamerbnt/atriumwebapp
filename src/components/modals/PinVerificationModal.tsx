@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Lock, X, Delete, Check } from 'lucide-react';
 import { useAtriumSelector } from '../../services/store';
 import { Button, LiquidButton } from '@/atrium/core';
+import { KineticModalShell } from '../ui/kinetic/KineticModalShell';
 
 interface PinVerificationModalProps {
   isOpen: boolean;
@@ -84,22 +85,22 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-[var(--s3)]"
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-sm"
+      zIndexClass="z-[9995]"
+      scrimClassName="bg-black/60"
+      ariaLabel={title || defaultTitle}
     >
-      <div className="sq-elev-pop max-w-sm w-full">
-        <div
-          data-sq="panel"
-          className={`bg-white dark:bg-[#262422] w-full p-[var(--s6)] flex flex-col gap-[var(--s4)] text-center transition-all ${
-            shake ? 'animate-shake' : 'animate-in fade-in zoom-in-95 duration-150'
-          }`}
-          dir={isRtl ? 'rtl' : 'ltr'}
-        >
+      <div
+        data-sq="panel"
+        className={`bg-white dark:bg-[#262422] w-full p-[var(--s6)] flex flex-col gap-[var(--s4)] text-center transition-colors ${
+          shake ? 'animate-shake' : ''
+        }`}
+        dir={isRtl ? 'rtl' : 'ltr'}
+      >
           {/* Header with Close */}
           <div className="flex items-center justify-between gap-[var(--s2)]">
             <div className="w-[var(--seg-m-h,32px)]" />
@@ -245,8 +246,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               }}
             />
           </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

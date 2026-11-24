@@ -37,6 +37,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -1364,28 +1365,30 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         </>
       )}
 
-      {isPersonalizerOpen && (
-        <MedicalOrdonnancePersonalizerModal
-          isOpen={isPersonalizerOpen}
-          practitioners={practitioners}
-          doctorConfigs={doctorConfigs}
-          initialDoctorId={activeDoctorId}
-          onSaveConfig={(docId, updated) => {
-            updateDoctorConfig(docId, updated);
-            setIsPersonalizerOpen(false);
-          }}
-          onClose={() => setIsPersonalizerOpen(false)}
-        />
-      )}
+      <MedicalOrdonnancePersonalizerModal
+        isOpen={isPersonalizerOpen}
+        practitioners={practitioners}
+        doctorConfigs={doctorConfigs}
+        initialDoctorId={activeDoctorId}
+        onSaveConfig={(docId, updated) => {
+          updateDoctorConfig(docId, updated);
+          setIsPersonalizerOpen(false);
+        }}
+        onClose={() => setIsPersonalizerOpen(false)}
+      />
 
-      {isComposerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="sq-elev-pop w-full max-w-2xl">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
-            >
+      <KineticModalShell
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
+        >
               <div className="p-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-[#22201E]">
                 <div className="flex items-center gap-2">
                   <div
@@ -1715,10 +1718,8 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </div>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

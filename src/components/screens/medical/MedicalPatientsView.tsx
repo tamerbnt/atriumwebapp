@@ -1419,56 +1419,50 @@ export const MedicalPatientsView: React.FC<any> = () => {
         }}
       />
 
-      {isPatientModalOpen && (
-        <MedicalPatientModal
-          isOpen={isPatientModalOpen}
-          onClose={() => {
-            setIsPatientModalOpen(false);
-            setPatientToEdit(null);
-          }}
-          patientToEdit={patientToEdit}
-          onSave={(p) => {
-            if (patientToEdit) {
-              updatePatient(p);
-              if (activePatient?.id === p.id) setInspectedPatient(p);
-            } else {
-              addPatient(p);
-            }
-            setIsPatientModalOpen(false);
-            setPatientToEdit(null);
-          }}
-        />
-      )}
+      <MedicalPatientModal
+        isOpen={isPatientModalOpen}
+        onClose={() => {
+          setIsPatientModalOpen(false);
+          setPatientToEdit(null);
+        }}
+        patientToEdit={patientToEdit}
+        onSave={(p) => {
+          if (patientToEdit) {
+            updatePatient(p);
+            if (activePatient?.id === p.id) setInspectedPatient(p);
+          } else {
+            addPatient(p);
+          }
+          setIsPatientModalOpen(false);
+          setPatientToEdit(null);
+        }}
+      />
 
-      {isConsultModalOpen && consultPatient && (
-        <MedicalConsultationModal
-          isOpen={isConsultModalOpen}
-          onClose={() => {
-            setIsConsultModalOpen(false);
-            setConsultPatient(null);
-          }}
-          patient={consultPatient}
-          onSave={(cons) => {
-            addConsultation(cons);
-            setIsConsultModalOpen(false);
-            setConsultPatient(null);
-          }}
-        />
-      )}
+      <MedicalConsultationModal
+        isOpen={isConsultModalOpen && Boolean(consultPatient)}
+        onClose={() => {
+          setIsConsultModalOpen(false);
+          setConsultPatient(null);
+        }}
+        patient={consultPatient ?? undefined}
+        onSave={(cons) => {
+          addConsultation(cons);
+          setIsConsultModalOpen(false);
+          setConsultPatient(null);
+        }}
+      />
 
-      {isLabModalOpen && activePatient && (
-        <MedicalLabViewerModal
-          isOpen={isLabModalOpen}
-          patient={activePatient}
-          labRecords={labRecords}
-          practitioners={practitioners}
-          onClose={() => setIsLabModalOpen(false)}
-          onAddLabRecord={(newRec) => {
-            addLabRecord(newRec);
-            setIsLabModalOpen(false);
-          }}
-        />
-      )}
+      <MedicalLabViewerModal
+        isOpen={isLabModalOpen && Boolean(activePatient)}
+        patient={activePatient ?? null}
+        labRecords={labRecords}
+        practitioners={practitioners}
+        onClose={() => setIsLabModalOpen(false)}
+        onAddLabRecord={(newRec) => {
+          addLabRecord(newRec);
+          setIsLabModalOpen(false);
+        }}
+      />
     </div>
   );
 };

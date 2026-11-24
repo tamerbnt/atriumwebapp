@@ -39,6 +39,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -936,14 +937,18 @@ export const ContractorBillingView: React.FC<any> = () => {
         }}
       />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
-            >
+      <KineticModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <div
@@ -1048,9 +1053,7 @@ export const ContractorBillingView: React.FC<any> = () => {
               </div>
             </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
 
       <ContractorDecomptePrintModal
         isOpen={isPrintModalOpen}

@@ -373,13 +373,11 @@ export const ContractorDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isModalOpen && (
-        <ContractorProjectModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={addProject}
-        />
-      )}
+      <ContractorProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={addProject}
+      />
     </DashboardBentoFrame>
   );
 };

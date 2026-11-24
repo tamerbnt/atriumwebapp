@@ -1012,47 +1012,43 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         }}
       />
 
-      {isShipmentModalOpen && (
-        <LogisticsShipmentModal
-          isOpen={isShipmentModalOpen}
-          onClose={() => {
-            setIsShipmentModalOpen(false);
-            setShipmentToEdit(null);
-          }}
-          shipmentToEdit={shipmentToEdit}
-          onSave={(s) => {
-            if (shipmentToEdit) {
-              updateShipment(s);
-              if (selectedShipment?.id === s.id) setSelectedShipment(s);
-            } else {
-              addShipment(s);
-            }
-            setIsShipmentModalOpen(false);
-            setShipmentToEdit(null);
-          }}
-        />
-      )}
+      <LogisticsShipmentModal
+        isOpen={isShipmentModalOpen}
+        onClose={() => {
+          setIsShipmentModalOpen(false);
+          setShipmentToEdit(null);
+        }}
+        shipmentToEdit={shipmentToEdit}
+        onSave={(s) => {
+          if (shipmentToEdit) {
+            updateShipment(s);
+            if (selectedShipment?.id === s.id) setSelectedShipment(s);
+          } else {
+            addShipment(s);
+          }
+          setIsShipmentModalOpen(false);
+          setShipmentToEdit(null);
+        }}
+      />
 
-      {isHandoverModalOpen && shipmentForHandover && (
-        <StopDeskHandoverModal
-          isOpen={isHandoverModalOpen}
-          onClose={() => {
-            setIsHandoverModalOpen(false);
-            setShipmentForHandover(null);
-          }}
-          shipment={shipmentForHandover}
-          onConfirmDelivery={(id, idNumber) => {
-            updateShipmentStatus(id, 'Delivered');
-            if (selectedShipment?.id === id) {
-              setSelectedShipment({
-                ...selectedShipment,
-                status: 'Delivered',
-                recipientIdNumber: idNumber,
-              });
-            }
-          }}
-        />
-      )}
+      <StopDeskHandoverModal
+        isOpen={isHandoverModalOpen && Boolean(shipmentForHandover)}
+        onClose={() => {
+          setIsHandoverModalOpen(false);
+          setShipmentForHandover(null);
+        }}
+        shipment={shipmentForHandover}
+        onConfirmDelivery={(id, idNumber) => {
+          updateShipmentStatus(id, 'Delivered');
+          if (selectedShipment?.id === id) {
+            setSelectedShipment({
+              ...selectedShipment,
+              status: 'Delivered',
+              recipientIdNumber: idNumber,
+            });
+          }
+        }}
+      />
     </div>
   );
 };

@@ -31,6 +31,7 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -42,6 +43,7 @@ import {
   ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 export const GymFrontDeskKiosk: React.FC = React.memo(() => {
@@ -326,6 +328,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
     () => (inspectedLog ? members.find((m) => m.id === inspectedLog.memberId) || null : null),
     [inspectedLog, members]
   );
+
+  const retainedLastPrintedTicket = useRetainedModalValue(lastPrintedTicket);
 
   if (showSkeleton && (members.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -791,14 +795,18 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         }}
       />
 
-      {isWalkInModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-md w-full animate-in fade-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
-            >
+      <KineticModalShell
+        isOpen={isWalkInModalOpen}
+        onClose={() => setIsWalkInModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div
@@ -976,92 +984,94 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
 
-      {lastPrintedTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-sm w-full animate-in fade-in zoom-in-95 duration-150">
+      <KineticModalShell
+        isOpen={Boolean(lastPrintedTicket)}
+        onClose={() => setLastPrintedTicket(null)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        {retainedLastPrintedTicket && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center max-h-[92vh] overflow-y-auto"
+          >
             <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
+              data-sq="tile-lg"
+              data-sq-border="none"
+              className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto flex items-center justify-center mb-3"
             >
-              <div
-                data-sq="tile-lg"
-                data-sq-border="none"
-                className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto flex items-center justify-center mb-3"
-              >
-                <CheckCircle2 size={24} />
+              <CheckCircle2 size={24} />
+            </div>
+            <h3 className="t-card font-semibold text-black dark:text-white mb-1">
+              {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
+            </h3>
+            <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+              {retainedLastPrintedTicket.ticketNumber}
+            </p>
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 t-cap space-y-2 text-left mb-5"
+            >
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
+                <span className="font-semibold text-black dark:text-white">
+                  {retainedLastPrintedTicket.clientName}
+                </span>
               </div>
-              <h3 className="t-card font-semibold text-black dark:text-white mb-1">
-                {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
-              </h3>
-              <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                {lastPrintedTicket.ticketNumber}
-              </p>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 t-cap space-y-2 text-left mb-5"
-              >
-                <div className="flex justify-between">
-                  <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
-                  <span className="font-semibold text-black dark:text-white">
-                    {lastPrintedTicket.clientName}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/62 dark:text-white/65">{isRtl ? 'المبلغ' : 'Montant'}</span>
-                  <span className="font-semibold tabular-nums text-black dark:text-white">
-                    {formatMoney(lastPrintedTicket.amountDzd, 'DZD')}
-                  </span>
-                </div>
-                {lastPrintedTicket.timbreFiscalDzd > 0 && (
-                  <div className="flex justify-between t-small text-amber-600 dark:text-amber-400 font-medium tabular-nums">
-                    <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
-                    <span>+{lastPrintedTicket.timbreFiscalDzd} DA</span>
-                  </div>
-                )}
-                <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold">
-                  <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
-                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
-                    {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}
-                  </span>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">{isRtl ? 'المبلغ' : 'Montant'}</span>
+                <span className="font-semibold tabular-nums text-black dark:text-white">
+                  {formatMoney(retainedLastPrintedTicket.amountDzd, 'DZD')}
+                </span>
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setLastPrintedTicket(null)}
-                  className="flex-1 py-2 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] t-small font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
-                >
-                  {isRtl ? 'إغلاق' : 'Fermer'}
-                </button>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => {
-                    window.print();
-                    setLastPrintedTicket(null);
-                  }}
-                  className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Printer size={14} />
-                  <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>
-                </button>
+              {retainedLastPrintedTicket.timbreFiscalDzd > 0 && (
+                <div className="flex justify-between t-small text-amber-600 dark:text-amber-400 font-medium tabular-nums">
+                  <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
+                  <span>+{retainedLastPrintedTicket.timbreFiscalDzd} DA</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold">
+                <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
+                <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                  {formatMoney(retainedLastPrintedTicket.amountDzd + retainedLastPrintedTicket.timbreFiscalDzd, 'DZD')}
+                </span>
               </div>
             </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setLastPrintedTicket(null)}
+                className="flex-1 py-2 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] t-small font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+              >
+                {isRtl ? 'إغلاق' : 'Fermer'}
+              </button>
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => {
+                  window.print();
+                  setLastPrintedTicket(null);
+                }}
+                className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Printer size={14} />
+                <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 });

@@ -49,7 +49,7 @@ import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
-import { KineticEmptyStateMotion } from '../../ui/kinetic';
+import { KineticEmptyStateMotion, useRetainedModalValue } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonPosRegister } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -184,6 +184,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     { method: 'Card', amount: 0 },
   ]);
   const [completedSale, setCompletedSale] = useState<any>(null);
+  const retainedCompletedSale = useRetainedModalValue(completedSale);
 
   const [isHoldOrderModalOpen, setIsHoldOrderModalOpen] = useState(false);
   const [holdOrderRefName, setHoldOrderRefName] = useState('');
@@ -192,6 +193,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
   const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
   const [selectedProductForAdjust, setSelectedProductForAdjust] = useState<Product | null>(null);
+  const retainedProductForAdjust = useRetainedModalValue(
+    isAdjustStockModalOpen ? selectedProductForAdjust : null
+  );
   const [adjustQuantity, setAdjustQuantity] = useState(10);
   const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
   const [adjustReason, setAdjustReason] = useState('');
@@ -2669,13 +2673,17 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         </div>
       </Modal>
 
-      {completedSale && (
-        <Modal
-          isOpen
-          onClose={() => setCompletedSale(null)}
-          title={t('shop_sale_success_title')}
-          subtitle={t('shop_receipt_number_sub', { id: completedSale.id.slice(-6).toUpperCase() })}
-        >
+      <Modal
+        isOpen={Boolean(completedSale)}
+        onClose={() => setCompletedSale(null)}
+        title={t('shop_sale_success_title')}
+        subtitle={
+          retainedCompletedSale
+            ? t('shop_receipt_number_sub', { id: retainedCompletedSale.id.slice(-6).toUpperCase() })
+            : ''
+        }
+      >
+        {retainedCompletedSale && (
           <div className="space-y-4" dir="ltr">
             <div className="sq-elev-card mx-auto max-w-[340px]">
               <div
@@ -2693,16 +2701,16 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </div>
               <div className="py-2 t-cap border-b border-dashed border-black/[0.22] space-y-0.5">
                 <div className="flex justify-between">
-                  <span>RECEIPT: #{completedSale.id.slice(-8).toUpperCase()}</span>
-                  <span>{new Date(completedSale.createdAt).toLocaleDateString()}</span>
+                  <span>RECEIPT: #{retainedCompletedSale.id.slice(-8).toUpperCase()}</span>
+                  <span>{new Date(retainedCompletedSale.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>CASHIER: {completedSale.cashierName || 'Cashier'}</span>
-                  <span>{new Date(completedSale.createdAt).toLocaleTimeString()}</span>
+                  <span>CASHIER: {retainedCompletedSale.cashierName || 'Cashier'}</span>
+                  <span>{new Date(retainedCompletedSale.createdAt).toLocaleTimeString()}</span>
                 </div>
               </div>
               <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22] t-cap">
-                {completedSale.items.map((it: any, idx: number) => (
+                {retainedCompletedSale.items.map((it: any, idx: number) => (
                   <div key={idx} className="flex justify-between">
                     <span>
                       {it.quantity}x {it.productName}
@@ -2714,7 +2722,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22]">
                 <div className="flex justify-between t-label font-semibold pt-1">
                   <span>TOTAL PAYÉ</span>
-                  <span>{formatMoney(completedSale.totalAmount)}</span>
+                  <span>{formatMoney(retainedCompletedSale.totalAmount)}</span>
                 </div>
               </div>
               <div className="pt-2 text-center space-y-2">
@@ -2745,8 +2753,8 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </button>
             </div>
           </div>
-        </Modal>
-      )}
+        )}
+      </Modal>
 
       <Modal
         isOpen={isCustomItemModalOpen}
@@ -2853,16 +2861,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         </form>
       </Modal>
 
-      {selectedProductForAdjust && (
-        <Modal
-          isOpen={isAdjustStockModalOpen}
-          onClose={() => {
-            setIsAdjustStockModalOpen(false);
-            setSelectedProductForAdjust(null);
-          }}
-          title={t('shop_adjust_modal_title')}
-          subtitle={selectedProductForAdjust.name}
-        >
+      <Modal
+        isOpen={isAdjustStockModalOpen && Boolean(selectedProductForAdjust)}
+        onClose={() => {
+          setIsAdjustStockModalOpen(false);
+          setSelectedProductForAdjust(null);
+        }}
+        title={t('shop_adjust_modal_title')}
+        subtitle={retainedProductForAdjust?.name || ''}
+      >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -2924,8 +2931,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </button>
             </div>
           </form>
-        </Modal>
-      )}
+      </Modal>
 
       <Modal
         isOpen={isProductFormModalOpen}

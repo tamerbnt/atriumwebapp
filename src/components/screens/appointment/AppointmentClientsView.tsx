@@ -1098,12 +1098,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           }}
         />
 
-        {isNewBookingModalOpen && (
-          <AppointmentModal
-            isOpen={isNewBookingModalOpen}
-            onClose={() => setIsNewBookingModalOpen(false)}
-          />
-        )}
+        <AppointmentModal
+          isOpen={isNewBookingModalOpen}
+          onClose={() => setIsNewBookingModalOpen(false)}
+        />
       </div>
     );
   }

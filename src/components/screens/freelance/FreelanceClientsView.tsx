@@ -57,6 +57,8 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
+  useRetainedModalValue,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -780,6 +782,8 @@ export const FreelanceClientsView: React.FC = () => {
     hasCachedData: (freelanceClients || []).length > 0,
   });
 
+  const retainedClientToDelete = useRetainedModalValue(clientToDelete);
+
   if (showSkeleton && ((freelanceClients || []).length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
@@ -1302,273 +1306,290 @@ export const FreelanceClientsView: React.FC = () => {
       />
 
       {/* Add / Edit Client Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
-            >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <div>
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {clientToEdit
-                    ? t('free_clients_modal_title_edit', language)
-                    : t('free_clients_modal_title_add', language)}
-                </h3>
-                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                  {t('free_clients_modal_desc', language)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close modal"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitClient} className="space-y-4 t-cap">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <LabelInput
-                  field="ClientName"
-                  label={`${t('free_clients_full_name', language)} *`}
-                  required
-                  value={formData.name}
-                  onChange={(v) => setFormData({ ...formData, name: extractStr(v) })}
-                  placeholder={t('free_clients_ph_name', language)}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-                <LabelInput
-                  field="Company"
-                  label={t('free_clients_company', language)}
-                  value={formData.company}
-                  onChange={(v) => setFormData({ ...formData, company: extractStr(v) })}
-                  placeholder={t('free_clients_ph_company', language)}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <LabelInput
-                  field="ClientEmail"
-                  label={`${t('free_clients_email', language)} *`}
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(v) => setFormData({ ...formData, email: extractStr(v) })}
-                  placeholder={t('free_clients_ph_email', language)}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-                <LabelInput
-                  field="ClientPhone"
-                  label={t('free_clients_phone', language)}
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(v) => setFormData({ ...formData, phone: extractStr(v) })}
-                  placeholder={t('free_clients_ph_phone', language)}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <LabelSelect
-                  field="Currency"
-                  label={t('free_clients_currency', language)}
-                  value={formData.currency}
-                  onChange={(val) =>
-                    setFormData({
-                      ...formData,
-                      currency: extractStr(val) as CurrencyCode,
-                    })
-                  }
-                  options={[
-                    { value: 'DZD', label: 'DZD (DA)' },
-                    { value: 'EUR', label: 'EUR (€)' },
-                    { value: 'USD', label: 'USD ($)' },
-                  ]}
-                  height={46}
-                  corner={12}
-                />
-                <LabelInput
-                  field="HourlyRate"
-                  label={t('free_clients_hourly_rate', language)}
-                  type="number"
-                  value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
-                  onChange={(v) => setFormData({ ...formData, hourlyRate: Number(extractStr(v)) || 0 })}
-                  width="100%"
-                  height={46}
-                  corner={12}
-                />
-                <LabelSelect
-                  field="Status"
-                  label={t('free_clients_status', language)}
-                  value={formData.status}
-                  onChange={(val) =>
-                    setFormData({
-                      ...formData,
-                      status: extractStr(val) as FreelanceClientStatus,
-                    })
-                  }
-                  options={[
-                    {
-                      value: 'ActiveRetainer',
-                      label: t('free_clients_status_active_retainer', language),
-                    },
-                    {
-                      value: 'ProjectBased',
-                      label: t('free_clients_status_project_based', language),
-                    },
-                    { value: 'Prospect', label: t('free_clients_status_prospect', language) },
-                    { value: 'Archived', label: t('free_clients_status_archived', language) },
-                  ]}
-                  height={46}
-                  corner={12}
-                />
-              </div>
-
-              {formData.status === 'ActiveRetainer' && (
-                <div
-                  data-sq="card"
-                  data-sq-border="none"
-                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/70 dark:bg-amber-950/25"
-                >
-                  <LabelInput
-                    field="RetainerHours"
-                    label={t('free_clients_retainer_hours', language)}
-                    type="number"
-                    value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
-                    onChange={(v) =>
-                      setFormData({ ...formData, monthlyRetainerHours: Number(extractStr(v)) || 0 })
-                    }
-                    placeholder={t('free_clients_ph_retainer_hrs', language)}
-                    width="100%"
-                    height={46}
-                    corner={12}
-                  />
-                  <LabelInput
-                    field="FlatFee"
-                    label={t('free_clients_flat_fee', language)}
-                    type="number"
-                    value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
-                    onChange={(v) =>
-                      setFormData({
-                        ...formData,
-                        monthlyRetainerAmount: Number(extractStr(v)) || 0,
-                      })
-                    }
-                    placeholder={t('free_clients_ph_flat_fee', language)}
-                    width="100%"
-                    height={46}
-                    corner={12}
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {t('free_clients_notes', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder={t('free_clients_notes_ph', language)}
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  {t('free_clients_cancel', language)}
-                </button>
-                <button
-                  type="submit"
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  {clientToEdit
-                    ? t('free_clients_save_changes', language)
-                    : t('free_clients_create_btn', language)}
-                </button>
-              </div>
-            </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Client Confirmation Modal */}
-      {clientToDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
-                >
-                  <AlertTriangle size={20} />
-                </div>
-                <div>
-                  <h3 className="t-card font-semibold text-black dark:text-white">
-                    {t('free_clients_delete', language)}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    {t('free_clients_delete_warning', language)}
-                  </p>
-                </div>
-              </div>
-
-              <p className="t-cap text-black/70 dark:text-white/75">
-                {t('free_clients_delete_confirm', language)}{' '}
-                <strong className="text-black dark:text-white font-semibold">
-                  {clientToDelete.name}
-                </strong>{' '}
-                ({clientToDelete.company || t('free_clients_private_badge', language)})?
+      <KineticModalShell
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={
+          clientToEdit
+            ? t('free_clients_modal_title_edit', language)
+            : t('free_clients_modal_title_add', language)
+        }
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-5"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <div>
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {clientToEdit
+                  ? t('free_clients_modal_title_edit', language)
+                  : t('free_clients_modal_title_add', language)}
+              </h3>
+              <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
+                {t('free_clients_modal_desc', language)}
               </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X size={16} />
+            </button>
+          </div>
 
-              <label
+          <form onSubmit={handleSubmitClient} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="ClientName"
+                label={`${t('free_clients_full_name', language)} *`}
+                required
+                value={formData.name}
+                onChange={(v) => setFormData({ ...formData, name: extractStr(v) })}
+                placeholder={t('free_clients_ph_name', language)}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+              <LabelInput
+                field="Company"
+                label={t('free_clients_company', language)}
+                value={formData.company}
+                onChange={(v) => setFormData({ ...formData, company: extractStr(v) })}
+                placeholder={t('free_clients_ph_company', language)}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="ClientEmail"
+                label={`${t('free_clients_email', language)} *`}
+                type="email"
+                required
+                value={formData.email}
+                onChange={(v) => setFormData({ ...formData, email: extractStr(v) })}
+                placeholder={t('free_clients_ph_email', language)}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+              <LabelInput
+                field="ClientPhone"
+                label={t('free_clients_phone', language)}
+                type="tel"
+                value={formData.phone}
+                onChange={(v) => setFormData({ ...formData, phone: extractStr(v) })}
+                placeholder={t('free_clients_ph_phone', language)}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <LabelSelect
+                field="Currency"
+                label={t('free_clients_currency', language)}
+                value={formData.currency}
+                onChange={(val) =>
+                  setFormData({
+                    ...formData,
+                    currency: extractStr(val) as CurrencyCode,
+                  })
+                }
+                options={[
+                  { value: 'DZD', label: 'DZD (DA)' },
+                  { value: 'EUR', label: 'EUR (€)' },
+                  { value: 'USD', label: 'USD ($)' },
+                ]}
+                height={46}
+                corner={12}
+              />
+              <LabelInput
+                field="HourlyRate"
+                label={t('free_clients_hourly_rate', language)}
+                type="number"
+                value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
+                onChange={(v) => setFormData({ ...formData, hourlyRate: Number(extractStr(v)) || 0 })}
+                width="100%"
+                height={46}
+                corner={12}
+              />
+              <LabelSelect
+                field="Status"
+                label={t('free_clients_status', language)}
+                value={formData.status}
+                onChange={(val) =>
+                  setFormData({
+                    ...formData,
+                    status: extractStr(val) as FreelanceClientStatus,
+                  })
+                }
+                options={[
+                  {
+                    value: 'ActiveRetainer',
+                    label: t('free_clients_status_active_retainer', language),
+                  },
+                  {
+                    value: 'ProjectBased',
+                    label: t('free_clients_status_project_based', language),
+                  },
+                  { value: 'Prospect', label: t('free_clients_status_prospect', language) },
+                  { value: 'Archived', label: t('free_clients_status_archived', language) },
+                ]}
+                height={46}
+                corner={12}
+              />
+            </div>
+
+            {formData.status === 'ActiveRetainer' && (
+              <div
                 data-sq="card"
                 data-sq-border="none"
-                className="flex items-start gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 cursor-pointer"
+                className="grid grid-cols-2 gap-3 p-3 bg-amber-50/70 dark:bg-amber-950/25"
               >
-                <input
-                  type="checkbox"
-                  checked={deleteCascade}
-                  onChange={(e) => setDeleteCascade(e.target.checked)}
-                  className="mt-0.5 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
+                <LabelInput
+                  field="RetainerHours"
+                  label={t('free_clients_retainer_hours', language)}
+                  type="number"
+                  value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
+                  onChange={(v) =>
+                    setFormData({ ...formData, monthlyRetainerHours: Number(extractStr(v)) || 0 })
+                  }
+                  placeholder={t('free_clients_ph_retainer_hrs', language)}
+                  width="100%"
+                  height={46}
+                  corner={12}
                 />
+                <LabelInput
+                  field="FlatFee"
+                  label={t('free_clients_flat_fee', language)}
+                  type="number"
+                  value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
+                  onChange={(v) =>
+                    setFormData({
+                      ...formData,
+                      monthlyRetainerAmount: Number(extractStr(v)) || 0,
+                    })
+                  }
+                  placeholder={t('free_clients_ph_flat_fee', language)}
+                  width="100%"
+                  height={46}
+                  corner={12}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
+                {t('free_clients_notes', language)}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
+              >
+                <textarea
+                  rows={2}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder={t('free_clients_notes_ph', language)}
+                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setIsAddModalOpen(false)}
+                className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                {t('free_clients_cancel', language)}
+              </button>
+              <button
+                type="submit"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                {clientToEdit
+                  ? t('free_clients_save_changes', language)
+                  : t('free_clients_create_btn', language)}
+              </button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      {/* Delete Client Confirmation Modal */}
+      <KineticModalShell
+        isOpen={Boolean(clientToDelete)}
+        onClose={() => {
+          setClientToDelete(null);
+          setDeleteCascade(false);
+        }}
+        role="alertdialog"
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_clients_delete', language)}
+      >
+        {retainedClientToDelete && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="t-card font-semibold text-black dark:text-white">
+                  {t('free_clients_delete', language)}
+                </h3>
+                <p className="t-cap text-black/55 dark:text-white/55">
+                  {t('free_clients_delete_warning', language)}
+                </p>
+              </div>
+            </div>
+
+            <p className="t-cap text-black/70 dark:text-white/75">
+              {t('free_clients_delete_confirm', language)}{' '}
+              <strong className="text-black dark:text-white font-semibold">
+                {retainedClientToDelete.name}
+              </strong>{' '}
+              ({retainedClientToDelete.company || t('free_clients_private_badge', language)})?
+            </p>
+
+            <label
+              data-sq="card"
+              data-sq-border="none"
+              className="flex items-start gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={deleteCascade}
+                onChange={(e) => setDeleteCascade(e.target.checked)}
+                className="mt-0.5 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
+              />
               <div>
                 <span className="font-semibold block text-black dark:text-white">
                   {t('free_clients_cascade_delete', language)}
@@ -1609,10 +1630,9 @@ export const FreelanceClientsView: React.FC = () => {
                 {t('free_clients_delete', language)}
               </AtriumButton>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

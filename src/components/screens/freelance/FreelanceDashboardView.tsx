@@ -399,13 +399,11 @@ export const FreelanceDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {selectedInvoice && (
-        <InvoicePreviewModal
-          isOpen={!!selectedInvoice}
-          invoice={selectedInvoice}
-          onClose={() => setSelectedInvoice(null)}
-        />
-      )}
+      <InvoicePreviewModal
+        isOpen={!!selectedInvoice}
+        invoice={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
+      />
     </DashboardBentoFrame>
   );
 };

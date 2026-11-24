@@ -50,6 +50,8 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
+  useRetainedModalValue,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -771,6 +773,9 @@ export const FreelanceProposalsView: React.FC = () => {
     hasCachedData: freelanceProposals.length > 0,
   });
 
+  const retainedProposalToEdit = useRetainedModalValue(proposalToEdit);
+  const retainedProposalToDelete = useRetainedModalValue(proposalToDelete);
+
   if (showSkeleton && (freelanceProposals.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
@@ -1261,195 +1266,210 @@ export const FreelanceProposalsView: React.FC = () => {
       />
 
       {/* Draft Proposal Modal */}
-      {isDraftModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-xl w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+      <KineticModalShell
+        isOpen={isDraftModalOpen}
+        onClose={() => setIsDraftModalOpen(false)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_prop_modal_new_title', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_prop_modal_new_title', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsDraftModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_prop_modal_new_title', language)}
-              </h3>
-              <button
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleSubmitProposal} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                id="draft-client-name"
+                label={t('free_clients_field_contact', language)}
+                required
+                placeholder={t('free_prop_ph_contact', language)}
+                value={formData.clientName}
+                onChange={(e) => setFormData({ ...formData, clientName: extractStr(e) })}
+              />
+              <LabelInput
+                id="draft-client-company"
+                label={t('free_clients_field_company', language)}
+                placeholder={t('free_prop_ph_company', language)}
+                value={formData.clientCompany}
+                onChange={(e) => setFormData({ ...formData, clientCompany: extractStr(e) })}
+              />
+            </div>
+            <LabelInput
+              id="draft-client-email"
+              label={t('free_clients_field_email', language)}
+              type="email"
+              required
+              placeholder="contact@company.com"
+              value={formData.clientEmail}
+              onChange={(e) => setFormData({ ...formData, clientEmail: extractStr(e) })}
+            />
+            <LabelInput
+              id="draft-proposal-title"
+              label={t('free_prop_engagement_title', language)}
+              required
+              placeholder={t('free_prop_ph_title', language)}
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: extractStr(e) })}
+            />
+            <div>
+              <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
+                {t('free_prop_exec_summary', language)}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
+              >
+                <textarea
+                  rows={2}
+                  placeholder={t('free_prop_scope_ph', language)}
+                  value={formData.overview}
+                  onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
+                  className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-black dark:text-white">
+                  {t('free_prop_scope', language)}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAddScopeItem}
+                  className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline font-semibold cursor-pointer"
+                >
+                  {t('free_prop_btn_add_item', language)}
+                </button>
+              </div>
+              <div className="space-y-2">
+                {formData.scopeItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <LabelInput
+                        field={`ScopeItem-${idx}`}
+                        label={`${t('free_prop_deliverable_item', language)} ${idx + 1}`}
+                        value={item}
+                        onChange={(v) => handleScopeItemChange(idx, extractStr(v))}
+                        width="100%"
+                        height={44}
+                        corner={12}
+                      />
+                    </div>
+                    {formData.scopeItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveScopeItem(idx)}
+                        className="p-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
+                        aria-label="Remove item"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <LabelSelect
+                label={t('free_invoices_currency', language)}
+                value={formData.currency}
+                onChange={(val) =>
+                  setFormData({ ...formData, currency: extractStr(val) as CurrencyCode })
+                }
+                options={[
+                  { value: 'DZD', label: 'DZD' },
+                  { value: 'EUR', label: 'EUR' },
+                  { value: 'USD', label: 'USD' },
+                ]}
+              />
+              <LabelInput
+                id="draft-budget"
+                label={isAr ? 'الميزانية' : isFr ? 'Budget' : 'Budget'}
+                type="number"
+                value={String(formData.proposedBudget)}
+                onChange={(e) =>
+                  setFormData({ ...formData, proposedBudget: Number(extractStr(e)) || 0 })
+                }
+              />
+              <LabelInput
+                id="draft-weeks"
+                label={isAr ? 'المدة (أسابيع)' : isFr ? 'Délai (sem.)' : 'Est. Weeks'}
+                type="number"
+                value={String(formData.estimatedTimelineWeeks)}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    estimatedTimelineWeeks: Number(extractStr(e)) || 1,
+                  })
+                }
+              />
+            </div>
+            <LabelInput
+              id="draft-valid-until"
+              label={t('free_prop_valid_until', language)}
+              type="date"
+              value={formData.validUntil}
+              onChange={(e) => setFormData({ ...formData, validUntil: extractStr(e) })}
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton
+                variant="outline"
+                size="sm"
                 type="button"
                 onClick={() => setIsDraftModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close"
               >
-                <X size={16} />
-              </button>
+                {t('free_clients_cancel', language)}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" glow type="submit">
+                {isAr
+                  ? 'حفظ عرض السعر'
+                  : isFr
+                  ? 'Enregistrer le Devis'
+                  : 'Save Proposal'}
+              </AtriumButton>
             </div>
-            <form onSubmit={handleSubmitProposal} className="space-y-4 t-cap">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <LabelInput
-                  id="draft-client-name"
-                  label={t('free_clients_field_contact', language)}
-                  required
-                  placeholder={t('free_prop_ph_contact', language)}
-                  value={formData.clientName}
-                  onChange={(e) => setFormData({ ...formData, clientName: extractStr(e) })}
-                />
-                <LabelInput
-                  id="draft-client-company"
-                  label={t('free_clients_field_company', language)}
-                  placeholder={t('free_prop_ph_company', language)}
-                  value={formData.clientCompany}
-                  onChange={(e) => setFormData({ ...formData, clientCompany: extractStr(e) })}
-                />
-              </div>
-              <LabelInput
-                id="draft-client-email"
-                label={t('free_clients_field_email', language)}
-                type="email"
-                required
-                placeholder="contact@company.com"
-                value={formData.clientEmail}
-                onChange={(e) => setFormData({ ...formData, clientEmail: extractStr(e) })}
-              />
-              <LabelInput
-                id="draft-proposal-title"
-                label={t('free_prop_engagement_title', language)}
-                required
-                placeholder={t('free_prop_ph_title', language)}
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: extractStr(e) })}
-              />
-              <div>
-                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
-                  {t('free_prop_exec_summary', language)}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <textarea
-                    rows={2}
-                    placeholder={t('free_prop_scope_ph', language)}
-                    value={formData.overview}
-                    onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-black dark:text-white">
-                    {t('free_prop_scope', language)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddScopeItem}
-                    className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline font-semibold cursor-pointer"
-                  >
-                    {t('free_prop_btn_add_item', language)}
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {formData.scopeItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <LabelInput
-                          field={`ScopeItem-${idx}`}
-                          label={`${t('free_prop_deliverable_item', language)} ${idx + 1}`}
-                          value={item}
-                          onChange={(v) => handleScopeItemChange(idx, extractStr(v))}
-                          width="100%"
-                          height={44}
-                          corner={12}
-                        />
-                      </div>
-                      {formData.scopeItems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveScopeItem(idx)}
-                          className="p-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
-                          aria-label="Remove item"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <LabelSelect
-                  label={t('free_invoices_currency', language)}
-                  value={formData.currency}
-                  onChange={(val) =>
-                    setFormData({ ...formData, currency: extractStr(val) as CurrencyCode })
-                  }
-                  options={[
-                    { value: 'DZD', label: 'DZD' },
-                    { value: 'EUR', label: 'EUR' },
-                    { value: 'USD', label: 'USD' },
-                  ]}
-                />
-                <LabelInput
-                  id="draft-budget"
-                  label={isAr ? 'الميزانية' : isFr ? 'Budget' : 'Budget'}
-                  type="number"
-                  value={String(formData.proposedBudget)}
-                  onChange={(e) =>
-                    setFormData({ ...formData, proposedBudget: Number(extractStr(e)) || 0 })
-                  }
-                />
-                <LabelInput
-                  id="draft-weeks"
-                  label={isAr ? 'المدة (أسابيع)' : isFr ? 'Délai (sem.)' : 'Est. Weeks'}
-                  type="number"
-                  value={String(formData.estimatedTimelineWeeks)}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      estimatedTimelineWeeks: Number(extractStr(e)) || 1,
-                    })
-                  }
-                />
-              </div>
-              <LabelInput
-                id="draft-valid-until"
-                label={t('free_prop_valid_until', language)}
-                type="date"
-                value={formData.validUntil}
-                onChange={(e) => setFormData({ ...formData, validUntil: extractStr(e) })}
-              />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsDraftModalOpen(false)}
-                >
-                  {t('free_clients_cancel', language)}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
-                  {isAr
-                    ? 'حفظ عرض السعر'
-                    : isFr
-                    ? 'Enregistrer le Devis'
-                    : 'Save Proposal'}
-                </AtriumButton>
-              </div>
-            </form>
-            </div>
-          </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
 
       {/* Edit Proposal Scope Modal */}
-      {proposalToEdit && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-xl w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
-            >
+      <KineticModalShell
+        isOpen={Boolean(proposalToEdit)}
+        onClose={() => setProposalToEdit(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={
+          isAr
+            ? 'تعديل عرض السعر ونطاق العمل'
+            : isFr
+            ? 'Modifier le Devis & Périmètre'
+            : 'Edit Proposal Scope & Terms'
+        }
+      >
+        {retainedProposalToEdit && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {isAr
@@ -1642,43 +1662,49 @@ export const FreelanceProposalsView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       {/* Delete Proposal Modal */}
-      {proposalToDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
-                >
-                  <AlertTriangle size={20} />
-                </div>
+      <KineticModalShell
+        isOpen={Boolean(proposalToDelete)}
+        onClose={() => setProposalToDelete(null)}
+        role="alertdialog"
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={isAr ? 'حذف عرض السعر' : isFr ? 'Supprimer le Devis' : 'Delete Proposal'}
+      >
+        {retainedProposalToDelete && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle size={20} />
+              </div>
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {isAr ? 'حذف عرض السعر' : isFr ? 'Supprimer le Devis' : 'Delete Proposal'}
                 </h3>
                 <p className="t-cap text-black/55 dark:text-white/55">
-                  {proposalToDelete.clientName}
+                  {retainedProposalToDelete.clientName}
                 </p>
               </div>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {isAr
-                ? `هل أنت متأكد من حذف عرض السعر "${proposalToDelete.title}"؟`
+                ? `هل أنت متأكد من حذف عرض السعر "${retainedProposalToDelete.title}"؟`
                 : isFr
-                ? `Supprimer le devis "${proposalToDelete.title}" du pipeline ?`
-                : `Delete proposal "${proposalToDelete.title}" from your pipeline?`}
+                ? `Supprimer le devis "${retainedProposalToDelete.title}" du pipeline ?`
+                : `Delete proposal "${retainedProposalToDelete.title}" from your pipeline?`}
             </p>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <AtriumButton
@@ -1694,6 +1720,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 size="sm"
                 type="button"
                 onClick={() => {
+                  if (!proposalToDelete) return;
                   deleteFreelanceProposal(proposalToDelete.id);
                   if (selectedProposal?.id === proposalToDelete.id) setSelectedProposal(null);
                   setProposalToDelete(null);
@@ -1702,10 +1729,9 @@ export const FreelanceProposalsView: React.FC = () => {
                 {t('free_prop_delete_modal_title', language)}
               </AtriumButton>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

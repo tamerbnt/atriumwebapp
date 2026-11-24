@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { SupportedLanguage } from '../../types/index';
 import { AtriumButton } from '../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../ui/kinetic/KineticModalShell';
 
 export type UniversalStrategicGoalId =
   | 'goal_structure_processes'
@@ -696,20 +697,23 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
   onApplyAndContinue,
   language,
 }) => {
-  if (!isOpen || !goalId) return null;
-
-  const data = BLUEPRINTS[goalId] || BLUEPRINTS.goal_billing_dzd;
+  const displayGoalId = useRetainedModalValue(isOpen && goalId ? goalId : null);
+  const data = displayGoalId ? (BLUEPRINTS[displayGoalId] || BLUEPRINTS.goal_billing_dzd) : null;
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-      dir={isAr ? 'rtl' : 'ltr'}
+    <KineticModalShell
+      isOpen={isOpen && Boolean(goalId)}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      zIndexClass="z-[9992]"
+      scrimClassName="bg-black/75"
     >
-      <div className="sq-elev-pop relative w-full max-w-2xl">
+      {data && (
         <div
           data-sq="panel"
+          dir={isAr ? 'rtl' : 'ltr'}
           style={{ '--sq-stroke': 'rgba(212,82,47,0.4)' } as React.CSSProperties}
           className="relative w-full bg-[#262422] overflow-hidden flex flex-col max-h-[90vh]"
         >
@@ -810,7 +814,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         </div>
 
         </div>
-      </div>
-    </div>
+      )}
+    </KineticModalShell>
   );
 };

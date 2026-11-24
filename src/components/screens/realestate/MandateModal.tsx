@@ -6,6 +6,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateProperty, RealEstateMandate, MandateType } from '../../../types';
 import { calculateMandateCommission } from '../../../utils/realEstateRules';
 import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface MandateModalProps {
   isOpen: boolean;
@@ -40,7 +41,27 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	const [durationMonths, setDurationMonths] = React.useState(3);
 	const [isExclusive, setIsExclusive] = React.useState(mandateType.includes("Exclusif"));
 	const [notes, setNotes] = React.useState("");
-	if (!isOpen) return null;
+	React.useEffect(() => {
+		if (!isOpen) return;
+		const nextPropId = selectedProperty?.id || properties[0]?.id || "";
+		const nextProp = properties.find((p: any) => p.id === nextPropId) || selectedProperty || properties[0];
+		setPropertyId(nextPropId);
+		setMandateType("Vente_Simple");
+		setOwnerFullName(nextProp?.ownerName || "");
+		setOwnerPhone(nextProp?.ownerPhone || "");
+		setOwnerNationalId(nextProp?.ownerNationalId || "109823487129837401");
+		setOwnerIdIssueDate("2021-05-10");
+		setOwnerIdIssueDaira("Alger");
+		setAskingPriceDzd(nextProp?.priceDzd || 15e6);
+		setMinimumAcceptablePriceDzd(nextProp ? Math.round(nextProp.priceDzd * .95) : 1425e4);
+		setCommissionMode("DecreeTranches");
+		setCommissionRatePercent(defaultSaleCommission);
+		setCommissionPayer("Split50_50");
+		setStartDate((new Date()).toISOString().split("T")[0]);
+		setDurationMonths(3);
+		setIsExclusive(false);
+		setNotes("");
+	}, [isOpen, selectedProperty]);
 	const start = new Date(startDate);
 	start.setMonth(start.getMonth() + Number(durationMonths));
 	const endDate = start.toISOString().split("T")[0];
@@ -97,9 +118,15 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 		});
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="sq-elev-pop relative w-full max-w-3xl my-8">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-3xl"
+			scrimClassName="bg-black/60"
+			ariaLabel="Nouveau Mandat d'Agence (Décret 09-18)"
+		>
+			<div data-sq="panel" data-sq-border="solid" className="relative w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
 <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-6">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><FileText className="w-5 h-5" /></div>
@@ -250,7 +277,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Enregistrer au Registre Officiel</AtriumButton>
 </div>
 </form>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

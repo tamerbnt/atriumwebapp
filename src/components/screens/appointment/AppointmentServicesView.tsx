@@ -32,6 +32,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -830,14 +831,18 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         }}
       />
 
-      {isServiceModalOpen && (
-        <div className="fixed inset-0 bg-[#1F1D1B]/45 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] w-full p-6 border-0 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
-            >
+      <KineticModalShell
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full p-6 border-0 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
@@ -936,9 +941,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
               </div>
               </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 });

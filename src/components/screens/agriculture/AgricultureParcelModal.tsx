@@ -11,6 +11,7 @@ import { AgriParcel, AgriTenureType, AgriIrrigationType, AgriParcelStatus } from
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AgricultureParcelModalProps {
   isOpen: boolean;
@@ -85,8 +86,6 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
     }
   }, [initialData, isOpen]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !currentCrop.trim()) {
@@ -125,13 +124,12 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="sq-elev-pop max-w-xl w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-xl" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+      >
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div
@@ -320,8 +318,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

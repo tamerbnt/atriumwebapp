@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Award,
@@ -22,13 +22,16 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface CertificateModalProps {
+  isOpen?: boolean;
   certificate?: EduCertificate | null;
   onClose: () => void;
 }
 
 export const CertificateModal: React.FC<CertificateModalProps> = ({
+  isOpen = true,
   certificate: existingCert,
   onClose,
 }) => {
@@ -66,6 +69,18 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   const [previewCert, setPreviewCert] = useState<EduCertificate | null>(
     existingCert || null
   );
+  const retainedExistingCert = useRetainedModalValue(isOpen ? existingCert ?? null : null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setPreviewCert(existingCert || null);
+    setStudentId(existingCert?.studentId || eduStudents[0]?.id || '');
+    setCohortId(existingCert?.cohortId || eduCohorts[0]?.id || '');
+    setHonors(existingCert?.honors || 'With Distinction · Magna Cum Laude');
+    setSignatoryName(existingCert?.signatoryName || 'Dr. Youcef Benali');
+    setSignatoryTitle(existingCert?.signatoryTitle || 'Academic Dean & Program Director');
+    setAverageGrade(existingCert?.averageGradeScore || 94);
+  }, [isOpen, existingCert]);
 
   const selectedStudent = eduStudents.find((s) => s.id === studentId);
   const selectedCohort = eduCohorts.find((c) => c.id === cohortId);
@@ -93,16 +108,15 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     window.print();
   };
 
-  const activeCert = previewCert || existingCert;
+  const activeCert = previewCert || (isOpen ? existingCert : retainedExistingCert);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="sq-elev-pop w-full max-w-4xl">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-4xl" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden print:max-h-none print:shadow-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-[#22201E] print:hidden">
           <div>
@@ -310,8 +324,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
           )}
         </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

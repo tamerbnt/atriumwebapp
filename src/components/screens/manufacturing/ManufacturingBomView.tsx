@@ -38,6 +38,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   KineticRowData,
   KineticRowFanAction,
@@ -933,91 +934,93 @@ export const ManufacturingBomView: React.FC<any> = () => {
         )}
       />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-                <div className="flex items-center gap-2">
-                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
-                    <Layers size={20} />
-                  </div>
-                  <div>
-                    <h2 className="t-card font-semibold text-black dark:text-white">
-                      {bomToEdit
-                        ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
-                        : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
-                    </h2>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
+      <KineticModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+            <div className="flex items-center gap-2">
+              <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                <Layers size={20} />
               </div>
-            <form onSubmit={handleSaveModal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'رمز التركيبة *' : 'Code BOM *'}
-                  placeholder="BOM-TAB-01"
-                  value={bomCode}
-                  onChange={(e) => setBomCode(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'وحدة الإنتاج' : 'Unité de lot'}
-                  placeholder="Unité, Lot de 10..."
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                />
+              <div>
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {bomToEdit
+                    ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
+                    : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
+                </h2>
+                <p className="t-cap text-black/55 dark:text-white/55">
+                  {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
+                </p>
               </div>
+            </div>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsModalOpen(false)}
+              className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveModal} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                label={isAr ? 'اسم المنتج النهائي المصنّع *' : 'Produit Fini Fabriqué *'}
-                placeholder="Ex: Table Réunion Chêne Massif 3.2m"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
+                label={isAr ? 'رمز التركيبة *' : 'Code BOM *'}
+                placeholder="BOM-TAB-01"
+                value={bomCode}
+                onChange={(e) => setBomCode(e.target.value)}
                 required
               />
-              <div className="grid grid-cols-3 gap-3">
-                <LabelInput
-                  label={isAr ? 'الكمية المنتجة' : 'Rendement Lot'}
-                  type="number"
-                  value={batchYield}
-                  onChange={(e) => setBatchYield(e.target.value)}
-                />
-                <LabelInput
-                  label={isAr ? 'ساعات العمل' : 'Heures MO'}
-                  type="number"
-                  value={laborHours}
-                  onChange={(e) => setLaborHours(e.target.value)}
-                />
-                <LabelInput
-                  label={isAr ? 'التكلفة المعيارية' : 'Coût Total DZD'}
-                  type="number"
-                  value={estimatedCost}
-                  onChange={(e) => setEstimatedCost(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {bomToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إنشاء التركيبة' : 'Créer la BOM'}
-                </AtriumButton>
-              </div>
-            </form>
+              <LabelInput
+                label={isAr ? 'وحدة الإنتاج' : 'Unité de lot'}
+                placeholder="Unité, Lot de 10..."
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+              />
             </div>
-          </div>
+            <LabelInput
+              label={isAr ? 'اسم المنتج النهائي المصنّع *' : 'Produit Fini Fabriqué *'}
+              placeholder="Ex: Table Réunion Chêne Massif 3.2m"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              required
+            />
+            <div className="grid grid-cols-3 gap-3">
+              <LabelInput
+                label={isAr ? 'الكمية المنتجة' : 'Rendement Lot'}
+                type="number"
+                value={batchYield}
+                onChange={(e) => setBatchYield(e.target.value)}
+              />
+              <LabelInput
+                label={isAr ? 'ساعات العمل' : 'Heures MO'}
+                type="number"
+                value={laborHours}
+                onChange={(e) => setLaborHours(e.target.value)}
+              />
+              <LabelInput
+                label={isAr ? 'التكلفة المعيارية' : 'Coût Total DZD'}
+                type="number"
+                value={estimatedCost}
+                onChange={(e) => setEstimatedCost(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" type="submit">
+                {bomToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إنشاء التركيبة' : 'Créer la BOM'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

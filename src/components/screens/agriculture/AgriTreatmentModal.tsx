@@ -10,6 +10,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AgriTreatmentModalProps {
   isOpen: boolean;
@@ -142,8 +143,6 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
     }
   }, [logToEdit, parcels]);
 
-  if (!isOpen) return null;
-
   const handleApplyPreset = (preset: InpvPreset) => {
     setProductName(preset.name);
     setActiveIngredient(preset.activeIngredient);
@@ -198,13 +197,12 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="sq-elev-pop w-full max-w-2xl">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-2xl" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
+      >
           <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-3">
               <div
@@ -407,8 +405,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

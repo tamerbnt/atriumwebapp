@@ -40,6 +40,8 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   ActiveFilterChip,
+  KineticModalShell,
+  useRetainedModalValue,
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
@@ -583,6 +585,8 @@ export const EducationAdmissionsView: React.FC = () => {
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: eduAdmissions.length > 0,
   });
+
+  const retainedConversionLead = useRetainedModalValue(conversionLead);
 
   if (showSkeleton && (eduAdmissions.length === 0 || networkMode === 'force_skeleton')) {
     if (viewLayout === 'kanban') {
@@ -1180,14 +1184,19 @@ export const EducationAdmissionsView: React.FC = () => {
         }}
       />
 
-      {conversionLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6"
-            >
+      <KineticModalShell
+        isOpen={Boolean(conversionLead)}
+        onClose={() => setConversionLead(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {retainedConversionLead && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[92vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_lead_modal_title')}
@@ -1203,7 +1212,7 @@ export const EducationAdmissionsView: React.FC = () => {
             <div className="pt-4 space-y-4 t-cap">
               <p className="text-black/70 dark:text-white/75">
                 You are about to register{' '}
-                <strong className="text-black dark:text-white">{conversionLead.studentName}</strong> into the
+                <strong className="text-black dark:text-white">{retainedConversionLead.studentName}</strong> into the
                 student CRM and create an active enrollment record.
               </p>
               <LabelSelect
@@ -1246,19 +1255,22 @@ export const EducationAdmissionsView: React.FC = () => {
                 </button>
               </div>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
-      {isAddLeadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop w-full max-w-lg">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6"
-            >
+      <KineticModalShell
+        isOpen={isAddLeadModalOpen}
+        onClose={() => setIsAddLeadModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[92vh] overflow-y-auto"
+        >
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_btn_new_lead')}
@@ -1370,9 +1382,7 @@ export const EducationAdmissionsView: React.FC = () => {
               </div>
             </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

@@ -403,13 +403,11 @@ export const AgricultureDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isModalOpen && (
-        <AgricultureParcelModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={addParcel}
-        />
-      )}
+      <AgricultureParcelModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={addParcel}
+      />
     </DashboardBentoFrame>
   );
 };

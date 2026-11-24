@@ -53,6 +53,8 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
+  useRetainedModalValue,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -822,6 +824,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     hasCachedData: timeLogs.length > 0,
   });
 
+  const retainedLogToEdit = useRetainedModalValue(logToEdit);
+  const retainedLogToDelete = useRetainedModalValue(logToDelete);
+
   if (showSkeleton && (timeLogs.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
@@ -1421,172 +1426,181 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       />
 
       {/* Manual Time Log Modal */}
-      {isManualModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+      <KineticModalShell
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_time_modal_manual_title', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_time_modal_manual_title', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsManualModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              aria-label="Close"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <h3 className="t-card font-semibold text-black dark:text-white">
-                {t('free_time_modal_manual_title', language)}
-              </h3>
-              <button
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleManualLogSubmit} className="space-y-4 t-cap">
+            <LabelSelect
+              field="Client"
+              label={`${t('free_invoice_client', language)} *`}
+              placeholder={t('free_time_ph_select_client', language)}
+              value={manualForm.clientId}
+              onChange={(val) => handleManualClientChange(extractStr(val))}
+              options={freelanceClients.map((c) => ({
+                value: c.id,
+                label: c.name,
+                sublabel: c.company || t('free_clients_private_badge', language),
+              }))}
+              searchable
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelSelect
+              field="Project"
+              label={`${t('free_time_project_label', language)} *`}
+              placeholder={t('free_time_ph_select_project', language)}
+              value={manualForm.projectId}
+              onChange={(val) =>
+                setManualForm((prev) => ({ ...prev, projectId: extractStr(val) }))
+              }
+              options={availableManualProjects.map((p) => ({
+                value: p.id,
+                label: p.title,
+                sublabel: `${
+                  p.pricingModel === 'Fixed'
+                    ? t('free_deliv_pricing_fixed', language)
+                    : p.pricingModel === 'Hourly'
+                    ? t('free_deliv_pricing_hourly', language)
+                    : t('free_deliv_pricing_retainer', language)
+                } · ${p.clientName}`,
+              }))}
+              searchable
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              id="manual-task-summary"
+              label={t('free_time_field_notes', language)}
+              required
+              placeholder={t('free_time_ph_task_summary', language)}
+              value={manualForm.taskDescription}
+              onChange={(e) =>
+                setManualForm((prev) => ({ ...prev, taskDescription: extractStr(e) }))
+              }
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                id="manual-hours"
+                label={t('free_time_field_hours', language)}
+                type="number"
+                min={0}
+                value={String(manualForm.hours)}
+                onChange={(e) =>
+                  setManualForm((prev) => ({ ...prev, hours: Number(extractStr(e)) || 0 }))
+                }
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                id="manual-minutes"
+                label={t('free_time_field_minutes', language)}
+                type="number"
+                min={0}
+                max={59}
+                value={String(manualForm.minutes)}
+                onChange={(e) =>
+                  setManualForm((prev) => ({ ...prev, minutes: Number(extractStr(e)) || 0 }))
+                }
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <LabelInput
+              id="manual-date"
+              label={t('free_time_field_date', language)}
+              type="date"
+              value={manualForm.date}
+              onChange={(e) => setManualForm((prev) => ({ ...prev, date: extractStr(e) }))}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="billableManual"
+                checked={manualForm.isBillable}
+                onChange={(e) =>
+                  setManualForm({ ...manualForm, isBillable: e.target.checked })
+                }
+                className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
+              />
+              <label
+                htmlFor="billableManual"
+                className="font-medium text-black/70 dark:text-white/75"
+              >
+                {t('free_time_billable', language)}
+              </label>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton
+                variant="outline"
+                size="sm"
                 type="button"
                 onClick={() => setIsManualModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Close"
               >
-                <X size={16} />
-              </button>
+                {t('common_cancel', language)}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" glow type="submit">
+                {t('common_save', language)}
+              </AtriumButton>
             </div>
-            <form onSubmit={handleManualLogSubmit} className="space-y-4 t-cap">
-              <LabelSelect
-                field="Client"
-                label={`${t('free_invoice_client', language)} *`}
-                placeholder={t('free_time_ph_select_client', language)}
-                value={manualForm.clientId}
-                onChange={(val) => handleManualClientChange(extractStr(val))}
-                options={freelanceClients.map((c) => ({
-                  value: c.id,
-                  label: c.name,
-                  sublabel: c.company || t('free_clients_private_badge', language),
-                }))}
-                searchable
-                width="100%"
-                height={40}
-                corner={12}
-              />
-              <LabelSelect
-                field="Project"
-                label={`${t('free_time_project_label', language)} *`}
-                placeholder={t('free_time_ph_select_project', language)}
-                value={manualForm.projectId}
-                onChange={(val) =>
-                  setManualForm((prev) => ({ ...prev, projectId: extractStr(val) }))
-                }
-                options={availableManualProjects.map((p) => ({
-                  value: p.id,
-                  label: p.title,
-                  sublabel: `${
-                    p.pricingModel === 'Fixed'
-                      ? t('free_deliv_pricing_fixed', language)
-                      : p.pricingModel === 'Hourly'
-                      ? t('free_deliv_pricing_hourly', language)
-                      : t('free_deliv_pricing_retainer', language)
-                  } · ${p.clientName}`,
-                }))}
-                searchable
-                width="100%"
-                height={40}
-                corner={12}
-              />
-              <LabelInput
-                id="manual-task-summary"
-                label={t('free_time_field_notes', language)}
-                required
-                placeholder={t('free_time_ph_task_summary', language)}
-                value={manualForm.taskDescription}
-                onChange={(e) =>
-                  setManualForm((prev) => ({ ...prev, taskDescription: extractStr(e) }))
-                }
-                width="100%"
-                height={40}
-                corner={12}
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  id="manual-hours"
-                  label={t('free_time_field_hours', language)}
-                  type="number"
-                  min={0}
-                  value={String(manualForm.hours)}
-                  onChange={(e) =>
-                    setManualForm((prev) => ({ ...prev, hours: Number(extractStr(e)) || 0 }))
-                  }
-                  width="100%"
-                  height={40}
-                  corner={12}
-                />
-                <LabelInput
-                  id="manual-minutes"
-                  label={t('free_time_field_minutes', language)}
-                  type="number"
-                  min={0}
-                  max={59}
-                  value={String(manualForm.minutes)}
-                  onChange={(e) =>
-                    setManualForm((prev) => ({ ...prev, minutes: Number(extractStr(e)) || 0 }))
-                  }
-                  width="100%"
-                  height={40}
-                  corner={12}
-                />
-              </div>
-              <LabelInput
-                id="manual-date"
-                label={t('free_time_field_date', language)}
-                type="date"
-                value={manualForm.date}
-                onChange={(e) => setManualForm((prev) => ({ ...prev, date: extractStr(e) }))}
-                width="100%"
-                height={40}
-                corner={12}
-              />
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="billableManual"
-                  checked={manualForm.isBillable}
-                  onChange={(e) =>
-                    setManualForm({ ...manualForm, isBillable: e.target.checked })
-                  }
-                  className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
-                />
-                <label
-                  htmlFor="billableManual"
-                  className="font-medium text-black/70 dark:text-white/75"
-                >
-                  {t('free_time_billable', language)}
-                </label>
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsManualModalOpen(false)}
-                >
-                  {t('common_cancel', language)}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" glow type="submit">
-                  {t('common_save', language)}
-                </AtriumButton>
-              </div>
-            </form>
-            </div>
-          </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
 
       {/* Edit Log Modal */}
-      {logToEdit && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={Boolean(logToEdit)}
+        onClose={() => setLogToEdit(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_time_edit_modal_title', language)}
+      >
+        {retainedLogToEdit && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-4"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_time_edit_modal_title', language)}
                 </h3>
                 <p className="t-cap text-black/55 dark:text-white/55">
-                  {logToEdit.clientName} · {logToEdit.projectTitle}
+                  {retainedLogToEdit.clientName} · {retainedLogToEdit.projectTitle}
                 </p>
               </div>
               <button
@@ -1676,40 +1690,46 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       {/* Delete Log Modal */}
-      {logToDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
-                >
-                  <AlertTriangle size={20} />
-                </div>
+      <KineticModalShell
+        isOpen={Boolean(logToDelete)}
+        onClose={() => setLogToDelete(null)}
+        role="alertdialog"
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_time_delete_modal_title', language)}
+      >
+        {retainedLogToDelete && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle size={20} />
+              </div>
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_time_delete_modal_title', language)}
                 </h3>
                 <p className="t-cap text-black/55 dark:text-white/55">
-                  {logToDelete.date} · {formatDuration(logToDelete.durationSeconds)}
+                  {retainedLogToDelete.date} · {formatDuration(retainedLogToDelete.durationSeconds)}
                 </p>
               </div>
             </div>
             <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
-              {t('free_time_delete_modal_confirm', language)} "{logToDelete.taskDescription}" (
-              {logToDelete.projectTitle})?
+              {t('free_time_delete_modal_confirm', language)} "{retainedLogToDelete.taskDescription}" (
+              {retainedLogToDelete.projectTitle})?
             </p>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToDelete(null)}>
@@ -1720,6 +1740,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 size="sm"
                 type="button"
                 onClick={() => {
+                  if (!logToDelete) return;
                   deleteTimeLog(logToDelete.id);
                   if (selectedLog?.id === logToDelete.id) setSelectedLog(null);
                   setLogToDelete(null);
@@ -1728,10 +1749,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 {t('common_delete', language)}
               </AtriumButton>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

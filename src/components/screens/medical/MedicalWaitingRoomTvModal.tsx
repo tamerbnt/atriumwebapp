@@ -16,7 +16,7 @@ import { MedicalConsultation, MedicalPractitioner } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useMedicalData } from './medicalData';
 import { EmptyState } from '../../../atrium/components/EmptyState';
-import { KineticEmptyStateMotion } from '../../ui/kinetic';
+import { KineticEmptyStateMotion, KineticModalShell } from '../../ui/kinetic';
 
 interface MedicalWaitingRoomTvModalProps {
   isOpen: boolean;
@@ -50,9 +50,11 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
   // Clock interval
   useEffect(() => {
+    if (!isOpen) return;
+    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isOpen]);
 
   // Web Audio API Synthetic Chime: Two-tone pleasant hospital chime (D5: 587.33Hz -> A5: 880Hz)
   const playChimeTone = () => {
@@ -101,6 +103,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
   // Trigger chime & flash on ticket call update
   useEffect(() => {
+    if (!isOpen) return;
     if (currentCall && currentCall.ticketNumber && currentCall.ticketNumber !== lastCalledTicket) {
       setLastCalledTicket(currentCall.ticketNumber);
       setIsFlashing(true);
@@ -110,7 +113,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
       const flashTimer = setTimeout(() => setIsFlashing(false), 4000);
       return () => clearTimeout(flashTimer);
     }
-  }, [currentCall?.ticketNumber, audioEnabled, lastCalledTicket]);
+  }, [isOpen, currentCall?.ticketNumber, audioEnabled, lastCalledTicket]);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -126,14 +129,20 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
     playChimeTone();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      ref={containerRef}
-      data-theme="dark"
-      className="fixed inset-0 z-50 bg-[#0C0C0E] text-white flex flex-col font-sans select-none overflow-hidden animate-in fade-in duration-300"
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      fullscreen
+      dataTheme="dark"
+      scrimClassName="bg-[#0C0C0E]"
+      ariaLabel="Écran Salle d'Attente"
     >
+      <div
+        ref={containerRef}
+        data-theme="dark"
+        className="w-full h-full bg-[#0C0C0E] text-white flex flex-col font-sans select-none overflow-hidden"
+      >
       {/* Top TV Header Bar */}
       <div className="h-20 bg-[#141416] border-b border-white/10 px-8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
@@ -520,6 +529,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           Urgences Médicales: 023 45 67 00
         </div>
       </div>
-    </div>
+      </div>
+    </KineticModalShell>
   );
 };

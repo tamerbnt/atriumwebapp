@@ -5,6 +5,7 @@ import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface CacobatphDossierModalProps {
   isOpen: boolean;
@@ -23,7 +24,6 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 	const [weatherType, setWeatherType] = React.useState("HeavyRain");
 	const [workerCount, setWorkerCount] = React.useState("24");
 	const [cacobatphCenter, setCacobatphCenter] = React.useState("Agence Régionale Alger Centre");
-	if (!isOpen) return null;
 	const handlePrint = () => {
 		window.print();
 	};
@@ -35,9 +35,9 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 		showToast(isAr ? "تم اعتماد ملف التعويض عن سوء الأحوال الجوية CACOBATPH بنجاح" : "Dossier CACOBATPH 48h validé avec succès pour transmission", "success");
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-<div className="sq-elev-pop max-w-2xl w-full my-8">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
+	return (
+<KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-2xl" zIndexClass="z-[9990]" scrimClassName="bg-black/60">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 print:p-0 print:shadow-none">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 print:hidden">
 <div className="flex items-center gap-2">
 <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Cloud size={18} /></div>
@@ -177,6 +177,6 @@ h
 <AtriumButton variant="primary" onClick={handleValidateDossier} icon={<CheckCircle2 size={15} />}>{isAr ? "اعتماد وإرسال إلى CACOBATPH" : "Valider & Enregistrer Dossier"}</AtriumButton>
 </div>
 </div>
-</div>
-</div>;
+</KineticModalShell>
+	);
 };

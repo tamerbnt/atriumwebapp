@@ -24,6 +24,7 @@ import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageDa
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AutoOrderModalProps {
   isOpen: boolean;
@@ -71,13 +72,26 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 	const [isClientSigned, setIsClientSigned] = React.useState(false);
 	const activeVehicle = vehicles.find((v: VehicleAsset) => v.id === selectedVehicleId) || vehicles[0];
 	React.useEffect(() => {
+		if (!isOpen) return;
+		setActiveTab("intake");
+		setSelectedVehicleId(vehicles[0]?.id || "");
+		setIsOdometerReplaced(false);
+		setFuelLevel("50");
+		setIsVehicleDirty(false);
+		setDamageMarkers([]);
+		setMarkerNote("");
+		setDiagnostic("");
+		setEstimatedCost("18500");
+		setTechnician("Karim (Chef Atelier)");
+		setIsClientSigned(false);
+	}, [isOpen, vehicles]);
+	React.useEffect(() => {
 		if (activeVehicle) {
 			setCurrentMileage(String(activeVehicle.mileageKm || 5e4));
 			const freeBay = bays.find((b: WorkshopBay) => !b.isOccupied);
 			if (freeBay) setAssignedBayId(freeBay.id);
 		}
 	}, [selectedVehicleId, activeVehicle, bays]);
-	if (!isOpen) return null;
 	const handleCanvasClick = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const rect = e.currentTarget.getBoundingClientRect();
 		const x = Math.round((e.clientX - rect.left) / rect.width * 100);
@@ -163,8 +177,8 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 		value: b.id,
 		label: `${b.name} ${b.isOccupied ? "(Occupé)" : "(Libre)"}`
 	}));
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="sq-elev-pop max-w-4xl w-full">
+	return (
+<KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-4xl" zIndexClass="z-[9990]" scrimClassName="bg-black/60">
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
@@ -503,6 +517,6 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>
 </div>
-</div>
-</div>;
+</KineticModalShell>
+	);
 };

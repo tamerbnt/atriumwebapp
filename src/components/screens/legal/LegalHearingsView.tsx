@@ -49,6 +49,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1290,128 +1291,131 @@ export const LegalHearingsView: React.FC<any> = () => {
         }}
       />
 
-      {isNewHearingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-lg w-full animate-in fade-in zoom-in-95 duration-150">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
-            >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-              <div className="flex items-center gap-2">
-                <Gavel size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                <h3 className="t-card font-semibold text-black dark:text-white">
-                  {isAr
-                    ? 'برمجة جلسة جديدة برول المحكمة'
-                    : 'Inscrire une Audience Judiciaire'}
-                </h3>
-              </div>
-              <button
-                type="button"
-                data-no-liquid="true"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsNewHearingModalOpen(false)}
-                className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+      <KineticModalShell
+        isOpen={isNewHearingModalOpen}
+        onClose={() => setIsNewHearingModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+        ariaLabel={isAr ? 'برمجة جلسة جديدة برول المحكمة' : 'Inscrire une Audience Judiciaire'}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full max-h-[92vh] overflow-y-auto p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <div className="flex items-center gap-2">
+              <Gavel size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {isAr
+                  ? 'برمجة جلسة جديدة برول المحكمة'
+                  : 'Inscrire une Audience Judiciaire'}
+              </h3>
             </div>
+            <button
+              type="button"
+              data-no-liquid="true"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsNewHearingModalOpen(false)}
+              className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-            <form onSubmit={handleCreateHearing} className="space-y-4">
-              <LabelSelect
-                label={isAr ? 'ملف القضية المعنية' : 'Dossier Contentieux Associé'}
-                value={formMatterId}
-                onChange={(val) => setFormMatterId(extractStr(val))}
-                options={matters.map((m) => ({
-                  value: m.id,
-                  label: `${m.matterNumber} - ${m.title}`,
-                }))}
-              />
+          <form onSubmit={handleCreateHearing} className="space-y-4">
+            <LabelSelect
+              label={isAr ? 'ملف القضية المعنية' : 'Dossier Contentieux Associé'}
+              value={formMatterId}
+              onChange={(val) => setFormMatterId(extractStr(val))}
+              options={matters.map((m) => ({
+                value: m.id,
+                label: `${m.matterNumber} - ${m.title}`,
+              }))}
+            />
 
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'تاريخ الجلسة' : "Date d'Audience"}
-                  type="date"
-                  value={formHearingDate}
-                  onChange={(e) => setFormHearingDate(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'ساعة النداء' : "Heure d'Appel"}
-                  type="time"
-                  value={formHearingTime}
-                  onChange={(e) => setFormHearingTime(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'المحكمة / المجلس' : 'Juridiction / Tribunal'}
-                  value={formCourtName}
-                  onChange={(e) => setFormCourtName(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'قاعة الجلسة' : "Salle d'Audience"}
-                  value={formCourtRoom}
-                  onChange={(e) => setFormCourtRoom(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الغرفة المختصة' : 'Chambre / Section'}
-                  value={formChamber}
-                  onChange={(e) => setFormChamber(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'القاضي رئيس الجلسة' : 'Président du Siège'}
-                  value={formBenchJudge}
-                  onChange={(e) => setFormBenchJudge(e.target.value)}
-                  required
-                />
-              </div>
-
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                label={isAr ? 'الهدف الإجرائي من الجلسة' : 'Démarche & Objet (Plaidoirie, RPP, etc.)'}
-                value={formPurpose}
-                onChange={(e) => setFormPurpose(e.target.value)}
+                label={isAr ? 'تاريخ الجلسة' : "Date d'Audience"}
+                type="date"
+                value={formHearingDate}
+                onChange={(e) => setFormHearingDate(e.target.value)}
                 required
               />
-
-              <LabelSelect
-                label={isAr ? 'رمز التأجيل الافتراضي' : 'Code de Renvoi Initiale'}
-                value={formPostponementCode}
-                onChange={(val) => setFormPostponementCode(extractStr(val))}
-                options={[
-                  { value: 'RPP', label: 'RPP - Renvoi Pour Pièces' },
-                  { value: 'RPO', label: 'RPO - Renvoi Pour Observations' },
-                  { value: 'DELIB', label: 'DELIB - Mise en Délibéré' },
-                  { value: 'JUG', label: 'JUG - Rendu de Jugement' },
-                ]}
+              <LabelInput
+                label={isAr ? 'ساعة النداء' : "Heure d'Appel"}
+                type="time"
+                value={formHearingTime}
+                onChange={(e) => setFormHearingTime(e.target.value)}
+                required
               />
-
-              <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
-                <AtriumButton
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsNewHearingModalOpen(false)}
-                >
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
-                  {isAr ? 'تسجيل وحفظ برول المحكمة' : 'Inscrire au Rôle'}
-                </AtriumButton>
-              </div>
-            </form>
             </div>
-          </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'المحكمة / المجلس' : 'Juridiction / Tribunal'}
+                value={formCourtName}
+                onChange={(e) => setFormCourtName(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'قاعة الجلسة' : "Salle d'Audience"}
+                value={formCourtRoom}
+                onChange={(e) => setFormCourtRoom(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'الغرفة المختصة' : 'Chambre / Section'}
+                value={formChamber}
+                onChange={(e) => setFormChamber(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'القاضي رئيس الجلسة' : 'Président du Siège'}
+                value={formBenchJudge}
+                onChange={(e) => setFormBenchJudge(e.target.value)}
+                required
+              />
+            </div>
+
+            <LabelInput
+              label={isAr ? 'الهدف الإجرائي من الجلسة' : 'Démarche & Objet (Plaidoirie, RPP, etc.)'}
+              value={formPurpose}
+              onChange={(e) => setFormPurpose(e.target.value)}
+              required
+            />
+
+            <LabelSelect
+              label={isAr ? 'رمز التأجيل الافتراضي' : 'Code de Renvoi Initiale'}
+              value={formPostponementCode}
+              onChange={(val) => setFormPostponementCode(extractStr(val))}
+              options={[
+                { value: 'RPP', label: 'RPP - Renvoi Pour Pièces' },
+                { value: 'RPO', label: 'RPO - Renvoi Pour Observations' },
+                { value: 'DELIB', label: 'DELIB - Mise en Délibéré' },
+                { value: 'JUG', label: 'JUG - Rendu de Jugement' },
+              ]}
+            />
+
+            <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
+              <AtriumButton
+                variant="outline"
+                type="button"
+                onClick={() => setIsNewHearingModalOpen(false)}
+              >
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" type="submit">
+                {isAr ? 'تسجيل وحفظ برول المحكمة' : 'Inscrire au Rôle'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

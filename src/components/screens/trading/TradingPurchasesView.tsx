@@ -34,6 +34,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -848,14 +849,18 @@ export const TradingPurchasesView: React.FC = () => {
         }}
       />
 
-      {isPoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop relative w-full max-w-2xl">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={isPoModalOpen}
+        onClose={() => setIsPoModalOpen(false)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
             <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                 <Truck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -957,10 +962,8 @@ export const TradingPurchasesView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
 
       <CommercialDocPrintModal isOpen={!!printDoc} onClose={() => setPrintDoc(null)} document={printDoc} />
     </div>

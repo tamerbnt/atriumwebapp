@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { AlertTriangle, GitMerge, RotateCcw, Upload, Check } from 'lucide-react';
 import { Modal } from '../ui/Modal';
+import { useRetainedModalValue } from '../ui/kinetic/KineticModalShell';
 import { AtriumButton } from '../ui/AtriumButton';
 import { useAtriumSelector, resolveConcurrencyConflictAction, dismissConcurrencyConflictAction } from '../../services/store';
 
@@ -42,7 +43,8 @@ function humanizeFieldName(key: string): string {
 export const ConcurrencyConflictModal: React.FC = () => {
   const conflicts = useAtriumSelector((s) => s.concurrencyConflicts || []);
   const language = useAtriumSelector((s) => s.language);
-  const activeConflict = conflicts[0] || null;
+  const rawConflict = conflicts[0] || null;
+  const activeConflict = useRetainedModalValue(rawConflict);
 
   const isAr = language === 'ar';
   const isFr = language === 'fr';
@@ -86,9 +88,8 @@ export const ConcurrencyConflictModal: React.FC = () => {
     setIsSubmitting(false);
   }, [activeConflict?.id, diffRows.length]);
 
-  if (!activeConflict) return null;
-
   const handleKeepServer = async () => {
+    if (!activeConflict) return;
     setIsSubmitting(true);
     try {
       await resolveConcurrencyConflictAction(activeConflict.id, 'server');
@@ -98,6 +99,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
   };
 
   const handleOverwriteMine = async () => {
+    if (!activeConflict) return;
     setIsSubmitting(true);
     try {
       await resolveConcurrencyConflictAction(activeConflict.id, 'overwrite');
@@ -107,6 +109,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
   };
 
   const handleApplyMerged = async () => {
+    if (!activeConflict) return;
     setIsSubmitting(true);
     try {
       const mergedPatch: Record<string, any> = {};
@@ -126,18 +129,21 @@ export const ConcurrencyConflictModal: React.FC = () => {
     ? 'Conflit de modification concurrente'
     : 'Concurrent Edit Conflict';
 
-  const subtitleText = `${activeConflict.entityLabel || activeConflict.entityType || activeConflict.table} · ${
-    isAr ? 'تم تعديل هذا السجل من جهاز آخر أثناء التحرير' : isFr ? 'Cet enregistrement a été modifié ailleurs pendant votre édition' : 'This record was modified elsewhere while you were editing'
-  }`;
+  const subtitleText = activeConflict
+    ? `${activeConflict.entityLabel || activeConflict.entityType || activeConflict.table} · ${
+        isAr ? 'تم تعديل هذا السجل من جهاز آخر أثناء التحرير' : isFr ? 'Cet enregistrement a été modifié ailleurs pendant votre édition' : 'This record was modified elsewhere while you were editing'
+      }`
+    : '';
 
   return (
     <Modal
-      isOpen={Boolean(activeConflict)}
-      onClose={() => dismissConcurrencyConflictAction(activeConflict.id)}
+      isOpen={Boolean(rawConflict)}
+      onClose={() => activeConflict && dismissConcurrencyConflictAction(activeConflict.id)}
       title={titleText}
       subtitle={subtitleText}
       maxWidth="xl"
     >
+      {activeConflict && (
       <div className="flex flex-col gap-[var(--s4,16px)]">
         {/* Unboxed inline conflict metadata */}
         <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] pb-[var(--s3,12px)] border-b border-[var(--atr-line)] t-cap text-[var(--atr-ink-3)]">
@@ -305,6 +311,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
     </Modal>
   );
 };

@@ -43,6 +43,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -58,6 +59,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 interface ProjectCreaViewProps {
@@ -586,6 +588,8 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     }, 1500);
     setArtworkTitle('');
   };
+
+  const retainedPreviewBat = useRetainedModalValue(selectedPreviewBat);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -1319,62 +1323,66 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         )}
       />
 
-      {selectedPreviewBat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop max-w-xl w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="t-label font-semibold text-black dark:text-white">
-                    {selectedPreviewBat.title}
-                  </h3>
-                  <span className="t-cap text-black/55 dark:text-white/55">
-                    {selectedPreviewBat.projectTitle}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedPreviewBat(null)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <img
-                src={selectedPreviewBat.previewUrl}
-                alt={selectedPreviewBat.title}
-                width={512}
-                height={320}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
-              />
-              <div className="flex justify-between items-center t-cap tabular-nums text-black/55 dark:text-white/55">
-                <span>
-                  {selectedPreviewBat.colorSpace} · {selectedPreviewBat.resolutionDpi} DPI
+      <KineticModalShell
+        isOpen={Boolean(selectedPreviewBat)}
+        onClose={() => setSelectedPreviewBat(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedPreviewBat && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="t-label font-semibold text-black dark:text-white">
+                  {retainedPreviewBat.title}
+                </h3>
+                <span className="t-cap text-black/55 dark:text-white/55">
+                  {retainedPreviewBat.projectTitle}
                 </span>
-                <span>Fond perdu : +{selectedPreviewBat.bleedMm}mm</span>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPreviewBat(null)}
-                  data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
-                >
-                  Fermer
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPreviewBat(null)}
+                data-sq="ctl-sm"
+                className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img
+              src={retainedPreviewBat.previewUrl}
+              alt={retainedPreviewBat.title}
+              width={512}
+              height={320}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
+            />
+            <div className="flex justify-between items-center t-cap tabular-nums text-black/55 dark:text-white/55">
+              <span>
+                {retainedPreviewBat.colorSpace} · {retainedPreviewBat.resolutionDpi} DPI
+              </span>
+              <span>Fond perdu : +{retainedPreviewBat.bleedMm}mm</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+              <button
+                type="button"
+                onClick={() => setSelectedPreviewBat(null)}
+                data-sq="ctl"
+                className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
+              >
+                Fermer
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

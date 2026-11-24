@@ -364,12 +364,10 @@ export const TradingDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isComposerOpen && (
-        <CommercialDocComposerModal
-          isOpen={isComposerOpen}
-          onClose={() => setIsComposerOpen(false)}
-        />
-      )}
+      <CommercialDocComposerModal
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
+      />
     </DashboardBentoFrame>
   );
 };

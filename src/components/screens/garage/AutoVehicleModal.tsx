@@ -11,6 +11,7 @@ import { VehicleAsset, useGarageData } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AutoVehicleModalProps {
   isOpen: boolean;
@@ -86,8 +87,6 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
     }
   }, [vehicleToEdit, fleets]);
 
-  if (!isOpen) return null;
-
   const handleFleetToggle = (fleetEnabled: boolean) => {
     setIsFleet(fleetEnabled);
     if (fleetEnabled && fleets.length > 0) {
@@ -158,8 +157,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-xl w-full">
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-xl" zIndexClass="z-[9990]">
       <div
         data-sq="panel"
         data-sq-border="solid"
@@ -357,8 +355,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };
 

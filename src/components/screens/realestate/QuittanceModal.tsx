@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Receipt, CheckCircle, Printer, AlertCircle, Stamp } from 'lucide-react';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -6,6 +6,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateLease, RentalQuittanceRecord } from '../../../types';
 import { computeRentalTimbreFiscal } from '../../../utils/realEstateRules';
 import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface QuittanceModalProps {
   isOpen: boolean;
@@ -38,7 +39,20 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
   const [cashierStaffName, setCashierStaffName] = useState('Yasmine Cherif');
   const [notes, setNotes] = useState('');
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const nextLeaseId = selectedLease?.id || activeLeases[0]?.id || '';
+    const nextLease = leases.find((l) => l.id === nextLeaseId) || selectedLease || activeLeases[0];
+    const now = new Date();
+    setLeaseId(nextLeaseId);
+    setPeriodMonth(now.getMonth() + 1);
+    setPeriodYear(now.getFullYear());
+    setRentAmountDzd(nextLease?.monthlyRentDzd || 100000);
+    setChargesDzd(5000);
+    setPaymentMethod('Cash');
+    setCashierStaffName('Yasmine Cherif');
+    setNotes('');
+  }, [isOpen, selectedLease]);
 
   const handleLeaseChange = (rawLeaseId: any) => {
     const newLeaseId = extractStr(rawLeaseId);
@@ -110,9 +124,14 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="sq-elev-pop relative w-full max-w-2xl my-8">
-      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      scrimClassName="bg-black/60"
+      ariaLabel="Encaissement & Quittance de Loyer"
+    >
+      <div data-sq="panel" data-sq-border="solid" className="relative w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-5">
           <div className="flex items-center gap-3">
@@ -255,7 +274,6 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

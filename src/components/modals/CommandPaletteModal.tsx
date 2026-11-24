@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { KineticModalShell } from '../ui/kinetic/KineticModalShell';
 import {
   Search,
   Home,
@@ -514,16 +515,20 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, filteredItems, selectedIndex, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[var(--s8,48px)] sm:pt-[calc(var(--s8,48px)*2)] p-[var(--s4,16px)] bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="sq-elev-pop w-full max-w-xl animate-in zoom-in-95 duration-150">
-        <div
-          data-sq="panel"
-          className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col max-h-[80vh]"
-          onClick={(e) => e.stopPropagation()}
-        >
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-xl"
+      alignment="top"
+      zIndexClass="z-[9995]"
+      scrimClassName="bg-black/60"
+      ariaLabel={language === 'ar' ? 'لوحة الأوامر' : language === 'fr' ? 'Palette de commandes' : 'Command Palette'}
+    >
+      <div
+        data-sq="panel"
+        className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col max-h-[80vh]"
+      >
         {/* Kinetic Search Input Bar */}
         <div
           className={`p-[var(--s4,16px)] border-b transition-colors flex items-center gap-[var(--s3,12px)] ${
@@ -674,7 +679,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           </div>
         </div>
         </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

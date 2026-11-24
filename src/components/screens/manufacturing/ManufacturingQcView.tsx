@@ -31,6 +31,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   KineticRowData,
   KineticRowFanAction,
@@ -38,6 +39,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 export const ManufacturingQcView: React.FC<any> = () => {
@@ -349,6 +351,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
     ],
     [branchesById, currentBranch, language, isAr, isEn]
   );
+
+  const retainedOrderForCertificate = useRetainedModalValue(orderForCertificate);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -815,83 +819,88 @@ export const ManufacturingQcView: React.FC<any> = () => {
         )}
       />
 
-      {orderForCertificate && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
-                <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
-                    <ShieldCheck size={22} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold t-card text-black dark:text-white">
-                      {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
-                    </h3>
-                    <p className="t-cap text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
-                  </div>
+      <KineticModalShell
+        isOpen={Boolean(orderForCertificate)}
+        onClose={() => setOrderForCertificate(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedOrderForCertificate && (
+          <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
+              <div className="flex items-center gap-3">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
+                  <ShieldCheck size={22} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    onClick={() => window.print()}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Printer size={14} />
-                    <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                    onClick={() => setOrderForCertificate(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
+                <div>
+                  <h3 className="font-semibold t-card text-black dark:text-white">
+                    {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
+                  </h3>
+                  <p className="t-cap text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
                 </div>
               </div>
-              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
-                <div className="flex justify-between items-start border-b pb-4">
-                  <div>
-                    <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
-                    <div className="t-small text-black/55 font-medium">
-                      Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88
-                    </div>
-                    <div className="t-small font-semibold text-emerald-700 mt-1 tracking-wide">
-                      BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
-                    </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setOrderForCertificate(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
+              <div className="flex justify-between items-start border-b pb-4">
+                <div>
+                  <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
+                  <div className="t-small text-black/55 font-medium">
+                    Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88
                   </div>
-                  <div className="text-right">
-                    <div className="tabular-nums font-semibold t-small text-emerald-700">
-                      CERT-2026-{orderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
-                    </div>
-                    <div className="t-cap text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
+                  <div className="t-small font-semibold text-emerald-700 mt-1 tracking-wide">
+                    BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
                   </div>
                 </div>
-                <div className="bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-2">
+                <div className="text-right">
+                  <div className="tabular-nums font-semibold t-small text-emerald-700">
+                    CERT-2026-{retainedOrderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
+                  </div>
+                  <div className="t-cap text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
+                </div>
+              </div>
+              <div className="bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-2">
                 <div className="flex justify-between">
                   <span className="text-black/55">Article inspecté :</span>
-                  <span className="font-semibold text-black">{orderForCertificate.productName}</span>
+                  <span className="font-semibold text-black">{retainedOrderForCertificate.productName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">Ordre de Fabrication :</span>
-                  <span className="tabular-nums font-semibold text-black">{orderForCertificate.orderNumber}</span>
+                  <span className="tabular-nums font-semibold text-black">{retainedOrderForCertificate.orderNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">N° de Lot de Traçabilité :</span>
                   <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                    {orderForCertificate.batchLotNumber || 'LOT-202610-0089'}
+                    {retainedOrderForCertificate.batchLotNumber || 'LOT-202610-0089'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">Quantité libérée :</span>
                   <span className="tabular-nums font-semibold text-emerald-700">
-                    {orderForCertificate.actualQuantityProduced ||
-                      orderForCertificate.quantityProduced ||
-                      orderForCertificate.targetQuantity}{' '}
+                    {retainedOrderForCertificate.actualQuantityProduced ||
+                      retainedOrderForCertificate.quantityProduced ||
+                      retainedOrderForCertificate.targetQuantity}{' '}
                     unités conformes
                   </span>
                 </div>
@@ -929,10 +938,9 @@ export const ManufacturingQcView: React.FC<any> = () => {
                 </div>
               </div>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

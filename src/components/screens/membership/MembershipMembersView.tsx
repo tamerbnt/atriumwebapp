@@ -1685,16 +1685,14 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         onClear={handleBulkClear}
       />
 
-      {isBookModalOpen && selectedMember && (
-        <AppointmentModal
-          isOpen={isBookModalOpen}
-          onClose={() => setIsBookModalOpen(false)}
-          appointment={null}
-          initialDate={new Date().toISOString().split('T')[0]}
-          initialTime="10:00"
-          initialStaffId={undefined}
-        />
-      )}
+      <AppointmentModal
+        isOpen={isBookModalOpen && Boolean(selectedMember)}
+        onClose={() => setIsBookModalOpen(false)}
+        appointment={null}
+        initialDate={new Date().toISOString().split('T')[0]}
+        initialTime="10:00"
+        initialStaffId={undefined}
+      />
     </div>
   );
 });

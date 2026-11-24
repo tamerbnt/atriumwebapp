@@ -1,21 +1,8 @@
-import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import { SlidersHorizontal, RotateCcw, X } from 'lucide-react';
 import { Button as BrandedAtriumButton } from '@/atrium/core';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
-import {
-  Sp,
-  TUNES,
-  subscribeFrame,
-  subscribeCleanup,
-  wake,
-  checkReducedMotion,
-} from './kineticMotion';
-import {
-  computeKineticModalMetrics,
-  computeKineticModalTransformOrigin,
-  shouldFinishModalClosing,
-} from './kineticMath';
+import { KineticModalShell } from './KineticModalShell';
 
 export interface KineticFilterTileOption {
   value: string;
@@ -60,174 +47,6 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
   onResetFilters,
   sections,
 }) => {
-  const hasMountedRef = useRef(isOpen);
-  if (isOpen) hasMountedRef.current = true;
-
-  const scrimRef = useRef<HTMLDivElement | null>(null);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  const springRef = useRef<Sp | null>(null);
-  const stateRef = useRef<'closed' | 'opening' | 'open' | 'closing'>('closed');
-  const lastDrawKeyRef = useRef<string>('');
-  const willChangeRef = useRef<boolean>(false);
-
-  if (!springRef.current) {
-    springRef.current = new Sp(isOpen ? 100 : 0, TUNES.modal);
-  }
-
-  const finishClosing = useCallback(() => {
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    const s = springRef.current;
-    if (s) {
-      s.t = 0;
-      s.x = 0;
-      s.v = 0;
-    }
-    if (root) {
-      root.hidden = true;
-      root.style.opacity = '0';
-      root.style.pointerEvents = 'none';
-      root.style.willChange = '';
-    }
-    if (dialog) {
-      dialog.style.transform = checkReducedMotion()
-        ? 'scale3d(1, 1, 1)'
-        : 'scale3d(0.72, 0.72, 1)';
-      dialog.style.willChange = '';
-    }
-    stateRef.current = 'closed';
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-        triggerRef?.current?.focus?.();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose, triggerRef]);
-
-  useEffect(() => {
-    const drawFilterModal = () => {
-      const st = stateRef.current;
-      if (st === 'closed' || checkReducedMotion()) return;
-      const root = scrimRef.current;
-      const dialog = dialogRef.current;
-      const s = springRef.current;
-      if (!root || !dialog || !s) return;
-      if (st === 'open' && s.rest()) return;
-
-      const metrics = computeKineticModalMetrics(s.x, false);
-      const opQ = Math.round(metrics.opacity * 100) / 100;
-      const scQ = Math.round(metrics.scale * 1000) / 1000;
-      const key = `${opQ}|${scQ}`;
-      if (key !== lastDrawKeyRef.current) {
-        lastDrawKeyRef.current = key;
-        root.style.opacity = String(opQ);
-        dialog.style.transform = `scale3d(${scQ}, ${scQ}, 1)`;
-      }
-    };
-
-    const cleanFilterModal = () => {
-      const st = stateRef.current;
-      if (st === 'closed' || checkReducedMotion()) return;
-      const root = scrimRef.current;
-      const dialog = dialogRef.current;
-      const s = springRef.current;
-      if (!root || !dialog || !s) return;
-
-      if (st === 'opening' && s.t === 100 && s.rest()) {
-        s.snap();
-        lastDrawKeyRef.current = '1|1';
-        root.style.opacity = '1';
-        dialog.style.transform = 'scale3d(1, 1, 1)';
-        if (willChangeRef.current) {
-          willChangeRef.current = false;
-          root.style.willChange = '';
-          dialog.style.willChange = '';
-        }
-        stateRef.current = 'open';
-      } else if (st === 'closing' && shouldFinishModalClosing(s.x, s.t)) {
-        lastDrawKeyRef.current = '';
-        willChangeRef.current = false;
-        finishClosing();
-      }
-    };
-
-    const unsubDraw = subscribeFrame(drawFilterModal);
-    const unsubClean = subscribeCleanup(cleanFilterModal);
-    return () => {
-      unsubDraw();
-      unsubClean();
-      springRef.current?.destroy();
-      springRef.current = null;
-    };
-  }, [finishClosing]);
-
-  useLayoutEffect(() => {
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    const s = springRef.current;
-    if (!root || !dialog || !s) return;
-
-    if (isOpen) {
-      const st = stateRef.current;
-      if (st === 'opening' || st === 'open') return;
-      const reduced = checkReducedMotion();
-      stateRef.current = reduced ? 'open' : 'opening';
-      root.hidden = false;
-      root.style.pointerEvents = 'auto';
-      root.style.opacity = reduced ? '1' : '0';
-      dialog.style.transform = reduced ? 'scale3d(1, 1, 1)' : 'scale3d(0.72, 0.72, 1)';
-
-      const dRect = dialog.getBoundingClientRect();
-      const tRect = triggerRef?.current?.isConnected
-        ? triggerRef.current.getBoundingClientRect()
-        : null;
-      dialog.style.transformOrigin = computeKineticModalTransformOrigin(
-        tRect,
-        dRect,
-        typeof window !== 'undefined' ? window.innerWidth : 1280,
-        typeof window !== 'undefined' ? window.innerHeight : 800
-      );
-
-      if (reduced) {
-        s.t = 100;
-        s.snap();
-        lastDrawKeyRef.current = '1|1';
-      } else {
-        willChangeRef.current = true;
-        root.style.willChange = 'opacity';
-        dialog.style.willChange = 'transform';
-        if (st === 'closed') {
-          s.x = 0;
-          s.v = 0;
-        }
-        s.setTarget(100);
-        wake();
-      }
-    } else if (stateRef.current === 'opening' || stateRef.current === 'open') {
-      const reduced = checkReducedMotion();
-      root.style.pointerEvents = 'none';
-      if (reduced) {
-        finishClosing();
-      } else {
-        stateRef.current = 'closing';
-        willChangeRef.current = true;
-        root.style.willChange = 'opacity';
-        dialog.style.willChange = 'transform';
-        s.setTarget(0);
-        wake();
-      }
-    }
-  }, [isOpen, finishClosing, triggerRef]);
-
-  if (!hasMountedRef.current) return null;
-
   const dialogTitle =
     language === 'ar'
       ? 'مرشحات متقدمة'
@@ -235,31 +54,22 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
       ? 'Filtres avancés'
       : 'Advanced Filters';
 
-  const modalNode = (
-    <div
-      ref={scrimRef}
-      hidden={!isOpen && stateRef.current === 'closed'}
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 select-none"
-      style={{ opacity: 0, pointerEvents: 'none' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-hidden={!isOpen}
-      aria-label={dialogTitle}
+  return (
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      triggerRef={triggerRef}
+      maxWidthClass="max-w-lg"
+      zIndexClass="z-[9999]"
+      ariaLabel={dialogTitle}
+      scrimClassName="bg-black/45 dark:bg-black/70 p-4 sm:p-6"
+      dialogClassName="max-h-[85vh] flex flex-col"
     >
       <div
-        ref={dialogRef}
-        className="w-full max-w-lg max-h-[85vh] sq-elev-pop flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        data-sq="panel"
+        data-sq-border="solid"
+        className="relative w-full max-h-[85vh] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
       >
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[85vh] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
-        >
         <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] shrink-0">
           <div className="flex items-center gap-[var(--s3,12px)]">
             <div className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
@@ -414,12 +224,9 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
             </span>
           </BrandedAtriumButton>
         </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
-
-  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 });
 
 KineticFilterModal.displayName = 'KineticFilterModal';

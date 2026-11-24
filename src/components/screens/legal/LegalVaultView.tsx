@@ -45,6 +45,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1176,116 +1177,127 @@ export const LegalVaultView: React.FC<any> = () => {
         }}
       />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
-            >
-            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
-                >
-                  {targetScope === 'notaire' ? <Scroll size={20} /> : <Lock size={20} />}
-                </div>
-                <h2 className="t-card font-semibold text-black dark:text-white">
-                  {vaultToEdit
-                    ? isAr
-                      ? 'تعديل وثيقة بالخزينة'
-                      : 'Modifier la Pièce du Coffre'
-                    : isAr
-                    ? 'إيداع وثيقة جديدة بالخزينة'
-                    : 'Déposer une Pièce au Coffre-fort'}
-                </h2>
-              </div>
-              <button
-                type="button"
-                data-no-liquid="true"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+      <KineticModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+        ariaLabel={
+          vaultToEdit
+            ? isAr
+              ? 'تعديل وثيقة بالخزينة'
+              : 'Modifier la Pièce du Coffre'
+            : isAr
+            ? 'إيداع وثيقة جديدة بالخزينة'
+            : 'Déposer une Pièce au Coffre-fort'
+        }
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+            <div className="flex items-center gap-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
               >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'رمز الوثيقة *' : 'Code Pièce *'}
-                  placeholder="DOC-2026-081"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'رقم الملف / القضية *' : 'Réf Dossier *'}
-                  placeholder="DOS-2026-0091"
-                  value={matterReference}
-                  onChange={(e) => setMatterReference(e.target.value)}
-                  required
-                />
+                {targetScope === 'notaire' ? <Scroll size={20} /> : <Lock size={20} />}
               </div>
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                {vaultToEdit
+                  ? isAr
+                    ? 'تعديل وثيقة بالخزينة'
+                    : 'Modifier la Pièce du Coffre'
+                  : isAr
+                  ? 'إيداع وثيقة جديدة بالخزينة'
+                  : 'Déposer une Pièce au Coffre-fort'}
+              </h2>
+            </div>
+            <button
+              type="button"
+              data-no-liquid="true"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsModalOpen(false)}
+              className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
+          <form onSubmit={handleSaveModal} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                label={isAr ? 'عنوان وتعيين الوثيقة *' : 'Intitulé de la Pièce *'}
-                placeholder="Ex: Contrat Commercial Original & Avenants"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                label={isAr ? 'رمز الوثيقة *' : 'Code Pièce *'}
+                placeholder="DOC-2026-081"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
                 required
               />
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelSelect
-                  label={isAr ? 'طبيعة الوثيقة' : 'Nature'}
-                  value={category}
-                  onChange={(v) => setCategory(extractStr(v))}
-                  options={roleMetadata.catPills
-                    .filter((p) => p.id !== 'All')
-                    .map((p) => ({ value: p.id, label: p.label }))}
-                />
-                <LabelSelect
-                  label={isAr ? 'مستوى الحماية' : 'Sécurité'}
-                  value={status}
-                  onChange={(v) => setStatus(extractStr(v) as VaultItem['status'])}
-                  options={[
-                    { value: 'OriginalScanned', label: 'Original Scellé' },
-                    { value: 'Confidential', label: 'Confidentiel Défense' },
-                    { value: 'MinuteOfficielle', label: 'Minute Notariée' },
-                    { value: 'DossierAudit', label: 'Dossier Audit CAC' },
-                  ]}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {vaultToEdit
-                    ? isAr
-                      ? 'حفظ التعديلات'
-                      : 'Enregistrer'
-                    : isAr
-                    ? 'إيداع الوثيقة'
-                    : 'Sceller au Coffre'}
-                </AtriumButton>
-              </div>
-            </form>
+              <LabelInput
+                label={isAr ? 'رقم الملف / القضية *' : 'Réf Dossier *'}
+                placeholder="DOS-2026-0091"
+                value={matterReference}
+                onChange={(e) => setMatterReference(e.target.value)}
+                required
+              />
             </div>
-          </div>
+
+            <LabelInput
+              label={isAr ? 'عنوان وتعيين الوثيقة *' : 'Intitulé de la Pièce *'}
+              placeholder="Ex: Contrat Commercial Original & Avenants"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <LabelSelect
+                label={isAr ? 'طبيعة الوثيقة' : 'Nature'}
+                value={category}
+                onChange={(v) => setCategory(extractStr(v))}
+                options={roleMetadata.catPills
+                  .filter((p) => p.id !== 'All')
+                  .map((p) => ({ value: p.id, label: p.label }))}
+              />
+              <LabelSelect
+                label={isAr ? 'مستوى الحماية' : 'Sécurité'}
+                value={status}
+                onChange={(v) => setStatus(extractStr(v) as VaultItem['status'])}
+                options={[
+                  { value: 'OriginalScanned', label: 'Original Scellé' },
+                  { value: 'Confidential', label: 'Confidentiel Défense' },
+                  { value: 'MinuteOfficielle', label: 'Minute Notariée' },
+                  { value: 'DossierAudit', label: 'Dossier Audit CAC' },
+                ]}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+              >
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" type="submit">
+                {vaultToEdit
+                  ? isAr
+                    ? 'حفظ التعديلات'
+                    : 'Enregistrer'
+                  : isAr
+                  ? 'إيداع الوثيقة'
+                  : 'Sceller au Coffre'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

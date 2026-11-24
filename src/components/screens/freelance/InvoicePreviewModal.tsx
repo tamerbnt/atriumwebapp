@@ -19,6 +19,7 @@ import {
 } from '../../../services/store';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
 
 interface InvoicePreviewModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ interface InvoicePreviewModalProps {
 export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   isOpen,
   onClose,
-  invoice,
+  invoice: rawInvoice,
   onMarkPaid,
 }) => {
   const { t, language, isRtl } = useTranslation();
@@ -43,20 +44,19 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
     shallowEqualObjects
   );
   const [copied, setCopied] = useState(false);
-
-  if (!isOpen || !invoice) return null;
+  const invoice = useRetainedModalValue(isOpen ? rawInvoice : null);
 
   const businessName = currentBusiness?.name || (language === 'ar' ? 'أطلس ستوديو' : 'Atlas Studio');
   const businessEmail = currentUser?.email || account?.email || 'contact@atlas-studio.dz';
   const businessAddress = currentBusiness?.address || (language === 'ar' ? 'الجزائر العاصمة، الجزائر' : language === 'fr' ? 'Alger, Algérie' : 'Algiers, Algeria');
   const beneficiaryName =
-    invoice.paymentDetails?.accountHolder ||
+    invoice?.paymentDetails?.accountHolder ||
     currentUser?.fullName ||
     account?.fullName ||
     businessName;
 
   const handleCopyRib = () => {
-    if (invoice.paymentDetails?.ribOrIban) {
+    if (invoice?.paymentDetails?.ribOrIban) {
       navigator.clipboard.writeText(invoice.paymentDetails.ribOrIban);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -68,8 +68,15 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#262422] rounded-[var(--r-panel,28px)] max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
+    <KineticModalShell
+      isOpen={isOpen && Boolean(rawInvoice)}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      {invoice && (
+        <div className="bg-white dark:bg-[#262422] rounded-[var(--r-panel,28px)] w-full max-h-[92vh] flex flex-col overflow-hidden printable-document print:max-h-none print:shadow-none">
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] no-print">
           <div className="flex items-center gap-2">
@@ -330,7 +337,8 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             </AtriumButton>
           </div>
         </div>
-      </div>
-    </div>
+        </div>
+      )}
+    </KineticModalShell>
   );
 };

@@ -370,12 +370,10 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isNewAptModalOpen && (
-        <AppointmentModal
-          isOpen={isNewAptModalOpen}
-          onClose={() => setIsNewAptModalOpen(false)}
-        />
-      )}
+      <AppointmentModal
+        isOpen={isNewAptModalOpen}
+        onClose={() => setIsNewAptModalOpen(false)}
+      />
     </DashboardBentoFrame>
   );
 };

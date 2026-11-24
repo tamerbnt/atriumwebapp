@@ -17,6 +17,7 @@ import { DoctorOrdonnanceConfig, MedicalPractitioner } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface MedicalOrdonnancePersonalizerModalProps {
   isOpen: boolean;
@@ -53,6 +54,11 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 	});
 	const [isSavedToast, setIsSavedToast] = React.useState(false);
 	React.useEffect(() => {
+		if (!isOpen) return;
+		setSelectedDoctorId(initialDoctorId || practitioners[0]?.id || "doc_01");
+		setIsSavedToast(false);
+	}, [isOpen, initialDoctorId]);
+	React.useEffect(() => {
 		if (doctorConfigs[selectedDoctorId]) setFormData(doctorConfigs[selectedDoctorId]);
 		else {
 			const doc = practitioners.find((p: any) => p.id === selectedDoctorId);
@@ -80,7 +86,6 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 		doctorConfigs,
 		practitioners
 	]);
-	if (!isOpen) return null;
 	const handleSave = () => {
 		onSaveConfig(selectedDoctorId, formData);
 		setIsSavedToast(true);
@@ -99,9 +104,15 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 		}
 	};
 	const currentAccentHex = getAccentColor(formData.themeAccent);
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="sq-elev-pop w-full max-w-6xl max-h-[92vh] flex flex-col">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full max-h-[92vh] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-6xl"
+			scrimClassName="bg-black/60"
+			ariaLabel="Studio de Personnalisation d'Ordonnance"
+		>
+			<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full max-h-[92vh] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
 <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Sliders size={20} /></div>
@@ -354,7 +365,7 @@ Aperçu Réel Ordonnance (
 <AtriumButton variant="ghost" onClick={onClose}>Annuler</AtriumButton>
 <AtriumButton variant="primary" onClick={handleSave} icon={<Check size={16} />}>Enregistrer le Modèle d'Ordonnance</AtriumButton>
 </div>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

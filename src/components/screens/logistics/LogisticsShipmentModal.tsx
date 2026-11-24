@@ -19,6 +19,7 @@ import { formatMoney } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic';
 
 const extractStr = (v: unknown): string =>
   typeof v === 'string'
@@ -94,8 +95,6 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       setIsFragile(false);
     }
   }, [shipmentToEdit]);
-
-  if (!isOpen) return null;
 
   // Phone Validation & Operator Detection
   const phoneValidation = validateAlgerianPhone(recipientPhone);
@@ -212,8 +211,13 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-2xl w-full">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      scrimClassName="bg-black/60"
+      ariaLabel={isAr ? 'تسجيل طرد وشحنة جديدة (AWB 58 ولاية)' : 'Nouvelle Expédition (AWB 58 Wilayas)'}
+    >
       <div
         data-sq="panel"
         data-sq-border="solid"
@@ -499,7 +503,6 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

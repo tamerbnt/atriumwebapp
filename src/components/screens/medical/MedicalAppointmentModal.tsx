@@ -13,6 +13,7 @@ import { MedicalAppointmentSlot, MedicalPractitioner, MedicalPatient } from '../
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface MedicalAppointmentModalProps {
   isOpen: boolean;
@@ -41,7 +42,6 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 	const [isEmergencyBypass, setIsEmergencyBypass] = React.useState(false);
 	const [emergencyBypassReason, setEmergencyBypassReason] = React.useState("");
 	const [errorMsg, setErrorMsg] = React.useState("");
-	if (!isOpen) return null;
 	const extractStr = (val: any): string => (typeof val === 'string' ? val : val?.target?.value ?? String(val ?? ''));
 	const handlePatientSelect = (val: any) => {
 		const pId = extractStr(val);
@@ -100,9 +100,15 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 		});
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="sq-elev-pop w-full max-w-lg">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-lg"
+			scrimClassName="bg-black/60"
+			ariaLabel="Nouveau Rendez-vous Médical"
+		>
+			<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
 <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Calendar size={20} /></div>
@@ -175,7 +181,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <AtriumButton variant="primary" type="submit" icon={<Check size={16} />}>Confirmer le Rendez-vous</AtriumButton>
 </div>
 </form>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };

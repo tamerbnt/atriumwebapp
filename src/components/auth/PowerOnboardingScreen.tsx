@@ -56,6 +56,7 @@ import {
   CatalogBusinessTrade,
   OnboardingTeamScale,
 } from '../../utils/businessMapping';
+import { KineticModalShell } from '../ui/kinetic/KineticModalShell';
 import {
   FeatureBlueprintModal,
   UniversalStrategicGoalId,
@@ -2163,14 +2164,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       />
 
       {/* Commercial License & Voucher Request Modal */}
-      {showLicenseModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-[var(--s4,16px)]">
-          <div className="relative w-full max-w-lg sq-elev-pop animate-in fade-in zoom-in-95 duration-200">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:rgba(212,82,47,0.4)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
-            >
+      <KineticModalShell
+        isOpen={showLicenseModal}
+        onClose={() => setShowLicenseModal(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-[9992]"
+        scrimClassName="bg-black/75"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:rgba(212,82,47,0.4)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
+        >
             {/* Header */}
             <div className="flex items-center justify-between pb-[var(--s3,12px)] border-b border-white/10">
               <div className="flex items-center gap-[var(--s3,12px)]">
@@ -2271,10 +2276,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 </a>
               </div>
             </div>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
 
     </OnboardingBackdrop>
   );

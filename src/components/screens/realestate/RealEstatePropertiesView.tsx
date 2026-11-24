@@ -847,61 +847,58 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         }}
       />
 
-      {isPropertyModalOpen && (
-        <RealEstatePropertyModal
-          isOpen={isPropertyModalOpen}
-          onClose={() => {
-            setIsPropertyModalOpen(false);
-            setPropertyToEdit(null);
-          }}
-          propertyToEdit={propertyToEdit}
-          onSave={(p) => {
-            if (propertyToEdit) {
-              updateProperty(p);
-              if (selectedProperty?.id === p.id) setSelectedProperty(p);
-            } else {
-              addProperty(p);
-            }
-            setIsPropertyModalOpen(false);
-            setPropertyToEdit(null);
-          }}
-        />
-      )}
+      <RealEstatePropertyModal
+        isOpen={isPropertyModalOpen}
+        onClose={() => {
+          setIsPropertyModalOpen(false);
+          setPropertyToEdit(null);
+        }}
+        propertyToEdit={propertyToEdit}
+        onSave={(p) => {
+          if (propertyToEdit) {
+            updateProperty(p);
+            if (selectedProperty?.id === p.id) setSelectedProperty(p);
+          } else {
+            addProperty(p);
+          }
+          setIsPropertyModalOpen(false);
+          setPropertyToEdit(null);
+        }}
+      />
 
-      {isLeaseModalOpen && leaseProperty && (
-        <RealEstateLeaseModal
-          isOpen={isLeaseModalOpen}
-          onClose={() => {
-            setIsLeaseModalOpen(false);
-            setLeaseProperty(null);
-          }}
-          properties={[leaseProperty]}
-          onSave={(lease) => {
-            const updated: RealEstateProperty = { ...leaseProperty, status: 'Rented' };
-            runUndoBatch(
-              {
-                vertical: 'real_estate',
-                operationType: 'create',
-                branchId: currentBranch?.id || 'branch_realestate_main',
-                summary: isAr
-                  ? `تحرير عقد إيجار — ${leaseProperty.title}`
-                  : isEn
-                  ? `Lease created — ${leaseProperty.title}`
-                  : `Bail locatif — ${leaseProperty.title}`,
-                entityLabel: leaseProperty.title,
-                toastType: 'success',
-              },
-              () => {
-                addLease(lease);
-                updateProperty(updated);
-              }
-            );
-            if (selectedProperty?.id === leaseProperty.id) setSelectedProperty(updated);
-            setIsLeaseModalOpen(false);
-            setLeaseProperty(null);
-          }}
-        />
-      )}
+      <RealEstateLeaseModal
+        isOpen={isLeaseModalOpen && Boolean(leaseProperty)}
+        onClose={() => {
+          setIsLeaseModalOpen(false);
+          setLeaseProperty(null);
+        }}
+        properties={leaseProperty ? [leaseProperty] : []}
+        onSave={(lease) => {
+          if (!leaseProperty) return;
+          const updated: RealEstateProperty = { ...leaseProperty, status: 'Rented' };
+          runUndoBatch(
+            {
+              vertical: 'real_estate',
+              operationType: 'create',
+              branchId: currentBranch?.id || 'branch_realestate_main',
+              summary: isAr
+                ? `تحرير عقد إيجار — ${leaseProperty.title}`
+                : isEn
+                ? `Lease created — ${leaseProperty.title}`
+                : `Bail locatif — ${leaseProperty.title}`,
+              entityLabel: leaseProperty.title,
+              toastType: 'success',
+            },
+            () => {
+              addLease(lease);
+              updateProperty(updated);
+            }
+          );
+          if (selectedProperty?.id === leaseProperty.id) setSelectedProperty(updated);
+          setIsLeaseModalOpen(false);
+          setLeaseProperty(null);
+        }}
+      />
     </div>
   );
 };

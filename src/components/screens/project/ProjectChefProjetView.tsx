@@ -56,6 +56,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -72,6 +73,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 interface ProjectChefProjetViewProps {
@@ -981,6 +983,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     ],
     [isAr, isEn]
   );
+
+  const retainedReceiptUrl = useRetainedModalValue(selectedReceiptUrl);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -2414,116 +2418,114 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       )}
 
       {/* BAT Correction Modal */}
-      {isCorrectionModalOpen && (
+      <KineticModalShell
+        isOpen={isCorrectionModalOpen}
+        onClose={() => setIsCorrectionModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
         <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
         >
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          <div className="flex items-center justify-between">
+            <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
+            </h3>
+            <button
+              type="button"
+              aria-label="Fermer"
+              onClick={() => setIsCorrectionModalOpen(false)}
+              data-sq="ctl-sm"
+              className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
-                </h3>
-                <button
-                  type="button"
-                  aria-label="Fermer"
-                  onClick={() => setIsCorrectionModalOpen(false)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <textarea
-                rows={4}
-                value={correctionNote}
-                onChange={(e) => setCorrectionNote(e.target.value)}
-                placeholder={
-                  isAr
-                    ? 'اذكر التعديلات المطلوبة...'
-                    : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
-                }
-                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
-              />
-              <div className="flex justify-end gap-2">
-                <AtriumButton
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsCorrectionModalOpen(false)}
-                >
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>
-                  {isAr ? 'إرسال للاستوديو' : 'Envoyer au Studio Créa'}
-                </AtriumButton>
-              </div>
-            </div>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <textarea
+            rows={4}
+            value={correctionNote}
+            onChange={(e) => setCorrectionNote(e.target.value)}
+            placeholder={
+              isAr
+                ? 'اذكر التعديلات المطلوبة...'
+                : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
+            }
+            className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
+          />
+          <div className="flex justify-end gap-2">
+            <AtriumButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCorrectionModalOpen(false)}
+            >
+              {isAr ? 'إلغاء' : 'Annuler'}
+            </AtriumButton>
+            <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>
+              {isAr ? 'إرسال للاستوديو' : 'Envoyer au Studio Créa'}
+            </AtriumButton>
           </div>
         </div>
-      )}
+      </KineticModalShell>
 
       {/* Receipt Image Modal */}
-      {selectedReceiptUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-        >
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
-                </h3>
-                <button
-                  type="button"
-                  aria-label="Fermer"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <img
-                src={selectedReceiptUrl}
-                alt="Justificatif"
-                width={512}
-                height={288}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
+      <KineticModalShell
+        isOpen={Boolean(selectedReceiptUrl)}
+        onClose={() => setSelectedReceiptUrl(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedReceiptUrl && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
+              </h3>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setSelectedReceiptUrl(null)}
+                data-sq="ctl-sm"
+                className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img
+              src={retainedReceiptUrl}
+              alt="Justificatif"
+              width={512}
+              height={288}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              data-sq="ctl"
+              data-sq-border="none"
+              className="w-full h-72 object-cover"
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptUrl(null)}
                 data-sq="ctl"
-                data-sq-border="none"
-                className="w-full h-72 object-cover"
-              />
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
-                >
-                  {isAr ? 'إغلاق' : 'Fermer'}
-                </button>
-              </div>
+                className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
+              >
+                {isAr ? 'إغلاق' : 'Fermer'}
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

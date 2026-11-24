@@ -27,6 +27,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -343,16 +344,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="sq-elev-pop max-w-3xl w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden"
-        >
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-3xl"
+      zIndexClass="z-[9990]"
+      scrimClassName="bg-black/60"
+    >
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden"
+      >
         {/* Header */}
         <div className="px-6 py-5 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0">
           <div>
@@ -741,8 +745,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {bookingToEdit ? t('action_save') : t('venue_reserve_space')}
           </AtriumButton>
         </div>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

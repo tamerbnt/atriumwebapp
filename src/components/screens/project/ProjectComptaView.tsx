@@ -43,6 +43,7 @@ import {
   ScreenPod,
   ScreenCollectionToolbar,
   KineticFilterModal,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -59,6 +60,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 interface ProjectComptaViewProps {
@@ -758,6 +760,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     ],
     [language, isAr, isEn]
   );
+
+  const retainedReceiptUrl = useRetainedModalValue(selectedReceiptUrl);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -1765,71 +1769,70 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         )}
       />
 
-      {selectedSlip && (
-        <CcpSlipModal
-          isOpen={Boolean(selectedSlip)}
-          onClose={() => setSelectedSlip(null)}
-          slip={selectedSlip}
-          onMarkPrinted={() => {
-            markPmCcpSlipPrinted(selectedSlip.id);
-            setSelectedSlip(null);
-          }}
-        />
-      )}
+      <CcpSlipModal
+        isOpen={Boolean(selectedSlip)}
+        onClose={() => setSelectedSlip(null)}
+        slip={selectedSlip}
+        onMarkPrinted={() => {
+          if (!selectedSlip) return;
+          markPmCcpSlipPrinted(selectedSlip.id);
+          setSelectedSlip(null);
+        }}
+      />
 
-      {selectedReceiptUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-        >
-          <div className="sq-elev-pop max-w-lg w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                  {isAr ? 'وصل الشراء الممسوح' : "Justificatif Fiscal d'Achat"}
-                </h3>
-                <button
-                  type="button"
-                  aria-label="Fermer"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <img
-                src={selectedReceiptUrl}
-                alt="Scan Justificatif"
-                width={512}
-                height={288}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
+      <KineticModalShell
+        isOpen={Boolean(selectedReceiptUrl)}
+        onClose={() => setSelectedReceiptUrl(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedReceiptUrl && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                {isAr ? 'وصل الشراء الممسوح' : "Justificatif Fiscal d'Achat"}
+              </h3>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setSelectedReceiptUrl(null)}
+                data-sq="ctl-sm"
+                className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img
+              src={retainedReceiptUrl}
+              alt="Scan Justificatif"
+              width={512}
+              height={288}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              data-sq="ctl"
+              data-sq-border="none"
+              className="w-full h-72 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptUrl(null)}
                 data-sq="ctl"
-                data-sq-border="none"
-                className="w-full h-72 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
-              />
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReceiptUrl(null)}
-                  data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
-                >
-                  {isAr ? 'إغلاق' : 'Fermer'}
-                </button>
-              </div>
+                className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
+              >
+                {isAr ? 'إغلاق' : 'Fermer'}
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

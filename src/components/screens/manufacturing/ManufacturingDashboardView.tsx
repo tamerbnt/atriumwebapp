@@ -317,14 +317,12 @@ export const ManufacturingDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isOrderModalOpen && (
-        <ManufacturingOrderModal
-          isOpen={isOrderModalOpen}
-          onClose={() => setIsOrderModalOpen(false)}
-          boms={boms}
-          onSave={addOrder}
-        />
-      )}
+      <ManufacturingOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        boms={boms}
+        onSave={addOrder}
+      />
     </DashboardBentoFrame>
   );
 };

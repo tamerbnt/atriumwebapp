@@ -6,18 +6,20 @@ import { calculatePriceRevisionCoeff } from '../../../utils/contractorRules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { ContractorProject } from '../../../types';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface PriceRevisionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  project: ContractorProject;
+  project?: ContractorProject | null;
 }
 
 
 
-export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, onClose, project }) => {
+export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, onClose, project: rawProject }) => {
 	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
+	const project = useRetainedModalValue(isOpen ? rawProject ?? null : null);
 	const [baseLaborS0, setBaseLaborS0] = React.useState("120.0");
 	const [currentLaborS, setCurrentLaborS] = React.useState("134.5");
 	const [baseMaterialM0, setBaseMaterialM0] = React.useState("145.0");
@@ -25,7 +27,18 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 	const [coeffA, setCoeffA] = React.useState("0.15");
 	const [coeffB, setCoeffB] = React.useState("0.35");
 	const [coeffC, setCoeffC] = React.useState("0.50");
-	const [contractBaseAmount, setContractBaseAmount] = React.useState(String(project.contractAmountDzd || 85e6));
+	const [contractBaseAmount, setContractBaseAmount] = React.useState(String(rawProject?.contractAmountDzd || 85e6));
+	React.useEffect(() => {
+		if (!isOpen || !rawProject) return;
+		setBaseLaborS0("120.0");
+		setCurrentLaborS("134.5");
+		setBaseMaterialM0("145.0");
+		setCurrentMaterialM("178.2");
+		setCoeffA("0.15");
+		setCoeffB("0.35");
+		setCoeffC("0.50");
+		setContractBaseAmount(String(rawProject.contractAmountDzd || 85e6));
+	}, [isOpen, rawProject]);
 	const calculation = React.useMemo(() => {
 		const s0 = parseFloat(baseLaborS0) || 120;
 		const s = parseFloat(currentLaborS) || 134.5;
@@ -59,13 +72,13 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 		coeffC,
 		contractBaseAmount
 	]);
-	if (!isOpen) return null;
 	const handlePrintNote = () => {
 		window.print();
 		showToast(isAr ? "تم تجهيز مذكرة مراجعة الأسعار التعاقدية" : "Note de calcul de révision des prix prête pour visa", "success");
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="sq-elev-pop w-full max-w-2xl">
+	return (
+<KineticModalShell isOpen={isOpen && Boolean(rawProject)} onClose={onClose} maxWidthClass="max-w-2xl" zIndexClass="z-[9990]">
+{project && (
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
 <div className="flex items-center gap-2">
@@ -184,6 +197,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 </div>
-</div>
-</div>;
+)}
+</KineticModalShell>
+	);
 };

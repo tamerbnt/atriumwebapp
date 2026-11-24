@@ -45,6 +45,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1254,85 +1255,88 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         }}
       />
 
-      {isRequisitionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="sq-elev-pop max-w-md w-full">
-          <div
-            data-sq="panel"
-            data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
-          >
-            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
-              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
-                <Boxes size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                <span>{isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsRequisitionModalOpen(false)}
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+      <KineticModalShell
+        isOpen={isRequisitionModalOpen}
+        onClose={() => setIsRequisitionModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full max-h-[92vh] overflow-y-auto p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+        >
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+              <Boxes size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              <span>{isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsRequisitionModalOpen(false)}
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleRequisitionSubmit} className="space-y-4">
+            <div>
+              <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
+                {isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
               >
-                <X size={16} />
-              </button>
+                <select
+                  value={selectedPartId}
+                  onChange={(e) => setSelectedPartId(e.target.value)}
+                  className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white focus:outline-none"
+                  required
+                >
+                  <option value="">-- Choisir une pièce disponible --</option>
+                  {parts.map((p) => (
+                    <option key={p.id} value={p.id} disabled={p.stockQuantity <= 0}>
+                      {p.name} ({p.sku}) · Stock: {p.stockQuantity} {p.unit || 'pcs'} · {p.sellingPriceDzd.toLocaleString()} DA
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <form onSubmit={handleRequisitionSubmit} className="space-y-4">
-              <div>
-                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
-                  {isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <select
-                    value={selectedPartId}
-                    onChange={(e) => setSelectedPartId(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white focus:outline-none"
-                    required
-                  >
-                    <option value="">-- Choisir une pièce disponible --</option>
-                    {parts.map((p) => (
-                      <option key={p.id} value={p.id} disabled={p.stockQuantity <= 0}>
-                        {p.name} ({p.sku}) · Stock: {p.stockQuantity} {p.unit || 'pcs'} · {p.sellingPriceDzd.toLocaleString()} DA
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
+                {isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
+              </label>
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
+              >
+                <input
+                  type="number"
+                  min="1"
+                  value={selectedPartQty}
+                  onChange={(e) => setSelectedPartQty(e.target.value)}
+                  className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums focus:outline-none"
+                  required
+                />
               </div>
-              <div>
-                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
-                  {isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
-                </label>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
-                >
-                  <input
-                    type="number"
-                    min="1"
-                    value={selectedPartQty}
-                    onChange={(e) => setSelectedPartQty(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="secondary" onClick={() => setIsRequisitionModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton type="submit" variant="primary">
-                  {isAr ? 'تأكيد الصرف' : 'Valider la sortie'}
-                </AtriumButton>
-              </div>
-            </form>
-          </div>
-          </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+              <AtriumButton variant="secondary" onClick={() => setIsRequisitionModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton type="submit" variant="primary">
+                {isAr ? 'تأكيد الصرف' : 'Valider la sortie'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

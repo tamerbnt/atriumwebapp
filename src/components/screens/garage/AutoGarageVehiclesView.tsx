@@ -980,43 +980,39 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         }}
       />
 
-      {isVehicleModalOpen && (
-        <AutoVehicleModal
-          isOpen={isVehicleModalOpen}
-          onClose={() => {
-            setIsVehicleModalOpen(false);
-            setVehicleToEdit(null);
-          }}
-          vehicleToEdit={vehicleToEdit}
-          onSave={(v) => {
-            if (vehicleToEdit) {
-              updateVehicle(v);
-              if (inspectedVehicle?.id === v.id) setInspectedVehicle(v);
-            } else {
-              addVehicle(v);
-            }
-            setIsVehicleModalOpen(false);
-            setVehicleToEdit(null);
-          }}
-        />
-      )}
+      <AutoVehicleModal
+        isOpen={isVehicleModalOpen}
+        onClose={() => {
+          setIsVehicleModalOpen(false);
+          setVehicleToEdit(null);
+        }}
+        vehicleToEdit={vehicleToEdit}
+        onSave={(v) => {
+          if (vehicleToEdit) {
+            updateVehicle(v);
+            if (inspectedVehicle?.id === v.id) setInspectedVehicle(v);
+          } else {
+            addVehicle(v);
+          }
+          setIsVehicleModalOpen(false);
+          setVehicleToEdit(null);
+        }}
+      />
 
-      {isOrderModalOpen && orderVehicle && (
-        <AutoOrderModal
-          isOpen={isOrderModalOpen}
-          onClose={() => {
-            setIsOrderModalOpen(false);
-            setOrderVehicle(null);
-          }}
-          vehicles={[orderVehicle]}
-          bays={bays}
-          onSave={(order) => {
-            addOrder(order);
-            setIsOrderModalOpen(false);
-            setOrderVehicle(null);
-          }}
-        />
-      )}
+      <AutoOrderModal
+        isOpen={isOrderModalOpen && Boolean(orderVehicle)}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setOrderVehicle(null);
+        }}
+        vehicles={orderVehicle ? [orderVehicle] : []}
+        bays={bays}
+        onSave={(order) => {
+          addOrder(order);
+          setIsOrderModalOpen(false);
+          setOrderVehicle(null);
+        }}
+      />
     </div>
   );
 };

@@ -28,6 +28,8 @@ import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
   KineticEmptyStateMotion,
+  KineticModalShell,
+  useRetainedModalValue,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -246,6 +248,12 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     },
     [servicesCatalog, selectedServiceId, staff, selectedStylistId, activeStations, targetStationId, newClientName, isRtl, language]
   );
+
+  const activeCheckoutStation = checkoutModalStationKey
+    ? activeStations[checkoutModalStationKey] ?? null
+    : null;
+  const retainedCheckoutStation = useRetainedModalValue(activeCheckoutStation);
+  const retainedReceipt = useRetainedModalValue(lastReceipt);
 
   if (showSkeleton && (appointments.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -623,44 +631,49 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
         }}
       />
 
-      {checkoutModalStationKey && activeStations[checkoutModalStationKey] && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-sm w-full">
+      <KineticModalShell
+        isOpen={Boolean(activeCheckoutStation)}
+        onClose={() => setCheckoutModalStationKey(null)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        {retainedCheckoutStation && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+          >
+            <h3 className="t-card font-semibold text-black dark:text-white mb-1">
+              {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
+            </h3>
+            <p className="t-cap text-black/62 dark:text-white/65 mb-4">
+              {retainedCheckoutStation.clientName} — {retainedCheckoutStation.serviceName}
+            </p>
             <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+              data-sq="card"
+              data-sq-border="none"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 mb-4"
             >
-              <h3 className="t-card font-semibold text-black dark:text-white mb-1">
-                {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
-              </h3>
-              <p className="t-cap text-black/62 dark:text-white/65 mb-4">
-                {activeStations[checkoutModalStationKey].clientName} — {activeStations[checkoutModalStationKey].serviceName}
-              </p>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 mb-4"
-              >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
                 <span className="tabular-nums font-semibold">
-                  {formatMoney(activeStations[checkoutModalStationKey].servicePriceDzd, 'DZD')}
+                  {formatMoney(retainedCheckoutStation.servicePriceDzd, 'DZD')}
                 </span>
               </div>
               {paymentMethod === 'cash' && (
                 <div className="flex justify-between text-amber-600 font-medium">
                   <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
-                  <span>+{calculateArt317Timbre(activeStations[checkoutModalStationKey].servicePriceDzd)} DA</span>
+                  <span>+{calculateArt317Timbre(retainedCheckoutStation.servicePriceDzd)} DA</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold t-label">
                 <span>{isRtl ? 'الإجمالي' : 'Total Net'}</span>
                 <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                   {formatMoney(
-                    activeStations[checkoutModalStationKey].servicePriceDzd +
+                    retainedCheckoutStation.servicePriceDzd +
                       (paymentMethod === 'cash'
-                        ? calculateArt317Timbre(activeStations[checkoutModalStationKey].servicePriceDzd)
+                        ? calculateArt317Timbre(retainedCheckoutStation.servicePriceDzd)
                         : 0),
                     'DZD'
                   )}
@@ -707,19 +720,22 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 {isRtl ? 'تأكيد' : 'Valider'}
               </button>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
-      {isAddClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
-            >
+      <KineticModalShell
+        isOpen={isAddClientModalOpen}
+        onClose={() => setIsAddClientModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 max-h-[92vh] overflow-y-auto"
+        >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {isRtl ? 'تسكين زبون' : 'Installer un Client au Fauteuil'}
@@ -832,77 +848,79 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 </div>
               </form>
             </div>
-          </div>
-        </div>
-      )}
+      </KineticModalShell>
 
-      {lastReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-sm w-full">
+      <KineticModalShell
+        isOpen={Boolean(lastReceipt)}
+        onClose={() => setLastReceipt(null)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        {retainedReceipt && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
+          >
             <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
+              data-sq="tile-lg"
+              data-sq-border="none"
+              className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 mx-auto flex items-center justify-center mb-3"
             >
-              <div
-                data-sq="tile-lg"
-                data-sq-border="none"
-                className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 mx-auto flex items-center justify-center mb-3"
-              >
-                <CheckCircle2 size={24} />
+              <CheckCircle2 size={24} />
+            </div>
+            <h3 className="t-card font-semibold text-black dark:text-white mb-1">
+              {isRtl ? 'وصل التحصيل جاهز' : 'Ticket de Caisse Validé'}
+            </h3>
+            <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedReceipt.receiptNumber}</p>
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 text-left mb-5"
+            >
+              <div className="flex justify-between">
+                <span>Client :</span>
+                <span className="font-semibold">{retainedReceipt.clientName}</span>
               </div>
-              <h3 className="t-card font-semibold text-black dark:text-white mb-1">
-                {isRtl ? 'وصل التحصيل جاهز' : 'Ticket de Caisse Validé'}
-              </h3>
-              <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{lastReceipt.receiptNumber}</p>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 text-left mb-5"
-              >
-                <div className="flex justify-between">
-                  <span>Client :</span>
-                  <span className="font-semibold">{lastReceipt.clientName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Service :</span>
-                  <span className="font-semibold">{lastReceipt.serviceName}</span>
-                </div>
-                <div className="flex justify-between font-semibold pt-2 border-t border-[var(--atr-divider)]">
-                  <span>Total :</span>
-                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
-                    {formatMoney(lastReceipt.amountDzd + lastReceipt.timbreFiscalDzd, 'DZD')}
-                  </span>
-                </div>
+              <div className="flex justify-between">
+                <span>Service :</span>
+                <span className="font-semibold">{retainedReceipt.serviceName}</span>
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setLastReceipt(null)}
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.print();
-                    setLastReceipt(null);
-                  }}
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Printer size={14} />
-                  <span>Imprimer</span>
-                </button>
+              <div className="flex justify-between font-semibold pt-2 border-t border-[var(--atr-divider)]">
+                <span>Total :</span>
+                <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                  {formatMoney(retainedReceipt.amountDzd + retainedReceipt.timbreFiscalDzd, 'DZD')}
+                </span>
               </div>
             </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setLastReceipt(null)}
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
+              >
+                Fermer
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.print();
+                  setLastReceipt(null);
+                }}
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer size={14} />
+                <span>Imprimer</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 });

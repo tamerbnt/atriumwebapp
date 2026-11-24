@@ -30,6 +30,8 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import {
+  KineticModalShell,
+  useRetainedModalValue,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -266,6 +268,8 @@ export const AcademyRollCallKiosk: React.FC = () => {
     });
     setNotifyingStudent(null);
   };
+
+  const retainedNotifyingStudent = useRetainedModalValue(notifyingStudent);
 
   if (showSkeleton && (eduSessions.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -669,14 +673,19 @@ export const AcademyRollCallKiosk: React.FC = () => {
         </div>
       </ScreenPod>
 
-      {notifyingStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 animate-in fade-in zoom-in-95 duration-150"
-            >
+      <KineticModalShell
+        isOpen={Boolean(notifyingStudent)}
+        onClose={() => setNotifyingStudent(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedNotifyingStudent && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+          >
             <div className="flex items-center gap-2 mb-4">
               <div
                 data-sq="tile"
@@ -690,7 +699,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                   {isRtl ? 'إشعار فوري بغياب الطالب' : "Notification d'Absence Immédiate"}
                 </h3>
                 <p className="t-cap text-black/55 dark:text-white/55">
-                  {notifyingStudent.fullName} · {notifyingStudent.guardianPhone || notifyingStudent.phone}
+                  {retainedNotifyingStudent.fullName} · {retainedNotifyingStudent.guardianPhone || retainedNotifyingStudent.phone}
                 </p>
               </div>
             </div>
@@ -704,10 +713,10 @@ export const AcademyRollCallKiosk: React.FC = () => {
               </span>
               <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed font-sans">
                 {isRtl
-                  ? `السلام عليكم، نعلمكم بغياب الطالب(ة) ${notifyingStudent.fullName} اليوم في حصة [${
+                  ? `السلام عليكم، نعلمكم بغياب الطالب(ة) ${retainedNotifyingStudent.fullName} اليوم في حصة [${
                       activeCohort?.name || activeSession?.cohortName
                     }]. يرجى التواصل مع إدارة المركز للتبرير.`
-                  : `Bonjour, l'administration de l'académie vous informe de l'absence de l'étudiant(e) ${notifyingStudent.fullName} aujourd'hui pour la séance de [${
+                  : `Bonjour, l'administration de l'académie vous informe de l'absence de l'étudiant(e) ${retainedNotifyingStudent.fullName} aujourd'hui pour la séance de [${
                       activeCohort?.name || activeSession?.cohortName
                     }].`}
               </p>
@@ -726,17 +735,16 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 type="button"
                 data-sq="ctl"
                 data-sq-border="none"
-                onClick={() => handleSendGuardianAlert(notifyingStudent)}
+                onClick={() => handleSendGuardianAlert(retainedNotifyingStudent)}
                 className="flex-1 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Send size={14} />
                 <span>{isRtl ? 'إرسال عبر واتساب' : 'Envoyer WhatsApp'}</span>
               </button>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
 
       <PinVerificationModal
         isOpen={isPinModalOpen}

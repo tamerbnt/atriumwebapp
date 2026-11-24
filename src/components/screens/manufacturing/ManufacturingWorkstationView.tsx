@@ -30,6 +30,7 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -760,14 +761,14 @@ export const ManufacturingWorkstationView: React.FC = () => {
         </div>
       </ScreenPod>
 
-      {isFinishModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-          <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
+      <KineticModalShell
+        isOpen={isFinishModalOpen}
+        onClose={() => setIsFinishModalOpen(false)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-3">
                   <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
@@ -925,10 +926,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
       <KineticSlideOverInspector<ManufacturingOrder>
         isOpen={isInspectorOpen && Boolean(currentOrder)}
         item={currentOrder}

@@ -47,6 +47,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -983,247 +984,261 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         }}
       />
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full">
-          <div
-            data-sq="panel"
-            data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
-                >
-                  <Boxes size={20} />
-                </div>
-                <div>
-                  <h2 className="t-card font-semibold text-black dark:text-white">
-                    {partToEdit
-                      ? isAr
-                        ? 'تعديل صنف قطعة الغيار'
-                        : 'Modifier la Référence'
-                      : isAr
-                      ? 'إضافة صنف جديد للمخزن'
-                      : 'Nouvelle Référence Magasin'}
-                  </h2>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    {isAr ? 'البيانات الفنية، المخزون، والأسعار' : 'Gestion du catalogue pièces et seuils d’alerte'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+      <KineticModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+        ariaLabel={
+          partToEdit
+            ? isAr
+              ? 'تعديل صنف قطعة الغيار'
+              : 'Modifier la Référence'
+            : isAr
+            ? 'إضافة صنف جديد للمخزن'
+            : 'Nouvelle Référence Magasin'
+        }
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+            <div className="flex items-center gap-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
               >
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleSaveModal} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'رمز SKU *' : 'Code SKU *'}
-                  placeholder="PR-1029"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  required
-                />
-                <LabelSelect
-                  label={isAr ? 'الفئة' : 'Catégorie'}
-                  value={category}
-                  onChange={(v) => setCategory(extractStr(v))}
-                  options={PART_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
-                />
+                <Boxes size={20} />
               </div>
+              <div>
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {partToEdit
+                    ? isAr
+                      ? 'تعديل صنف قطعة الغيار'
+                      : 'Modifier la Référence'
+                    : isAr
+                    ? 'إضافة صنف جديد للمخزن'
+                    : 'Nouvelle Référence Magasin'}
+                </h2>
+                <p className="t-cap text-black/55 dark:text-white/55">
+                  {isAr ? 'البيانات الفنية، المخزون، والأسعار' : 'Gestion du catalogue pièces et seuils d’alerte'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveModal} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <LabelInput
-                label={isAr ? 'اسم وتعيين القطعة *' : 'Désignation de la Pièce *'}
-                placeholder="Ex: Jeu 4 Plaquettes de frein avant"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                label={isAr ? 'رمز SKU *' : 'Code SKU *'}
+                placeholder="PR-1029"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
                 required
               />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الكمية في المخزن' : 'Quantité Stock'}
-                  type="number"
-                  value={stockQuantity}
-                  onChange={(e) => setStockQuantity(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'حد الأمان الأدنى' : 'Seuil d’Alerte Min'}
-                  type="number"
-                  value={minThreshold}
-                  onChange={(e) => setMinThreshold(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'سعر الشراء (دج)' : 'Prix d’Achat (DZD)'}
-                  type="number"
-                  value={buyingPriceDzd}
-                  onChange={(e) => setBuyingPriceDzd(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'سعر البيع (دج)' : 'Prix de Vente (DZD)'}
-                  type="number"
-                  value={sellingPriceDzd}
-                  onChange={(e) => setSellingPriceDzd(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'موقع التخزين / الرف' : 'Emplacement / Rayon'}
-                  placeholder="Ex: Rayon B-04"
-                  value={locationBin}
-                  onChange={(e) => setLocationBin(e.target.value)}
-                />
-                <LabelInput
-                  label={isAr ? 'التوافق' : 'Compatibilité (marques)'}
-                  placeholder="Ex: Renault Clio 4, Dacia Sandero"
-                  value={compatibility}
-                  onChange={(e) => setCompatibility(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {partToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'تسجيل القطعة' : 'Ajouter au Stock'}
-                </AtriumButton>
-              </div>
-            </form>
-          </div>
-          </div>
-        </div>
-      )}
-
-      {isPoModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full">
-          <div
-            data-sq="panel"
-            data-sq-border="solid"
-            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold"
-                >
-                  <Package size={20} />
-                </div>
-                <div>
-                  <h2 className="t-card font-semibold text-black dark:text-white">
-                    {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
-                  </h2>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsPoModalOpen(false)}
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+              <LabelSelect
+                label={isAr ? 'الفئة' : 'Catégorie'}
+                value={category}
+                onChange={(v) => setCategory(extractStr(v))}
+                options={PART_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+              />
             </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const target = parts.find((p) => p.id === poPartId);
-                const qty = parseInt(poQuantity, 10) || 5;
-                const cost = parseFloat(poUnitCost) || target?.buyingPriceDzd || 0;
-                if (target) {
-                  const updated: SparePart = {
-                    ...target,
-                    stockQuantity: target.stockQuantity + qty,
-                    buyingPriceDzd: cost,
-                  };
-                  updatePart(updated);
-                  if (inspectedPart?.id === target.id) setInspectedPart(updated);
-                }
-                setIsPoModalOpen(false);
-              }}
-              className="space-y-4"
-            >
-              <LabelSelect
-                label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
-                value={poSupplier}
-                onChange={(v) => setPoSupplier(extractStr(v))}
-                options={[
-                  { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
-                  { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
-                  { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
-                  { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
-                ]}
+            <LabelInput
+              label={isAr ? 'اسم وتعيين القطعة *' : 'Désignation de la Pièce *'}
+              placeholder="Ex: Jeu 4 Plaquettes de frein avant"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'الكمية في المخزن' : 'Quantité Stock'}
+                type="number"
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(e.target.value)}
+                required
               />
-              <LabelSelect
-                label={isAr ? 'القطعة المراد تموينها' : 'Référence Pièce à Réapprovisionner'}
-                value={poPartId}
-                onChange={(v) => {
-                  const nextId = extractStr(v);
-                  setPoPartId(nextId);
-                  const p = parts.find((item) => item.id === nextId);
-                  if (p) setPoUnitCost(String(p.buyingPriceDzd));
-                }}
-                options={parts.map((p) => ({
-                  value: p.id,
-                  label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`,
-                }))}
+              <LabelInput
+                label={isAr ? 'حد الأمان الأدنى' : 'Seuil d’Alerte Min'}
+                type="number"
+                value={minThreshold}
+                onChange={(e) => setMinThreshold(e.target.value)}
+                required
               />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
-                  type="number"
-                  value={poQuantity}
-                  onChange={(e) => setPoQuantity(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
-                  type="number"
-                  value={poUnitCost}
-                  onChange={(e) => setPoUnitCost(e.target.value)}
-                  required
-                />
-              </div>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
-              >
-                <span className="text-black/55 dark:text-white/55">
-                  {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}
-                </span>
-                <span className="tabular-nums font-semibold t-card text-black dark:text-white">
-                  {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
-                </span>
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
-                  {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
-                </AtriumButton>
-              </div>
-            </form>
-          </div>
-          </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'سعر الشراء (دج)' : 'Prix d’Achat (DZD)'}
+                type="number"
+                value={buyingPriceDzd}
+                onChange={(e) => setBuyingPriceDzd(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'سعر البيع (دج)' : 'Prix de Vente (DZD)'}
+                type="number"
+                value={sellingPriceDzd}
+                onChange={(e) => setSellingPriceDzd(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'موقع التخزين / الرف' : 'Emplacement / Rayon'}
+                placeholder="Ex: Rayon B-04"
+                value={locationBin}
+                onChange={(e) => setLocationBin(e.target.value)}
+              />
+              <LabelInput
+                label={isAr ? 'التوافق' : 'Compatibilité (marques)'}
+                placeholder="Ex: Renault Clio 4, Dacia Sandero"
+                value={compatibility}
+                onChange={(e) => setCompatibility(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" type="submit">
+                {partToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'تسجيل القطعة' : 'Ajouter au Stock'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={isPoModalOpen}
+        onClose={() => setIsPoModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+        ariaLabel={isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] overflow-y-auto p-6 space-y-5"
+        >
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+            <div className="flex items-center gap-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold"
+              >
+                <Package size={20} />
+              </div>
+              <div>
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
+                </h2>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPoModalOpen(false)}
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const target = parts.find((p) => p.id === poPartId);
+              const qty = parseInt(poQuantity, 10) || 5;
+              const cost = parseFloat(poUnitCost) || target?.buyingPriceDzd || 0;
+              if (target) {
+                const updated: SparePart = {
+                  ...target,
+                  stockQuantity: target.stockQuantity + qty,
+                  buyingPriceDzd: cost,
+                };
+                updatePart(updated);
+                if (inspectedPart?.id === target.id) setInspectedPart(updated);
+              }
+              setIsPoModalOpen(false);
+            }}
+            className="space-y-4"
+          >
+            <LabelSelect
+              label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
+              value={poSupplier}
+              onChange={(v) => setPoSupplier(extractStr(v))}
+              options={[
+                { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
+                { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
+                { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
+                { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
+              ]}
+            />
+            <LabelSelect
+              label={isAr ? 'القطعة المراد تموينها' : 'Référence Pièce à Réapprovisionner'}
+              value={poPartId}
+              onChange={(v) => {
+                const nextId = extractStr(v);
+                setPoPartId(nextId);
+                const p = parts.find((item) => item.id === nextId);
+                if (p) setPoUnitCost(String(p.buyingPriceDzd));
+              }}
+              options={parts.map((p) => ({
+                value: p.id,
+                label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`,
+              }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
+                type="number"
+                value={poQuantity}
+                onChange={(e) => setPoQuantity(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
+                type="number"
+                value={poUnitCost}
+                onChange={(e) => setPoUnitCost(e.target.value)}
+                required
+              />
+            </div>
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
+            >
+              <span className="text-black/55 dark:text-white/55">
+                {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}
+              </span>
+              <span className="tabular-nums font-semibold t-card text-black dark:text-white">
+                {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
+              </span>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+              <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+                {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
+              </AtriumButton>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
     </div>
   );
 };

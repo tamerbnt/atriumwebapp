@@ -7,29 +7,39 @@ import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface StopDeskHandoverModalProps {
   isOpen: boolean;
   onClose: () => void;
-  shipment: LogisticsShipment;
+  shipment: LogisticsShipment | null;
   onConfirmDelivery: (shipmentId: string, recipientIdNumber: string) => void;
 }
 
 
 
-export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ isOpen, onClose, shipment, onConfirmDelivery }) => {
+export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ isOpen, onClose, shipment: rawShipment, onConfirmDelivery }) => {
 	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
+	const shipment = useRetainedModalValue(isOpen ? rawShipment : null);
 	const [enteredOtp, setEnteredOtp] = React.useState("");
 	const [idType, setIdType] = React.useState("CNI_Biometrique");
 	const [idNumber, setIdNumber] = React.useState("");
 	const [otpError, setOtpError] = React.useState(false);
-	if (!isOpen) return null;
-	const stampDuty = computeAlgerianFiscalStamp(shipment.codAmountDzd);
-	const totalToCollect = shipment.codAmountDzd + stampDuty;
-	const expectedOtp = shipment.pickupOtpCode || "1234";
+	React.useEffect(() => {
+		if (!isOpen) return;
+		setEnteredOtp("");
+		setIdType("CNI_Biometrique");
+		setIdNumber("");
+		setOtpError(false);
+	}, [isOpen, rawShipment?.id]);
+	const codAmount = shipment?.codAmountDzd || 0;
+	const stampDuty = computeAlgerianFiscalStamp(codAmount);
+	const totalToCollect = codAmount + stampDuty;
+	const expectedOtp = shipment?.pickupOtpCode || "1234";
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
+		if (!shipment) return;
 		if (enteredOtp.trim() !== expectedOtp) {
 			setOtpError(true);
 			showToast(isAr ? "رمز OTP غير مطابق. تأكد من الرسالة القصيرة للمستلم" : "Code OTP erroné", "error");
@@ -43,9 +53,16 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 		showToast(isAr ? `تم تسليم الطرد ${shipment.trackingCode} بنجاح وقبض المبلغ` : `Colis ${shipment.trackingCode} remis au client`, "success");
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="sq-elev-pop max-w-lg w-full">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[90vh] flex flex-col">
+	return (
+		<KineticModalShell
+			isOpen={isOpen && Boolean(rawShipment)}
+			onClose={onClose}
+			maxWidthClass="max-w-lg"
+			scrimClassName="bg-black/60"
+			ariaLabel={isAr ? "تسليم الطرد للزبون بالمكتب (Stop-Desk)" : "Remise Colis au Guichet Stop-Desk"}
+		>
+			{shipment && (
+				<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[90vh] flex flex-col">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0">
 <div className="flex items-center gap-2">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-semibold"><KeyRound size={22} /></div>
@@ -143,6 +160,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 </div>
 </form>
 </div>
-</div>
-</div>;
+			)}
+		</KineticModalShell>
+	);
 };

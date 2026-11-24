@@ -5,6 +5,7 @@ import { MerchantRemittanceBatch } from '../../../types';
 import { formatCcpSfp01Line } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface AlgeriePosteSfp01ModalProps {
   isOpen: boolean;
@@ -20,8 +21,6 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   const language = useAtriumSelector((s) => s.language);
   const isAr = language === 'ar';
   const [copied, setCopied] = useState(false);
-
-  if (!isOpen) return null;
 
   // Generate ASCII lines for each batch
   const lines = batches.map((b) =>
@@ -62,8 +61,13 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-3xl w-full">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-3xl"
+      scrimClassName="bg-black/60"
+      ariaLabel={isAr ? 'تصدير ملف بريد الجزائر CCP SFP 01 / B1' : 'Export Fichier Algérie Poste CCP (SFP 01 / B1)'}
+    >
       <div
         data-sq="panel"
         data-sq-border="solid"
@@ -161,7 +165,6 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
           </div>
         </div>
       </div>
-      </div>
-    </div>
+    </KineticModalShell>
   );
 };

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -11,23 +10,10 @@ import {
 } from '../../services/store';
 import { Member, Gender } from '../../types/index';
 import {
-  Sp,
-  TUNES,
-  subscribeFrame,
-  subscribeCleanup,
-  wake,
-  checkReducedMotion,
-} from '../screens/membership/motion/adherentsMotion';
-import {
-  ModalLifecycleState,
   MODAL_FOCUS_DELAY_MS,
-  MODAL_REDUCED_FADE_MS,
-  computeMemberModalMetrics,
-  computeModalTransformOrigin,
   registerKineticMemberModalOpener,
-  shouldCloseOnScrimMouseUp,
-  shouldFinishClosing,
 } from './memberModalMotion';
+import { KineticModalShell, useRetainedModalValue } from '../ui/kinetic/KineticModalShell';
 import { Button, LiquidButton } from '@/atrium/core';
 import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { LabelInput } from '../ui/LabelInput';
@@ -63,18 +49,25 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   const getDefaultCardId = () => `RFID-${Math.floor(100000 + Math.random() * 900000)}`;
   const getTodayIso = () => new Date().toISOString().split('T')[0];
 
-  // Preserve displayed edit target while the 130ms closing animation runs
-  const [activeMemberToEdit, setActiveMemberToEdit] = useState<Member | null>(memberToEdit ?? null);
-  const retainedMemberRef = useRef<Member | null>(memberToEdit ?? null);
+  const [imperativePayload, setImperativePayload] = useState<{
+    open: boolean;
+    member: Member | null;
+    prefillName?: string;
+    originElement?: HTMLElement | null;
+  } | null>(null);
 
-  // Legacy state path (used ONLY when useKineticSpring === false, outside membership members screen)
-  const [legacyHidden, setLegacyHidden] = useState(!isOpen);
-  const [legacyVal, setLegacyVal] = useState(0);
-  const [legacyOrigin, setLegacyOrigin] = useState('center center');
+  const effectiveOpen = isOpen || Boolean(imperativePayload?.open);
+  const effectiveMember = imperativePayload?.open ? imperativePayload.member : (memberToEdit ?? null);
+  const effectivePrefill = imperativePayload?.open ? imperativePayload.prefillName : prefillName;
+  const effectiveOrigin = imperativePayload?.open
+    ? (imperativePayload.originElement ?? originElement)
+    : originElement;
+
+  const displayedEdit = useRetainedModalValue(effectiveOpen ? effectiveMember : undefined);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form values (pre-initialized so kinetic "New member" open needs zero form re-renders)
+  // Form values
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -91,47 +84,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   // Validation errors
   const [errors, setErrors] = useState<{ fullName?: string; email?: string }>({});
 
-  const springRef = useRef<Sp | null>(null);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  const scrimRef = useRef<HTMLDivElement | null>(null);
-  const openerRef = useRef<HTMLElement | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Kinetic ref-driven lifecycle state (zero React state per frame)
-  const lifecycleRef = useRef<ModalLifecycleState>('closed');
-  const openedAtRef = useRef<number>(0);
-  const focusTimerRef = useRef<number | null>(null);
-  const reducedTimerRef = useRef<number | null>(null);
-  const scrimMouseDownRef = useRef<boolean>(false);
-  const inertElsRef = useRef<HTMLElement[]>([]);
-  const scrollLockRef = useRef<{
-    locked: boolean;
-    prevOverflow: string;
-    prevPaddingRight: string;
-  }>({ locked: false, prevOverflow: '', prevPaddingRight: '' });
-
-  // Track whether kinetic form is already clean/prepared for 'create' or a specific member ID
-  const formPreparedKeyRef = useRef<string>('create');
   const formDirtyRef = useRef<boolean>(false);
-  const prevKineticOpenRef = useRef<boolean>(false);
-  const prevKineticEditIdRef = useRef<string | null>(null);
-
-  const isOpenRef = useRef(isOpen);
-  isOpenRef.current = isOpen;
-
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-
-  const originPropRef = useRef(originElement);
-  originPropRef.current = originElement;
-
-  const legacyCloseReqRef = useRef(false);
-
-  // Initialize spring dp (tune 28: k = 0.1248, d = 0.676)
-  if (!springRef.current) {
-    springRef.current = new Sp(0, TUNES.modal);
-  }
+  const lastPreparedKeyRef = useRef<string | null>(null);
 
   const applyFormForMember = useCallback(
     (target: Member | null, initialFullName?: string) => {
@@ -148,7 +104,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         setEmergencyPhone(target.emergencyContactPhone || '');
         setSource(target.source || 'Walk-in');
         setNotes(target.notes || '');
-        formPreparedKeyRef.current = target.id;
       } else {
         setFullName(initialFullName || '');
         setEmail('');
@@ -162,7 +117,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         setEmergencyPhone('');
         setSource('Walk-in');
         setNotes('');
-        formPreparedKeyRef.current = initialFullName ? `create:${initialFullName}` : 'create';
       }
       formDirtyRef.current = false;
       setErrors({});
@@ -171,638 +125,52 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     [plans]
   );
 
-  // Synchronous prop-sync for kinetic mode: commits form data BEFORE useLayoutEffect starts open animation
-  if (useKineticSpring) {
-    if (isOpen) {
-      retainedMemberRef.current = memberToEdit ?? null;
-      const targetKey = memberToEdit
-        ? memberToEdit.id
-        : prefillName
-        ? `create:${prefillName}`
-        : 'create';
-      const isOpeningNow = !prevKineticOpenRef.current;
-      const editChanged = (memberToEdit?.id ?? null) !== prevKineticEditIdRef.current;
-      if (
-        (isOpeningNow || editChanged) &&
-        (formPreparedKeyRef.current !== targetKey || formDirtyRef.current || Boolean(memberToEdit))
-      ) {
-        applyFormForMember(memberToEdit ?? null, prefillName);
-      }
-    }
-    prevKineticOpenRef.current = isOpen;
-    prevKineticEditIdRef.current = memberToEdit?.id ?? null;
-  }
-
-  // Legacy activeMemberToEdit sync (non-kinetic path only)
+  // Sync form only when opening or switching member target
   useEffect(() => {
-    if (useKineticSpring) return;
-    if (isOpen) {
-      setActiveMemberToEdit(memberToEdit ?? null);
-    }
-  }, [useKineticSpring, isOpen, memberToEdit]);
-
-  const lockScrollWithoutShift = useCallback(() => {
-    if (scrollLockRef.current.locked || typeof document === 'undefined') return;
-    const docEl = document.documentElement;
-    // Skip root style mutation when documentElement already has no scrollable overflow (e.g. AppShell h-screen overflow-hidden)
-    const scrollbarW = Math.max(0, window.innerWidth - docEl.clientWidth);
-    if (scrollbarW === 0 && docEl.scrollHeight <= docEl.clientHeight) {
+    if (!effectiveOpen) {
+      lastPreparedKeyRef.current = null;
       return;
     }
-    scrollLockRef.current = {
-      locked: true,
-      prevOverflow: docEl.style.overflow,
-      prevPaddingRight: docEl.style.paddingRight,
-    };
-    docEl.style.overflow = 'hidden';
-    if (scrollbarW > 0) {
-      const computedPad = parseFloat(getComputedStyle(docEl).paddingRight || '0') || 0;
-      docEl.style.paddingRight = `${computedPad + scrollbarW}px`;
+    const nextKey = effectiveMember
+      ? `edit:${effectiveMember.id}`
+      : effectivePrefill
+      ? `create:${effectivePrefill}`
+      : 'create';
+    if (lastPreparedKeyRef.current !== nextKey) {
+      lastPreparedKeyRef.current = nextKey;
+      applyFormForMember(effectiveMember, effectivePrefill);
     }
-  }, []);
+  }, [effectiveOpen, effectiveMember, effectivePrefill, applyFormForMember]);
 
-  const unlockScroll = useCallback(() => {
-    if (!scrollLockRef.current.locked || typeof document === 'undefined') return;
-    const docEl = document.documentElement;
-    docEl.style.overflow = scrollLockRef.current.prevOverflow;
-    docEl.style.paddingRight = scrollLockRef.current.prevPaddingRight;
-    scrollLockRef.current.locked = false;
-  }, []);
-
-  const useKineticRef = useRef(useKineticSpring);
-  useKineticRef.current = useKineticSpring;
-
-  const setBackgroundInert = useCallback((inert: boolean) => {
-    if (typeof document === 'undefined') return;
-    const attr = useKineticRef.current ? 'aria-hidden' : 'inert';
-    const val = useKineticRef.current ? 'true' : '';
-    if (inert) {
-      const targets: HTMLElement[] = [];
-      const rootEl = scrimRef.current;
-      Array.from(document.body.children).forEach((child) => {
-        if (!(child instanceof HTMLElement)) return;
-        if (child === rootEl) return;
-        const tag = child.tagName;
-        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
-        if (!child.hasAttribute(attr)) {
-          child.setAttribute(attr, val);
-          targets.push(child);
-        }
-      });
-      inertElsRef.current = targets;
-    } else {
-      inertElsRef.current.forEach((el) => {
-        el.removeAttribute('inert');
-        el.removeAttribute('aria-hidden');
-      });
-      inertElsRef.current = [];
-    }
-  }, []);
-
-  const clearTimers = useCallback(() => {
-    if (focusTimerRef.current !== null) {
-      window.clearTimeout(focusTimerRef.current);
-      focusTimerRef.current = null;
-    }
-    if (reducedTimerRef.current !== null) {
-      window.clearTimeout(reducedTimerRef.current);
-      reducedTimerRef.current = null;
-    }
-  }, []);
-
-  const isTouchDevice = useCallback((): boolean => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(pointer: coarse)').matches;
-  }, []);
-
-  const focusFirstField = useCallback(() => {
-    const input = nameInputRef.current;
-    if (!input) return;
-    input.focus({ preventScroll: true });
-  }, []);
-
-  const restoreTriggerFocus = useCallback(() => {
-    const opener = openerRef.current;
-    if (opener && opener.isConnected && !scrimRef.current?.contains(opener)) {
-      const cs = getComputedStyle(opener);
-      if (cs.visibility !== 'hidden' && cs.display !== 'none') {
-        opener.focus({ preventScroll: true });
-        return;
-      }
-      // If opener was a hover-fan button (.act) that became visibility:hidden after hover left,
-      // focus a visible control on the same row instead of dropping focus to document.body.
-      const rowVisibleControl = opener
-        .closest('.row')
-        ?.querySelector<HTMLElement>('.nm, .rb');
-      if (rowVisibleControl && getComputedStyle(rowVisibleControl).visibility !== 'hidden') {
-        rowVisibleControl.focus({ preventScroll: true });
-        return;
-      }
-    }
-    const fallback = document.querySelector<HTMLElement>('[data-action="add-member"]');
-    fallback?.focus({ preventScroll: true });
-  }, []);
-
-  const measureDialogLayoutOrigin = useCallback(
-    (root: HTMLDivElement, dialog: HTMLDivElement, triggerEl: HTMLElement | null): string => {
-      let dRect: { left: number; top: number; width: number; height: number };
-      if (dialog.offsetParent === root || dialog.offsetParent === document.body) {
-        dRect = {
-          left: dialog.offsetLeft,
-          top: dialog.offsetTop,
-          width: dialog.offsetWidth,
-          height: dialog.offsetHeight,
-        };
-      } else {
-        const prevTransform = dialog.style.transform;
-        dialog.style.transform = 'none';
-        dRect = dialog.getBoundingClientRect();
-        dialog.style.transform = prevTransform;
-      }
-      const tRect = triggerEl && triggerEl.isConnected ? triggerEl.getBoundingClientRect() : null;
-      return computeModalTransformOrigin(
-        tRect,
-        dRect,
-        window.innerWidth,
-        window.innerHeight
-      );
-    },
-    []
-  );
-
-  const finishKineticClosing = useCallback(() => {
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    const s = springRef.current;
-    if (s) {
-      s.t = 0;
-      s.x = 0;
-      s.v = 0;
-    }
-    if (root) {
-      root.hidden = true;
-      root.removeAttribute('data-settled');
-      root.style.opacity = '0';
-      root.style.pointerEvents = 'none';
-      root.style.transition = '';
-      root.style.willChange = '';
-      root.classList.remove('backdrop-blur-xs');
-    }
-    if (dialog) {
-      dialog.style.transform = checkReducedMotion() ? 'scale(1)' : 'scale(0.72)';
-      dialog.style.willChange = '';
-    }
-    lifecycleRef.current = 'closed';
-    if (!isOpenRef.current) {
-      const hadRetained = retainedMemberRef.current !== null;
-      retainedMemberRef.current = null;
-      if (hadRetained || formPreparedKeyRef.current !== 'create' || formDirtyRef.current) {
-        applyFormForMember(null);
-      }
-    }
-  }, [applyFormForMember]);
-
-  const startKineticOpen = useCallback(() => {
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    const s = springRef.current;
-    if (!root || !dialog || !s) return;
-
-    const state = lifecycleRef.current;
-    if (state === 'opening' || state === 'open') return; // Ignore duplicate open()
-
-    clearTimers();
-    const reduced = checkReducedMotion();
-    const touch = isTouchDevice();
-
-    // Capture trigger element before moving focus into dialog
-    const explicitOrigin = originPropRef.current;
-    const activeEl = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
-    if (explicitOrigin && explicitOrigin.isConnected) {
-      openerRef.current = explicitOrigin;
-    } else if (activeEl && activeEl !== document.body && !root.contains(activeEl)) {
-      openerRef.current = activeEl;
-    } else {
-      openerRef.current = document.querySelector<HTMLElement>('[data-action="add-member"]');
-    }
-
-    openedAtRef.current = performance.now();
-    scrimMouseDownRef.current = false;
-
-    if (state === 'closing') {
-      // Re-entrancy: retarget mid-close keeping current dp.x and dp.v
-      lifecycleRef.current = 'opening';
-      lockScrollWithoutShift();
-      setBackgroundInert(true);
-
-      root.hidden = false;
-      root.removeAttribute('data-settled');
-      root.classList.remove('backdrop-blur-xs');
-      root.style.pointerEvents = 'auto';
-      root.style.willChange = 'opacity';
-      dialog.style.willChange = reduced ? '' : 'transform';
-      dialog.style.transformOrigin = measureDialogLayoutOrigin(root, dialog, openerRef.current);
-
-      if (reduced) {
-        dialog.style.transform = 'scale(1)';
-        root.style.transition = `opacity ${MODAL_REDUCED_FADE_MS}ms linear`;
-        root.style.opacity = '1';
-        reducedTimerRef.current = window.setTimeout(() => {
-          reducedTimerRef.current = null;
-          if (lifecycleRef.current === 'opening') {
-            root.style.willChange = '';
-            root.style.transition = '';
-            root.setAttribute('data-settled', 'true');
-            lifecycleRef.current = 'open';
-            if (touch) focusFirstField();
-          }
-        }, MODAL_REDUCED_FADE_MS);
-      } else {
-        root.style.transition = '';
-        s.setTarget(100);
-        wake();
-      }
-    } else {
-      // Fresh open from closed state (single layout pass)
-      lifecycleRef.current = 'opening';
-      lockScrollWithoutShift();
-      setBackgroundInert(true);
-
-      root.removeAttribute('data-settled');
-      root.classList.remove('backdrop-blur-xs');
-      root.style.transition = '';
-      root.style.opacity = '0';
-      root.style.willChange = 'opacity';
-      root.style.pointerEvents = 'auto';
-      dialog.style.willChange = reduced ? '' : 'transform';
-      dialog.style.transform = reduced ? 'scale(1)' : 'scale(0.72)';
-
-      root.hidden = false;
-      // measureDialogLayoutOrigin reads dialog.offsetLeft/offsetTop, flushing initial hidden->visible + scale(0.72) once
-      dialog.style.transformOrigin = measureDialogLayoutOrigin(root, dialog, openerRef.current);
-
-      if (reduced) {
-        root.style.transition = `opacity ${MODAL_REDUCED_FADE_MS}ms linear`;
-        root.style.opacity = '1';
-        s.x = 100;
-        s.v = 0;
-        s.t = 100;
-        reducedTimerRef.current = window.setTimeout(() => {
-          reducedTimerRef.current = null;
-          if (lifecycleRef.current === 'opening') {
-            root.style.willChange = '';
-            root.style.transition = '';
-            root.setAttribute('data-settled', 'true');
-            lifecycleRef.current = 'open';
-            if (touch) focusFirstField();
-          }
-        }, MODAL_REDUCED_FADE_MS);
-      } else {
-        s.x = 0;
-        s.v = 0;
-        s.t = 100;
-        wake();
-      }
-    }
-
-    if (!touch) {
-      focusTimerRef.current = window.setTimeout(() => {
-        focusTimerRef.current = null;
-        if (lifecycleRef.current === 'opening' || lifecycleRef.current === 'open') {
-          focusFirstField();
-        }
-      }, MODAL_FOCUS_DELAY_MS);
-    }
-  }, [
-    clearTimers,
-    focusFirstField,
-    isTouchDevice,
-    lockScrollWithoutShift,
-    measureDialogLayoutOrigin,
-    setBackgroundInert,
-  ]);
-
-  const startKineticClose = useCallback(() => {
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    const s = springRef.current;
-    if (!root || !dialog || !s) return;
-
-    const state = lifecycleRef.current;
-    if (state === 'closed' || state === 'closing') return;
-
-    clearTimers();
-    lifecycleRef.current = 'closing';
-
-    // Stop blocking underlying UI and remove backdrop blur immediately on close start
-    root.style.pointerEvents = 'none';
-    root.removeAttribute('data-settled');
-    root.classList.remove('backdrop-blur-xs');
-
-    // Unlock background & scroll BEFORE returning focus so trigger inside #root is focusable
-    setBackgroundInert(false);
-    unlockScroll();
-    restoreTriggerFocus();
-
-    // Synchronize parent state immediately so rapid re-open (open/close/open) always triggers
-    if (isOpenRef.current) {
-      onCloseRef.current();
-    }
-
-    const reduced = checkReducedMotion();
-    if (reduced) {
-      root.style.willChange = 'opacity';
-      root.style.transition = `opacity ${MODAL_REDUCED_FADE_MS}ms linear`;
-      root.style.opacity = '0';
-      s.x = 0;
-      s.v = 0;
-      s.t = 0;
-      reducedTimerRef.current = window.setTimeout(() => {
-        reducedTimerRef.current = null;
-        if (lifecycleRef.current === 'closing') {
-          finishKineticClosing();
-        }
-      }, MODAL_REDUCED_FADE_MS);
-    } else {
-      root.style.transition = '';
-      root.style.willChange = 'opacity';
-      dialog.style.willChange = 'transform';
-      // Retarget preserving current dp.x and dp.v
-      s.setTarget(0);
-      wake();
-    }
-  }, [clearTimers, finishKineticClosing, restoreTriggerFocus, setBackgroundInert, unlockScroll]);
-
-  const lastModalDrawKeyRef = useRef<string>('');
-
-  // Kinetic rAF frame & cleanup subscriptions (DOM refs only, zero React renders)
+  // Focus first field gently after open on non-touch devices
   useEffect(() => {
-    if (!useKineticSpring) return;
+    if (!effectiveOpen) return;
+    const isTouch =
+      typeof window !== 'undefined' &&
+      Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    if (isTouch) return;
+    const timer = window.setTimeout(() => {
+      nameInputRef.current?.focus({ preventScroll: true });
+    }, MODAL_FOCUS_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [effectiveOpen]);
 
-    const drawModal = () => {
-      const state = lifecycleRef.current;
-      if (state === 'closed' || checkReducedMotion()) return;
-      const root = scrimRef.current;
-      const dialog = dialogRef.current;
-      const s = springRef.current;
-      if (!root || !dialog || !s) return;
-      if (state === 'open' && s.rest()) return;
-
-      const metrics = computeMemberModalMetrics(s.x, false);
-      const opQ = Math.round(metrics.opacity * 100) / 100;
-      const scQ = Math.round(metrics.scale * 1000) / 1000;
-      const drawKey = `${opQ}|${scQ}`;
-      if (drawKey === lastModalDrawKeyRef.current) return;
-      lastModalDrawKeyRef.current = drawKey;
-
-      root.style.opacity = String(opQ);
-      dialog.style.transform = `scale3d(${scQ}, ${scQ}, 1)`;
-    };
-
-    const cleanModal = () => {
-      const state = lifecycleRef.current;
-      if (state === 'closed' || checkReducedMotion()) return;
-      const root = scrimRef.current;
-      const dialog = dialogRef.current;
-      const s = springRef.current;
-      if (!root || !dialog || !s) return;
-
-      if (state === 'opening' && s.t === 100 && s.rest()) {
-        s.snap();
-        lastModalDrawKeyRef.current = '1|1';
-        root.style.opacity = '1';
-        dialog.style.transform = 'scale3d(1, 1, 1)';
-        root.style.willChange = '';
-        dialog.style.willChange = '';
-        root.setAttribute('data-settled', 'true');
-        lifecycleRef.current = 'open';
-        if (isTouchDevice()) {
-          focusFirstField();
-        }
-      } else if (state === 'closing' && shouldFinishClosing(s.x, s.t)) {
-        lastModalDrawKeyRef.current = '';
-        finishKineticClosing();
-      }
-    };
-
-    const unsubDraw = subscribeFrame(drawModal);
-    const unsubClean = subscribeCleanup(cleanModal);
-    return () => {
-      unsubDraw();
-      unsubClean();
-    };
-  }, [useKineticSpring, finishKineticClosing, focusFirstField, isTouchDevice]);
-
-  // Initialize closed DOM baseline on mount when kinetic spring is active
-  useLayoutEffect(() => {
-    if (!useKineticSpring || isOpenRef.current) return;
-    const root = scrimRef.current;
-    const dialog = dialogRef.current;
-    if (root) {
-      root.hidden = true;
-      root.removeAttribute('data-settled');
-      root.style.opacity = '0';
-      root.style.pointerEvents = 'none';
-    }
-    if (dialog) {
-      dialog.style.transform = checkReducedMotion() ? 'scale(1)' : 'scale(0.72)';
-    }
-  }, [useKineticSpring]);
-
-  // Trigger kinetic open/close synchronously before paint when isOpen prop changes
-  useLayoutEffect(() => {
-    if (!useKineticSpring) return;
-    if (isOpen) {
-      startKineticOpen();
-    } else if (lifecycleRef.current === 'opening' || lifecycleRef.current === 'open') {
-      startKineticClose();
-    }
-  }, [useKineticSpring, isOpen, startKineticOpen, startKineticClose]);
-
-  // Zero-re-render imperative opener subscription for kinetic mode
+  // Optional imperative opener compatibility
   useEffect(() => {
-    if (!useKineticSpring) return;
     return registerKineticMemberModalOpener(({ member, originElement: reqOrigin, prefillName: reqPrefill }) => {
-      originPropRef.current = reqOrigin ?? null;
-      const targetMember = (member as Member | null) ?? null;
-      retainedMemberRef.current = targetMember;
-
-      if (targetMember) {
-        applyFormForMember(targetMember);
-      } else if (
-        reqPrefill ||
-        formPreparedKeyRef.current !== 'create' ||
-        formDirtyRef.current
-      ) {
-        applyFormForMember(null, reqPrefill);
-      }
-
-      startKineticOpen();
+      setImperativePayload({
+        open: true,
+        member: (member as Member | null) ?? null,
+        prefillName: reqPrefill,
+        originElement: reqOrigin,
+      });
     });
-  }, [useKineticSpring, applyFormForMember, startKineticOpen]);
-
-  // Legacy subscription (ONLY used when useKineticSpring === false)
-  useEffect(() => {
-    if (useKineticSpring) return;
-    const s = springRef.current!;
-    const unsub = s.subscribe((v) => {
-      setLegacyVal(v);
-      if (s.t === 0 && s.rest() && legacyCloseReqRef.current) {
-        setLegacyHidden(true);
-        legacyCloseReqRef.current = false;
-
-        if (openerRef.current && document.body.contains(openerRef.current)) {
-          openerRef.current.focus();
-        } else {
-          const newBtn = document.querySelector<HTMLElement>('[data-action="add-member"]');
-          newBtn?.focus();
-        }
-
-        onCloseRef.current();
-      }
-    });
-
-    return () => unsub();
-  }, [useKineticSpring]);
+  }, []);
 
   const requestClose = useCallback(() => {
-    if (useKineticSpring) {
-      startKineticClose();
-      return;
-    }
-    if (legacyCloseReqRef.current) return;
-    legacyCloseReqRef.current = true;
-    springRef.current?.setTarget(0);
-  }, [useKineticSpring, startKineticClose]);
-
-  // Legacy open/close lifecycle (ONLY when useKineticSpring === false)
-  useEffect(() => {
-    if (useKineticSpring) return;
-    const s = springRef.current!;
-
-    if (isOpen) {
-      legacyCloseReqRef.current = false;
-      setLegacyHidden(false);
-
-      const activeEl = document.activeElement as HTMLElement | null;
-      if (activeEl && activeEl !== document.body) {
-        openerRef.current = activeEl;
-      }
-
-      if (openerRef.current) {
-        const rect = openerRef.current.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-
-        if (dialogRef.current) {
-          const ox = cx - dialogRef.current.offsetLeft;
-          const oy = cy - dialogRef.current.offsetTop;
-          setLegacyOrigin(`${ox}px ${oy}px`);
-        }
-      } else {
-        setLegacyOrigin('center center');
-      }
-
-      s.setTarget(100);
-
-      const focusTimer = setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 30);
-
-      setBackgroundInert(true);
-
-      return () => {
-        clearTimeout(focusTimer);
-      };
-    } else {
-      if (!legacyCloseReqRef.current && !legacyHidden) {
-        requestClose();
-      }
-    }
-  }, [useKineticSpring, isOpen, requestClose, legacyHidden, setBackgroundInert]);
-
-  useEffect(() => {
-    if (useKineticSpring) return;
-    if (legacyHidden) {
-      setBackgroundInert(false);
-    }
-  }, [useKineticSpring, legacyHidden, setBackgroundInert]);
-
-  // Populate or reset form fields (non-kinetic path only; kinetic path syncs pre-paint and resets after close)
-  useEffect(() => {
-    if (useKineticSpring || !isOpen) return;
-    applyFormForMember(memberToEdit ?? null, prefillName);
-  }, [useKineticSpring, isOpen, memberToEdit, prefillName, applyFormForMember]);
-
-  // Keyboard navigation: single-level Escape close & Tab trap inside dialog
-  useLayoutEffect(() => {
-    if (!useKineticSpring && !isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (useKineticSpring) {
-        if (lifecycleRef.current !== 'opening' && lifecycleRef.current !== 'open') return;
-      } else if (legacyHidden) {
-        return;
-      }
-
-      if (e.key === 'Escape') {
-        if (useKineticSpring && dialogRef.current?.querySelector('[role="listbox"]')) {
-          return;
-        }
-        e.preventDefault();
-        if (useKineticSpring) {
-          e.stopImmediatePropagation();
-          e.stopPropagation();
-        }
-        requestClose();
-        return;
-      }
-
-      if (e.key === 'Tab' && dialogRef.current) {
-        const focusable = Array.from(
-          dialogRef.current.querySelectorAll<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          )
-        ).filter(
-          (el) =>
-            !el.hasAttribute('disabled') &&
-            el.tabIndex >= 0 &&
-            el.offsetParent !== null &&
-            !el.closest('[hidden], [inert]')
-        );
-        if (focusable.length === 0) return;
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-
-        if (e.shiftKey) {
-          if (document.activeElement === first || !dialogRef.current.contains(document.activeElement)) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last || !dialogRef.current.contains(document.activeElement)) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown, useKineticSpring);
-    return () => window.removeEventListener('keydown', handleKeyDown, useKineticSpring);
-  }, [useKineticSpring, legacyHidden, isOpen, requestClose]);
-
-  // Destroy spring & restore global document state on unmount
-  useEffect(() => {
-    return () => {
-      clearTimers();
-      springRef.current?.destroy();
-      springRef.current = null;
-      setBackgroundInert(false);
-      unlockScroll();
-    };
-  }, [clearTimers, setBackgroundInert, unlockScroll]);
+    setImperativePayload(null);
+    onClose();
+  }, [onClose]);
 
   // Form submit handler with validation
   const handleSubmit = (e: React.FormEvent) => {
@@ -840,9 +208,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     const expDate = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000);
     const expirationDate = expDate.toISOString().split('T')[0];
 
-    const targetEdit = useKineticSpring
-      ? (retainedMemberRef.current || memberToEdit)
-      : (activeMemberToEdit || memberToEdit);
+    const targetEdit = effectiveMember || displayedEdit;
     if (targetEdit) {
       const updatedFields: Partial<Member> = {
         fullName: fullName.trim(),
@@ -888,12 +254,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     }
   };
 
-  const legacyMetrics = !useKineticSpring
-    ? computeMemberModalMetrics(legacyVal, false)
-    : null;
-
-  const displayedEdit = useKineticSpring ? retainedMemberRef.current : memberToEdit;
-
   const genderOptions = useMemo(
     () => [
       { value: 'Male', label: t('member_gender_male', language) },
@@ -928,62 +288,22 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     []
   );
 
-  const modalContent = (
-    <div
-      ref={scrimRef}
-      role="presentation"
-      hidden={useKineticSpring ? true : legacyHidden}
-      className={`member-modal-root scrim fixed inset-0 z-[100] flex items-center justify-center p-[var(--s3)] bg-black/50 select-none ${
-        useKineticSpring ? '' : 'backdrop-blur-xs'
-      }`}
-      style={useKineticSpring ? undefined : { opacity: legacyMetrics?.opacity ?? 0 }}
-      onMouseDown={(e) => {
-        if (!useKineticSpring) return;
-        scrimMouseDownRef.current = e.target === scrimRef.current;
-      }}
-      onMouseUp={(e) => {
-        if (!useKineticSpring) return;
-        const mouseupOnScrim = e.target === scrimRef.current;
-        const shouldClose = shouldCloseOnScrimMouseUp(
-          scrimMouseDownRef.current,
-          mouseupOnScrim,
-          performance.now(),
-          openedAtRef.current
-        );
-        scrimMouseDownRef.current = false;
-        if (shouldClose) {
-          requestClose();
-        }
-      }}
-      onClick={(e) => {
-        if (useKineticSpring) return;
-        if (e.target === scrimRef.current) {
-          requestClose();
-        }
-      }}
+  return (
+    <KineticModalShell
+      isOpen={effectiveOpen}
+      onClose={requestClose}
+      originElement={effectiveOrigin}
+      maxWidthClass="max-w-xl"
+      zIndexClass="z-[9990]"
+      ariaLabelledBy="member-modal-title"
+      dialogClassName="text-left"
     >
       <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="member-modal-title"
-        className="member-modal-dialog dialog relative w-full max-w-xl sq-elev-pop text-left select-text"
-        style={
-          useKineticSpring
-            ? undefined
-            : {
-                transform: legacyMetrics?.transform ?? 'scale(0.72)',
-                transformOrigin: legacyOrigin,
-              }
-        }
-        onClick={(e) => e.stopPropagation()}
+        data-sq="panel"
+        data-sq-border="solid"
+        className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)]"
       >
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)]"
-        >
-          <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
+        <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="flex items-start justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[var(--atr-divider)]">
           <div className="flex flex-col gap-[var(--s1)]">
@@ -1382,15 +702,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             />
           </div>
         </form>
-          </div>
         </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
-
-  return typeof document !== 'undefined'
-    ? createPortal(modalContent, document.body)
-    : null;
 });
 
 MemberModal.displayName = 'MemberModal';

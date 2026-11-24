@@ -11,6 +11,7 @@ import { LegalMatter } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface LegalMatterModalProps {
   isOpen: boolean;
@@ -98,8 +99,6 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
     }
   }, [matterToEdit, isOpen]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !clientName.trim()) {
@@ -144,13 +143,12 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="sq-elev-pop max-w-xl w-full">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
-        >
+    <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-xl" zIndexClass="z-[9990]">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
+      >
         <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
           <div className="flex items-center gap-2">
             <div
@@ -310,8 +308,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

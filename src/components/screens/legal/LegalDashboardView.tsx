@@ -365,21 +365,17 @@ export const LegalDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isMatterModalOpen && (
-        <LegalMatterModal
-          isOpen={isMatterModalOpen}
-          onClose={() => setIsMatterModalOpen(false)}
-          onSave={addMatter}
-        />
-      )}
-      {isDeadlineModalOpen && (
-        <CpcaDeadlineModal
-          isOpen={isDeadlineModalOpen}
-          onClose={() => setIsDeadlineModalOpen(false)}
-          matters={matters || []}
-          onSaveDeadline={addCPCADeadline}
-        />
-      )}
+      <LegalMatterModal
+        isOpen={isMatterModalOpen}
+        onClose={() => setIsMatterModalOpen(false)}
+        onSave={addMatter}
+      />
+      <CpcaDeadlineModal
+        isOpen={isDeadlineModalOpen}
+        onClose={() => setIsDeadlineModalOpen(false)}
+        matters={matters || []}
+        onSaveDeadline={addCPCADeadline}
+      />
     </DashboardBentoFrame>
   );
 };

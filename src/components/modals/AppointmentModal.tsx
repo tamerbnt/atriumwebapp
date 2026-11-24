@@ -27,6 +27,7 @@ import {
 } from '../../services/store';
 import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
+import { useRetainedModalValue } from '../ui/kinetic';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { Button, LiquidButton } from '@/atrium/core';
@@ -77,7 +78,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     shallowEqualObjects
   );
 
-  const isEditing = !!appointment;
+  const retainedAppointment = useRetainedModalValue(isOpen ? appointment ?? null : null);
+  const displayAppointment = isOpen ? appointment : retainedAppointment;
+  const isEditing = !!displayAppointment;
 
   // Booking mode: registered client vs walk-in intake
   const [bookingMode, setBookingMode] = useState<'registered' | 'walkin'>('registered');
@@ -272,9 +275,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       isLoading={networkMode === 'force_skeleton'}
       title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
       subtitle={
-        isEditing && appointment
+        isEditing && displayAppointment
           ? t('apt_ref_sub', language)
-              .replace('{id}', appointment.id.slice(-6).toUpperCase())
+              .replace('{id}', displayAppointment.id.slice(-6).toUpperCase())
               .replace('{branch}', currentBranch.name)
           : t('apt_schedule_sub', language).replace('{branch}', currentBranch.name)
       }
@@ -484,10 +487,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           >
             <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
               <p className="t-small text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">{t('apt_booked_client', language)}</p>
-              <p className="t-card font-semibold text-[var(--text-1,#17130F)] dark:text-white">{appointment?.clientName}</p>
+              <p className="t-card font-semibold text-[var(--text-1,#17130F)] dark:text-white">{displayAppointment?.clientName}</p>
             </div>
             <span className="t-cap text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)] flex items-center gap-[var(--s1,4px)] tabular-nums">
-              <Phone size={16} strokeWidth={1.5} /> {appointment?.clientPhone}
+              <Phone size={16} strokeWidth={1.5} /> {displayAppointment?.clientPhone}
             </span>
           </div>
         )}

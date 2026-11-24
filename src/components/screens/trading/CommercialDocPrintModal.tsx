@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
 } from '../../../services/store';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface CommercialDocPrintModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ interface CommercialDocPrintModalProps {
 
 
 
-export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = ({ isOpen, onClose, document: doc }) => {
+export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = ({ isOpen, onClose, document: rawDoc }) => {
 	const printRef = React.useRef<any>(null);
 	const { currentBusiness, currentBranch } = useAtriumSelector(
 	  (s) => ({
@@ -36,18 +37,25 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
 	  }),
 	  shallowEqualObjects
 	);
-	if (!isOpen || !doc) return null;
+	const doc = useRetainedModalValue(isOpen ? rawDoc : null);
 	const handlePrint = () => {
 		window.print();
 	};
-	const roundedNetToPay = Math.round(doc.netToPay);
-	const amountInWordsFr = numberToWordsFrench(roundedNetToPay);
-	const amountInWordsAr = numberToWordsArabic(roundedNetToPay);
-	const docTitleFr = doc.type === "facture" ? "FACTURE" : doc.type === "bl" ? "BON DE LIVRAISON" : doc.type === "devis" ? "DEVIS / FACTURE PROFORMA" : doc.type === "commande" ? "BON DE COMMANDE" : "FACTURE D'AVOIR";
-	const docTitleAr = doc.type === "facture" ? "فاتورة تجارية" : doc.type === "bl" ? "وصل تسليم بضاعة" : doc.type === "devis" ? "عرض سعر / فاتورة شكلية" : doc.type === "commande" ? "طلبية شراء" : "فاتورة إشعار دائن";
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/70 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static print:z-auto">
-<div className="sq-elev-pop relative w-full max-w-4xl my-auto print:max-w-none">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:border-none print:rounded-none">
+	const roundedNetToPay = doc ? Math.round(doc.netToPay) : 0;
+	const amountInWordsFr = doc ? numberToWordsFrench(roundedNetToPay) : "";
+	const amountInWordsAr = doc ? numberToWordsArabic(roundedNetToPay) : "";
+	const docTitleFr = !doc ? "" : doc.type === "facture" ? "FACTURE" : doc.type === "bl" ? "BON DE LIVRAISON" : doc.type === "devis" ? "DEVIS / FACTURE PROFORMA" : doc.type === "commande" ? "BON DE COMMANDE" : "FACTURE D'AVOIR";
+	const docTitleAr = !doc ? "" : doc.type === "facture" ? "فاتورة تجارية" : doc.type === "bl" ? "وصل تسليم بضاعة" : doc.type === "devis" ? "عرض سعر / فاتورة شكلية" : doc.type === "commande" ? "طلبية شراء" : "فاتورة إشعار دائن";
+	return (
+		<KineticModalShell
+			isOpen={isOpen && Boolean(rawDoc)}
+			onClose={onClose}
+			maxWidthClass="max-w-4xl print:max-w-none"
+			scrimClassName="bg-black/70 print:p-0 print:bg-white print:static print:z-auto"
+			ariaLabel={docTitleFr || "Document Commercial"}
+		>
+			{doc && (
+				<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:border-none print:rounded-none print:shadow-none">
 <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.10] bg-stone-900 text-white shrink-0 print:hidden">
 <div className="flex items-center gap-2">
 <span className="tabular-nums t-cap px-2 py-1 rounded-[var(--r-check,6px)] bg-white/10 text-white">{doc.docNumber}</span>
@@ -273,7 +281,8 @@ Retenue Garantie (
 En cas de contestation, seul le Tribunal de Commerce compétent du ressort du siège de notre société est habilité.
 </p>}
 </div>
-</div>
-</div>
-</div>;
+				</div>
+			)}
+		</KineticModalShell>
+	);
 };

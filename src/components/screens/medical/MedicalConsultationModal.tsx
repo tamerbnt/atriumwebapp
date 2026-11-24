@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stethoscope, X, UserCheck, AlertTriangle } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -12,6 +12,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useMedicalData } from './medicalData';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface MedicalConsultationModalProps {
   isOpen: boolean;
@@ -57,7 +58,21 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   const [copay, setCopay] = useState('600');
   const [errorMessage, setErrorMessage] = useState('');
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    setPatientId(patient?.id || preselectedPatientId || effectivePatients[0]?.id || '');
+    setDoctorId('auto');
+    setChiefComplaint('');
+    setBp('120/80');
+    setTemp('37.0');
+    setWeight('70');
+    setHeartRate('75');
+    setUrgency('Normal');
+    setDiagnosis('');
+    setFee('3000');
+    setCopay('600');
+    setErrorMessage('');
+  }, [isOpen, patient, preselectedPatientId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,9 +164,14 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-lg w-full">
-        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+    <KineticModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidthClass="max-w-lg"
+      scrimClassName="bg-black/50"
+      ariaLabel={language === 'ar' ? 'فحص واستشارة جديدة' : 'Nouvelle Consultation & Triage'}
+    >
+      <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
@@ -297,8 +317,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             </AtriumButton>
           </div>
         </form>
-        </div>
       </div>
-    </div>
+    </KineticModalShell>
   );
 };

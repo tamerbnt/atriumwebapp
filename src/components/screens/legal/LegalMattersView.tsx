@@ -1590,23 +1590,19 @@ export const LegalMattersView: React.FC<any> = () => {
         />
       )}
 
-      {isMatterModalOpen && (
-        <LegalMatterModal
-          isOpen={isMatterModalOpen}
-          onClose={() => setIsMatterModalOpen(false)}
-          onSave={matterToEdit ? updateMatter : addMatter}
-          matterToEdit={matterToEdit}
-        />
-      )}
+      <LegalMatterModal
+        isOpen={isMatterModalOpen}
+        onClose={() => setIsMatterModalOpen(false)}
+        onSave={matterToEdit ? updateMatter : addMatter}
+        matterToEdit={matterToEdit}
+      />
 
-      {isNotaryModalOpen && (
-        <NotaryDeedModal
-          isOpen={isNotaryModalOpen}
-          onClose={() => setIsNotaryModalOpen(false)}
-          nextIndex={notaryDeeds.length + 1}
-          onSaveDeed={addNotaryDeed}
-        />
-      )}
+      <NotaryDeedModal
+        isOpen={isNotaryModalOpen}
+        onClose={() => setIsNotaryModalOpen(false)}
+        nextIndex={notaryDeeds.length + 1}
+        onSaveDeed={addNotaryDeed}
+      />
     </div>
   );
 };

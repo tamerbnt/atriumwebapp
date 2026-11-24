@@ -55,6 +55,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const getInitials2 = (name: string): string => {
@@ -129,6 +130,8 @@ export const PosOrdersView: React.FC = () => {
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const [selectedSaleForRefund, setSelectedSaleForRefund] = useState<Sale | null>(null);
   const [refundReason, setRefundReason] = useState('Demande Client / Avoir');
+  const retainedSaleForReceipt = useRetainedModalValue(selectedSaleForReceipt);
+  const retainedSaleForRefund = useRetainedModalValue(selectedSaleForRefund);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -1375,13 +1378,17 @@ export const PosOrdersView: React.FC = () => {
         }}
       />
 
-      {selectedSaleForReceipt && (
-        <Modal
-          isOpen={true}
-          onClose={() => setSelectedSaleForReceipt(null)}
-          title={isAr ? 'معاينة وصل الدفع 80 مم' : 'Ticket de Caisse 80mm'}
-          subtitle={`Ticket #${selectedSaleForReceipt.id.slice(-8).toUpperCase()}`}
-        >
+      <Modal
+        isOpen={Boolean(selectedSaleForReceipt)}
+        onClose={() => setSelectedSaleForReceipt(null)}
+        title={isAr ? 'معاينة وصل الدفع 80 مم' : 'Ticket de Caisse 80mm'}
+        subtitle={
+          retainedSaleForReceipt
+            ? `Ticket #${retainedSaleForReceipt.id.slice(-8).toUpperCase()}`
+            : ''
+        }
+      >
+        {retainedSaleForReceipt && (
           <div className="space-y-4" dir="ltr">
             <div className="sq-elev-card mx-auto max-w-[340px]">
               <div
@@ -1410,23 +1417,23 @@ export const PosOrdersView: React.FC = () => {
 
               <div className="py-2 t-cap border-b border-dashed border-black/[0.22] space-y-0.5">
                 <div className="flex justify-between">
-                  <span>TICKET: #{selectedSaleForReceipt.id.slice(-8).toUpperCase()}</span>
-                  <span>{new Date(selectedSaleForReceipt.createdAt).toLocaleDateString()}</span>
+                  <span>TICKET: #{retainedSaleForReceipt.id.slice(-8).toUpperCase()}</span>
+                  <span>{new Date(retainedSaleForReceipt.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>CAISSIER: {selectedSaleForReceipt.cashierName || currentUser?.fullName || 'Caissier'}</span>
-                  <span>{new Date(selectedSaleForReceipt.createdAt).toLocaleTimeString()}</span>
+                  <span>CAISSIER: {retainedSaleForReceipt.cashierName || currentUser?.fullName || 'Caissier'}</span>
+                  <span>{new Date(retainedSaleForReceipt.createdAt).toLocaleTimeString()}</span>
                 </div>
-                {selectedSaleForReceipt.memberName && (
+                {retainedSaleForReceipt.memberName && (
                   <div className="flex justify-between font-semibold">
                     <span>CLIENT:</span>
-                    <span>{selectedSaleForReceipt.memberName}</span>
+                    <span>{retainedSaleForReceipt.memberName}</span>
                   </div>
                 )}
               </div>
 
               <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22] t-cap">
-                {selectedSaleForReceipt.items.map((it, idx) => (
+                {retainedSaleForReceipt.items.map((it, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span>{it.quantity}x {it.productName}</span>
                     <span className="font-semibold">{formatMoney(it.totalPrice)}</span>
@@ -1437,11 +1444,11 @@ export const PosOrdersView: React.FC = () => {
               <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22]">
                 <div className="flex justify-between t-label font-semibold pt-1">
                   <span>TOTAL PAYÉ</span>
-                  <span>{formatMoney(selectedSaleForReceipt.totalAmount)}</span>
+                  <span>{formatMoney(retainedSaleForReceipt.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between t-cap text-black/75 pt-0.5">
                   <span>MODE DE PAIEMENT :</span>
-                  <span className="font-semibold">{selectedSaleForReceipt.paymentMethod}</span>
+                  <span className="font-semibold">{retainedSaleForReceipt.paymentMethod}</span>
                 </div>
               </div>
 
@@ -1476,51 +1483,53 @@ export const PosOrdersView: React.FC = () => {
               </button>
             </div>
           </div>
-        </Modal>
-      )}
+        )}
+      </Modal>
 
-      {selectedSaleForRefund && (
-        <Modal
-          isOpen={true}
-          onClose={() => setSelectedSaleForRefund(null)}
-          title={isAr ? 'تأكيد استرجاع الوصل (Avoir)' : 'Confirmer le Remboursement (Avoir)'}
-          subtitle={`Ticket #${selectedSaleForRefund.id.slice(-8).toUpperCase()} · ${formatMoney(selectedSaleForRefund.totalAmount)}`}
-        >
-          <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <p className="t-cap text-black/55 dark:text-white/55">
-              {isAr
-                ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
-                : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}
-            </p>
+      <Modal
+        isOpen={Boolean(selectedSaleForRefund)}
+        onClose={() => setSelectedSaleForRefund(null)}
+        title={isAr ? 'تأكيد استرجاع الوصل (Avoir)' : 'Confirmer le Remboursement (Avoir)'}
+        subtitle={
+          retainedSaleForRefund
+            ? `Ticket #${retainedSaleForRefund.id.slice(-8).toUpperCase()} · ${formatMoney(retainedSaleForRefund.totalAmount)}`
+            : ''
+        }
+      >
+        <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
+          <p className="t-cap text-black/55 dark:text-white/55">
+            {isAr
+              ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
+              : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}
+          </p>
 
-            <LabelInput
-              label={isAr ? 'سبب الإرجاع / الملاحظة' : 'Motif de retour / avoir'}
-              value={refundReason}
-              onChange={(val) => setRefundReason(typeof val === 'string' ? val : val.target?.value || '')}
-              placeholder="Ex: Erreur de saisie, produit défectueux..."
-            />
+          <LabelInput
+            label={isAr ? 'سبب الإرجاع / الملاحظة' : 'Motif de retour / avoir'}
+            value={refundReason}
+            onChange={(val) => setRefundReason(typeof val === 'string' ? val : val.target?.value || '')}
+            placeholder="Ex: Erreur de saisie, produit défectueux..."
+          />
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <AtriumButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedSaleForRefund(null)}
-              >
-                {t('action_cancel')}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="danger"
-                size="sm"
-                onClick={handleConfirmRefund}
-              >
-                {isAr ? 'تأكيد الاسترجاع' : 'Valider le Remboursement'}
-              </AtriumButton>
-            </div>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <AtriumButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedSaleForRefund(null)}
+            >
+              {t('action_cancel')}
+            </AtriumButton>
+            <AtriumButton
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={handleConfirmRefund}
+            >
+              {isAr ? 'تأكيد الاسترجاع' : 'Valider le Remboursement'}
+            </AtriumButton>
           </div>
-        </Modal>
-      )}
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -38,6 +38,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   KineticRowData,
   KineticRowFanAction,
@@ -45,6 +46,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const extractStr = (v: unknown): string => {
@@ -746,6 +748,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     [branchesById, currentBranch, language, isAr, isEn]
   );
 
+  const retainedPrintableVoucher = useRetainedModalValue(printableVoucher);
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: materials.length > 0,
@@ -1354,244 +1358,253 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         />
       )}
 
-      {isMaterialModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-                <h3 className="font-semibold t-card text-black dark:text-white">
-                  {materialToEdit
-                    ? isAr ? 'تعديل المادة الأولية' : 'Modifier la Matière Première'
-                    : isAr ? 'إضافة مادة أولية جديدة' : 'Nouvelle Référence Matière'}
-                </h3>
-                <button
-                  type="button"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setIsMaterialModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            <form onSubmit={handleSaveMaterial} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput label="Code SKU" value={sku} onChange={(e) => setSku(e.target.value)} required />
-                <LabelSelect
-                  label={isAr ? 'الصنف الصناعي' : 'Catégorie'}
-                  value={category}
-                  onChange={(v) => setCategory(extractStr(v) as RawMaterialStockItem['category'])}
-                  options={[
-                    { value: 'Wood', label: 'Bois & Dérivés' },
-                    { value: 'Metals', label: 'Métallurgie & Aciers' },
-                    { value: 'Plastics', label: 'Polymères & Plastiques' },
-                    { value: 'Chemicals', label: 'Chimie, Peintures & Résines' },
-                    { value: 'Textiles', label: 'Textiles & Confection' },
-                    { value: 'Hardware', label: 'Quincaillerie & Visserie' },
-                  ]}
-                />
-              </div>
-              <LabelInput
-                label={isAr ? 'اسم المادة والمواصفات' : 'Désignation de la matière'}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Bois Chêne Brut Séché 50mm..."
-                required
-              />
-              <div className="grid grid-cols-3 gap-3">
-                <LabelInput
-                  label={isAr ? 'الكمية' : 'Stock Initial'}
-                  type="number"
-                  step="any"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'الوحدة' : 'Unité'}
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  placeholder="kg, m³, Pièce..."
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'عتبة التنبيه' : 'Seuil Mini'}
-                  type="number"
-                  step="any"
-                  value={minThreshold}
-                  onChange={(e) => setMinThreshold(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'سعر الوحدة PMP (دج)' : 'Coût Unitaire PMP (DZD)'}
-                  type="number"
-                  value={unitCostDzd}
-                  onChange={(e) => setUnitCostDzd(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'موقع التخزين (الرف/الممر)' : 'Emplacement Casier'}
-                  value={warehouseLocation}
-                  onChange={(e) => setWarehouseLocation(e.target.value)}
-                  placeholder="Ex: Rack A-02..."
-                  required
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton type="button" variant="secondary" onClick={() => setIsMaterialModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton type="submit" variant="primary">
-                  {isAr ? 'حفظ المادة' : 'Enregistrer'}
-                </AtriumButton>
-              </div>
-            </form>
-            </div>
+      <KineticModalShell
+        isOpen={isMaterialModalOpen}
+        onClose={() => setIsMaterialModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[92vh] overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="font-semibold t-card text-black dark:text-white">
+              {materialToEdit
+                ? isAr ? 'تعديل المادة الأولية' : 'Modifier la Matière Première'
+                : isAr ? 'إضافة مادة أولية جديدة' : 'Nouvelle Référence Matière'}
+            </h3>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsMaterialModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+            >
+              <X size={18} />
+            </button>
           </div>
-        </div>
-      )}
-
-      {isVoucherModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
-                <h3 className="font-semibold t-card text-black dark:text-white">
-                  {isAr ? 'إصدار سند حركة مخزون (مرسوم 05-468)' : "Émission d'un Bon de Mouvement (Décret 05-468)"}
-                </h3>
-                <button
-                  type="button"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setIsVoucherModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            <form onSubmit={handleCreateVoucher} className="space-y-4">
+          <form onSubmit={handleSaveMaterial} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput label="Code SKU" value={sku} onChange={(e) => setSku(e.target.value)} required />
               <LabelSelect
-                label={isAr ? 'نوع السند' : 'Type de Bon'}
-                value={voucherType}
-                onChange={(v) => setVoucherType(extractStr(v) as 'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert')}
+                label={isAr ? 'الصنف الصناعي' : 'Catégorie'}
+                value={category}
+                onChange={(v) => setCategory(extractStr(v) as RawMaterialStockItem['category'])}
                 options={[
-                  { value: 'BonDeSortie', label: 'Bon de Sortie Magasin (BSM) vers Atelier' },
-                  { value: 'BonDeReception', label: 'Bon de Réception Fournisseur (BR) avec calcul PMP' },
-                  { value: 'BonDeTransfert', label: 'Bon de Transfert Inter-Dépôts (BT)' },
+                  { value: 'Wood', label: 'Bois & Dérivés' },
+                  { value: 'Metals', label: 'Métallurgie & Aciers' },
+                  { value: 'Plastics', label: 'Polymères & Plastiques' },
+                  { value: 'Chemicals', label: 'Chimie, Peintures & Résines' },
+                  { value: 'Textiles', label: 'Textiles & Confection' },
+                  { value: 'Hardware', label: 'Quincaillerie & Visserie' },
                 ]}
               />
-              <LabelSelect
-                label={isAr ? 'المادة الأولية المعنية' : 'Matière Première'}
-                value={voucherMaterialId}
-                onChange={(v) => setVoucherMaterialId(extractStr(v))}
-                options={materials.map((m) => ({
-                  value: m.id,
-                  label: `${m.name} (${m.sku} - Stock: ${m.currentStock} ${m.unit})`,
-                }))}
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الكمية المنقولة' : 'Quantité du Bon'}
-                  type="number"
-                  step="any"
-                  value={voucherQty}
-                  onChange={(e) => setVoucherQty(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'المستلم / المشغل' : 'Bénéficiaire / Demandeur'}
-                  value={voucherRecipient}
-                  onChange={(e) => setVoucherRecipient(e.target.value)}
-                  required
-                />
-              </div>
-              <LabelInput
-                label={isAr ? 'سبب التحويل / رقم أمر التصنيع' : 'Motif / N° Ordre de Fabrication lié'}
-                value={voucherNotes}
-                onChange={(e) => setVoucherNotes(e.target.value)}
-                placeholder="Ex: Sortie pour OF-2026-0089..."
-              />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
-                <AtriumButton type="button" variant="secondary" onClick={() => setIsVoucherModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton type="submit" variant="primary">
-                  {isAr ? 'إصدار وطباعة السند' : 'Valider & Imprimer le Bon'}
-                </AtriumButton>
-              </div>
-            </form>
             </div>
-          </div>
+            <LabelInput
+              label={isAr ? 'اسم المادة والمواصفات' : 'Désignation de la matière'}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Bois Chêne Brut Séché 50mm..."
+              required
+            />
+            <div className="grid grid-cols-3 gap-3">
+              <LabelInput
+                label={isAr ? 'الكمية' : 'Stock Initial'}
+                type="number"
+                step="any"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'الوحدة' : 'Unité'}
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="kg, m³, Pièce..."
+                required
+              />
+              <LabelInput
+                label={isAr ? 'عتبة التنبيه' : 'Seuil Mini'}
+                type="number"
+                step="any"
+                value={minThreshold}
+                onChange={(e) => setMinThreshold(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'سعر الوحدة PMP (دج)' : 'Coût Unitaire PMP (DZD)'}
+                type="number"
+                value={unitCostDzd}
+                onChange={(e) => setUnitCostDzd(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'موقع التخزين (الرف/الممر)' : 'Emplacement Casier'}
+                value={warehouseLocation}
+                onChange={(e) => setWarehouseLocation(e.target.value)}
+                placeholder="Ex: Rack A-02..."
+                required
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="secondary" onClick={() => setIsMaterialModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton type="submit" variant="primary">
+                {isAr ? 'حفظ المادة' : 'Enregistrer'}
+              </AtriumButton>
+            </div>
+          </form>
         </div>
-      )}
+      </KineticModalShell>
 
-      {printableVoucher && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
-                <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
-                    <Printer size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold t-card text-black dark:text-white">{printableVoucher.voucherNumber}</h3>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      Document officiel d'inventaire • Décret exécutif N° 05-468
-                    </p>
-                  </div>
+      <KineticModalShell
+        isOpen={isVoucherModalOpen}
+        onClose={() => setIsVoucherModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[92vh] overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="font-semibold t-card text-black dark:text-white">
+              {isAr ? 'إصدار سند حركة مخزون (مرسوم 05-468)' : "Émission d'un Bon de Mouvement (Décret 05-468)"}
+            </h3>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={() => setIsVoucherModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateVoucher} className="space-y-4">
+            <LabelSelect
+              label={isAr ? 'نوع السند' : 'Type de Bon'}
+              value={voucherType}
+              onChange={(v) => setVoucherType(extractStr(v) as 'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert')}
+              options={[
+                { value: 'BonDeSortie', label: 'Bon de Sortie Magasin (BSM) vers Atelier' },
+                { value: 'BonDeReception', label: 'Bon de Réception Fournisseur (BR) avec calcul PMP' },
+                { value: 'BonDeTransfert', label: 'Bon de Transfert Inter-Dépôts (BT)' },
+              ]}
+            />
+            <LabelSelect
+              label={isAr ? 'المادة الأولية المعنية' : 'Matière Première'}
+              value={voucherMaterialId}
+              onChange={(v) => setVoucherMaterialId(extractStr(v))}
+              options={materials.map((m) => ({
+                value: m.id,
+                label: `${m.name} (${m.sku} - Stock: ${m.currentStock} ${m.unit})`,
+              }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput
+                label={isAr ? 'الكمية المنقولة' : 'Quantité du Bon'}
+                type="number"
+                step="any"
+                value={voucherQty}
+                onChange={(e) => setVoucherQty(e.target.value)}
+                required
+              />
+              <LabelInput
+                label={isAr ? 'المستلم / المشغل' : 'Bénéficiaire / Demandeur'}
+                value={voucherRecipient}
+                onChange={(e) => setVoucherRecipient(e.target.value)}
+                required
+              />
+            </div>
+            <LabelInput
+              label={isAr ? 'سبب التحويل / رقم أمر التصنيع' : 'Motif / N° Ordre de Fabrication lié'}
+              value={voucherNotes}
+              onChange={(e) => setVoucherNotes(e.target.value)}
+              placeholder="Ex: Sortie pour OF-2026-0089..."
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="secondary" onClick={() => setIsVoucherModalOpen(false)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton type="submit" variant="primary">
+                {isAr ? 'إصدار وطباعة السند' : 'Valider & Imprimer le Bon'}
+              </AtriumButton>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(printableVoucher)}
+        onClose={() => setPrintableVoucher(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedPrintableVoucher && (
+          <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
+              <div className="flex items-center gap-3">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                  <Printer size={20} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    onClick={() => window.print()}
-                    className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Printer size={14} />
-                    <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                    onClick={() => setPrintableVoucher(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
+                <div>
+                  <h3 className="font-semibold t-card text-black dark:text-white">{retainedPrintableVoucher.voucherNumber}</h3>
+                  <p className="t-cap text-black/55 dark:text-white/55">
+                    Document officiel d'inventaire • Décret exécutif N° 05-468
+                  </p>
                 </div>
               </div>
-              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 font-sans">
-                <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
-                  <div>
-                    <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                    <div className="t-small text-black/55 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
-                    <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
-                      {printableVoucher.voucherType === 'BonDeSortie'
-                        ? 'Bon de Sortie Magasin (BSM)'
-                        : printableVoucher.voucherType === 'BonDeReception'
-                        ? 'Bon de Réception Magasin (BR)'
-                        : 'Bon de Transfert Interne (BT)'}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{printableVoucher.voucherNumber}</div>
-                    <div className="t-cap text-black/55 mt-0.5">Date : {printableVoucher.transferDate?.split('T')[0]}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setPrintableVoucher(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 font-sans">
+              <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
+                <div>
+                  <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
+                  <div className="t-small text-black/55 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
+                  <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
+                    {retainedPrintableVoucher.voucherType === 'BonDeSortie'
+                      ? 'Bon de Sortie Magasin (BSM)'
+                      : retainedPrintableVoucher.voucherType === 'BonDeReception'
+                      ? 'Bon de Réception Magasin (BR)'
+                      : 'Bon de Transfert Interne (BT)'}
                   </div>
                 </div>
-                <div className="bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-black/55">Demandeur / Bénéficiaire :</span>
-                    <span className="font-semibold text-black">{printableVoucher.recipientStaffName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55">Motif de transfert :</span>
-                    <span className="font-semibold text-black">{printableVoucher.notes || 'Ordre de fabrication'}</span>
-                  </div>
+                <div className="text-right">
+                  <div className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedPrintableVoucher.voucherNumber}</div>
+                  <div className="t-cap text-black/55 mt-0.5">Date : {retainedPrintableVoucher.transferDate?.split('T')[0]}</div>
                 </div>
-                <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
+              </div>
+              <div className="bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-black/55">Demandeur / Bénéficiaire :</span>
+                  <span className="font-semibold text-black">{retainedPrintableVoucher.recipientStaffName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-black/55">Motif de transfert :</span>
+                  <span className="font-semibold text-black">{retainedPrintableVoucher.notes || 'Ordre de fabrication'}</span>
+                </div>
+              </div>
+              <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                 <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-black/[0.12]">
                   <tr>
                     <th className="p-2 text-left">Désignation Matière</th>
@@ -1601,7 +1614,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.10]">
-                  {printableVoucher.items.map((item, idx) => (
+                  {retainedPrintableVoucher.items.map((item, idx) => (
                     <tr key={idx}>
                       <td className="p-2 font-medium">{item.materialName}</td>
                       <td className="p-2 text-center tabular-nums font-semibold">
@@ -1617,7 +1630,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               </table>
               <div className="flex justify-end pt-2 t-small font-semibold text-black">
                 <span>Total Mouvement : </span>
-                <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(printableVoucher.totalValueDzd, language)}</span>
+                <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(retainedPrintableVoucher.totalValueDzd, language)}</span>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
                 <div>
@@ -1630,10 +1643,9 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 </div>
               </div>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

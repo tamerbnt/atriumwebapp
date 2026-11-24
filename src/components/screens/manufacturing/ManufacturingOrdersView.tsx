@@ -39,6 +39,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   KineticRowData,
   KineticRowFanAction,
@@ -47,6 +48,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 export const ManufacturingOrdersView: React.FC<any> = () => {
@@ -481,6 +483,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
     ],
     [pinnedIds, branchesById, currentBranch, language, isAr, isEn]
   );
+
+  const retainedOrderForFiche = useRetainedModalValue(orderForFiche);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -1001,110 +1005,113 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
         )}
       />
 
-      {isOrderModalOpen && (
-        <ManufacturingOrderModal
-          isOpen={isOrderModalOpen}
-          onClose={() => {
-            setIsOrderModalOpen(false);
-            setOrderToEdit(null);
-          }}
-          boms={boms}
-          orderToEdit={orderToEdit}
-          onSave={(o) => {
-            if (orderToEdit) {
-              updateOrder(o);
-              if (selectedOrder?.id === o.id) setSelectedOrder(o);
-            } else {
-              addOrder(o);
-            }
-            setIsOrderModalOpen(false);
-            setOrderToEdit(null);
-          }}
-        />
-      )}
+      <ManufacturingOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setOrderToEdit(null);
+        }}
+        boms={boms}
+        orderToEdit={orderToEdit}
+        onSave={(o) => {
+          if (orderToEdit) {
+            updateOrder(o);
+            if (selectedOrder?.id === o.id) setSelectedOrder(o);
+          } else {
+            addOrder(o);
+          }
+          setIsOrderModalOpen(false);
+          setOrderToEdit(null);
+        }}
+      />
 
-      {orderForFiche && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-2xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
-                <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
-                    <Printer size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold t-card text-black dark:text-white">
-                      {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
-                    </h3>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
-                    </p>
-                  </div>
+      <KineticModalShell
+        isOpen={Boolean(orderForFiche)}
+        onClose={() => setOrderForFiche(null)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedOrderForFiche && (
+          <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
+              <div className="flex items-center gap-3">
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                  <Printer size={20} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    data-sq="ctl"
-                    data-sq-border="none"
-                    onClick={() => window.print()}
-                    className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Printer size={14} />
-                    <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                    onClick={() => setOrderForFiche(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
+                <div>
+                  <h3 className="font-semibold t-card text-black dark:text-white">
+                    {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
+                  </h3>
+                  <p className="t-cap text-black/55 dark:text-white/55">
+                    Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
+                  </p>
                 </div>
               </div>
-              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 shadow-xs font-sans">
-                <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
-                  <div>
-                    <div className="font-semibold t-pod text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                    <div className="t-small text-black/55 font-medium">
-                      Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
-                    </div>
-                    <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
-                      FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
-                    </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setOrderForFiche(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 shadow-xs font-sans">
+              <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
+                <div>
+                  <div className="font-semibold t-pod text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
+                  <div className="t-small text-black/55 font-medium">
+                    Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
                   </div>
-                  <div className="text-right">
-                    <div className="tabular-nums font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{orderForFiche.orderNumber}</div>
-                    <div className="tabular-nums t-small font-semibold text-black/75 mt-0.5">
-                      {orderForFiche.batchLotNumber || 'LOT-202610-0089'}
-                    </div>
-                    <div className="tabular-nums t-cap text-black/55 mt-1">|||||||||||||||||||||||||||||||</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] t-cap border border-black/[0.12]">
-                  <div>
-                    <span className="text-black/55 block t-small font-semibold">Produit Fini</span>
-                    <span className="font-semibold text-black">{orderForFiche.productName}</span>
-                  </div>
-                  <div>
-                    <span className="text-black/55 block t-small font-semibold">Quantité Cible</span>
-                    <span className="tabular-nums font-semibold text-black">{orderForFiche.targetQuantity} unités</span>
-                  </div>
-                  <div>
-                    <span className="text-black/55 block t-small font-semibold">Poste / Ligne</span>
-                    <span className="font-semibold text-black">{orderForFiche.assignedStation || 'Poste 03 CNC'}</span>
-                  </div>
-                  <div>
-                    <span className="text-black/55 block t-small font-semibold">Échéance</span>
-                    <span className="tabular-nums font-semibold text-black">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
+                  <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
+                    FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="t-small font-semibold text-black">
-                    Gamme Opératoire & Visas de Validation Postes
+                <div className="text-right">
+                  <div className="tabular-nums font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{retainedOrderForFiche.orderNumber}</div>
+                  <div className="tabular-nums t-small font-semibold text-black/75 mt-0.5">
+                    {retainedOrderForFiche.batchLotNumber || 'LOT-202610-0089'}
                   </div>
-                  <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
+                  <div className="tabular-nums t-cap text-black/55 mt-1">|||||||||||||||||||||||||||||||</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] t-cap border border-black/[0.12]">
+                <div>
+                  <span className="text-black/55 block t-small font-semibold">Produit Fini</span>
+                  <span className="font-semibold text-black">{retainedOrderForFiche.productName}</span>
+                </div>
+                <div>
+                  <span className="text-black/55 block t-small font-semibold">Quantité Cible</span>
+                  <span className="tabular-nums font-semibold text-black">{retainedOrderForFiche.targetQuantity} unités</span>
+                </div>
+                <div>
+                  <span className="text-black/55 block t-small font-semibold">Poste / Ligne</span>
+                  <span className="font-semibold text-black">{retainedOrderForFiche.assignedStation || 'Poste 03 CNC'}</span>
+                </div>
+                <div>
+                  <span className="text-black/55 block t-small font-semibold">Échéance</span>
+                  <span className="tabular-nums font-semibold text-black">{retainedOrderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="t-small font-semibold text-black">
+                  Gamme Opératoire & Visas de Validation Postes
+                </div>
+                <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                   <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-black/[0.12]">
                     <tr>
                       <th className="p-2 text-left w-12">Op.</th>
@@ -1167,10 +1174,9 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                 </div>
               </div>
             </div>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

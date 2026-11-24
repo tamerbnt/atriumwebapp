@@ -366,21 +366,17 @@ export const RealEstateDashboardView: React.FC = () => {
         </DashboardPodGrid>
       </DashboardPod>
 
-      {isPropModalOpen && (
-        <RealEstatePropertyModal
-          isOpen={isPropModalOpen}
-          onClose={() => setIsPropModalOpen(false)}
-          onSave={addProperty}
-        />
-      )}
-      {isLeaseModalOpen && (
-        <RealEstateLeaseModal
-          isOpen={isLeaseModalOpen}
-          onClose={() => setIsLeaseModalOpen(false)}
-          properties={properties}
-          onSave={addLease}
-        />
-      )}
+      <RealEstatePropertyModal
+        isOpen={isPropModalOpen}
+        onClose={() => setIsPropModalOpen(false)}
+        onSave={addProperty}
+      />
+      <RealEstateLeaseModal
+        isOpen={isLeaseModalOpen}
+        onClose={() => setIsLeaseModalOpen(false)}
+        properties={properties}
+        onSave={addLease}
+      />
     </DashboardBentoFrame>
   );
 };

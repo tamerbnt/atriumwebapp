@@ -827,22 +827,20 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         }}
       />
 
-      {isQuittanceModalOpen && (
-        <QuittanceModal
-          isOpen={isQuittanceModalOpen}
-          onClose={() => {
-            setIsQuittanceModalOpen(false);
-            setLeaseForQuittance(null);
-          }}
-          leases={leases}
-          selectedLease={leaseForQuittance || selectedLease}
-          onSave={(newQ) => {
-            addQuittance(newQ);
-            setIsQuittanceModalOpen(false);
-            setLeaseForQuittance(null);
-          }}
-        />
-      )}
+      <QuittanceModal
+        isOpen={isQuittanceModalOpen}
+        onClose={() => {
+          setIsQuittanceModalOpen(false);
+          setLeaseForQuittance(null);
+        }}
+        leases={leases}
+        selectedLease={leaseForQuittance || selectedLease}
+        onSave={(newQ) => {
+          addQuittance(newQ);
+          setIsQuittanceModalOpen(false);
+          setLeaseForQuittance(null);
+        }}
+      />
     </div>
   );
 };

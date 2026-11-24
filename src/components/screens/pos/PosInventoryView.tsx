@@ -59,6 +59,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const getInitials2 = (name: string): string => {
@@ -153,6 +154,9 @@ export const PosInventoryView: React.FC<any> = () => {
   const [adjustQuantity, setAdjustQuantity] = useState(10);
   const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
   const [adjustReason, setAdjustReason] = useState('');
+  const retainedProductForAdjust = useRetainedModalValue(
+    isAdjustStockModalOpen ? selectedProductForAdjust : null
+  );
 
   const [isBatchRestockModalOpen, setIsBatchRestockModalOpen] = useState(false);
   const [batchRestockQty, setBatchRestockQty] = useState(10);
@@ -1892,13 +1896,16 @@ export const PosInventoryView: React.FC<any> = () => {
         </form>
       </Modal>
 
-      {selectedProductForAdjust && (
-        <Modal
-          isOpen={isAdjustStockModalOpen}
-          onClose={() => setIsAdjustStockModalOpen(false)}
-          title={isAr ? 'تعديل رصيد المخزون' : 'Ajustement Manuel de Stock'}
-          subtitle={`${selectedProductForAdjust.name} (Actuel: ${selectedProductForAdjust.stockQuantity} ${selectedProductForAdjust.unit || 'pcs'})`}
-        >
+      <Modal
+        isOpen={isAdjustStockModalOpen && Boolean(selectedProductForAdjust)}
+        onClose={() => setIsAdjustStockModalOpen(false)}
+        title={isAr ? 'تعديل رصيد المخزون' : 'Ajustement Manuel de Stock'}
+        subtitle={
+          retainedProductForAdjust
+            ? `${retainedProductForAdjust.name} (Actuel: ${retainedProductForAdjust.stockQuantity} ${retainedProductForAdjust.unit || 'pcs'})`
+            : ''
+        }
+      >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
             <div
               data-sq="ctl"
@@ -1963,8 +1970,7 @@ export const PosInventoryView: React.FC<any> = () => {
               </button>
             </div>
           </form>
-        </Modal>
-      )}
+      </Modal>
 
       <Modal
         isOpen={isBatchRestockModalOpen}

@@ -35,6 +35,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -49,6 +50,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -481,6 +483,8 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
     [language]
   );
 
+  const retainedRefundSale = useRetainedModalValue(selectedSale);
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: sales.length > 0,
@@ -867,61 +871,67 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         }}
       />
 
-      {isRefundModalOpen && selectedSale && (
-        <div className="fixed inset-0 z-[70] bg-[#1F1D1B]/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="sq-elev-pop max-w-md w-full">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] w-full p-6 space-y-5 [--sq-stroke:var(--sq-stroke-pop)]"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  data-sq="tile"
-                  data-sq-border="none"
-                  className="w-10 h-10 bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center shrink-0"
-                >
-                  <RotateCcw size={20} />
-                </div>
-                <div>
-                  <h3 className="t-card font-semibold text-black dark:text-white">
-                    {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
-                  </h3>
-                  <p className="t-cap text-black/62 dark:text-white/65 tabular-nums">
-                    #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
-                  </p>
-                </div>
-              </div>
+      <KineticModalShell
+        isOpen={isRefundModalOpen && Boolean(selectedSale)}
+        onClose={() => setIsRefundModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[70]"
+        role="alertdialog"
+        scrimClassName="bg-[#1F1D1B]/50"
+      >
+        {retainedRefundSale && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] w-full p-6 space-y-5 [--sq-stroke:var(--sq-stroke-pop)] max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center gap-3">
               <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-amber-50 dark:bg-amber-950/40 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] t-cap text-amber-800 dark:text-amber-200 flex items-start gap-2"
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center shrink-0"
               >
-                <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                <span>
-                  {language === 'ar'
-                    ? 'سيؤدي الاسترجاع إلى إعادة جميع الأصناف إلى مخزون الفرع.'
-                    : language === 'fr'
-                    ? "Ce remboursement réintégrera l'ensemble des articles au stock."
-                    : 'Refunding will return all items back to available branch stock.'}
-                </span>
+                <RotateCcw size={20} />
               </div>
-              <LabelSelect
-                field="RefundReason"
-                label={language === 'ar' ? 'سبب الاسترجاع *' : language === 'fr' ? 'Motif *' : 'Reason *'}
-                value={refundReason}
-                onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
-                options={[
-                  'Customer return / exchange',
-                  'Wrong item rung up by cashier',
-                  'Defective or damaged product',
-                  'Customer changed mind before leaving',
-                  'Pricing / discount adjustment',
-                ]}
-                width="100%"
-                height={46}
-                corner={12}
-              />
+              <div>
+                <h3 className="t-card font-semibold text-black dark:text-white">
+                  {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
+                </h3>
+                <p className="t-cap text-black/62 dark:text-white/65 tabular-nums">
+                  #{retainedRefundSale.id} • {formatMoney(retainedRefundSale.totalAmount)}
+                </p>
+              </div>
+            </div>
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-amber-50 dark:bg-amber-950/40 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] t-cap text-amber-800 dark:text-amber-200 flex items-start gap-2"
+            >
+              <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+              <span>
+                {language === 'ar'
+                  ? 'سيؤدي الاسترجاع إلى إعادة جميع الأصناف إلى مخزون الفرع.'
+                  : language === 'fr'
+                  ? "Ce remboursement réintégrera l'ensemble des articles au stock."
+                  : 'Refunding will return all items back to available branch stock.'}
+              </span>
+            </div>
+            <LabelSelect
+              field="RefundReason"
+              label={language === 'ar' ? 'سبب الاسترجاع *' : language === 'fr' ? 'Motif *' : 'Reason *'}
+              value={refundReason}
+              onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
+              options={[
+                'Customer return / exchange',
+                'Wrong item rung up by cashier',
+                'Defective or damaged product',
+                'Customer changed mind before leaving',
+                'Pricing / discount adjustment',
+              ]}
+              width="100%"
+              height={46}
+              corner={12}
+            />
             <div className="flex items-center justify-end gap-3 pt-2">
               <AtriumButton type="button" variant="ghost" onClick={() => setIsRefundModalOpen(false)}>
                 <span>{t('action_cancel', language)}</span>
@@ -930,6 +940,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
                 type="button"
                 variant="danger"
                 onClick={() => {
+                  if (!selectedSale) return;
                   refundSale(selectedSale.id, refundReason);
                   setRefundSuccessToast(
                     language === 'ar'
@@ -943,11 +954,10 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
               >
                 <span>{language === 'ar' ? 'تأكيد الاسترجاع' : language === 'fr' ? 'Confirmer' : 'Confirm Refund'}</span>
               </AtriumButton>
-              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 });

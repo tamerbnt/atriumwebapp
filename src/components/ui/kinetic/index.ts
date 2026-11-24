@@ -12,6 +12,8 @@ export * from './KineticRow';
 export * from './KineticCollectionStage';
 export * from './KineticEmptyStateMotion';
 export * from './KineticFilterModal';
+export * from './KineticModalShell';
+export * from './kineticModalTrigger';
 export * from './KineticFloatingBulkBar';
 export * from './KineticSlideOverInspector';
 export * from './KineticInspectorBlocks';

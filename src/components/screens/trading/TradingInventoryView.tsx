@@ -33,6 +33,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -1112,14 +1113,18 @@ export const TradingInventoryView: React.FC = () => {
 
       <StockMovementModal isOpen={movementModalOpen} onClose={() => setMovementModalOpen(false)} />
 
-      {newDepotModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="sq-elev-pop relative w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
-            >
+      <KineticModalShell
+        isOpen={newDepotModalOpen}
+        onClose={() => setNewDepotModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
             <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
               <Building2 size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>Ajouter un Nouveau Dépôt</span>
@@ -1160,10 +1165,8 @@ export const TradingInventoryView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
-          </div>
         </div>
-      )}
+      </KineticModalShell>
     </div>
   );
 };

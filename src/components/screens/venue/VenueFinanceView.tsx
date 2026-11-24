@@ -31,6 +31,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -41,6 +42,7 @@ import {
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
+  useRetainedModalValue,
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
@@ -431,6 +433,8 @@ export const VenueFinanceView: React.FC = () => {
     ],
     [t, isAr, isFr, branchesById, currentBranch, language]
   );
+
+  const retainedDeductionTarget = useRetainedModalValue(deductionTarget);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -902,14 +906,19 @@ export const VenueFinanceView: React.FC = () => {
         }}
       />
 
-      {deductionTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="sq-elev-pop w-full max-w-md">
-            <div
-              data-sq="panel"
-              data-sq-border="solid"
-              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
-            >
+      <KineticModalShell
+        isOpen={Boolean(deductionTarget)}
+        onClose={() => setDeductionTarget(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {retainedDeductionTarget && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[92vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={20} className="text-red-500" />
@@ -932,12 +941,12 @@ export const VenueFinanceView: React.FC = () => {
                 className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1"
               >
                 <div>
-                  Locataire: <strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>
+                  Locataire: <strong className="text-black dark:text-white">{retainedDeductionTarget.renterName}</strong>
                 </div>
                 <div>
                   Montant Caution:{' '}
                   <strong className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                    {formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}
+                    {formatCurrencyAmount(retainedDeductionTarget.amount, retainedDeductionTarget.currency)}
                   </strong>
                 </div>
               </div>
@@ -964,10 +973,9 @@ export const VenueFinanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </KineticModalShell>
     </div>
   );
 };

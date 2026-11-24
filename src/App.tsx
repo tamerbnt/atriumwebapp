@@ -40,7 +40,6 @@ const VoucherModal = React.lazy(() =>
 const MemberModal = React.lazy(() =>
   import('./components/modals/MemberModal').then((m) => ({ default: m.MemberModal }))
 );
-import { triggerKineticMemberModal } from './components/modals/memberModalMotion';
 const LeadModal = React.lazy(() =>
   import('./components/modals/LeadModal').then((m) => ({ default: m.LeadModal }))
 );
@@ -338,10 +337,49 @@ export default function App() {
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [hasActivatedMemberModal, setHasActivatedMemberModal] = useState(false);
+  const [activatedModals, setActivatedModals] = useState({
+    cmd: false,
+    voucher: false,
+    lead: false,
+    fastSwitch: false,
+    desktopUpgrade: false,
+    concurrency: false,
+  });
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
   const [memberPrefillName, setMemberPrefillName] = useState<string>('');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setActivatedModals((prev) => {
+      const next = {
+        cmd: prev.cmd || isCommandPaletteOpen,
+        voucher: prev.voucher || isVoucherModalOpen,
+        lead: prev.lead || isLeadModalOpen,
+        fastSwitch: prev.fastSwitch || isFastSwitchOpen,
+        desktopUpgrade: prev.desktopUpgrade || isDesktopUpgradeModalOpen,
+        concurrency: prev.concurrency || hasConcurrencyConflicts,
+      };
+      if (
+        next.cmd === prev.cmd &&
+        next.voucher === prev.voucher &&
+        next.lead === prev.lead &&
+        next.fastSwitch === prev.fastSwitch &&
+        next.desktopUpgrade === prev.desktopUpgrade &&
+        next.concurrency === prev.concurrency
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [
+    isCommandPaletteOpen,
+    isVoucherModalOpen,
+    isLeadModalOpen,
+    isFastSwitchOpen,
+    isDesktopUpgradeModalOpen,
+    hasConcurrencyConflicts,
+  ]);
 
   // Global keyboard shortcuts (Ctrl+K, Cmd+K, Ctrl+Z/Cmd+Z, '/')
   useEffect(() => {
@@ -444,13 +482,6 @@ export default function App() {
         : (originOrEvent as HTMLElement | null | undefined);
     const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
-    if (
-      businessCategoryRef.current === 'membership_session' &&
-      activeScreenRef.current === 'members' &&
-      triggerKineticMemberModal({ member: null, originElement: resolvedOrigin, prefillName })
-    ) {
-      return;
-    }
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(null);
     setMemberPrefillName(prefillName || '');
@@ -461,13 +492,6 @@ export default function App() {
   const handleOpenEditMember = useCallback((member: Member, originEl?: HTMLElement | null) => {
     const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
-    if (
-      businessCategoryRef.current === 'membership_session' &&
-      activeScreenRef.current === 'members' &&
-      triggerKineticMemberModal({ member, originElement: resolvedOrigin })
-    ) {
-      return;
-    }
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(member);
     setMemberPrefillName('');
@@ -1710,8 +1734,8 @@ export default function App() {
       )
       }
 
-      {/* Global Modals - Loaded On-Demand via React.Suspense */}
-      {isCommandPaletteOpen && (
+      {/* Global Modals - Loaded On-Demand via React.Suspense & retained for smooth close springs */}
+      {(activatedModals.cmd || isCommandPaletteOpen) && (
         <React.Suspense fallback={null}>
           <CommandPaletteModal
             isOpen={isCommandPaletteOpen}
@@ -1720,7 +1744,7 @@ export default function App() {
         </React.Suspense>
       )}
 
-      {isVoucherModalOpen && (
+      {(activatedModals.voucher || isVoucherModalOpen) && (
         <React.Suspense fallback={null}>
           <VoucherModal
             isOpen={isVoucherModalOpen}
@@ -1729,26 +1753,22 @@ export default function App() {
         </React.Suspense>
       )}
 
-      {(hasActivatedMemberModal ||
-        isMemberModalOpen ||
-        (isAuthenticated &&
-          currentBusiness?.category === 'membership_session' &&
-          activeScreen === 'members')) && (
-          <React.Suspense fallback={null}>
-            <MemberModal
-              isOpen={isMemberModalOpen}
-              onClose={handleCloseMemberModal}
-              memberToEdit={memberToEdit}
-              prefillName={memberPrefillName}
-              useKineticSpring={
-                currentBusiness?.category === 'membership_session' && activeScreen === 'members'
-              }
-              originElement={memberModalOriginRef.current}
-            />
-          </React.Suspense>
-        )}
+      {(hasActivatedMemberModal || isMemberModalOpen) && (
+        <React.Suspense fallback={null}>
+          <MemberModal
+            isOpen={isMemberModalOpen}
+            onClose={handleCloseMemberModal}
+            memberToEdit={memberToEdit}
+            prefillName={memberPrefillName}
+            useKineticSpring={
+              currentBusiness?.category === 'membership_session' && activeScreen === 'members'
+            }
+            originElement={memberModalOriginRef.current}
+          />
+        </React.Suspense>
+      )}
 
-      {isLeadModalOpen && (
+      {(activatedModals.lead || isLeadModalOpen) && (
         <React.Suspense fallback={null}>
           <LeadModal
             isOpen={isLeadModalOpen}
@@ -1758,7 +1778,7 @@ export default function App() {
       )}
 
       {/* Section 11 Fast Switch Modal */}
-      {isFastSwitchOpen && (
+      {(activatedModals.fastSwitch || isFastSwitchOpen) && (
         <React.Suspense fallback={null}>
           <FastSwitchModal
             isOpen={isFastSwitchOpen}
@@ -1769,7 +1789,7 @@ export default function App() {
       )}
 
       {/* Free Web to Desktop Lifetime Upgrade Modal */}
-      {isDesktopUpgradeModalOpen && (
+      {(activatedModals.desktopUpgrade || isDesktopUpgradeModalOpen) && (
         <React.Suspense fallback={null}>
           <DesktopUpgradeModal
             isOpen={isDesktopUpgradeModalOpen}
@@ -1781,7 +1801,7 @@ export default function App() {
       )}
 
       {/* Optimistic Concurrency Conflict Resolution Modal */}
-      {hasConcurrencyConflicts && (
+      {(activatedModals.concurrency || hasConcurrencyConflicts) && (
         <React.Suspense fallback={null}>
           <ConcurrencyConflictModal />
         </React.Suspense>

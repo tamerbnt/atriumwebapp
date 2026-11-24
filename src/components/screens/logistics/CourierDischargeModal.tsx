@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreditCard, DollarSign, CheckCircle2, AlertTriangle, Printer, X, ShieldCheck } from 'lucide-react';
 import {
   showToast,
@@ -9,18 +9,19 @@ import { CourierCashDischarge, LogisticsManifest } from '../../../types';
 import { computeCourierDischargeBalance } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
 interface CourierDischargeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  manifest: LogisticsManifest;
+  manifest: LogisticsManifest | null;
   onSaveDischarge: (discharge: CourierCashDischarge) => void;
 }
 
 export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
   isOpen,
   onClose,
-  manifest,
+  manifest: rawManifest,
   onSaveDischarge,
 }) => {
   const { language, currentUser } = useAtriumSelector(
@@ -31,6 +32,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
     shallowEqualObjects
   );
   const isAr = language === 'ar';
+  const manifest = useRetainedModalValue(isOpen ? rawManifest : null);
 
   const [n2000, setN2000] = useState(0);
   const [n1000, setN1000] = useState(0);
@@ -39,9 +41,17 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
   const [coins, setCoins] = useState(0);
   const [courierSigned, setCourierSigned] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    setN2000(0);
+    setN1000(0);
+    setN500(0);
+    setN200(0);
+    setCoins(0);
+    setCourierSigned(false);
+  }, [isOpen, rawManifest?.id]);
 
-  const expectedAmount = manifest.totalCodExpectedDzd || 0;
+  const expectedAmount = manifest?.totalCodExpectedDzd || 0;
 
   const balance = computeCourierDischargeBalance({
     expectedAmountDzd: expectedAmount,
@@ -83,6 +93,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
       return;
     }
 
+    if (!manifest) return;
     const discharge: CourierCashDischarge = {
       id: `dech_${Date.now()}`,
       accountId: manifest.accountId,
@@ -114,8 +125,14 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="sq-elev-pop max-w-2xl w-full">
+    <KineticModalShell
+      isOpen={isOpen && Boolean(rawManifest)}
+      onClose={onClose}
+      maxWidthClass="max-w-2xl"
+      scrimClassName="bg-black/50"
+      ariaLabel={isAr ? 'تبرئة ذمة السائق ومطابقة الصندوق' : 'Clôture Tournée & Billet de Décharge'}
+    >
+      {manifest && (
       <div
         data-sq="panel"
         data-sq-border="solid"
@@ -389,7 +406,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           </div>
         </form>
       </div>
-      </div>
-    </div>
+      )}
+    </KineticModalShell>
   );
 };

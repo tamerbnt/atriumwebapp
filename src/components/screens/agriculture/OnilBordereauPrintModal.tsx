@@ -9,6 +9,7 @@ import {
 import { formatMoney } from '../../../utils/rules';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface OnilBordereauPrintModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 	  shallowEqualObjects
 	);
 	const isAr = language === "ar";
-	if (!isOpen) return null;
 	const totalGrossLiters = milkingRecords.reduce((acc, m) => acc + m.totalTankLiters, 0);
 	const totalRejectedLiters = milkingRecords.reduce((acc, m) => acc + m.rejectedWithholdingLiters, 0);
 	const totalConformingLiters = milkingRecords.reduce((acc, m) => acc + m.conformingLiters, 0);
@@ -37,9 +37,9 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 	const handlePrint = () => {
 		window.print();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="sq-elev-pop max-w-3xl w-full">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto">
+	return (
+<KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-3xl" zIndexClass="z-[9990]" scrimClassName="bg-black/60">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto print:p-0 print:shadow-none print:max-h-none">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Milk size={22} /></div>
@@ -181,6 +181,6 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 </div>
 </div>
 </div>
-</div>
-</div>;
+</KineticModalShell>
+	);
 };

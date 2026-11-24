@@ -12,6 +12,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { calculateTitleStrengthScore } from '../../../utils/realEstateRules';
+import { KineticModalShell } from '../../ui/kinetic';
 
 interface RealEstatePropertyModalProps {
   isOpen: boolean;
@@ -87,7 +88,6 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 			setFridhaNumber(propertyToEdit.fridhaNumber || "");
 		}
 	}, [propertyToEdit]);
-	if (!isOpen) return null;
 	const titleStrength = calculateTitleStrengthScore(legalTitleType, hasLivretFoncier, hasNegativeCertificate);
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
@@ -137,9 +137,15 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 		});
 		onClose();
 	};
-	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-<div className="sq-elev-pop max-w-2xl w-full my-8">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 md:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 text-black dark:text-white">
+	return (
+		<KineticModalShell
+			isOpen={isOpen}
+			onClose={onClose}
+			maxWidthClass="max-w-2xl"
+			scrimClassName="bg-black/60"
+			ariaLabel={propertyToEdit ? "Modifier le Bien & Passeport Foncier" : "Nouveau Bien Immobilier & Passeport Cadastral"}
+		>
+			<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full max-h-[92vh] overflow-y-auto p-6 md:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 text-black dark:text-white">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-4">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Building2 className="w-5 h-5" /></div>
@@ -303,7 +309,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 </div>
 </form>
-</div>
-</div>
-</div>;
+			</div>
+		</KineticModalShell>
+	);
 };
