@@ -16,9 +16,32 @@ export interface OfflineMutationItem {
   versionColumn?: string;
   entityType?: string;
   entityLabel?: string;
+  dependsOnId?: string;
   enqueuedAt: string;
   attempts: number;
   lastError?: string;
+  nextRetryAt?: string;
+}
+
+export interface QuarantinedMutationItem extends OfflineMutationItem {
+  quarantinedAt: string;
+  quarantineReason: 'max_attempts' | 'non_retryable_error';
+  errorCode?: string;
+}
+
+export class OfflineQueueCapacityError extends Error {
+  public readonly code = 'QUEUE_AT_CAPACITY' as const;
+  public readonly pendingCount: number;
+  public readonly maxCapacity: number;
+
+  constructor(pendingCount: number, maxCapacity = MAX_QUEUE_SIZE) {
+    super(
+      `QUEUE_AT_CAPACITY: Offline sync queue is full (${pendingCount}/${maxCapacity}). Sync online or export your queue before making new changes.`
+    );
+    this.name = 'OfflineQueueCapacityError';
+    this.pendingCount = pendingCount;
+    this.maxCapacity = maxCapacity;
+  }
 }
 
 export interface OfflineReplayConflict {
@@ -27,11 +50,98 @@ export interface OfflineReplayConflict {
   serverVersion: number;
 }
 
-const QUEUE_STORAGE_KEY = 'atrium_offline_mutation_queue_v1';
-const MAX_RETRY_ATTEMPTS = 5;
+export interface OfflineQueueAlert {
+  type: 'near_capacity' | 'at_capacity' | 'item_quarantined';
+  pendingCount: number;
+  quarantinedCount: number;
+  item?: OfflineMutationItem | QuarantinedMutationItem;
+}
+
+export interface OfflineQueueStatus {
+  pendingCount: number;
+  quarantinedCount: number;
+  maxCapacity: number;
+  warnThreshold: number;
+  isNearCapacity: boolean;
+  isAtCapacity: boolean;
+  nextRetryAt: string | null;
+}
+
+export interface FlushOfflineQueueOptions {
+  ignoreBackoff?: boolean;
+  nowMs?: number;
+}
+
+export const QUEUE_STORAGE_KEY = 'atrium_offline_mutation_queue_v1';
+export const QUARANTINE_STORAGE_KEY = 'atrium_offline_quarantine_v1';
+export const MAX_RETRY_ATTEMPTS = 5;
+export const WARN_QUEUE_SIZE = 200;
+export const MAX_QUEUE_SIZE = 500;
+export const BASE_BACKOFF_MS = 2_000;
+export const MAX_BACKOFF_MS = 60_000;
+
+const NON_RETRYABLE_SQL_CODES = new Set([
+  '22P02', // invalid_text_representation
+  '22003', // numeric_value_out_of_range
+  '23502', // not_null_violation
+  '23503', // foreign_key_violation
+  '23505', // unique_violation
+  '23514', // check_violation
+  '42501', // insufficient_privilege / RLS
+  'PGRST202', // missing RPC / signature mismatch
+  'PGRST204', // unknown column
+]);
+
+/**
+ * Dependency priority tiers ensure parent rows sync before child rows or RPCs.
+ * Lower numbers flush first.
+ */
+const TABLE_REPLAY_PRIORITY: Record<string, number> = {
+  businesses: 10,
+  branches: 12,
+  business_configs: 14,
+  category_formules: 15,
+  staff: 16,
+  gym_plans: 18,
+  members: 20,
+  gym_schedule_events: 22,
+  edu_cohorts: 20,
+  edu_students: 20,
+  edu_sessions: 24,
+  freelance_clients: 20,
+  freelance_projects: 24,
+  re_properties: 20,
+  re_tenants: 20,
+  re_leases: 24,
+  pos_products: 20,
+  pos_cash_sessions: 22,
+  raw_materials: 20,
+  mfg_boms: 22,
+  staff_payroll_runs: 24,
+  // Child / transaction entities
+  gym_check_ins: 40,
+  gym_walk_in_tickets: 40,
+  gym_class_enrollments: 40,
+  edu_attendance: 40,
+  edu_grades: 40,
+  pos_sales: 40,
+  pos_cash_movements: 42,
+  pos_z_reports: 45,
+  rental_bookings: 40,
+  rental_security_deposits: 44,
+  re_inspections: 42,
+  mfg_orders: 40,
+  mfg_ncr_records: 44,
+  staff_attendance_logs: 40,
+  staff_salary_advances: 40,
+  staff_payroll_slips: 46,
+};
 
 let memoryFallbackQueue: OfflineMutationItem[] = [];
+let memoryFallbackQuarantine: QuarantinedMutationItem[] = [];
+
 const replayConflictListeners = new Set<(conflict: OfflineReplayConflict) => void>();
+const queueAlertListeners = new Set<(alert: OfflineQueueAlert) => void>();
 
 export function registerQueueConflictListener(
   listener: (conflict: OfflineReplayConflict) => void
@@ -40,6 +150,25 @@ export function registerQueueConflictListener(
   return () => {
     replayConflictListeners.delete(listener);
   };
+}
+
+export function registerQueueAlertListener(
+  listener: (alert: OfflineQueueAlert) => void
+): () => void {
+  queueAlertListeners.add(listener);
+  return () => {
+    queueAlertListeners.delete(listener);
+  };
+}
+
+function emitQueueAlert(alert: OfflineQueueAlert): void {
+  queueAlertListeners.forEach((fn) => {
+    try {
+      fn(alert);
+    } catch {
+      // ignore listener errors
+    }
+  });
 }
 
 export function isStaleVersionError(err: any): boolean {
@@ -54,6 +183,22 @@ export function isStaleVersionError(err: any): boolean {
   );
 }
 
+export function isNonRetryableError(err: any): boolean {
+  if (!err) return false;
+  const code = String(err.code || err.sqlstate || '');
+  if (NON_RETRYABLE_SQL_CODES.has(code)) return true;
+  const status = Number(err.status || err.statusCode || 0);
+  if (status >= 400 && status < 500 && status !== 408 && status !== 409 && status !== 429) {
+    return true;
+  }
+  return false;
+}
+
+export function computeBackoffMs(attempts: number): number {
+  const safeAttempt = Math.max(1, attempts);
+  return Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * Math.pow(2, safeAttempt - 1));
+}
+
 function hasLocalStorage(): boolean {
   try {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -62,10 +207,10 @@ function hasLocalStorage(): boolean {
   }
 }
 
-function readQueue(): OfflineMutationItem[] {
-  if (!hasLocalStorage()) return memoryFallbackQueue;
+function readJsonArray<T>(key: string, fallbackRef: () => T[]): T[] {
+  if (!hasLocalStorage()) return fallbackRef();
   try {
-    const raw = window.localStorage.getItem(QUEUE_STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -74,29 +219,129 @@ function readQueue(): OfflineMutationItem[] {
   }
 }
 
-function writeQueue(items: OfflineMutationItem[]): void {
-  if (!hasLocalStorage()) {
-    memoryFallbackQueue = items;
-    return;
-  }
+function writeJsonArray<T>(key: string, items: T[], setFallback: (v: T[]) => void): void {
+  setFallback(items);
+  if (!hasLocalStorage()) return;
   try {
-    window.localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(items));
+    window.localStorage.setItem(key, JSON.stringify(items));
   } catch {
-    memoryFallbackQueue = items;
+    // Fallback already updated in memory
   }
+}
+
+function readQueue(): OfflineMutationItem[] {
+  return readJsonArray<OfflineMutationItem>(QUEUE_STORAGE_KEY, () => memoryFallbackQueue);
+}
+
+function writeQueue(items: OfflineMutationItem[]): void {
+  writeJsonArray(QUEUE_STORAGE_KEY, items, (v) => {
+    memoryFallbackQueue = v;
+  });
+}
+
+function readQuarantine(): QuarantinedMutationItem[] {
+  return readJsonArray<QuarantinedMutationItem>(QUARANTINE_STORAGE_KEY, () => memoryFallbackQuarantine);
+}
+
+function writeQuarantine(items: QuarantinedMutationItem[]): void {
+  writeJsonArray(QUARANTINE_STORAGE_KEY, items, (v) => {
+    memoryFallbackQuarantine = v;
+  });
 }
 
 export function getQueuedMutations(): OfflineMutationItem[] {
   return readQueue();
 }
 
+export function getQuarantinedMutations(): QuarantinedMutationItem[] {
+  return readQuarantine();
+}
+
 export function getOfflineQueueCount(): number {
   return readQueue().length;
 }
 
+export function getOfflineQueueStatus(): OfflineQueueStatus {
+  const queue = readQueue();
+  const quarantine = readQuarantine();
+  const pendingCount = queue.length;
+  const quarantinedCount = quarantine.length;
+  const retryTimes = queue
+    .map((q) => q.nextRetryAt)
+    .filter((v): v is string => Boolean(v))
+    .sort();
+  return {
+    pendingCount,
+    quarantinedCount,
+    maxCapacity: MAX_QUEUE_SIZE,
+    warnThreshold: WARN_QUEUE_SIZE,
+    isNearCapacity: pendingCount >= WARN_QUEUE_SIZE,
+    isAtCapacity: pendingCount >= MAX_QUEUE_SIZE,
+    nextRetryAt: retryTimes[0] ?? null,
+  };
+}
+
 export function clearOfflineQueue(): void {
-  memoryFallbackQueue = [];
   writeQueue([]);
+}
+
+export function clearQuarantinedMutations(): void {
+  writeQuarantine([]);
+}
+
+export function retryQuarantinedMutation(id: string): OfflineMutationItem | null {
+  const queue = readQueue();
+  const quarantine = readQuarantine();
+  if (queue.length >= MAX_QUEUE_SIZE) {
+    emitQueueAlert({
+      type: 'at_capacity',
+      pendingCount: queue.length,
+      quarantinedCount: quarantine.length,
+    });
+    throw new OfflineQueueCapacityError(queue.length, MAX_QUEUE_SIZE);
+  }
+  const idx = quarantine.findIndex((q) => q.id === id);
+  if (idx === -1) return null;
+  const target = quarantine[idx];
+  const rest = quarantine.filter((q) => q.id !== id);
+  writeQuarantine(rest);
+
+  const { quarantinedAt: _qa, quarantineReason: _qr, errorCode: _ec, ...base } = target;
+  const requeued: OfflineMutationItem = {
+    ...base,
+    attempts: 0,
+    nextRetryAt: undefined,
+    lastError: undefined,
+  };
+  queue.push(requeued);
+  writeQueue(queue);
+  return requeued;
+}
+
+export function dismissQuarantinedMutation(id: string): boolean {
+  const quarantine = readQuarantine();
+  const next = quarantine.filter((q) => q.id !== id);
+  if (next.length === quarantine.length) return false;
+  writeQuarantine(next);
+  return true;
+}
+
+export function exportOfflineQueueSnapshot(): {
+  exportedAt: string;
+  pendingCount: number;
+  quarantinedCount: number;
+  pending: OfflineMutationItem[];
+  quarantined: QuarantinedMutationItem[];
+} {
+  const pending = readQueue();
+  const quarantined = readQuarantine();
+  return {
+    exportedAt: new Date().toISOString(),
+    pendingCount: pending.length,
+    quarantinedCount: quarantined.length,
+    pending,
+    quarantined,
+  };
 }
 
 export function cancelQueuedMutations(
@@ -126,6 +371,7 @@ export function enqueueMutation(
 
   let mergedPayload = mutation.payload;
   let preservedExpectedVersion = mutation.expectedVersion;
+  let preservedDependsOnId = mutation.dependsOnId;
   if (mutation.kind === 'update' && targetId && mutation.table) {
     const prevUpdate = queue.find(
       (q) =>
@@ -139,12 +385,16 @@ export function enqueueMutation(
     if (preservedExpectedVersion === undefined && prevUpdate?.expectedVersion !== undefined) {
       preservedExpectedVersion = prevUpdate.expectedVersion;
     }
+    if (!preservedDependsOnId && prevUpdate?.dependsOnId) {
+      preservedDependsOnId = prevUpdate.dependsOnId;
+    }
   }
 
   const item: OfflineMutationItem = {
     ...mutation,
     payload: mergedPayload,
     expectedVersion: preservedExpectedVersion,
+    dependsOnId: preservedDependsOnId,
     id: `mut_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     enqueuedAt: new Date().toISOString(),
     attempts: 0,
@@ -163,9 +413,79 @@ export function enqueueMutation(
         )
       : queue;
 
+  // At 500 capacity: BLOCK new mutations visibly; never drop old mutations or overflow into quarantine.
+  if (filtered.length >= MAX_QUEUE_SIZE) {
+    emitQueueAlert({
+      type: 'at_capacity',
+      pendingCount: queue.length,
+      quarantinedCount: readQuarantine().length,
+      item,
+    });
+    throw new OfflineQueueCapacityError(queue.length, MAX_QUEUE_SIZE);
+  }
+
   filtered.push(item);
   writeQueue(filtered);
+
+  if (filtered.length >= WARN_QUEUE_SIZE) {
+    emitQueueAlert({
+      type: 'near_capacity',
+      pendingCount: filtered.length,
+      quarantinedCount: readQuarantine().length,
+      item,
+    });
+  }
+
   return item;
+}
+
+export function canAcceptQueueAdditions(additionalDistinctSlots = 1): boolean {
+  const queue = readQueue();
+  if (queue.length + additionalDistinctSlots > MAX_QUEUE_SIZE) {
+    emitQueueAlert({
+      type: 'at_capacity',
+      pendingCount: queue.length,
+      quarantinedCount: readQuarantine().length,
+    });
+    return false;
+  }
+  return true;
+}
+
+function getKindPriority(kind: OfflineMutationKind): number {
+  switch (kind) {
+    case 'upsert':
+      return 1;
+    case 'update':
+      return 2;
+    case 'restore':
+      return 3;
+    case 'rpc':
+      return 4;
+    case 'soft_delete':
+      return 5;
+  }
+}
+
+export function sortQueueForReplay(queue: OfflineMutationItem[]): OfflineMutationItem[] {
+  const byId = new Map(queue.map((q) => [q.id, q]));
+  const getDepth = (item: OfflineMutationItem, seen = new Set<string>()): number => {
+    if (!item.dependsOnId || seen.has(item.id)) return 0;
+    seen.add(item.id);
+    const parent = byId.get(item.dependsOnId);
+    return parent ? 1 + getDepth(parent, seen) : 0;
+  };
+
+  return [...queue].sort((a, b) => {
+    const depthDiff = getDepth(a) - getDepth(b);
+    if (depthDiff !== 0) return depthDiff;
+
+    const prioA = (a.table ? TABLE_REPLAY_PRIORITY[a.table] ?? 35 : 48) * 10 + getKindPriority(a.kind);
+    const prioB = (b.table ? TABLE_REPLAY_PRIORITY[b.table] ?? 35 : 48) * 10 + getKindPriority(b.kind);
+    if (prioA !== prioB) return prioA - prioB;
+
+    return a.enqueuedAt.localeCompare(b.enqueuedAt);
+  });
 }
 
 let activeFlushPromise: Promise<{
@@ -189,7 +509,33 @@ async function fetchLatestServerRow(
   }
 }
 
-export async function flushOfflineQueue(): Promise<{
+function moveToQuarantine(
+  item: OfflineMutationItem,
+  reason: QuarantinedMutationItem['quarantineReason'],
+  errorMsg: string,
+  errorCode?: string
+): void {
+  const quarantine = readQuarantine();
+  const entry: QuarantinedMutationItem = {
+    ...item,
+    lastError: errorMsg,
+    quarantinedAt: new Date().toISOString(),
+    quarantineReason: reason,
+    errorCode,
+  };
+  quarantine.push(entry);
+  writeQuarantine(quarantine);
+  emitQueueAlert({
+    type: 'item_quarantined',
+    pendingCount: readQueue().length,
+    quarantinedCount: quarantine.length,
+    item: entry,
+  });
+}
+
+export async function flushOfflineQueue(
+  options: FlushOfflineQueueOptions = {}
+): Promise<{
   processed: number;
   succeeded: number;
   failed: number;
@@ -199,18 +545,42 @@ export async function flushOfflineQueue(): Promise<{
 
   activeFlushPromise = (async () => {
     const client = getSupabaseClient();
-    const queue = readQueue();
+    const rawQueue = readQueue();
 
-    if (!client || !isSupabaseConfigured() || queue.length === 0) {
+    if (!client || !isSupabaseConfigured() || rawQueue.length === 0) {
       return { processed: 0, succeeded: 0, failed: 0, conflicts: 0 };
     }
 
+    const orderedQueue = sortQueueForReplay(rawQueue);
+    const nowMs = options.nowMs ?? Date.now();
     const remaining: OfflineMutationItem[] = [];
+    const failedIdsInCycle = new Set<string>();
+
+    let processed = 0;
     let succeeded = 0;
     let failed = 0;
     let conflicts = 0;
 
-    for (const item of queue) {
+    for (const item of orderedQueue) {
+      // Defer if parent dependency failed or is still pending in this flush cycle
+      if (item.dependsOnId && failedIdsInCycle.has(item.dependsOnId)) {
+        failedIdsInCycle.add(item.id);
+        remaining.push(item);
+        continue;
+      }
+
+      // Honor exponential backoff window unless explicitly overridden
+      if (!options.ignoreBackoff && item.nextRetryAt) {
+        const retryAtMs = Date.parse(item.nextRetryAt);
+        if (Number.isFinite(retryAtMs) && retryAtMs > nowMs) {
+          failedIdsInCycle.add(item.id);
+          remaining.push(item);
+          continue;
+        }
+      }
+
+      processed += 1;
+
       try {
         let errorObj: any = null;
         let isConflict = false;
@@ -286,12 +656,22 @@ export async function flushOfflineQueue(): Promise<{
           });
         } else {
           failed += 1;
+          failedIdsInCycle.add(item.id);
           const nextAttempts = item.attempts + 1;
-          if (nextAttempts < MAX_RETRY_ATTEMPTS) {
+          const errMessage = errorObj?.message || 'Sync error';
+          const errCode = errorObj?.code || errorObj?.sqlstate;
+
+          if (isNonRetryableError(errorObj)) {
+            moveToQuarantine({ ...item, attempts: nextAttempts }, 'non_retryable_error', errMessage, errCode);
+          } else if (nextAttempts >= MAX_RETRY_ATTEMPTS) {
+            moveToQuarantine({ ...item, attempts: nextAttempts }, 'max_attempts', errMessage, errCode);
+          } else {
+            const backoffMs = computeBackoffMs(nextAttempts);
             remaining.push({
               ...item,
               attempts: nextAttempts,
-              lastError: errorObj?.message || 'Sync error',
+              lastError: errMessage,
+              nextRetryAt: new Date(nowMs + backoffMs).toISOString(),
             });
           }
         }
@@ -311,12 +691,20 @@ export async function flushOfflineQueue(): Promise<{
           });
         } else {
           failed += 1;
+          failedIdsInCycle.add(item.id);
           const nextAttempts = item.attempts + 1;
-          if (nextAttempts < MAX_RETRY_ATTEMPTS) {
+          const errMessage = err?.message || 'Network exception';
+          if (isNonRetryableError(err)) {
+            moveToQuarantine({ ...item, attempts: nextAttempts }, 'non_retryable_error', errMessage, err?.code);
+          } else if (nextAttempts >= MAX_RETRY_ATTEMPTS) {
+            moveToQuarantine({ ...item, attempts: nextAttempts }, 'max_attempts', errMessage, err?.code);
+          } else {
+            const backoffMs = computeBackoffMs(nextAttempts);
             remaining.push({
               ...item,
               attempts: nextAttempts,
-              lastError: err?.message || 'Network exception',
+              lastError: errMessage,
+              nextRetryAt: new Date(nowMs + backoffMs).toISOString(),
             });
           }
         }
@@ -324,7 +712,7 @@ export async function flushOfflineQueue(): Promise<{
     }
 
     writeQueue(remaining);
-    return { processed: queue.length, succeeded, failed, conflicts };
+    return { processed, succeeded, failed, conflicts };
   })();
 
   try {

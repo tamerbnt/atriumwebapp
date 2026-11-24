@@ -9,7 +9,7 @@ import {
   X,
   Check,
 } from 'lucide-react';
-import { shallowEqualObjects, useAtriumSelector, showToast } from '../../services/store';
+import { shallowEqualObjects, useAtriumSelector, showToast, resolveActiveScopeOrFail } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
@@ -80,13 +80,15 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
       showToast(isAr ? 'تاريخ غير صالح' : isEn ? 'Invalid date' : 'Date invalide', 'error');
       return;
     }
+    const scope = resolveActiveScopeOrFail();
+    if (!scope) return;
 
     const newDeadline: CPCADeadline = {
       id: `cpca_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: 'biz_legal',
-      branchId: 'branch_legal_main',
-      staffId: 'staff_01',
+      accountId: scope.accountId,
+      businessId: scope.businessId || 'biz_legal',
+      branchId: scope.branchId,
+      staffId: scope.staffId || 'staff_01',
       matterId: selectedMatterId,
       caseNumber,
       courtJurisdiction,

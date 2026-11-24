@@ -1,12 +1,16 @@
 import type { BusinessCategory } from '../../types/index';
 import { getSupabaseClient, isSupabaseConfigured, isUuid, toValidUuid } from './client';
 import {
+  canAcceptQueueAdditions,
   cancelQueuedMutations,
   enqueueMutation,
   flushOfflineQueue,
   isStaleVersionError,
+  OfflineQueueCapacityError,
   registerQueueConflictListener,
+  type OfflineMutationItem,
 } from './offlineQueue';
+import { requireTenantContext } from './tenantContext';
 
 export interface TraceEnvelopeContext {
   accountId?: string | null;
@@ -67,10 +71,29 @@ export interface MutateOptions {
 export interface MutateResult {
   success: boolean;
   queued: boolean;
+  blockedByCapacity?: boolean;
   conflict?: boolean;
   serverData?: Record<string, any> | null;
   newVersion?: number;
   error?: string;
+}
+
+function tryEnqueueMutation(
+  mutation: Omit<OfflineMutationItem, 'id' | 'enqueuedAt' | 'attempts'>
+): { queued: boolean; blockedByCapacity?: boolean; error?: string } {
+  try {
+    enqueueMutation(mutation);
+    return { queued: true };
+  } catch (err: any) {
+    if (err instanceof OfflineQueueCapacityError || err?.code === 'QUEUE_AT_CAPACITY') {
+      return {
+        queued: false,
+        blockedByCapacity: true,
+        error: err?.message || 'QUEUE_AT_CAPACITY',
+      };
+    }
+    throw err;
+  }
 }
 
 const DEVICE_STORAGE_KEY = 'atrium_client_device_id_v1';
@@ -162,10 +185,14 @@ export function normalizeUuidOrNull(val?: string | null): string | null {
 }
 
 export function buildTraceEnvelope(ctx: TraceEnvelopeContext): DbTraceEnvelope {
+  const validated = requireTenantContext({
+    accountId: ctx.accountId,
+    branchId: ctx.branchId,
+  });
   return {
-    account_id: toValidUuid(ctx.accountId),
+    account_id: toValidUuid(validated.accountId),
     business_id: ctx.businessId ? toValidUuid(ctx.businessId) : null,
-    branch_id: toValidUuid(ctx.branchId),
+    branch_id: toValidUuid(validated.branchId),
     staff_id: ctx.staffId ? normalizeUuidOrNull(ctx.staffId) : null,
     updated_by_staff_id: ctx.updatedByStaffId
       ? normalizeUuidOrNull(ctx.updatedByStaffId)
@@ -527,7 +554,7 @@ export const syncCoordinator = {
 
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'upsert',
         table,
         payload: effectivePayload,
@@ -537,7 +564,7 @@ export const syncCoordinator = {
         entityType: options?.entityType,
         entityLabel: options?.entityLabel,
       });
-      return { success: false, queued: true };
+      return { success: false, queued: q.queued, blockedByCapacity: q.blockedByCapacity, error: q.error };
     }
 
     try {
@@ -574,7 +601,7 @@ export const syncCoordinator = {
           };
         }
 
-        enqueueMutation({
+        const q = tryEnqueueMutation({
           kind: 'upsert',
           table,
           payload: effectivePayload,
@@ -584,7 +611,12 @@ export const syncCoordinator = {
           entityType: options?.entityType,
           entityLabel: options?.entityLabel,
         });
-        return { success: false, queued: true, error: error.message };
+        return {
+          success: false,
+          queued: q.queued,
+          blockedByCapacity: q.blockedByCapacity,
+          error: q.blockedByCapacity ? q.error : error.message,
+        };
       }
 
       const newVersion =
@@ -617,7 +649,7 @@ export const syncCoordinator = {
         };
       }
 
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'upsert',
         table,
         payload: effectivePayload,
@@ -627,7 +659,12 @@ export const syncCoordinator = {
         entityType: options?.entityType,
         entityLabel: options?.entityLabel,
       });
-      return { success: false, queued: true, error: err?.message || 'Network exception' };
+      return {
+        success: false,
+        queued: q.queued,
+        blockedByCapacity: q.blockedByCapacity,
+        error: q.blockedByCapacity ? q.error : err?.message || 'Network exception',
+      };
     }
   },
 
@@ -639,20 +676,20 @@ export const syncCoordinator = {
     table: string,
     id: string,
     restoredByStaffId?: string | null
-  ): Promise<{ success: boolean; queued: boolean; error?: string }> {
+  ): Promise<{ success: boolean; queued: boolean; blockedByCapacity?: boolean; error?: string }> {
     const recordId = toValidUuid(id);
     const staffUuid = restoredByStaffId ? normalizeUuidOrNull(restoredByStaffId) : null;
     cancelQueuedMutations(table, recordId, ['soft_delete']);
 
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'restore',
         table,
         recordId,
         deletedByStaffId: staffUuid,
       });
-      return { success: false, queued: true };
+      return { success: false, queued: q.queued, blockedByCapacity: q.blockedByCapacity, error: q.error };
     }
 
     try {
@@ -666,23 +703,33 @@ export const syncCoordinator = {
         .eq('id', recordId);
 
       if (error) {
-        enqueueMutation({
+        const q = tryEnqueueMutation({
           kind: 'restore',
           table,
           recordId,
           deletedByStaffId: staffUuid,
         });
-        return { success: false, queued: true, error: error.message };
+        return {
+          success: false,
+          queued: q.queued,
+          blockedByCapacity: q.blockedByCapacity,
+          error: q.blockedByCapacity ? q.error : error.message,
+        };
       }
       return { success: true, queued: false };
     } catch (err: any) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'restore',
         table,
         recordId,
         deletedByStaffId: staffUuid,
       });
-      return { success: false, queued: true, error: err?.message || 'Network exception' };
+      return {
+        success: false,
+        queued: q.queued,
+        blockedByCapacity: q.blockedByCapacity,
+        error: q.blockedByCapacity ? q.error : err?.message || 'Network exception',
+      };
     }
   },
 
@@ -693,14 +740,37 @@ export const syncCoordinator = {
     table: string,
     rows: Array<Record<string, any>>,
     options?: { onConflict?: string }
-  ): Promise<{ success: boolean; queued: boolean; count: number; error?: string }> {
+  ): Promise<{ success: boolean; queued: boolean; blockedByCapacity?: boolean; count: number; error?: string }> {
     if (rows.length === 0) return { success: true, queued: false, count: 0 };
+
+    const queueBatchRows = (fallbackError?: string) => {
+      if (!canAcceptQueueAdditions(rows.length)) {
+        return {
+          success: false,
+          queued: false,
+          blockedByCapacity: true,
+          count: 0,
+          error: 'QUEUE_AT_CAPACITY: Offline sync queue is full (500/500).',
+        };
+      }
+      for (const row of rows) {
+        const q = tryEnqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict });
+        if (!q.queued) {
+          return {
+            success: false,
+            queued: false,
+            blockedByCapacity: q.blockedByCapacity,
+            count: 0,
+            error: q.error,
+          };
+        }
+      }
+      return { success: false, queued: true, count: rows.length, error: fallbackError };
+    };
+
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      rows.forEach((row) =>
-        enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
-      );
-      return { success: false, queued: true, count: rows.length };
+      return queueBatchRows();
     }
 
     try {
@@ -708,22 +778,11 @@ export const syncCoordinator = {
         .from(table)
         .upsert(rows, options?.onConflict ? { onConflict: options.onConflict } : undefined);
       if (error) {
-        rows.forEach((row) =>
-          enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
-        );
-        return { success: false, queued: true, count: rows.length, error: error.message };
+        return queueBatchRows(error.message);
       }
       return { success: true, queued: false, count: rows.length };
     } catch (err: any) {
-      rows.forEach((row) =>
-        enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
-      );
-      return {
-        success: false,
-        queued: true,
-        count: rows.length,
-        error: err?.message || 'Network exception',
-      };
+      return queueBatchRows(err?.message || 'Network exception');
     }
   },
 
@@ -750,7 +809,7 @@ export const syncCoordinator = {
 
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'update',
         table,
         recordId,
@@ -760,7 +819,7 @@ export const syncCoordinator = {
         entityType: options?.entityType,
         entityLabel: options?.entityLabel,
       });
-      return { success: false, queued: true };
+      return { success: false, queued: q.queued, blockedByCapacity: q.blockedByCapacity, error: q.error };
     }
 
     try {
@@ -808,7 +867,7 @@ export const syncCoordinator = {
       }
 
       if (error) {
-        enqueueMutation({
+        const q = tryEnqueueMutation({
           kind: 'update',
           table,
           recordId,
@@ -818,7 +877,12 @@ export const syncCoordinator = {
           entityType: options?.entityType,
           entityLabel: options?.entityLabel,
         });
-        return { success: false, queued: true, error: error.message };
+        return {
+          success: false,
+          queued: q.queued,
+          blockedByCapacity: q.blockedByCapacity,
+          error: q.blockedByCapacity ? q.error : error.message,
+        };
       }
 
       const firstRow = Array.isArray(data) ? data[0] : data;
@@ -854,7 +918,7 @@ export const syncCoordinator = {
         };
       }
 
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'update',
         table,
         recordId,
@@ -864,7 +928,12 @@ export const syncCoordinator = {
         entityType: options?.entityType,
         entityLabel: options?.entityLabel,
       });
-      return { success: false, queued: true, error: err?.message || 'Network exception' };
+      return {
+        success: false,
+        queued: q.queued,
+        blockedByCapacity: q.blockedByCapacity,
+        error: q.blockedByCapacity ? q.error : err?.message || 'Network exception',
+      };
     }
   },
 
@@ -875,19 +944,19 @@ export const syncCoordinator = {
     table: string,
     id: string,
     deletedByStaffId?: string | null
-  ): Promise<{ success: boolean; queued: boolean; error?: string }> {
+  ): Promise<{ success: boolean; queued: boolean; blockedByCapacity?: boolean; error?: string }> {
     const recordId = toValidUuid(id);
     const staffUuid = deletedByStaffId ? normalizeUuidOrNull(deletedByStaffId) : null;
     const client = getSupabaseClient();
 
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'soft_delete',
         table,
         recordId,
         deletedByStaffId: staffUuid,
       });
-      return { success: false, queued: true };
+      return { success: false, queued: q.queued, blockedByCapacity: q.blockedByCapacity, error: q.error };
     }
 
     try {
@@ -901,23 +970,33 @@ export const syncCoordinator = {
         .eq('id', recordId);
 
       if (error) {
-        enqueueMutation({
+        const q = tryEnqueueMutation({
           kind: 'soft_delete',
           table,
           recordId,
           deletedByStaffId: staffUuid,
         });
-        return { success: false, queued: true, error: error.message };
+        return {
+          success: false,
+          queued: q.queued,
+          blockedByCapacity: q.blockedByCapacity,
+          error: q.blockedByCapacity ? q.error : error.message,
+        };
       }
       return { success: true, queued: false };
     } catch (err: any) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'soft_delete',
         table,
         recordId,
         deletedByStaffId: staffUuid,
       });
-      return { success: false, queued: true, error: err?.message || 'Network exception' };
+      return {
+        success: false,
+        queued: q.queued,
+        blockedByCapacity: q.blockedByCapacity,
+        error: q.blockedByCapacity ? q.error : err?.message || 'Network exception',
+      };
     }
   },
 
@@ -938,13 +1017,14 @@ export const syncCoordinator = {
     success: boolean;
     data?: T;
     queued: boolean;
+    blockedByCapacity?: boolean;
     conflict?: boolean;
     serverData?: Record<string, any> | null;
     error?: string;
   }> {
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'rpc',
         fn,
         args,
@@ -955,7 +1035,7 @@ export const syncCoordinator = {
         entityType: conflictOptions?.entityType,
         entityLabel: conflictOptions?.entityLabel,
       });
-      return { success: false, queued: true };
+      return { success: false, queued: q.queued, blockedByCapacity: q.blockedByCapacity, error: q.error };
     }
 
     const handleRpcConflict = async (errObj: any) => {
@@ -999,7 +1079,7 @@ export const syncCoordinator = {
         if (isStaleVersionError(error)) {
           return await handleRpcConflict(error);
         }
-        enqueueMutation({
+        const q = tryEnqueueMutation({
           kind: 'rpc',
           fn,
           args,
@@ -1010,14 +1090,19 @@ export const syncCoordinator = {
           entityType: conflictOptions?.entityType,
           entityLabel: conflictOptions?.entityLabel,
         });
-        return { success: false, queued: true, error: error.message };
+        return {
+          success: false,
+          queued: q.queued,
+          blockedByCapacity: q.blockedByCapacity,
+          error: q.blockedByCapacity ? q.error : error.message,
+        };
       }
       return { success: true, data, queued: false };
     } catch (err: any) {
       if (isStaleVersionError(err)) {
         return await handleRpcConflict(err);
       }
-      enqueueMutation({
+      const q = tryEnqueueMutation({
         kind: 'rpc',
         fn,
         args,
@@ -1028,7 +1113,12 @@ export const syncCoordinator = {
         entityType: conflictOptions?.entityType,
         entityLabel: conflictOptions?.entityLabel,
       });
-      return { success: false, queued: true, error: err?.message || 'Network exception' };
+      return {
+        success: false,
+        queued: q.queued,
+        blockedByCapacity: q.blockedByCapacity,
+        error: q.blockedByCapacity ? q.error : err?.message || 'Network exception',
+      };
     }
   },
 

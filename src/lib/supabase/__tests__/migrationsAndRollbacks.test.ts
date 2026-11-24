@@ -83,4 +83,31 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(runbook).toContain('PITR');
     expect(runbook).toContain('restore_drill.sh');
   });
+
+  it('verifies Step 2 Phase 1 infrastructure migration contracts and rollback parity', () => {
+    const step2Path = path.join(MIGRATIONS_DIR, '202611240001_phase1_trust_infrastructure.sql');
+    const step2DownPath = path.join(ROLLBACKS_DIR, '202611240001_phase1_trust_infrastructure.down.sql');
+    const sql = fs.readFileSync(step2Path, 'utf8');
+    const downSql = fs.readFileSync(step2DownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_admins');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.statutory_rates');
+    expect(sql).toContain('irg_transitional_config jsonb');
+    expect(sql).not.toMatch(/\beffective_to\s+date\b/i);
+    expect(sql).not.toContain("'2021-01-01'");
+    expect(sql).not.toContain("'2022-01-01'");
+    expect(sql).not.toContain('EXCLUDE USING gist');
+    expect(sql).toContain('STATUTORY_RATE_REFERENCED_VERIFY_ONLY');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wilayas_ref');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.allocate_sequence_number(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.reserve_sequence_block(');
+    expect(sql).toContain("CHECK (doc_type IN ('walk_in_ticket', 'deposit_receipt'))");
+    expect(sql).toContain("to_regclass('storage.buckets')");
+
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_admins');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.statutory_rates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wilayas_ref');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.reserve_sequence_block(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.allocate_sequence_number(');
+  });
 });

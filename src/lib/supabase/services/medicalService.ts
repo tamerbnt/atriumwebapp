@@ -128,7 +128,7 @@ export const medicalService = {
 
   async upsertPractitioner(doc: MedicalPractitioner, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -197,7 +197,7 @@ export const medicalService = {
 
   async upsertOrdonnanceConfig(config: DoctorOrdonnanceConfig, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -285,7 +285,7 @@ export const medicalService = {
 
   async upsertPatient(patient: MedicalPatient): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: patient.accountId || 'acc_01',
+      accountId: patient.accountId,
       businessId: patient.businessId,
       branchId: patient.branchId,
       staffId: patient.staffId,
@@ -376,7 +376,7 @@ export const medicalService = {
 
   async upsertAppointment(appt: MedicalAppointmentSlot, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -482,7 +482,7 @@ export const medicalService = {
 
   async upsertConsultation(con: MedicalConsultation): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: con.accountId || 'acc_01',
+      accountId: con.accountId,
       businessId: con.businessId,
       branchId: con.branchId,
       staffId: con.staffId,
@@ -587,7 +587,7 @@ export const medicalService = {
 
   async upsertPrescription(rx: MedicalPrescription, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: rx.accountId || ctx.accountId || 'acc_01',
+      accountId: rx.accountId || ctx.accountId,
       businessId: rx.businessId || ctx.businessId,
       branchId: rx.branchId || ctx.branchId,
       staffId: rx.staffId || ctx.staffId,
@@ -679,7 +679,7 @@ export const medicalService = {
 
   async upsertLabRecord(lab: MedicalLabRecord, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -756,7 +756,7 @@ export const medicalService = {
 
   async upsertCertificate(cert: MedicalCertificateRecord, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -828,7 +828,7 @@ export const medicalService = {
 
   async upsertConsumable(item: ClinicConsumableItem, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -897,7 +897,7 @@ export const medicalService = {
 
   async upsertChifaClaim(claim: ChifaClaimRecord, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,
@@ -968,7 +968,7 @@ export const medicalService = {
 
   async upsertCashClosure(closure: DailyCashClosure, ctx: MedicalBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: closure.accountId || ctx.accountId || 'acc_01',
+      accountId: closure.accountId || ctx.accountId,
       businessId: closure.businessId || ctx.businessId,
       branchId: closure.branchId || ctx.branchId,
       staffId: closure.staffId || ctx.staffId,

@@ -28,8 +28,10 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
   const { login } = useAtriumActions();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const supabaseUrl = 'https://tzzncsbvezywtaknwind.supabase.co';
-  const redirectUri = 'https://tzzncsbvezywtaknwind.supabase.co/auth/v1/callback';
+  const configuredUrl =
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPABASE_URL) || '';
+  const supabaseUrl = configuredUrl ? String(configuredUrl).replace(/\/+$/, '') : '';
+  const redirectUri = supabaseUrl ? `${supabaseUrl}/auth/v1/callback` : '/auth/v1/callback';
 
   const copyToClipboard = (text: string, fieldId: string) => {
     navigator.clipboard.writeText(text);

@@ -18,6 +18,7 @@ import { runUndoBatch } from '../../../services/undoEngine';
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
+import { computeAppointmentFinanceMetrics } from '../../../utils/appointmentMetrics';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -89,58 +90,15 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-  const metrics = useMemo(() => {
-    let totalServicesRevenue = 0;
-    let totalRetailRevenue = 0;
-    let totalCommissionsDue = 0;
-    let paidCount = 0;
-    let pendingCount = 0;
-    let approvedCount = 0;
-    const branchCounts = new Map<string, number>();
-
-    for (let i = 0; i < stylistPayouts.length; i++) {
-      const p = stylistPayouts[i];
-      totalServicesRevenue += p.totalServiceRevenue || 0;
-      totalRetailRevenue += p.retailSalesRevenue || 0;
-      totalCommissionsDue += p.totalPayout || 0;
-      if (p.status === 'Paid') paidCount++;
-      else if (p.status === 'Approved') approvedCount++;
-      else pendingCount++;
-      const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
-      branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
-    }
-
-    const netSalonProfit = Math.max(0, totalServicesRevenue + totalRetailRevenue - totalCommissionsDue);
-
-    let cash = 45000;
-    let baridiMob = 68000;
-    let cib = 29500;
-    appointments.forEach((a) => {
-      if (a.isPaid && a.paymentMethod) {
-        if (a.paymentMethod === 'Cash') cash += a.price;
-        else if (a.paymentMethod === 'BaridiMob') baridiMob += a.price;
-        else cib += a.price;
-      }
-    });
-
-    return {
-      totalServicesRevenue,
-      totalRetailRevenue,
-      totalCommissionsDue,
-      netSalonProfit,
-      paidCount,
-      pendingCount,
-      approvedCount,
-      cash,
-      baridiMob,
-      cib,
-      branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
-        value: name,
-        label: name,
-        count,
-      })),
-    };
-  }, [stylistPayouts, appointments, branchesById, currentBranch, language]);
+  const metrics = useMemo(
+    () =>
+      computeAppointmentFinanceMetrics(
+        stylistPayouts,
+        appointments,
+        (p) => resolveRecordBranch(p, branchesById, currentBranch, language).name
+      ),
+    [stylistPayouts, appointments, branchesById, currentBranch, language]
+  );
 
   const filteredPayouts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

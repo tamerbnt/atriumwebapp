@@ -245,6 +245,8 @@ import {
   syncCoordinator,
   subscribeConcurrencyConflicts,
   emitConcurrencyResolution,
+  registerQueueAlertListener,
+  MAX_QUEUE_SIZE,
   mapMemberFromDb,
   mapLeadFromDb,
   mapMembershipPlanFromDb,
@@ -310,6 +312,9 @@ import {
   getActiveDeviceId,
   toValidUuid,
   normalizeUuidOrNull,
+  isDemoModeEnabled,
+  requireTenantAccountId,
+  TenantContextMissingError,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
 
@@ -693,7 +698,8 @@ const DEFAULT_STATE: AppState = {
 
 // In-memory Quadruple Traceability Normalizer
 function backfillTraceability(state: AppState): AppState {
-  const accountId = state.account?.id || 'acc_01';
+  const accountId =
+    (state.account?.id || '').trim() || (isDemoModeEnabled() ? INITIAL_ACCOUNT.id : '');
   const businessId = state.currentBusinessId || state.businesses[0]?.id || 'biz_01';
   const branchId = state.currentBranchId || state.branches[0]?.id || 'branch_gym_main';
   const defaultStaffId = state.currentUser?.id || state.staff?.[0]?.id || 'stf_01';
@@ -4390,6 +4396,42 @@ subscribeConcurrencyConflicts((event) => {
   notify(false, true);
 });
 
+let lastNearCapToastAt = 0;
+registerQueueAlertListener((alert) => {
+  const lang = globalState.language || 'fr';
+  if (alert.type === 'at_capacity') {
+    showToast({
+      type: 'error',
+      title: t('offline_queue_full_title', lang),
+      message: t('offline_queue_full_msg', lang),
+      duration: 8000,
+    });
+  } else if (alert.type === 'item_quarantined') {
+    showToast({
+      type: 'warning',
+      title: t('offline_queue_quarantined_title', lang),
+      message: t('offline_queue_quarantined_msg', lang, {
+        reason: (alert.item as any)?.quarantineReason || 'sync_error',
+      }),
+      duration: 7000,
+    });
+  } else if (alert.type === 'near_capacity') {
+    const now = Date.now();
+    if (now - lastNearCapToastAt > 30_000) {
+      lastNearCapToastAt = now;
+      showToast({
+        type: 'warning',
+        title: t('offline_queue_near_cap_title', lang),
+        message: t('offline_queue_near_cap_msg', lang, {
+          pending: String(alert.pendingCount),
+          max: String(MAX_QUEUE_SIZE),
+        }),
+        duration: 6000,
+      });
+    }
+  }
+});
+
 function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
   if (isRunning && !isPaused) {
     if (!activeTimerInterval) {
@@ -4592,6 +4634,55 @@ export function addNotification(
   };
   notify();
   return newNotif;
+}
+
+/**
+ * Resolves the active tenant accountId from store state or candidate list.
+ * Fails closed (shows visible localized error toast, returns null) when missing.
+ */
+export function resolveActiveAccountIdOrFail(...candidates: Array<string | null | undefined>): string | null {
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
+  }
+  const active = globalState.account?.id?.trim();
+  if (active) return active;
+  showToast({
+    type: 'error',
+    title: t('tenant_context_missing_title', globalState.language),
+    message: t('tenant_context_missing_msg', globalState.language),
+  });
+  return null;
+}
+
+/**
+ * Resolves active quadruple tenant trace scope (accountId, businessId, branchId, staffId),
+ * failing closed with visible error toast when tenant account or branch is missing.
+ */
+export function resolveActiveScopeOrFail(overrides?: {
+  accountId?: string | null;
+  businessId?: string | null;
+  branchId?: string | null;
+  staffId?: string | null;
+}): { accountId: string; businessId: string; branchId: string; staffId?: string } | null {
+  const accountId = resolveActiveAccountIdOrFail(overrides?.accountId);
+  if (!accountId) return null;
+  const branchId = (overrides?.branchId || globalState.currentBranchId || '').trim();
+  if (!branchId) {
+    showToast({
+      type: 'error',
+      title: t('tenant_context_missing_title', globalState.language),
+      message: t('tenant_context_missing_msg', globalState.language),
+    });
+    return null;
+  }
+  return {
+    accountId,
+    businessId: (overrides?.businessId || globalState.currentBusinessId || '').trim(),
+    branchId,
+    staffId: overrides?.staffId || globalState.currentUser?.id || undefined,
+  };
 }
 
 export function showToast(
@@ -5887,13 +5978,22 @@ function createAtriumActions() {
   };
 
   const upsertScheduleEvent = (event: ScheduleEvent) => {
+    const activeAccountId =
+      (event.tenantId && event.tenantId !== INITIAL_ACCOUNT.id ? event.tenantId : undefined) ||
+      globalState.account?.id?.trim();
+    if (!activeAccountId || !globalState.currentBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      return;
+    }
     const before = captureStoreSlices(['schedule']);
     const scoped: ScheduleEvent = {
       ...getTraceContext(),
       ...event,
-      tenantId:
-        (event.tenantId && event.tenantId !== 'acc_01' ? event.tenantId : undefined) ||
-        globalState.account.id,
+      tenantId: activeAccountId,
       facilityId: event.facilityId || globalState.currentBranchId,
       businessId: event.businessId || globalState.currentBusinessId,
       branchId: event.branchId || globalState.currentBranchId,
@@ -7720,12 +7820,23 @@ function createAtriumActions() {
   };
 
   const addServiceItem = (serviceData: Omit<ServiceItem, 'id' | 'facilityId'>) => {
+    const activeAccountId = globalState.account?.id?.trim();
+    const activeBranchId = globalState.currentBranchId?.trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      throw new TenantContextMissingError();
+    }
     const before = captureStoreSlices(['servicesCatalog']);
     const newService: ServiceItem = {
       ...getTraceContext(),
       ...serviceData,
+      tenantId: serviceData.tenantId || activeAccountId,
       id: `srv_${Date.now()}`,
-      facilityId: globalState.currentBranchId,
+      facilityId: activeBranchId,
     };
     globalState = {
       ...globalState,
@@ -11310,7 +11421,16 @@ function createAtriumActions() {
   const resetVenueMockData = () => {
     const before = captureStoreSlices(['rentableUnits', 'rentalRenters', 'rentalBookings', 'securityDeposits']);
     const targetFacilityId = globalState.currentBranchId || 'branch_venue_main';
-    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetAccountId =
+      globalState.account?.id?.trim() || (isDemoModeEnabled() ? INITIAL_ACCOUNT.id : '');
+    if (!targetAccountId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      return;
+    }
     const targetBusinessId = globalState.currentBusinessId || 'biz_venue';
 
     const freshBookings = createInitialRentalBookings().map((b) => ({
@@ -11379,7 +11499,16 @@ function createAtriumActions() {
       'eduAdmissions',
     ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_edu_main';
-    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetAccountId =
+      globalState.account?.id?.trim() || (isDemoModeEnabled() ? INITIAL_ACCOUNT.id : '');
+    if (!targetAccountId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      return;
+    }
     const targetBusinessId = globalState.currentBusinessId || 'biz_edu';
 
     const freshStudents = INITIAL_EDU_STUDENTS.map((s) => ({
@@ -11487,7 +11616,16 @@ function createAtriumActions() {
       'freelanceExpenses',
     ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_freelance_main';
-    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetAccountId =
+      globalState.account?.id?.trim() || (isDemoModeEnabled() ? INITIAL_ACCOUNT.id : '');
+    if (!targetAccountId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      return;
+    }
 
     const freshClients = INITIAL_FREELANCE_CLIENTS.map((c) => ({
       ...c,
@@ -13639,7 +13777,16 @@ function createAtriumActions() {
     ];
     const before = captureStoreSlices(pmKeys);
     const targetFacilityId = globalState.currentBranchId || 'branch_agency_main';
-    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetAccountId =
+      globalState.account?.id?.trim() || (isDemoModeEnabled() ? INITIAL_ACCOUNT.id : '');
+    if (!targetAccountId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', globalState.language),
+        message: t('tenant_context_missing_msg', globalState.language),
+      });
+      return;
+    }
     const targetBizId = globalState.currentBusinessId || 'biz_agency';
 
     const freshClients = INITIAL_PM_CLIENTS.map((c) => ({
@@ -14569,16 +14716,17 @@ function createAtriumActions() {
   // ============================================================
 
   const createCommercialDoc = (doc: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const resolvedAccountId = requireTenantAccountId(doc.accountId, doc.tenantId, globalState.account?.id);
     const before = captureStoreSlices(['commercialDocs']);
     const id = `cdoc_${Date.now()}`;
     const newDoc: CommercialDocument = {
       ...doc,
       id,
-      accountId: doc.accountId || globalState.account?.id || 'acc_01',
+      accountId: resolvedAccountId,
       businessId: doc.businessId || globalState.currentBusinessId,
       branchId: doc.branchId || globalState.currentBranchId,
       facilityId: doc.facilityId || globalState.currentBranchId,
-      tenantId: doc.tenantId || globalState.account?.id || 'acc_01',
+      tenantId: resolvedAccountId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -14786,16 +14934,17 @@ function createAtriumActions() {
   };
 
   const createPurchaseDoc = (doc: Omit<PurchaseDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const resolvedAccountId = requireTenantAccountId(doc.accountId, doc.tenantId, globalState.account?.id);
     const before = captureStoreSlices(['purchaseDocs']);
     const id = `pdoc_${Date.now()}`;
     const newDoc: PurchaseDocument = {
       ...doc,
       id,
-      accountId: doc.accountId || globalState.account?.id || 'acc_01',
+      accountId: resolvedAccountId,
       businessId: doc.businessId || globalState.currentBusinessId,
       branchId: doc.branchId || globalState.currentBranchId,
       facilityId: doc.facilityId || globalState.currentBranchId,
-      tenantId: doc.tenantId || globalState.account?.id || 'acc_01',
+      tenantId: resolvedAccountId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -15112,13 +15261,15 @@ function createAtriumActions() {
   };
 
   const createB2bClient = (client: Omit<B2bClient, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const resolvedAccountId = requireTenantAccountId(client.accountId, client.tenantId, globalState.account?.id);
     const before = captureStoreSlices(['b2bClients']);
     const id = `b2b_cli_${Date.now()}`;
     const newClient: B2bClient = {
       ...getTraceContext(),
       ...client,
       id,
-      tenantId: client.tenantId || globalState.account?.id || 'acc_01',
+      accountId: resolvedAccountId,
+      tenantId: resolvedAccountId,
       facilityId: client.facilityId || globalState.currentBranchId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -15242,13 +15393,15 @@ function createAtriumActions() {
   };
 
   const createB2bSupplier = (supplier: Omit<B2bSupplier, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const resolvedAccountId = requireTenantAccountId(supplier.accountId, supplier.tenantId, globalState.account?.id);
     const before = captureStoreSlices(['b2bSuppliers']);
     const id = `b2b_sup_${Date.now()}`;
     const newSup: B2bSupplier = {
       ...getTraceContext(),
       ...supplier,
       id,
-      tenantId: supplier.tenantId || globalState.account?.id || 'acc_01',
+      accountId: resolvedAccountId,
+      tenantId: resolvedAccountId,
       facilityId: supplier.facilityId || globalState.currentBranchId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

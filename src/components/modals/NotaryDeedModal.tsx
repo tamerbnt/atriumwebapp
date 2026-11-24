@@ -8,7 +8,7 @@ import {
   AlertCircle,
   Coins,
 } from 'lucide-react';
-import { shallowEqualObjects, useAtriumSelector } from '../../services/store';
+import { shallowEqualObjects, useAtriumSelector, resolveActiveScopeOrFail } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
@@ -38,40 +38,40 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
   const isEn = language === 'en';
 
   const [actType, setActType] = useState<NotaryDeed['actType']>('vente_immobiliere');
-  const [titleFr, setTitleFr] = useState('Vente Immobilière Appartement F4 Haut Standing');
-  const [titleAr, setTitleAr] = useState('عقد بيع عقاري لشقة ذات 4 غرف عالية الطراز');
-  const [transactionValueDzd, setTransactionValueDzd] = useState<number>(12000000);
+  const [titleFr, setTitleFr] = useState('');
+  const [titleAr, setTitleAr] = useState('');
+  const [transactionValueDzd, setTransactionValueDzd] = useState<number>(0);
 
   // Parties
-  const [vendorName, setVendorName] = useState('Hadj Amine Mansouri');
-  const [vendorNin, setVendorNin] = useState('197516010045678912');
-  const [purchaserName, setPurchaserName] = useState('Dr. Mourad Belkacem');
-  const [purchaserNin, setPurchaserNin] = useState('198216010098765432');
+  const [vendorName, setVendorName] = useState('');
+  const [vendorNin, setVendorNin] = useState('');
+  const [purchaserName, setPurchaserName] = useState('');
+  const [purchaserNin, setPurchaserNin] = useState('');
 
   // Cadastre
-  const [wilaya, setWilaya] = useState('Alger');
-  const [commune, setCommune] = useState('El Biar');
-  const [section, setSection] = useState('04');
-  const [ilot, setIlot] = useState('18');
-  const [lotNumber, setLotNumber] = useState('Lot 12 - Bloc B');
-  const [livretFoncierNumber, setLivretFoncierNumber] = useState('LF-16/04-0982');
+  const [wilaya, setWilaya] = useState('');
+  const [commune, setCommune] = useState('');
+  const [section, setSection] = useState('');
+  const [ilot, setIlot] = useState('');
+  const [lotNumber, setLotNumber] = useState('');
+  const [livretFoncierNumber, setLivretFoncierNumber] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
     setActType('vente_immobiliere');
-    setTitleFr('Vente Immobilière Appartement F4 Haut Standing');
-    setTitleAr('عقد بيع عقاري لشقة ذات 4 غرف عالية الطراز');
-    setTransactionValueDzd(12000000);
-    setVendorName('Hadj Amine Mansouri');
-    setVendorNin('197516010045678912');
-    setPurchaserName('Dr. Mourad Belkacem');
-    setPurchaserNin('198216010098765432');
-    setWilaya('Alger');
-    setCommune('El Biar');
-    setSection('04');
-    setIlot('18');
-    setLotNumber('Lot 12 - Bloc B');
-    setLivretFoncierNumber('LF-16/04-0982');
+    setTitleFr('');
+    setTitleAr('');
+    setTransactionValueDzd(0);
+    setVendorName('');
+    setVendorNin('');
+    setPurchaserName('');
+    setPurchaserNin('');
+    setWilaya('');
+    setCommune('');
+    setSection('');
+    setIlot('');
+    setLotNumber('');
+    setLivretFoncierNumber('');
   }, [isOpen]);
 
   // Tariff calculation
@@ -83,13 +83,15 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const scope = resolveActiveScopeOrFail();
+    if (!scope) return;
 
     const deed: NotaryDeed = {
       id: `deed_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: 'biz_legal',
-      branchId: 'branch_legal_main',
-      staffId: 'staff_01',
+      accountId: scope.accountId,
+      businessId: scope.businessId || 'biz_legal',
+      branchId: scope.branchId,
+      staffId: scope.staffId || 'staff_01',
       repertoireNumber,
       repertoireIndex: nextIndex,
       actType,

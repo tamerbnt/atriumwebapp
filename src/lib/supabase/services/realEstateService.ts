@@ -139,7 +139,7 @@ export const realEstateService = {
 
   async upsertProperty(prop: RealEstateProperty): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: prop.accountId || 'acc_01',
+      accountId: prop.accountId,
       businessId: prop.businessId,
       branchId: prop.branchId,
       staffId: prop.staffId,
@@ -268,7 +268,7 @@ export const realEstateService = {
 
   async upsertMandate(mandate: RealEstateMandate): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: mandate.accountId || 'acc_01',
+      accountId: mandate.accountId,
       businessId: mandate.businessId,
       branchId: mandate.branchId,
       staffId: mandate.staffId,
@@ -377,7 +377,7 @@ export const realEstateService = {
 
   async upsertLease(lease: RealEstateLease): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: lease.accountId || 'acc_01',
+      accountId: lease.accountId,
       businessId: lease.businessId,
       branchId: lease.branchId,
       staffId: lease.staffId,
@@ -454,7 +454,7 @@ export const realEstateService = {
 
   async upsertQuittance(q: RentalQuittanceRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: q.accountId || 'acc_01',
+      accountId: q.accountId,
       businessId: q.businessId,
       branchId: q.branchId,
       staffId: q.staffId,
@@ -536,7 +536,7 @@ export const realEstateService = {
 
   async upsertBonDeVisite(visit: BonDeVisiteRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: visit.accountId || 'acc_01',
+      accountId: visit.accountId,
       businessId: visit.businessId,
       branchId: visit.branchId,
       staffId: visit.staffId,
@@ -632,7 +632,7 @@ export const realEstateService = {
 
   async upsertInspection(insp: RealEstateInspection): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: insp.accountId || 'acc_01',
+      accountId: insp.accountId,
       businessId: insp.businessId,
       branchId: insp.branchId,
       staffId: insp.staffId,
@@ -724,7 +724,7 @@ export const realEstateService = {
 
   async upsertBuyerDemand(demand: BuyerDemandProfile): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: demand.accountId || 'acc_01',
+      accountId: demand.accountId,
       businessId: demand.businessId,
       branchId: demand.branchId,
       staffId: demand.staffId,

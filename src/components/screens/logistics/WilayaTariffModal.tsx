@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, X, Save, RotateCcw } from 'lucide-react';
-import { useAtriumSelector } from '../../../services/store';
+import { showToast, useAtriumSelector } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -16,20 +16,24 @@ interface WilayaTariffModalProps {
 function persistTariffRules(
   rules: Record<WilayaZone, TariffRule>,
   ctx: { accountId: string; businessId: string; branchId: string; staffId: string }
-) {
+): boolean {
+  if (!ctx.accountId || !ctx.businessId || !ctx.branchId) {
+    return false;
+  }
   try {
     localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(rules));
   } catch {}
   void logisticsService.upsertWilayaTariffs(rules, ctx).catch(() => {});
+  return true;
 }
 
 export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, onClose }) => {
   const language = useAtriumSelector((s) => s.language);
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
-  const currentAccountId = useAtriumSelector((s) => s.account.id);
-  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
-  const activeBranchId = currentBranchId || 'branch_logistics_main';
+  const currentAccountId = useAtriumSelector((s) => s.account?.id || '');
+  const currentStaffId = useAtriumSelector((s) => s.currentUser?.id || '');
+  const activeBranchId = currentBranchId || '';
   const isAr = language === 'ar';
 
   const [tariffRules, setTariffRules] = useState<Record<WilayaZone, TariffRule>>(() => {
@@ -55,7 +59,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || !isSupabaseConfigured()) return;
+    if (!isOpen || !isSupabaseConfigured() || !activeBranchId) return;
     let cancelled = false;
     void syncCoordinator.runSingleFlight(`logistics:tariffs:${activeBranchId}`, async () => {
       const remote = await logisticsService.fetchWilayaTariffs(activeBranchId);
@@ -85,16 +89,32 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
   };
 
   const upsertCtx = {
-    accountId: currentAccountId || 'acc_01',
-    businessId: currentBusinessId || 'biz_logistics',
+    accountId: currentAccountId,
+    businessId: currentBusinessId || '',
     branchId: activeBranchId,
-    staffId: currentStaffId || 'staff_01',
+    staffId: currentStaffId,
   };
 
   const handleSave = () => {
+    if (!upsertCtx.accountId || !upsertCtx.businessId || !upsertCtx.branchId) {
+      showToast({
+        type: 'error',
+        title: pickLocalizedText(language, {
+          en: 'Tenant Context Required',
+          fr: 'Contexte établissement requis',
+          ar: 'سياق المؤسسة مطلوب',
+        }),
+        message: pickLocalizedText(language, {
+          en: 'Select an active business and branch before saving tariff zones.',
+          fr: 'Sélectionnez une entreprise et un site actifs avant d’enregistrer les tarifs.',
+          ar: 'يرجى تحديد مؤسسة وفرع نشطين قبل حفظ تسعيرات الولايات.',
+        }),
+      });
+      return;
+    }
     const prevSnapshot = cloneSnapshot(savedRulesRef.current);
     const nextSnapshot = cloneSnapshot(tariffRules);
-    persistTariffRules(nextSnapshot, upsertCtx);
+    if (!persistTariffRules(nextSnapshot, upsertCtx)) return;
     savedRulesRef.current = cloneSnapshot(nextSnapshot);
     registerUndoEntry({
       vertical: 'logistics_delivery',
@@ -120,6 +140,22 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
   };
 
   const handleReset = () => {
+    if (!upsertCtx.accountId || !upsertCtx.businessId || !upsertCtx.branchId) {
+      showToast({
+        type: 'error',
+        title: pickLocalizedText(language, {
+          en: 'Tenant Context Required',
+          fr: 'Contexte établissement requis',
+          ar: 'سياق المؤسسة مطلوب',
+        }),
+        message: pickLocalizedText(language, {
+          en: 'Select an active business and branch before resetting tariff zones.',
+          fr: 'Sélectionnez une entreprise et un site actifs avant de réinitialiser les tarifs.',
+          ar: 'يرجى تحديد مؤسسة وفرع نشطين قبل إعادة ضبط التسعيرات.',
+        }),
+      });
+      return;
+    }
     const prevSnapshot = cloneSnapshot(savedRulesRef.current);
     const nextSnapshot = cloneSnapshot(DEFAULT_TARIFF_RULES);
     setTariffRules(cloneSnapshot(nextSnapshot));

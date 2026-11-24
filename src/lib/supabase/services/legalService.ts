@@ -119,7 +119,7 @@ export const legalService = {
 
   async upsertClient(entity: LegalClientEntity): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: entity.accountId || 'acc_01',
+      accountId: entity.accountId,
       businessId: entity.businessId,
       branchId: entity.branchId,
       staffId: entity.staffId,
@@ -210,7 +210,7 @@ export const legalService = {
 
   async upsertMatter(matter: LegalMatter): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: matter.accountId || 'acc_01',
+      accountId: matter.accountId,
       businessId: matter.businessId,
       branchId: matter.branchId,
       staffId: matter.staffId,
@@ -318,7 +318,7 @@ export const legalService = {
 
   async upsertHearing(hearing: LegalHearing): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: hearing.accountId || 'acc_01',
+      accountId: hearing.accountId,
       businessId: hearing.businessId,
       branchId: hearing.branchId,
       staffId: hearing.staffId,
@@ -397,7 +397,7 @@ export const legalService = {
 
   async upsertCpcaDeadline(dl: CPCADeadline): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: dl.accountId || 'acc_01',
+      accountId: dl.accountId,
       businessId: dl.businessId,
       branchId: dl.branchId,
       staffId: dl.staffId,
@@ -460,7 +460,7 @@ export const legalService = {
 
   async upsertNotaryDeed(deed: NotaryDeed, matterId?: string): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: deed.accountId || 'acc_01',
+      accountId: deed.accountId,
       businessId: deed.businessId,
       branchId: deed.branchId,
       staffId: deed.staffId,
@@ -510,7 +510,7 @@ export const legalService = {
 
   async upsertEscrowSnapshot(escrow: EscrowAccount): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: escrow.accountId || 'acc_01',
+      accountId: escrow.accountId,
       businessId: escrow.businessId,
       branchId: escrow.branchId,
       staffId: escrow.staffId,
@@ -589,7 +589,7 @@ export const legalService = {
 
   async upsertScfEntry(entry: SCFJournalEntry, defaultMatterId?: string): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: entry.accountId || 'acc_01',
+      accountId: entry.accountId,
       businessId: entry.businessId,
       branchId: entry.branchId,
       staffId: entry.staffId,
@@ -670,7 +670,7 @@ export const legalService = {
 
   async upsertCashReceipt(receipt: CashReceipt): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: receipt.accountId || 'acc_01',
+      accountId: receipt.accountId,
       businessId: receipt.businessId,
       branchId: receipt.branchId,
       staffId: receipt.staffId,

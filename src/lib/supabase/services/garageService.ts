@@ -136,7 +136,7 @@ export const garageService = {
 
   async upsertBay(bay: WorkshopBay, ctx: GarageBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: bay.branchId || ctx.branchId,
       staffId: ctx.staffId,
@@ -241,7 +241,7 @@ export const garageService = {
 
   async upsertVehicle(vehicle: VehicleAsset, ctx: GarageBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: vehicle.accountId || ctx.accountId || 'acc_01',
+      accountId: vehicle.accountId || ctx.accountId,
       businessId: vehicle.businessId || ctx.businessId,
       branchId: vehicle.branchId || ctx.branchId,
       staffId: vehicle.staffId || ctx.staffId,
@@ -358,7 +358,7 @@ export const garageService = {
 
   async upsertWorkOrder(order: RepairOrder, ctx: GarageBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: order.accountId || ctx.accountId || 'acc_01',
+      accountId: order.accountId || ctx.accountId,
       businessId: order.businessId || ctx.businessId,
       branchId: order.branchId || ctx.branchId,
       staffId: order.staffId || ctx.staffId,
@@ -473,7 +473,7 @@ export const garageService = {
 
   async upsertPart(part: SparePart, ctx: GarageBranchContext): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: part.accountId || ctx.accountId || 'acc_01',
+      accountId: part.accountId || ctx.accountId,
       businessId: part.businessId || ctx.businessId,
       branchId: part.branchId || ctx.branchId,
       staffId: part.staffId || ctx.staffId,
@@ -577,7 +577,7 @@ export const garageService = {
 
   async upsertFleetAccount(fleet: CorporateFleetAccount): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: fleet.accountId || 'acc_01',
+      accountId: fleet.accountId,
       businessId: fleet.businessId,
       branchId: fleet.branchId,
       staffId: fleet.staffId,
@@ -681,7 +681,7 @@ export const garageService = {
 
   async upsertInvoice(inv: GarageInvoice): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: inv.accountId || 'acc_01',
+      accountId: inv.accountId,
       businessId: inv.businessId,
       branchId: inv.branchId,
       staffId: inv.staffId,

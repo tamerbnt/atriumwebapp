@@ -122,7 +122,7 @@ export const agricultureService = {
 
   async upsertParcel(parcel: AgriParcel): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: parcel.accountId || 'acc_01',
+      accountId: parcel.accountId,
       businessId: parcel.businessId,
       branchId: parcel.branchId,
       staffId: parcel.staffId,
@@ -218,7 +218,7 @@ export const agricultureService = {
 
   async upsertCropCycle(cycle: AgriCropCycle, parcelName?: string): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: cycle.accountId || 'acc_01',
+      accountId: cycle.accountId,
       businessId: cycle.businessId,
       branchId: cycle.branchId,
       staffId: cycle.staffId,
@@ -299,7 +299,7 @@ export const agricultureService = {
 
   async upsertTreatment(log: AgriTreatmentLog): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: log.accountId || 'acc_01',
+      accountId: log.accountId,
       businessId: log.businessId,
       branchId: log.branchId,
       staffId: log.staffId,
@@ -389,7 +389,7 @@ export const agricultureService = {
 
   async upsertLivestock(cow: AgriDairyCow): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: cow.accountId || 'acc_01',
+      accountId: cow.accountId,
       businessId: cow.businessId,
       branchId: cow.branchId,
       staffId: cow.staffId,
@@ -471,7 +471,7 @@ export const agricultureService = {
 
   async upsertMilkingLog(rec: AgriMilkingRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: rec.accountId || 'acc_01',
+      accountId: rec.accountId,
       businessId: rec.businessId,
       branchId: rec.branchId,
       staffId: rec.staffId,
@@ -534,7 +534,7 @@ export const agricultureService = {
 
   async upsertHarvestTicket(ticket: AgriWeighbridgeTicket, fallbackParcelId: string): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ticket.accountId || 'acc_01',
+      accountId: ticket.accountId,
       businessId: ticket.businessId,
       branchId: ticket.branchId,
       staffId: ticket.staffId,
@@ -596,7 +596,7 @@ export const agricultureService = {
 
   async upsertWorker(worker: AgriWorker): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: worker.accountId || 'acc_01',
+      accountId: worker.accountId,
       businessId: worker.businessId,
       branchId: worker.branchId,
       staffId: worker.staffId,
@@ -654,7 +654,7 @@ export const agricultureService = {
 
   async upsertPointage(p: AgriDailyPointage): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: p.accountId || 'acc_01',
+      accountId: p.accountId,
       businessId: p.businessId,
       branchId: p.branchId,
       staffId: p.staffId,

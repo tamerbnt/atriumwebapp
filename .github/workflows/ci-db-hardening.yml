@@ -32,6 +32,9 @@ jobs:
       - name: Run Atrium & Supabase hardening test suites
         run: npm run test:atrium
 
+      - name: Run Phase 1 CI guards (ratchet enforcement)
+        run: npm run ci:guards
+
       - name: Build production bundle
         run: npm run build
 
@@ -140,7 +143,14 @@ jobs:
             BACKUP_PASSPHRASE="ci_drill_passphrase" \
             ./scripts/db/restore_drill.sh "$LATEST_BACKUP"
 
-      - name: Verify Phase 5 rollback & re-apply parity
+      - name: Run transactional RLS, RPC & trigger SQL harness
         run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/db/test_rls_rpc_triggers.sql
+
+      - name: Verify Phase 1 & Phase 5 rollback & re-apply parity
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611240001_phase1_trust_infrastructure.down.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611240001_phase1_trust_infrastructure.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611190005_enterprise_100pct_hardening.down.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611190005_enterprise_100pct_hardening.sql
+

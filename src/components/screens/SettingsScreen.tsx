@@ -32,6 +32,7 @@ import {
   History,
   Layers,
   Receipt,
+  Scale,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -65,6 +66,7 @@ import { SkeletonPageHeader } from '../ui/skeleton/StructuralSkeletons';
 import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
 import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab';
 import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
+import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
@@ -435,6 +437,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             icon: <Layers size={15} strokeWidth={1.5} />,
           },
           {
+            id: 'reference_rates',
+            label: t('settings_tab_reference_rates', language),
+            icon: <Scale size={15} strokeWidth={1.5} />,
+          },
+          {
             id: 'branches_devices',
             label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
             icon: <Monitor size={15} strokeWidth={1.5} />,
@@ -500,6 +507,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       )}
 
       {settingsTab === 'formules' && <SettingsFormulesTab />}
+
+      {settingsTab === 'reference_rates' && <SettingsReferenceRatesTab />}
 
       {settingsTab === 'preferences' && (
         <>

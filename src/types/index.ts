@@ -3865,6 +3865,7 @@ export type SettingsTabId =
   | 'preferences'
   | 'business_fiscal'
   | 'formules'
+  | 'reference_rates'
   | 'branches_devices'
   | 'license'
   | 'cloud_backup';

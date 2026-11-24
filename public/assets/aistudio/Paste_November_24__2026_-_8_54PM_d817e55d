@@ -1,0 +1,399 @@
+# ATRIUM ERP & CRM — PRODUCTION-READINESS REMEDIATION MASTER PROMPT
+
+You are a senior full-stack engineer working inside the live Atrium codebase (React + TypeScript, `src/services/store.ts`, `src/lib/supabase/*`, per-vertical `use*Data.ts` hooks, Supabase). Your job is to fix every defect listed below until the app is production-ready. Nothing in this prompt is optional. Do not skip an item because it looks small.
+
+---
+
+## 0. OPERATING RULES (read before touching code)
+
+### 0.1 Source of truth
+1. The catalog document ("Atrium ERP & CRM — Complete Vertical Catalog & Source-Verified Truth Map") was written from observed source, but it can be stale. **Before fixing any item, open the cited file and confirm the defect still exists.** Record one of: `CONFIRMED`, `ALREADY FIXED`, `NOT FOUND (describe what you found instead)`. Never "fix" something you have not reproduced.
+2. File paths, line numbers (e.g. PosOrdersView line 964, TradingSalesView line 681, ManufacturingQcView lines 593 and 622, Sidebar.tsx line 1906, App.tsx lines 1011, 1184, 1219, 1300) are hints only. Search by symbol and string, not by line number.
+3. Items tagged `[VERIFY]` are suspected from the catalog but not proven. Investigate first, report findings, then fix if real.
+
+### 0.2 Definition of "done" for EVERY item
+An item is done only when ALL of the following are true:
+- The defect is reproduced (or its absence documented) BEFORE the change.
+- The fix is implemented with no new `showToast`-only behavior, no hardcoded business numbers, no component-local state standing in for persisted data.
+- Persistence is complete: write path, read/hydrate path, offline queue path, delta-sync path, and realtime path (where the vertical uses realtime).
+- Failure paths are handled (see 0.4 edge-case checklist).
+- Undo registration is correct where the action is undoable (`registerUndoEntry`, 6 s toast).
+- Tenant isolation is correct (`businessId`, `branchId` on every row; no hardcoded tenant).
+- All user-visible strings go through i18n for en, fr, ar. Arabic renders correctly in RTL, including printed documents.
+- Automated tests exist and pass (see Section 12).
+- `tsc --noEmit`, lint, and the full test suite pass with zero new warnings.
+- A short entry is appended to `REMEDIATION_LOG.md` (item ID, scope, files changed, tests added, before/after behavior).
+
+### 0.3 Forbidden shortcuts
+- No `showToast("... done")` that does not perform the action it announces. If a feature cannot be built now, REMOVE or DISABLE the control with a visible "not available" state and log it as DEFERRED. A fake success message is worse than a missing button.
+- No hardcoded tenant IDs, user IDs, NIFs, project refs, URLs, sample images, KPI figures, SLA numbers, or opening balances in production code paths. Seed/demo data must live only in demo-workspace fixtures behind an explicit demo flag.
+- No silent `catch {}`. Every catch either retries, queues, or tells the user.
+- No `any` casts to silence type errors on new code.
+- No new `localStorage` keys holding data that must survive device change or that is legally sensitive (payroll, medical, legal, cash).
+- Do not delete user data in migrations. Every schema change is additive and reversible, with a backfill script and a rollback note.
+
+### 0.4 Universal edge-case checklist (apply to every item)
+Check each box mentally for every change and write a test for the ones that apply:
+- **Offline:** action taken with no network; replay order after reconnect; replay of the same mutation twice (idempotency key / client-generated UUID); partial batch failure.
+- **Concurrency:** two devices edit the same row (409/stale version → `ConcurrencyConflictModal`); two cashiers consume the last stock unit; double-click and double-submit; two tabs open.
+- **Validation:** empty, zero, negative, extremely large numbers; decimals and DZD rounding (define one rounding rule: centimes stored as integers or fixed 2 decimals, never floats for money); Unicode and Arabic names; very long strings; duplicate unique keys (plate, VIN, NIF, phone, barcode, receipt number).
+- **Dates and time:** timezone Africa/Algiers (UTC+1, no DST); week starts Saturday for payroll; date boundaries at midnight; leap years; month-end proration; Friday/Saturday weekend and fixed Algerian holidays; Hijri-dependent holidays are configurable, not hardcoded.
+- **Permissions:** every role from the catalog tries every route; unauthorized access returns the defined fallback and writes an audit log row; direct URL/route manipulation.
+- **Deletion:** referential integrity (cannot delete a client with open invoices; soft-delete with `deleted_at`); undo after delete; undo after sync.
+- **Locale/print:** FR/AR/EN, RTL layout, A4 and 80 mm paper, page breaks, missing optional fiscal fields (NIF/NIS/RC/AI) print gracefully.
+- **Scale:** 10,000+ rows in lists (virtualize or paginate), CSV export of large sets (stream, do not freeze UI), CSV injection (prefix `=`, `+`, `-`, `@` cells with `'`), UTF-8 BOM for Excel with Arabic.
+- **Failure UX:** loading, empty, error, retry states; never a blank screen; ErrorBoundary recovery does not wipe unsynced queue.
+- **Money integrity:** totals recomputed server-side or by one shared pure function; no UI-only totals; invoice/receipt numbers gap-free and unique per business per fiscal year.
+
+### 0.5 Scope tags used in this document
+- **[ALL]** = applies to every one of the 16 verticals (and 160 trades via presets).
+- **[GROUP A]** = membership_session, appointment_service, pos_inventory, project_milestone, rental_booking, education_cohort, freelance_solo, trading_commercial.
+- **[GROUP B]** = medical_clinic, auto_garage, real_estate, manufacturing_production, legal_accounting, logistics_delivery, construction_contractor, agriculture_farming.
+- **[V: name(s)]** = only the named verticals. Do not touch other verticals for that item unless a shared helper requires it, and then keep behavior identical for them (add a regression test).
+
+### 0.6 Execution order and process
+Work in the phases of Section 13. After each phase: run all tests, update `REMEDIATION_LOG.md`, and produce a phase report listing every item as DONE / DEFERRED (with reason) / NOT-REPRODUCED. Do not start a later phase while an earlier phase has failing tests. Commit per item, with message `fix(<vertical|all>): <ID> <summary>`.
+
+---
+
+## 1. PHASE 1 — DATA INTEGRITY: LOCAL-ONLY ACTIONS MUST PERSIST
+
+For each item: add the Supabase write via the vertical's service, use `syncCoordinator` offline queue with a client-generated UUID, hydrate on load, reflect sync status, register undo that also reverses the remote write, and add a test that kills the network mid-action.
+
+### 1.1 Gym check-ins never reach `gym_check_ins` — [V: membership_session]
+- Defect: `addMemberCheckIn` in `store.ts` updates local `memberCheckIns` and undo only; `memberService.recordCheckIn` is never called. `addWalkInTicket` does sync.
+- Fix: call `memberService.recordCheckIn` through the offline queue; hydrate `memberCheckIns` from `gym_check_ins`; delta-sync cursor for the table.
+- Edge cases: duplicate check-in within N minutes (configurable guard, default 5, with override by owner); expired/frozen/suspended member (block or warn per business setting, log override with staff ID); balance due; check-in at midnight boundary; RFID double scan; undo of check-in must delete the remote row; member deleted after check-in; offline then reconnect ordering.
+- Also verify walk-in ticket numbering `WI-YYYY-XXXX` is unique under concurrency across devices (server-side sequence or device-prefixed counter) and that timbre is applied only when the business setting requires it.
+
+### 1.2 Quick roll call local-only — [V: education_cohort]
+- Defect: `AcademyRollCallKiosk` → `recordQuickAttendance` mutates `eduQuickAttendance` only.
+- Fix: persist to `edu_attendance` using the same schema and conflict key as `RollCallModal` (session + student). Remove `eduQuickAttendance` as a parallel truth, or make it a derived view. Migrate any existing local records on first load.
+- Edge cases: student not enrolled in the cohort; session already closed; re-marking a student (upsert, keep audit trail of changes); late arrival time; excused with reason; both kiosk and `RollCallModal` used for the same session (last-write-wins with audit, no duplicates); PIN gate via `PinVerificationModal` records who took attendance.
+
+### 1.3 Salon chair board in local state — [V: appointment_service]
+- Defect: `SalonQuickChairKiosk` keeps occupied-chair assignments in `useState`, bypassing `updateSalonChairStation` (`salon_chair_stations`).
+- Fix: drive the board from store/synced `salon_chair_stations`; assignment, timer start (store `started_at`, compute elapsed from timestamp, never from an in-memory counter), completion, and checkout all write through the store.
+- Edge cases: page reload mid-service restores timer; two devices assign the same chair (conflict resolution); appointment cancelled while in chair; stylist double-booked; chair out of service; checkout with split payment; walk-in without client record.
+
+### 1.4 POS cash drawer, opening float, petty cash, Z-report volatile — [V: pos_inventory]
+- Defect: `PosFinanceView` holds `expenses`, `openingFloat` (15000 default), `actualCashInput` in component state; lost on reload.
+- Fix: create persisted entities `pos_cash_sessions` (open/close, opening float entered by cashier, expected, counted, variance, closed_by), `pos_cash_movements` (payouts, petty cash, drops, with reason, receipt photo optional), and `pos_z_reports` (immutable snapshot with sequential Z number per branch). Remove the hardcoded 15000 default; require explicit opening float at session open.
+- Edge cases: sale attempted with no open session (configurable block/warn); two cashiers on one register; session left open across days (force close with reason); negative variance and over threshold requires manager PIN; Z-report is immutable and reprintable; refunds reduce expected cash correctly; split payments count only the cash portion; undo of petty cash.
+
+### 1.5 Return stock movements not upserted — [V: pos_inventory]
+- Defect: `refundSale` syncs `pos_sales` but `StockMovement` rows of type `Return` stay local.
+- Fix: upsert `pos_stock_movements` in the same logical transaction as the refund (server-side RPC preferred so sale update and stock movement succeed or fail together).
+- Edge cases: partial refund quantities; refund of a product that was deleted; refund on already-refunded lines (cap at sold qty); refund to member balance vs cash; stock adjustment for non-stocked/service items (no movement); undo refund.
+
+### 1.6 Verify other Group A local-only actions — [GROUP A] [VERIFY]
+Audit every store.ts action in Group A and list each action that mutates state without a service call. Fix all found with the same standard. Produce the audit table in `REMEDIATION_LOG.md` even if nothing else is found.
+
+---
+
+## 2. PHASE 1 (cont.) — PAYROLL, ATTENDANCE & ADVANCES SOURCE OF TRUTH — [ALL except project_milestone's own RH/Compta flows]
+
+- Defect: `algerianPayroll.ts` persists `atrium_staff_attendance_logs_v1`, `atrium_staff_salary_advances_v1`, `atrium_staff_payroll_runs_v1`, `atrium_staff_payroll_slips_v1`, `atrium_staff_weekly_sheets_v1` in localStorage while `staffService.ts` exposes Supabase tables. No declared source of truth.
+- Decision (implement exactly this): **Supabase is the source of truth. localStorage is only a write-through cache/offline buffer.** Reads hydrate from Supabase; writes go via the offline queue.
+- Steps:
+  1. Write a one-time migration that reads existing local records, uploads those not present remotely (match by deterministic ID), and then marks migration complete in a versioned key. No data loss; show the owner a summary.
+  2. Make approved/paid payroll runs and slips **immutable** (corrections via an adjustment run, never in-place edits). Store the rate set used (CNAS %, IRG scale version, SNMG) on each run.
+  3. Salary advances: deduction state transitions (`pending → deducted | waived`) happen only inside the payroll run transaction.
+  4. Attendance: punch logs are append-only with source (RFID/PIN/manual) and who entered manual edits.
+- Edge cases: employee hired or terminated mid-month (pro-rata); unpaid leave; overtime rules (define the legal multiplier as configuration); advance greater than net pay (carry over remainder); two payroll runs for the same month (block, require explicit adjustment); staff with no CCP/RIB when payment method is ccp/bank; rounding of IRG/CNAS to the centime consistently; salary below SNMG warning (value in config); weekly Saturday–Friday sheet crossing month boundaries; staff frozen/vacation status; payslip reprint after rates change must reproduce the original numbers.
+- **Statutory rates are not code constants.** Move CNAS 9%/26%, IRG scale, abatement (40%, 1,000–1,500), exemption threshold (30,000), SNMG, overtime multiplier, TVA rates, and Timbre scale into a versioned, effective-dated configuration table (`statutory_rates`) with admin-editable UI for the platform owner. `[VERIFY]` every current value against the latest Finance Law (the catalog cites the 2022 scale) with a qualified Algerian accountant before release; the agent must NOT assume the 2022 values are still correct. Add a test per bracket boundary.
+
+---
+
+## 3. PHASE 1 (cont.) — TOAST-ONLY STUBS: IMPLEMENT OR REMOVE
+
+For each stub, implement the real behavior (default) or remove/disable the control and log DEFERRED. Search the whole repo for other `showToast` calls that announce an action without performing it and add them to this list.
+
+| ID | Location | Required real behavior | Scope |
+|---|---|---|---|
+| 3.1 | `MemberSlideOverInspector` "Collect balance" | Record a payment against member balance (creates payment record, updates `balanceDue`, receipt, undo) | [V: membership_session] |
+| 3.2 | `MemberSlideOverInspector` "New invoice" | Open invoice composer (depends on unified invoicing, Section 5) | [V: membership_session] |
+| 3.3 | `MemberSlideOverInspector` "New sale" | Open Pro Shop register pre-bound to the member | [V: membership_session] |
+| 3.4 | `MembershipSchedulerView` "Inscrire +1" | Enroll a member into the class with capacity check and waitlist | [V: membership_session] |
+| 3.5 | `MembershipSchedulerView` "Confirmer coach" | Persist coach confirmation status on the `ScheduleEvent` | [V: membership_session] |
+| 3.6 | `MembershipSchedulerView` bulk "Dupliquer semaine" | Duplicate selected week's events to a target week with conflict detection | [V: membership_session] |
+| 3.7 | `PosOrdersView` bulk "Imprimer reçus" (~line 964) | Batch print 80 mm receipts for selected sales (one print job, page breaks per receipt) | [V: pos_inventory] |
+| 3.8 | `EducationTimetableView` 4 attendance-sheet print actions | Real printable "feuille d'émargement" template (cohort, session, date, roster, signature column, FR/AR) | [V: education_cohort] |
+| 3.9 | `VenueFinanceView` "Reçu Caution"/"Reçu" (row fan, detail, inspector) | Real printable security-deposit receipt (`window.print()`), sequential receipt number, deduction details | [V: rental_booking] |
+| 3.10 | `RealEstateInspectionsView` "Valider"/"Valider État" | Persist validation fields (validated_by, validated_at, locked) and lock the PV from further edits | [V: real_estate] |
+| 3.11 | `RealEstateInspectionsView` "Partager PV" and "Bon de visite GPS partagé" | Generate a real share artifact: signed expiring link or PDF export + copy to clipboard/WhatsApp share | [V: real_estate] |
+| 3.12 | `ManufacturingQcView` "Rebut" (~lines 593, 622) | Create a `QualityInspectionRecord` mutation with status Scrapped, reason, quantity; adjust stock/WIP; open a non-conformity record (NCR) | [V: manufacturing_production] |
+| 3.13 | `TradingSalesView` bulkSecondaryAction "Exporter Sélection" (~line 681) | Export only the selected documents as CSV (and optionally a combined PDF) | [V: trading_commercial] |
+
+Edge cases common to 3.x: selection of 0 or 1,000+ items; items from different statuses; items deleted between selection and action; popup/print blocked; partial failure reported per item.
+
+---
+
+## 4. PHASE 1 (cont.) — HARDCODED VALUES AND FIXTURES IN PRODUCTION PATHS
+
+Replace each with computed-from-data values, or an explicit empty state ("No data yet"). Add a CI guard (Section 12) that fails if forbidden literals reappear.
+
+| ID | Defect | Fix | Scope |
+|---|---|---|---|
+| 4.1 | `AppointmentFinanceView` seeds `cash = 45000`, `baridiMob = 68000`, `cib = 29500` | Start at 0; sum real paid appointments by payment method; add tests | [V: appointment_service] |
+| 4.2 | `addServiceItem` in `store.ts` sets `tenantId: 'acc_01'` | Use the active tenant/business from session; audit **every** store action creating records for hardcoded IDs (`grep -rn "acc_01\|stf_pm_01\|mem_salon_"` etc.) | [ALL] (found in appointment_service; sweep everything) |
+| 4.3 | `ProjectDirectionView` "Audit Financier 2026" KPIs (58,4 M DA, 31,4 %, 48, 98,2 %) and bars | Aggregate from `pmProjects`, `pmExpenses`, payroll batches; make the year a selector, not a literal | [V: project_milestone] |
+| 4.4 | `ProjectSuperviseurView` hardcoded `98.6%` SLA and "58 WILAYAS LIVE" | Compute SLA from missions (on-time ÷ total), wilayas from active missions | [V: project_milestone] |
+| 4.5 | `ProjectChefProjetView`/`ProjectSuperviseurView` hardcoded declarant ID, name, and `fiscalNif: '001916001234567'`; Unsplash receipt images | Use the logged-in staff; NIF from fiscal profile; real receipt upload to storage with size/type validation | [V: project_milestone] |
+| 4.6 | `ProjectCreaView` hardcoded Unsplash `previewUrl` on BAT upload | Real file upload to storage; generate preview thumbnail; validate type (PDF/PNG/TIFF/AI), size, and extract real colorSpace/DPI/bleed metadata rather than trusting form defaults | [V: project_milestone] |
+| 4.7 | `ProjectRhView` fixed constants for `gender`, `hasDriverLicense`, `isVehicleOwner`, `desiredRoles` | Make them real form inputs with validation | [V: project_milestone] |
+| 4.8 | `VenueCloudSyncModal` hardcoded seed UUID SQL and project ref `tzzncsbvezywtaknwind.supabase.co` | Derive project ref from env config; generate SQL from the current tenant; hide the whole modal in production builds unless the user is platform admin | [V: rental_booking] |
+| 4.9 | `PosRegisterView` receipt preview uses static sample lines | Render the live cart (or last sale) when available; sample only when empty and labelled "Sample" | [V: pos_inventory] |
+| 4.10 | `MemberSlideOverInspector` heuristic session totals by `planName` substring (365/90/10/30) | Add `totalSessions`/`durationDays` fields to `MembershipPlan`; migrate existing plans; remove the substring logic | [V: membership_session] |
+| 4.11 | `[VERIFY]` repo-wide scan for demo constants outside fixtures | Run the scan and fix all hits | [ALL] |
+
+---
+
+## 5. PHASE 1 (cont.) — ROUTING, ROLE AND ACCESS MISMATCHES
+
+For each: fix, then add a role-access test (Section 12.3). After fixing, regenerate a table (role × route → component) from code and diff it against the catalog.
+
+| ID | Defect | Fix | Scope |
+|---|---|---|---|
+| 5.1 | `case 'finance'` in membership returns `MembershipStaffView`; `MembershipFinanceView` unreachable; Sidebar omits finance for owners | Route finance to `MembershipFinanceView`, expose in Sidebar for owner, and replace its synthesized payment rows with a real payments ledger (Section 6) | [V: membership_session] |
+| 5.2 | `magasinier` finance ("Deliveries/Réceptions") falls to `AutoGaragePartsView` | Build a real goods-receipts (réceptions) view over `garage_purchase_orders` or remove the tab from Sidebar for that role | [V: auto_garage] |
+| 5.3 | `secretaire_caisse` registrations ("Filing") routes to `LegalTrustView` instead of `LegalVaultView` | Route to the vault with role-scoped permission (filing-only: upload and view own-scope documents) | [V: legal_accounting] |
+| 5.4 | `hub_sorter`, `stop_desk_agent` dashboard bypass `LogisticsDashboardView` via scanner fallback | Decide per role: either role-specific mini-dashboard (parcels scanned today, shelf load, pending handovers) or a deliberate redirect; make Sidebar and App consistent | [V: logistics_delivery] |
+| 5.5 | `canAccessStaffScreen` alias mismatch (`conducteur`/`metreur` vs `conducteur_travaux`/`daf_metreur`) | Introduce a single `normalizeRole(category, role)` used by Sidebar, App.tsx, staffRules, and store; migrate stored roles; test every alias | [V: construction_contractor] |
+| 5.6 | `[VERIFY]` `canAccessStaffScreen` lists `admin/director/gerant/owner`, but other verticals use `direction`, `avocat_associe`, `notaire_titulaire`, `expert_comptable`, `dispatcher`, `chef_culture`, `chef_atelier`, etc. | Enumerate every role per vertical against staffRules; fix any role that Sidebar shows 'staff' to but staffRules denies (or the reverse) | [GROUP B] + any Group A with roles |
+| 5.7 | Sidebar exposes `analytics` for salon owners that App.tsx re-routes to the dashboard | Remove the duplicate entry or give it a distinct screen | [V: appointment_service] |
+| 5.8 | `zootechnicien`: every route falls back to `AgricultureLivestockView` | Make Sidebar show only the permitted entry; add explicit deny with audit log for other routes | [V: agriculture_farming] |
+| 5.9 | Reused screen keys with unrelated meanings (e.g. manufacturing `finance`→QC, pos `registrations/members`→Orders, education `analytics`→Attendance) | Introduce stable semantic route IDs (`qc`, `orders`, `attendance`...) with a mapping layer; keep legacy keys as aliases so nothing breaks | [ALL] (refactor, keep behavior identical) |
+| 5.10 | App.tsx blocks `history`/`settings` per role by silent fallback | Replace silent fallback with an explicit "Access restricted" screen and an audit log entry; keep Sidebar and App.tsx permission tables generated from one shared definition | [ALL] |
+| 5.11 | `GoogleOAuthGuideModal` unmounted, `MembershipFinanceView`-style orphan screens, legacy `membership/components/` directory | Run dead-code analysis; delete confirmed orphans or wire them; list what was removed | [ALL] |
+
+---
+
+## 6. PHASE 2 — SHARED HORIZONTAL FOUNDATIONS [ALL]
+
+Build these as shared modules once, then adopt them per vertical. Each module needs its own schema, service, hooks, UI primitives, tests, and a migration plan. Do not create per-vertical copies.
+
+### 6.1 Unified document and invoicing engine
+- One engine for: quote (devis), order, delivery note, invoice, credit note (avoir), receipt, proforma.
+- Requirements: gap-free legal numbering per business, per document type, per fiscal year (allocated server-side via RPC to survive offline devices: use per-device reserved ranges or deferred final numbering with draft IDs); TVA per line (0/9/19 via statutory config); Timbre Fiscal (Art. 317 helper reused everywhere, one implementation); retenue de garantie; discounts; rounding rule; total in words (FR/AR, reuse `algerianPtt`); NIF/NIS/RC/AI header from the fiscal profile with graceful missing-field handling; immutable once issued (changes via credit note); PDF/print template (A4, 80 mm) editable per business (logo, footer, language).
+- Migrate `CommercialDocument` (trading) onto it first as the reference implementation, then adopt in: membership (fix 3.2), project_milestone (client invoicing), rental_booking, manufacturing (sales side), legal_accounting (fee invoices), education (tuition), garage, real_estate, agriculture, logistics (merchant fees), medical (invoices).
+- Edge cases: invoice for a deleted customer; currency (DZD/EUR/USD for freelance with stored FX rate and date); partial payments; overpayment (credit balance); cancelled/voided invoices keep their number; duplicate issuance; clock skew between devices.
+
+### 6.2 Unified payments ledger
+- One `payments` table and service: method (cash, CCP, bank transfer, CIB, BaridiMob, cheque, traite, member balance, credit), amount, date, document reference, who recorded, cash session link.
+- Cheques and traites (post-dated instruments): due date, bank, status (received, deposited, cleared, bounced); bounced cheque reopens the invoice balance. Primary need: trading, but build it shared.
+- Adopt in all verticals; replace synthesized payment rows (e.g. `MembershipFinanceView`).
+- Edge cases: allocation of one payment across multiple invoices; refund; payment reversal with audit; payment dated in a closed period (block); duplicate payment submission (idempotency key).
+
+### 6.3 Shared accounting layer (SCF)
+- Expand the legal-only SCF ledger into a shared double-entry engine (`journal_entries`, `journal_lines`, chart of accounts seeded with SCF, fiscal years, period locking).
+- Every vertical posts via a posting-rules layer (sale, purchase, payment, payroll, stock movement, depreciation later). Entries must always balance (reuse `validateAndBalanceSCFEntry`); posting failures go to a retry queue and a visible "unposted" report, never silently dropped.
+- Deliver: trial balance, general ledger, bank/cash reconciliation, TVA report ready for G50 preparation, and CSV/PDF exports. `[VERIFY]` the exact G50/TAP/IBS formats with an accountant before claiming compliance; label exports "preparation aid" until validated.
+- Edge cases: reversal entries; multi-currency; period close/reopen with permission; backdated entries; imbalance rounding differences.
+
+### 6.4 Unified CRM and communication
+- One `party` master (person or company) linkable from member, client, patient, renter, student, B2B client, owner, merchant, etc., with duplicate detection (phone, NIF, email) and merge with audit.
+- Customer 360 view: all documents, payments, appointments, tickets, notes, communications across verticals.
+- Follow-up tasks and reminders; message templates (FR/AR/EN) for SMS/WhatsApp/email with variables; consent/opt-out flag respected everywhere; delivery log.
+- Edge cases: phone normalization to +213 formats (`validateAlgerianPhone` reused); duplicate phones across parties (shared family phone); opt-out; template variable missing; provider failure → retry and surface status.
+
+### 6.5 Reminder and notification engine
+- Rule-based events: membership expiring, invoice overdue, installment due, rent due, appointment tomorrow, low stock, expiry date, service due (garage), DAR lockout, cheque due, deadline (CPCA), contract expiry, vehicle documents expiry. Channels: in-app, SMS/WhatsApp (when 6.4 is configured), email.
+- Idempotent scheduling (a reminder is never sent twice), per-business quiet hours, per-rule enable/disable, delivery log.
+
+### 6.6 Shared inventory/WMS services
+- Extract a shared stock service from trading, POS, manufacturing, garage, agriculture, medical consumables: warehouses/bins, lots/batches with expiry (FEFO), serial numbers, stock counts (cycle count with variance posting), reorder rules (min/max → suggested purchase), unit conversions (piece/carton/pallet), barcode label printing, landed cost (freight, customs, FX) for import flows, consignment/returnable packaging ledger.
+- Edge cases: negative stock policy (block/allow per business); concurrent consumption (atomic decrement via RPC); transfer in transit; lot recall; expired lot sale block; count during active sales.
+- Adoption order: trading → POS → manufacturing → garage → agriculture → medical consumables.
+
+### 6.7 CSV/Excel import
+- Import wizard for: members, clients, patients, products, suppliers, staff, vehicles, parcels, properties, students. Steps: upload → column mapping (saved templates) → validation preview with row-level errors → dry run → commit in chunks with rollback on failure → import report download.
+- Edge cases: encoding (UTF-8, Windows-1256, ISO-8859-1), delimiters (`,` `;`), Excel date serials, Arabic digits, phone formats, duplicates (skip/update/merge option), 50,000-row files, malformed rows, formula-injection strings, partial failure.
+
+### 6.8 Roles, permissions, and security
+- Replace fixed role strings with a permission matrix (resource × action) editable by owners, with role presets matching the catalog roles. Single `can(user, resource, action)` used by Sidebar, App.tsx, services, and RLS.
+- Add Supabase RLS policies for every table (tenant + branch + role), tested with a policy test suite. Two-factor authentication for owners. Session timeout and PIN re-lock via `FastSwitchModal`.
+- Sensitive-data access log (read events) for medical and legal records; immutable audit logs for all financial mutations (extend `immutable_audit_logs`).
+- Personal-data protection: consent capture, export/erase on request, retention settings. `[VERIFY]` obligations under Algerian personal-data law (Law 18-07) with counsel; do not claim compliance without review.
+
+### 6.9 Platform capabilities
+- Approval workflows (discounts above X, refunds, expense reimbursement, payroll release, price changes) with configurable thresholds and approver roles.
+- File attachments to any record (storage bucket, size/type limits, virus-scan hook, signed URLs), e-signature capture reused from `BonDeVisiteModal`, custom fields per entity, editable print templates, global search over the Command Palette.
+- Public REST API and webhooks with scoped API keys, rate limits, and signed payloads (build after 6.1–6.4 stabilize).
+
+### 6.10 Reporting and BI
+- One KPI definition registry (each KPI defined once, used by dashboards, history, exports). Cross-branch owner dashboard, scheduled report emails, PDF export, date-range comparison. Remove any dashboard figure computed inline in a view without going through the registry.
+
+### 6.11 Mobile, hardware, and offline hardening
+- PWA install, offline-first for field roles (superviseur, chef_chantier, drivers, stop_desk_agent, farm roles), background sync status indicator, conflict UI. Hardware abstraction: thermal printer (ESC/POS), barcode scanner, RFID reader, cash drawer, weighing scale. Document supported models; degrade gracefully to `window.print()` and keyboard-wedge input.
+- Offline queue hardening (`offlineQueue.ts`): max queue size with user warning, poison-message quarantine (a permanently failing mutation must not block the queue), ordered replay with dependency awareness (parent before child), idempotent writes, exponential backoff, visible "pending changes" counter, export of unsynced queue before any destructive reset. `ErrorBoundary` recovery must NOT clear `atrium_offline_mutation_queue_v1`.
+
+### 6.12 Internationalization
+- Move every hardcoded user-facing string (including toasts such as "Reçu de séquestre caution émis...", "Fiche de non-conformité ouverte...", "Feuille d'émargement générée...") into i18n for en/fr/ar. Add a CI check that fails on new hardcoded JSX text or toast literals. Verify RTL for every print template.
+
+---
+
+## 7. PHASE 3 — PER-VERTICAL REQUIREMENTS (scope = the named vertical only)
+
+Implement using the shared modules from Phase 2 wherever they exist. Do not build vertical-private copies of invoicing, payments, CRM, reminders, or stock.
+
+### 7.1 membership_session
+- Recurring billing with auto-renewal; renewal reminders via 6.5; real session packs (`totalSessions`, `remainingSessions`, decrement on check-in, expiry date); freeze/pause with rules (max days, fee, auto-extend expiry); class booking with waitlist and capacity; member QR pass; trainer commissions linked to payroll; churn/retention analytics; `[trade gap]` court/resource booking for padel/tennis/pool/climbing (reuse the rental unit/booking engine rather than class schedules).
+- Edge cases: freeze starting during an active check-in window; plan change mid-cycle (proration); family/couple plans; expired member check-in override logging; refunds of unused sessions; checkout of a day pass with and without timbre.
+
+### 7.2 appointment_service
+- Online booking link and WhatsApp booking; reminders and no-show deposits; per-stylist working hours, breaks, time off; prepaid packages, gift cards, loyalty; service-linked consumables decrementing stock; fix walk-in visibility (add `segmentData` default or change the filter to a `clientType` field; migrate existing records); "Book" action preselects the clicked client.
+- `[trade gap]` tattoo/laser: consent forms, signatures, before/after photos with storage; hammam: room/session flow.
+- Edge cases: overlapping appointments for a stylist; service duration changes; appointment spanning closing time; client allergy conflict with service (warn); deposit refund on cancellation window.
+
+### 7.3 pos_inventory
+- Restaurant: table/floor plan, kitchen display, modifiers/options, recipe-based ingredient depletion, waiter/cashier/kitchen roles, tips, delivery orders. Retail: size/color variants, barcode label printing, customer credit ledger (carnet de dettes), expiry tracking, scale integration, optical prescriptions for trade_optical_store.
+- Edge cases: order edited after kitchen send; split bill; table transfer; void with manager PIN; modifier price changes after order; variant out of stock; negative stock policy.
+
+### 7.4 project_milestone
+- Client quoting, invoicing, and receivables (via 6.1/6.2); timesheets and utilization; real project profitability (revenue − expenses − payroll cost) computed from data; client approval portal for BAT/deliverables; Gantt/planning view; lighter preset for non-print trades (software, PR, consulting) hiding POSM/print flows.
+- Edge cases: milestone-based invoicing with partial approval; expense without receipt; project currency; budget overrun alerts; revision loops count limit.
+
+### 7.5 rental_booking
+- Invoices with TVA/timbre and payments ledger; seasonal/weekend pricing rules; staged payment schedules for weddings; contract templates with e-signature; iCal sync.
+- `[trade gap]` car rental: fleet records, mileage/fuel, damage inspection, insurance and technical-control expiry, driver license capture; gear/furniture rental: serial/asset tracking, check-out/check-in, maintenance; coworking: desk subscriptions.
+- Edge cases: double-booking race conditions (server-side exclusion constraint on unit+time range); overnight bookings; booking edits that cause conflict; deposit deduction exceeding deposit; late return fees.
+
+### 7.6 education_cohort
+- Parent communication and portal; term report cards/bulletins; installment dunning; hourly payroll for vacataire teachers; teacher timetable conflicts; sibling discounts, scholarships, refunds; enrollment contracts and student cards.
+- `[trade gap]` driving schools: driving-hour logs, code/exam scheduling, instructor and vehicle assignment; K-12: canteen and transport.
+- Edge cases: student transfers between cohorts mid-term (fee proration); cohort over capacity; grade scale differences (/20 vs /100) configurable; certificate reissue keeps `verificationHash` stable and revocable.
+
+### 7.7 freelance_solo
+- Recurring invoices and payment reminders; auto-entrepreneur turnover ceiling tracker and contribution estimates (`[VERIFY]` ceiling and rate values against current law, store as versioned config); FX rate capture per invoice; client share link; contract/NDA templates; expense receipt uploads.
+- `[trade gap]` translators: per-word/per-page pricing and sworn-translation register; photographers: shoot booking and gallery delivery.
+- Edge cases: timer running across midnight and across device switch (one active timer per user, server-authoritative); invoice currency change after creation (blocked after issue); unbilled hours edited after being invoiced.
+
+### 7.8 trading_commercial
+- Client-tier price lists; hard credit-limit blocking with manager override; lots/expiry; unit conversion; cheques and traites (6.2); landed cost; field sales reps with commissions and delivery rounds; stock counts and reorder suggestions; returnable packaging (consignes) for beverage depots; bank reconciliation (6.3).
+- Edge cases: price list effective dates; credit limit exceeded by an order that is later edited; BL→Facture conversion with partial delivery; avoir exceeding invoice; transfer BT between depots with insufficient stock; retenue de garantie release.
+
+### 7.9 medical_clinic
+- **Resolve source of truth** between the 12 `atrium_medical_*_v2` localStorage keys and the packed Supabase tables (consultations holding prescriptions/labs/certificates; invoices holding CHIFA claims and cash closures). Create dedicated tables (`medical_prescriptions`, `medical_lab_records`, `medical_certificates`, `medical_chifa_claims`, `medical_cash_closures`), write a backfill from the packed JSON, switch reads/writes, keep the old columns read-only for one release.
+- **Role separation:** doctor, secretary, nurse, with permissions matrix (clinical notes only for clinicians). Access audit log for every patient record read. Consent capture. `[VERIFY]` data-protection obligations (6.8).
+- Appointment reminders and online booking; drug database with interaction and allergy checks; revenue sharing across practitioners.
+- `[trade gap]` dental odontogram and treatment plans; ophthalmology refraction/glasses prescription; pediatrics growth curves and vaccination calendar; gynecology pregnancy follow-up; radiology report templates; physio/speech session packs.
+- Edge cases: patient with allergy to prescribed drug; duplicate patient detection; ALD coverage percentage changes; prescription renewal limits; CHIFA claim rejected and resubmitted; certificate duplicate with hash verification; emergency flag persistence (currently local key `atrium_medical_emergency_v2`) moves to the database.
+
+### 7.10 auto_garage
+- Service reminders (next oil change, contrôle technique); customer estimate approval with photos; flat-rate labor catalog; technician time clock and commissions; real purchasing (supplier orders, goods receipt, warranty tracking) including fix 5.2; insurance claim handling for body shops.
+- `[trade gap]` inspection centers: checklist and PV; detailing: packages; tire/lube: tire storage; moto: different vehicle fields (no VIN-17 assumption).
+- Edge cases: part price change between quote and invoice; work order reopened after invoicing (credit note path); vehicle ownership change; bay double-assignment; mileage regression validation; plate format variants.
+
+### 7.11 real_estate
+- Listing publication/portal sync with photos; buyer-match alerts (WhatsApp); sales pipeline (offer → promesse → acte); commission split between agents; rent due reminders and rent indexation; maintenance tickets; fixes 3.10 and 3.11.
+- `[trade gap]` syndic: charges, calls for funds, assemblies; developers: programs, lots, off-plan payment schedule; student housing: per-bed rooms; vacation rentals: calendar and cleaning turnover.
+- Edge cases: mandate expiry and exclusivity overlap on the same property; lease renewal and indexation date; partial rent payments; quittance numbering; GPS permission denied on visit capture; signature pad on touch and mouse.
+
+### 7.12 manufacturing_production
+- Sales side: customer quotes, orders, delivery, invoicing (6.1); finished-goods stock; purchase suggestions from shortages; actual vs standard costing; preventive machine maintenance; lot traceability; piece-rate payroll; persistent Andon alerts (new `mfg_alerts` table, notify gérant and chef_atelier); fix 3.12.
+- `[trade gap]` textile/wood/aluminum/marble: cutting optimization and dimension-based quoting (m², linear meters).
+- Edge cases: BOM change after OF started (version BOMs, OF pins its version); scrap exceeding tolerance; material shortage mid-production; CMUP recalculation on late receipts; operator logs in with PIN and PPE checklist is auditable per session.
+
+### 7.13 legal_accounting
+- Fee invoicing and time billing with TVA (build the screen for `legal_time_entries`, `[VERIFY]` first that none exists); document templates and e-signature; conflict-of-interest check; client portal and SMS hearing reminders; move vault storage from `atrium_legal_vault_v2` localStorage into `legal_documents` + storage bucket with migration; fix 5.3.
+- `[trade gap]` accounting/payroll-advisory: multi-client books (one ledger per client dossier) and liasse/G50 preparation; bailiff: significations and PV tracking; arbitration: case timelines.
+- Edge cases: escrow release without sufficient balance (`canReleaseEscrow` must be enforced server-side too); hearing on a holiday (auto-shift per rule, shown clearly); deadline recalculation when a holiday list changes; CARPA reconciliation; confidentiality scoping per matter.
+
+### 7.14 logistics_delivery
+- Public tracking page and recipient notifications; driver mobile app with POD photo, signature, and GPS; failed-delivery/reschedule/return flows; route optimization; merchant portal and monthly merchant fee invoicing; driver per-parcel pay; vehicle fuel/maintenance; carrier and e-commerce integrations; fix 5.4.
+- `[trade gap]` freight: trips and waybills; moving: volume quotes; cold chain: temperature logs; customs: dossier tracker; towing: dispatch board.
+- **Wilaya list `[VERIFY]`:** `ALGERIAN_WILAYAS` and all "58" literals (also in project_milestone missions and the COD network trade). Check against the current official administrative division; I recall reports of a reform raising the count, so confirm with an official source. Make the wilaya list and codes a versioned reference table, not a constant, and make tariff zones editable. Remove the "58" literals from UI copy.
+- Edge cases: COD amount mismatch at discharge; parcel scanned twice; OTP retry limits; driver cash discharge with counterfeit/damaged notes recorded as variance; parcel with a wilaya code that no longer exists; volumetric vs actual weight rounding; remittance batch with failed CCP key validation.
+
+### 7.15 construction_contractor
+- Job costing (budget vs actual per site); material requisition and site stock; subcontractor payment statements; bid/tender management with price studies; bank guarantee tracker (soumission, bonne exécution, avance); daily-worker payroll per site; planning with progress photos; safety incident screen over `btp_safety_incidents`; fix 5.5.
+- `[trade gap]` small electrical/plumbing contractors: quick quotes and interventions without full BOQ (lighter preset).
+- Edge cases: BOQ quantity revisions after décompte issued; cumulative billing never exceeding contract + avenants; avenant (change order) tracking; retention release; weather-claim dates overlapping; concrete test failing 28-day MPa triggers an alert and blocks pour-section sign-off.
+
+### 7.16 agriculture_farming
+- Replace `__atrium_agri__:` JSON envelopes with real columns for any field used in filtering, reporting, or rules (DAR dates, ANRH quotas, antibiotic withholding, piecework advances, crate tares), with a backfill from `packMeta()`/`unpackMeta()` data and a read-compat window; inputs inventory (seed, fertilizer, feed, fuel); cost and profit per parcel and per crop cycle; herd health and vaccination calendar; irrigation scheduling; offline-first field use; UI for cold storage and stock tables; add an accountant-type role; fix 5.8.
+- `[trade gap]` currently only dairy cattle is modeled: poultry batches (mortality, feed conversion), sheep/goat herd records, beekeeping hives, olive pressing yield, nursery plant batches, packing-station lot grading.
+- Edge cases: treatment applied to a parcel with a crop in `ready_harvest` (DAR lockout enforced at write time, not just in the UI); antibiotic withholding spanning multiple milking sessions; ANRH quota exceeded; seasonal worker advance greater than earnings; weighbridge tare changes; milk tank temperature out of range rejects the batch.
+
+---
+
+## 8. PHASE 4 — TRADE PRESETS (160 trades vs 16 UIs) — [ALL]
+
+The catalog lists 10 trades per vertical but ships one UI per vertical. For each trade define a preset (config + seed data, no new screens unless needed): terminology overrides (FR/AR/EN), default services/products/plans, enabled/disabled modules, field sets, default document templates, default fiscal settings, onboarding checklist. Presets must be data-driven (`category_formules` / preset registry), selectable in `PowerOnboardingScreen`, and covered by a test that provisions every trade and asserts that no screen shows another trade's vocabulary or empty broken state. Where Section 7 lists a `[trade gap]`, that trade must not be advertised in onboarding until its required capability ships; mark it "Coming soon" instead.
+
+---
+
+## 9. PHASE 5 — ARCHITECTURE CONSOLIDATION — [ALL]
+
+- Document and then reduce the Group A (store.ts) vs Group B (use*Data hooks) split: define one data-access contract (`list/get/create/update/delete/subscribe`, offline-aware, undo-aware) and migrate Group B hooks and Group A store slices to it incrementally. No big-bang rewrite; verticals migrate one at a time behind tests.
+- Replace localStorage domain keys listed per vertical in the catalog with the contract above (cache only). Provide a versioned migration for each key family.
+- Add a schema-drift check: every table referenced in code exists in migrations; every `CATEGORY_TABLE_MAP` entry has a service or is removed; registered-but-unused tables (e.g. `btp_safety_incidents`, `agri_cold_storage`, `agri_stock_items`, `legal_invoices`) are either given UI or documented as reserved.
+
+---
+
+## 10. SECURITY & COMPLIANCE CHECKLIST — [ALL]
+
+RLS on every table with tests; no service-role key in the client; secrets only in env; CSV injection protection; XSS-safe rendering of user text in print windows; file upload validation; rate limiting on PIN verification (lockout after N failures); audit log for permission denials; backup/restore drill documented and tested; data retention settings; license enforcement server-side (not just `DesktopUpgradeModal`); voucher redemption brute-force protection.
+
+---
+
+## 11. DOCUMENTS & PRINT QUALITY — [ALL]
+
+Every `window.print()` template: correct @page size (A4 or 80 mm), print CSS hides app chrome, FR/AR/EN with RTL, fonts embedded (Arabic shaping verified), long tables paginate with repeated headers, missing fiscal fields handled, totals in words correct for FR and AR, QR/hash codes scannable, reprints marked "Duplicata" when required. Add visual regression snapshots for each template.
+
+---
+
+## 12. TEST & CI REQUIREMENTS
+
+### 12.1 Unit tests
+All rule modules (`algerianPayroll`, `staffRules`, `realEstateRules`, `manufacturingRules`, `legalRules`, `logisticsRules`, `contractorRules`, `agriRules`, `algerianPtt`, timbre helpers): boundary values, rounding, and every statutory bracket.
+
+### 12.2 Integration tests
+Per vertical: create → edit → status transition → delete → undo → offline → reconnect → verify remote rows. Sync tests: queue replay twice (idempotent), conflict 409 path, poison mutation quarantine.
+
+### 12.3 Role-access matrix test
+Auto-generate from the permission definition: for every vertical × role × route, assert allowed component or explicit denial. Fail CI when Sidebar and App.tsx disagree.
+
+### 12.4 End-to-end tests (Playwright)
+One golden path per vertical (e.g. gym check-in offline → sync; POS sale → refund → Z-report; trading devis → facture → payment; legal escrow release; logistics parcel → manifest → discharge; payroll run → payslip print).
+
+### 12.5 CI guards
+- Fail on `showToast` calls in handlers that contain no store/service call (lint rule or script).
+- Fail on forbidden literals (`acc_01`, hardcoded NIFs, `unsplash.com`, `supabase.co` project refs, `58 WILAYAS`) outside fixtures.
+- Fail on new hardcoded user-facing strings (i18n check).
+- Fail on new `localStorage.setItem` keys not registered in a central key registry with an owner and purpose.
+- Type-check, lint, unit, integration, e2e must pass before merge.
+
+---
+
+## 13. EXECUTION PHASES AND REPORTING
+
+| Phase | Contents | Exit criteria |
+|---|---|---|
+| 1 Trust | Sections 1–5 plus 6.11 queue hardening and 6.12 i18n for touched strings | Zero local-only actions, zero toast-only stubs, zero hardcoded business literals, role-access tests green |
+| 2 Foundations | Sections 6.1–6.10 | Invoicing, payments, ledger, CRM, reminders, shared stock, import, permissions live and adopted by at least trading, POS, membership |
+| 3 Vertical depth | Section 7 | Per-vertical acceptance list completed; adopt shared modules |
+| 4 Presets | Section 8 | All 160 trades provision cleanly |
+| 5 Consolidation & hardening | Sections 9–11 | Architecture contract adopted, security checklist and print QA green |
+
+After each phase deliver: (a) the item table with DONE / DEFERRED / NOT-REPRODUCED and evidence, (b) test summary, (c) list of newly discovered defects (add to the backlog with scope tags), (d) migration and rollback notes, (e) anything that requires a human decision (statutory values, legal wording, provider choices).
+
+## 14. ESCALATE INSTEAD OF GUESSING
+
+Stop and ask the product owner when: a statutory rate or legal formula is unclear; a fix would change how existing money is calculated or reported; a migration could alter historical financial records; an item conflicts with another item; the catalog and the code disagree in a way not covered here. Never invent legal or tax rules.
+
+---
+
+## 15. FINAL ACCEPTANCE CHECKLIST (all must be true)
+
+- [ ] Every item in Sections 1–5 is DONE or has an approved DEFERRED reason; none is NOT-REPRODUCED without evidence.
+- [ ] No user action completes with only a toast.
+- [ ] No hardcoded tenant, NIF, project ref, sample image, KPI or opening balance in production paths.
+- [ ] Payroll, attendance, advances, cash sessions, medical and legal records have Supabase as the source of truth with a verified migration.
+- [ ] Sidebar, App.tsx, staffRules, and RLS derive from one permission definition; role-access test green.
+- [ ] Statutory rates and the wilaya list are versioned reference data.
+- [ ] Unified invoicing, payments, ledger, CRM, reminders, shared stock, and import exist and are adopted per Section 13.
+- [ ] Every print template passes the FR/AR/RTL and paper-size checks.
+- [ ] CI guards in 12.5 are active and green.
+- [ ] `REMEDIATION_LOG.md` is complete and accurate.

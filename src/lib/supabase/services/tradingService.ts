@@ -313,7 +313,7 @@ export const tradingService = {
 
   async upsertWarehouse(warehouse: WarehouseDepot): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: warehouse.accountId || warehouse.tenantId || 'acc_01',
+      accountId: warehouse.accountId || warehouse.tenantId,
       businessId: warehouse.businessId,
       branchId: warehouse.branchId || warehouse.facilityId,
       staffId: warehouse.staffId,
@@ -371,7 +371,7 @@ export const tradingService = {
 
   async upsertClient(clientItem: B2bClient): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: clientItem.accountId || clientItem.tenantId || 'acc_01',
+      accountId: clientItem.accountId || clientItem.tenantId,
       businessId: clientItem.businessId,
       branchId: clientItem.branchId || clientItem.facilityId,
       staffId: clientItem.staffId,
@@ -452,7 +452,7 @@ export const tradingService = {
 
   async upsertSupplier(supplier: B2bSupplier): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: supplier.accountId || supplier.tenantId || 'acc_01',
+      accountId: supplier.accountId || supplier.tenantId,
       businessId: supplier.businessId,
       branchId: supplier.branchId || supplier.facilityId,
       staffId: supplier.staffId,
@@ -527,7 +527,7 @@ export const tradingService = {
 
   async upsertProduct(product: Product, depotId?: string): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: product.accountId || product.tenantId || 'acc_01',
+      accountId: product.accountId || product.tenantId,
       businessId: product.businessId,
       branchId: product.branchId || product.facilityId,
       staffId: product.staffId,
@@ -590,7 +590,7 @@ export const tradingService = {
 
   async upsertCommercialDoc(doc: CommercialDocument): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: doc.accountId || doc.tenantId || 'acc_01',
+      accountId: doc.accountId || doc.tenantId,
       businessId: doc.businessId,
       branchId: doc.branchId || doc.facilityId,
       staffId: doc.staffId,
@@ -697,7 +697,7 @@ export const tradingService = {
 
   async upsertPurchaseDoc(doc: PurchaseDocument): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: doc.accountId || doc.tenantId || 'acc_01',
+      accountId: doc.accountId || doc.tenantId,
       businessId: doc.businessId,
       branchId: doc.branchId || doc.facilityId,
       staffId: doc.staffId,
@@ -769,7 +769,7 @@ export const tradingService = {
 
   async upsertStockVoucher(voucher: StockMovementVoucher): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: voucher.accountId || voucher.tenantId || 'acc_01',
+      accountId: voucher.accountId || voucher.tenantId,
       businessId: voucher.businessId,
       branchId: voucher.branchId || voucher.facilityId,
       staffId: voucher.staffId,

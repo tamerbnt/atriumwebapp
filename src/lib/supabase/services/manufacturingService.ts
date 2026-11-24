@@ -125,7 +125,7 @@ export const manufacturingService = {
 
   async upsertRawMaterial(item: RawMaterialStockItem): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: item.accountId || 'acc_01',
+      accountId: item.accountId,
       businessId: item.businessId,
       branchId: item.branchId,
       staffId: item.staffId,
@@ -247,7 +247,7 @@ export const manufacturingService = {
 
   async upsertBom(bom: ManufacturingBom): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: bom.accountId || 'acc_01',
+      accountId: bom.accountId,
       businessId: bom.businessId,
       branchId: bom.branchId,
       staffId: bom.staffId,
@@ -378,7 +378,7 @@ export const manufacturingService = {
 
   async upsertOrder(order: ManufacturingOrder): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: order.accountId || 'acc_01',
+      accountId: order.accountId,
       businessId: order.businessId,
       branchId: order.branchId,
       staffId: order.staffId,
@@ -457,7 +457,7 @@ export const manufacturingService = {
 
   async upsertSessionLog(log: WorkstationSessionLog): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: log.accountId || 'acc_01',
+      accountId: log.accountId,
       businessId: log.businessId,
       branchId: log.branchId,
       staffId: log.staffId,
@@ -538,7 +538,7 @@ export const manufacturingService = {
 
   async upsertQcInspection(qc: QualityInspectionRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: qc.accountId || 'acc_01',
+      accountId: qc.accountId,
       businessId: qc.businessId,
       branchId: qc.branchId,
       staffId: qc.staffId,
@@ -639,7 +639,7 @@ export const manufacturingService = {
     if (!firstItem) return false;
 
     const trace = buildTraceEnvelope({
-      accountId: voucher.accountId || 'acc_01',
+      accountId: voucher.accountId,
       businessId: voucher.businessId,
       branchId: voucher.branchId,
       staffId: voucher.staffId,

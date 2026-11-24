@@ -49,10 +49,26 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
       else setIsLoading(true);
       setError(null);
 
+      if (!accountId) {
+        setLogs([]);
+        setHasMore(false);
+        setTotalCount(0);
+        setError(
+          isAr
+            ? 'معلومات الحساب غير متوفرة لعرض سجل التدقيق.'
+            : isFr
+            ? 'Contexte locataire requis pour consulter les journaux d’audit.'
+            : 'Tenant account context is required to load audit logs.'
+        );
+        setIsLoading(false);
+        setIsLoadingMore(false);
+        return;
+      }
+
       try {
         const lastItem = append && logs.length > 0 ? logs[logs.length - 1] : null;
         const res = await auditService.fetchAuditLogsPage({
-          accountId: accountId || 'acc_01',
+          accountId,
           branchId: currentBranchId || null,
           cursorOccurredAt: lastItem?.occurredAt || null,
           cursorId: lastItem?.id || null,

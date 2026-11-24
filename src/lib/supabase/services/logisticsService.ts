@@ -140,7 +140,7 @@ export const logisticsService = {
 
   async upsertShipment(ship: LogisticsShipment): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: ship.accountId || 'acc_01',
+      accountId: ship.accountId,
       businessId: ship.businessId,
       branchId: ship.branchId,
       staffId: ship.staffId,
@@ -236,7 +236,7 @@ export const logisticsService = {
 
   async upsertBag(bag: TransportBag): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: bag.accountId || 'acc_01',
+      accountId: bag.accountId,
       businessId: bag.businessId,
       branchId: bag.branchId,
       staffId: bag.staffId,
@@ -314,7 +314,7 @@ export const logisticsService = {
 
   async upsertManifest(manifest: LogisticsManifest): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: manifest.accountId || 'acc_01',
+      accountId: manifest.accountId,
       businessId: manifest.businessId,
       branchId: manifest.branchId,
       staffId: manifest.staffId,
@@ -373,7 +373,7 @@ export const logisticsService = {
 
   async upsertDischarge(discharge: CourierCashDischarge): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: discharge.accountId || 'acc_01',
+      accountId: discharge.accountId,
       businessId: discharge.businessId,
       branchId: discharge.branchId,
       staffId: discharge.cashierStaffId,
@@ -462,7 +462,7 @@ export const logisticsService = {
 
   async upsertRemittance(batch: MerchantRemittanceBatch): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: batch.accountId || 'acc_01',
+      accountId: batch.accountId,
       businessId: batch.businessId,
       branchId: batch.branchId,
       staffId: batch.staffId,
@@ -539,8 +539,11 @@ export const logisticsService = {
     rules: Record<WilayaZone, TariffRule>,
     ctx: LogisticsBranchContext
   ): Promise<boolean> {
+    if (!ctx.accountId || !ctx.branchId) {
+      return false;
+    }
     const trace = buildTraceEnvelope({
-      accountId: ctx.accountId || 'acc_01',
+      accountId: ctx.accountId,
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       staffId: ctx.staffId,

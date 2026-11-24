@@ -118,7 +118,7 @@ export const contractorService = {
 
   async upsertProject(proj: ContractorProject): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: proj.accountId || 'acc_01',
+      accountId: proj.accountId,
       businessId: proj.businessId,
       branchId: proj.branchId,
       staffId: proj.staffId,
@@ -211,7 +211,7 @@ export const contractorService = {
 
   async upsertBoqItem(item: ContractorBoqItem): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: item.accountId || 'acc_01',
+      accountId: item.accountId,
       businessId: item.businessId,
       branchId: item.branchId,
       staffId: item.staffId,
@@ -300,7 +300,7 @@ export const contractorService = {
 
   async upsertDailyLog(log: ContractorDailyLog): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: log.accountId || 'acc_01',
+      accountId: log.accountId,
       businessId: log.businessId,
       branchId: log.branchId,
       staffId: log.staffId,
@@ -387,7 +387,7 @@ export const contractorService = {
 
   async upsertDgp(dgp: ContractorDgp): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: dgp.accountId || 'acc_01',
+      accountId: dgp.accountId,
       businessId: dgp.businessId,
       branchId: dgp.branchId,
       staffId: dgp.staffId,
@@ -453,7 +453,7 @@ export const contractorService = {
 
   async upsertServiceOrder(os: ContractorServiceOrder): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: os.accountId || 'acc_01',
+      accountId: os.accountId,
       businessId: os.businessId,
       branchId: os.branchId,
       staffId: os.staffId,
@@ -511,7 +511,7 @@ export const contractorService = {
 
   async upsertConcretePour(pour: ConcretePourRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: pour.accountId || 'acc_01',
+      accountId: pour.accountId,
       businessId: pour.businessId,
       branchId: pour.branchId,
       staffId: pour.staffId,
@@ -568,7 +568,7 @@ export const contractorService = {
 
   async upsertSubcontractor(sub: SubcontractorAgreement): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: sub.accountId || 'acc_01',
+      accountId: sub.accountId,
       businessId: sub.businessId,
       branchId: sub.branchId,
       staffId: sub.staffId,
@@ -626,7 +626,7 @@ export const contractorService = {
 
   async upsertEquipmentLog(log: EquipmentLogRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: log.accountId || 'acc_01',
+      accountId: log.accountId,
       businessId: log.businessId,
       branchId: log.branchId,
       staffId: log.staffId,
@@ -687,7 +687,7 @@ export const contractorService = {
 
   async upsertCaisseExpense(exp: CaisseExpenseRecord): Promise<boolean> {
     const trace = buildTraceEnvelope({
-      accountId: exp.accountId || 'acc_01',
+      accountId: exp.accountId,
       businessId: exp.businessId,
       branchId: exp.branchId,
       staffId: exp.staffId,
