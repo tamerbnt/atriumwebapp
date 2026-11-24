@@ -2787,5 +2787,14 @@
   "offline_queue_quarantined_title": "Élément mis en quarantaine",
   "offline_queue_quarantined_msg": "Une opération hors ligne a échoué ({reason}) et a été isolée en quarantaine sans bloquer la file.",
   "tenant_context_missing_title": "Contexte locataire requis",
-  "tenant_context_missing_msg": "Le compte ou l'agence active est manquant. Connectez-vous ou sélectionnez un espace avant d'enregistrer."
+  "tenant_context_missing_msg": "Le compte ou l'agence active est manquant. Connectez-vous ou sélectionnez un espace avant d'enregistrer.",
+  "access_restricted_title": "Accès restreint",
+  "access_restricted_desc": "Votre rôle actif ne permet pas d'accéder à cet écran. Revenez à l'accueil ou changez d'opérateur.",
+  "access_restricted_screen_label": "Écran demandé",
+  "access_restricted_role_label": "Rôle actif",
+  "access_restricted_return_home": "Retour à l'accueil",
+  "access_restricted_switch_user": "Changer d'opérateur",
+  "membership_finance_estimated_badge": "Estimé, grand livre en attente",
+  "membership_finance_estimated_banner": "Les montants affichés sont estimés à partir des cotisations adhérents en attendant la synchronisation du grand livre.",
+  "membership_finance_estimated_csv_note": "Estimé, grand livre en attente (synthétisé depuis les cotisations)"
 }

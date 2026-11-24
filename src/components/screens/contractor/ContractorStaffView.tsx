@@ -6,7 +6,7 @@ import { StaffMember } from '../../../types/index';
 import { HardHat, ShieldCheck, Building2, CheckCircle2 } from 'lucide-react';
 
 export const ContractorStaffView: React.FC = () => {
-  const foundation = useStaffFoundation({ category: 'contractor_construction' });
+  const foundation = useStaffFoundation({ category: 'construction_contractor' });
   const { isAr, isEn, language } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
@@ -132,7 +132,7 @@ export const ContractorStaffView: React.FC = () => {
   return (
     <StandardStaffScreen
       foundation={foundation}
-      category="contractor_construction"
+      category="construction_contractor"
       columns={columns}
       categoryTitle={isAr ? 'عمال وإطارات الورشات BTP' : isEn ? 'Construction Crew & Foremen' : 'Encadrement & Compagnons BTP'}
       newStaffButtonLabel={isAr ? 'إضافة عامل / تقني BTP' : isEn ? 'Add Site Staff' : 'Nouveau Compagnon BTP'}

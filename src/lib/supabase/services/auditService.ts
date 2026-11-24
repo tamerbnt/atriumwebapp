@@ -120,4 +120,56 @@ export const auditService = {
       };
     }
   },
+
+  async logAccessDeniedEvent(params: {
+    accountId?: string | null;
+    businessId?: string | null;
+    branchId?: string | null;
+    actorStaffId?: string | null;
+    attemptedScreen: string;
+    category: string;
+    effectiveRole: string;
+    rawRole?: string | null;
+    reason?: string;
+    occurredAt: string;
+  }): Promise<{ ok: boolean; persistedRemote: boolean }> {
+    const client = getSupabaseClient();
+    if (!client || !params.accountId) {
+      return { ok: true, persistedRemote: false };
+    }
+
+    const accountUuid = toValidUuid(params.accountId);
+    if (!accountUuid) {
+      return { ok: true, persistedRemote: false };
+    }
+
+    const businessUuid = params.businessId ? toValidUuid(params.businessId) : null;
+    const branchUuid = params.branchId ? toValidUuid(params.branchId) : null;
+    const actorStaffUuid = params.actorStaffId ? toValidUuid(params.actorStaffId) : null;
+
+    try {
+      const { error } = await (client as any).from('immutable_audit_logs').insert({
+        account_id: accountUuid,
+        business_id: businessUuid,
+        branch_id: branchUuid,
+        actor_staff_id: actorStaffUuid,
+        table_name: 'security_access_denied',
+        record_id: params.attemptedScreen,
+        action: 'INSERT',
+        new_data: {
+          event: 'ACCESS_DENIED',
+          attemptedScreen: params.attemptedScreen,
+          category: params.category,
+          effectiveRole: params.effectiveRole,
+          rawRole: params.rawRole ?? null,
+          reason: params.reason ?? 'ROLE_NOT_AUTHORIZED',
+          occurredAt: params.occurredAt,
+        },
+        occurred_at: params.occurredAt,
+      });
+      return { ok: !error, persistedRemote: !error };
+    } catch {
+      return { ok: false, persistedRemote: false };
+    }
+  },
 };

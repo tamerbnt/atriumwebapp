@@ -41,6 +41,12 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
     preserveOnCacheReset: true,
     notes: 'Device-reserved offline numbering blocks (walk-in tickets & deposit receipts only)',
   },
+  {
+    key: 'atrium_security_audit_logs_v1',
+    scope: 'offline_sync',
+    preserveOnCacheReset: true,
+    notes: 'Deduped local security audit log buffer for access-denied route events',
+  },
 
   // Primary app cache & UI preferences
   {

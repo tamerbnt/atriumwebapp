@@ -59,7 +59,12 @@ import {
 } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
 import { useTranslation } from '../../utils/useTranslation';
-import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
+import {
+  canAccessStaffScreen,
+  getEffectiveUserRole,
+  normalizeBusinessCategory,
+} from '../../utils/staffRules';
+import { canAccessRoute } from '../../utils/routePermissions';
 import { preloadCategoryScreens, preloadScreen } from '../screens/lazyScreens';
 
 interface SidebarProps {
@@ -122,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const activeScreen = useAtriumSelector((s) => s.activeScreen);
   const isRtl = language === 'ar';
 
-  const category = currentBusiness?.category || 'pos_inventory';
+  const category = normalizeBusinessCategory(currentBusiness?.category);
 
   // Memoize the entire nav-item construction so it only reruns when category/role/language
   // changes — NOT on every screen navigation. This is the single biggest perf win.
@@ -1353,12 +1358,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
           label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
         },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: t('nav_settings', language),
-          label: t('nav_settings', language),
-        },
       ];
     } else {
       items = [
@@ -1432,12 +1431,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <LayoutDashboard size={19} />,
           title: dashboardLabel,
           label: dashboardLabel,
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: t('nav_settings', language),
-          label: t('nav_settings', language),
         },
       ];
     } else if (activeLogisticsRole === 'hub_sorter') {
@@ -1672,12 +1665,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
           label: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
         },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: t('nav_settings', language),
-          label: t('nav_settings', language),
-        },
       ];
     } else {
       items = [
@@ -1872,6 +1859,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: terminology.scheduler,
         },
         {
+          id: 'finance',
+          icon: <CreditCard size={19} />,
+          title: t('nav_finance', language),
+          label: t('nav_finance', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1886,8 +1879,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     items.unshift(homeNavItem);
   }
 
-  // Unified Staff / Workforce Screen Injection Across All Categories
-  const effectiveRole = getEffectiveUserRole(category, {
+  const permState = {
     currentUser,
     activePmRole,
     activeGarageRole,
@@ -1901,7 +1893,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
-  });
+  };
+
+  // Unified Staff / Workforce Screen Injection Across All Categories
+  const effectiveRole = getEffectiveUserRole(category, permState);
 
   if (category !== 'project_milestone' && canAccessStaffScreen(category, effectiveRole)) {
     const hasStaffItem = items.some((item) => item.id === 'staff');
@@ -1921,8 +1916,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }
 
-  
-    return items;
+  return items.filter((item) => canAccessRoute(category, permState, item.id));
   }, [category, activePmRole, activeGarageRole, activeRealEstateRole,
      activeManufacturingRole, activeLegalRole, activeLogisticsRole,
      activeContractorRole, activeAgriRole, activeMembershipRole,

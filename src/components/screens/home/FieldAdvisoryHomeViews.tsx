@@ -526,6 +526,7 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
   );
 
   const isFieldScanRole = role === 'hub_sorter' || role === 'stop_desk_agent';
+  const canOpenCod = role === 'gerant' || role === 'stop_desk_agent';
 
   const quickActions: HomeQuickAction[] = [
     {
@@ -598,7 +599,7 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
                 icon: <Truck size={17} />,
                 count: outForDeliveryCount,
                 statusText: `${remittances.length} ${l3(language, 'lots SFP-01', 'CCP batches', 'دفعات CCP')}`,
-                targetScreen: 'finance',
+                targetScreen: canOpenCod ? 'finance' : 'registrations',
               }}
             />
           </>
@@ -654,25 +655,27 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
           }}
         />
 
-        <HomePreviewCard
-          config={{
-            id: 'log-cod',
-            tone: 'sage',
-            title: l3(language, 'Décharges & Virements COD', 'COD Settlement & CCP', 'تحصيل وتسوية التجار'),
-            subtitle: l3(
-              language,
-              `${discharges.length} décharges · lots SFP-01`,
-              `${discharges.length} cash discharges`,
-              `${discharges.length} تسويات مالية`
-            ),
-            icon: <CreditCard size={18} />,
-            count: remittances.length,
-            items: remittanceRows,
-            targetScreen: 'finance',
-            emptyTitle: l3(language, 'Aucun règlement marchand.', 'No COD settlements yet.', 'لا توجد تسويات.'),
-            emptyCtaLabel: l3(language, 'Ouvrir caisse COD', 'Open COD finance', 'فتح التحصيل'),
-          }}
-        />
+        {canOpenCod && (
+          <HomePreviewCard
+            config={{
+              id: 'log-cod',
+              tone: 'sage',
+              title: l3(language, 'Décharges & Virements COD', 'COD Settlement & CCP', 'تحصيل وتسوية التجار'),
+              subtitle: l3(
+                language,
+                `${discharges.length} décharges · lots SFP-01`,
+                `${discharges.length} cash discharges`,
+                `${discharges.length} تسويات مالية`
+              ),
+              icon: <CreditCard size={18} />,
+              count: remittances.length,
+              items: remittanceRows,
+              targetScreen: 'finance',
+              emptyTitle: l3(language, 'Aucun règlement marchand.', 'No COD settlements yet.', 'لا توجد تسويات.'),
+              emptyCtaLabel: l3(language, 'Ouvrir caisse COD', 'Open COD finance', 'فتح التحصيل'),
+            }}
+          />
+        )}
       </HomeOperationalRow>
 
       <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
@@ -1272,7 +1275,7 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
                   darLockoutsCount > 0
                     ? `${darLockoutsCount} ${l3(language, 'DAR actifs', 'DAR locks', 'تحت الحظر')}`
                     : l3(language, 'Récoltes ouvertes', 'Harvest open', 'مفتوح للجني'),
-                targetScreen: 'scheduler',
+                targetScreen: isZootech ? 'registrations' : isMagasinier ? 'shop' : 'scheduler',
               }}
             />
           </>
@@ -1304,7 +1307,7 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
                     statusTone: m.rejectedWithholdingLiters > 0 ? 'warning' : 'positive',
                   }))
                 : weighRows,
-              targetScreen: isZootech ? 'registrations' : 'finance',
+              targetScreen: isZootech ? 'registrations' : isChefCulture ? 'shop' : 'finance',
               emptyTitle: l3(language, 'Aucune opération récente.', 'No recent activity.', 'لا توجد عمليات حديثة.'),
               emptyCtaLabel: l3(language, 'Ouvrir module', 'Open workspace', 'فتح القسم'),
             }}

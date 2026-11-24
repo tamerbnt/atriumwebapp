@@ -126,6 +126,35 @@ export function validateStaffCredentials(
   };
 }
 
+export function normalizeBusinessCategory(category: BusinessCategory | string | undefined): string {
+  const c = (category || '').toString().trim();
+  switch (c) {
+    case 'legal_firm':
+    case 'legal_notary':
+      return 'legal_accounting';
+    case 'logistics_courier':
+      return 'logistics_delivery';
+    case 'contractor_construction':
+      return 'construction_contractor';
+    case 'pos_retail':
+      return 'pos_inventory';
+    case 'agriculture_livestock':
+      return 'agriculture_farming';
+    default:
+      return c || 'pos_inventory';
+  }
+}
+
+export function normalizeOperationalRole(role: string | undefined): string {
+  const trimmed = (role || '').trim();
+  if (!trimmed) return '';
+  const lower = trimmed.toLowerCase();
+  if (lower === 'conducteur_travaux') return 'conducteur';
+  if (lower === 'daf_metreur') return 'metreur';
+  if (lower === 'controleur') return 'qualite';
+  return trimmed;
+}
+
 /**
  * Strict RBAC Access Check for Staff & Workforce Screen.
  * 
@@ -137,7 +166,8 @@ export function validateStaffCredentials(
  */
 export function canAccessStaffScreen(category: BusinessCategory | string, userRole: string | undefined): boolean {
   if (!userRole) return false;
-  const role = userRole.toLowerCase().trim();
+  const canonicalCategory = normalizeBusinessCategory(category);
+  const role = normalizeOperationalRole(userRole).toLowerCase();
 
   // Owners always have full access across every single category
   if (role === 'owner' || role === 'gerant' || role === 'directeur_general' || role === 'admin') {
@@ -153,26 +183,26 @@ export function canAccessStaffScreen(category: BusinessCategory | string, userRo
     'freelance_solo',
   ];
 
-  if (dualRoleCategories.includes(category)) {
+  if (dualRoleCategories.includes(canonicalCategory)) {
     return false;
   }
 
   // Multi-Role Categories: Team management roles can also access
   const authorizedManagementRolesByCategory: Record<string, string[]> = {
-    project_milestone: ['manager', 'agencydirector', 'projectmanager', 'directeur_agence', 'chef_projet'],
+    project_milestone: ['manager', 'agencydirector', 'projectmanager', 'directeur_agence', 'chef_projet', 'direction', 'rh'],
     medical_clinic: ['manager', 'doctor', 'medecinchef', 'medecin_chef', 'cadre_sante', 'surveillant_general'],
     auto_garage: ['manager', 'chefatelier', 'chef_atelier', 'responsable_service'],
-    real_estate: ['manager', 'director', 'directeur_agence', 'directeur_commercial'],
+    real_estate: ['manager', 'director', 'directeur_agence', 'directeur_commercial', 'direction'],
     manufacturing_production: ['manager', 'productionmanager', 'chefproduction', 'responsable_production', 'chef_atelier'],
-    legal_notary: ['partner', 'associate', 'avocat_associe', 'premier_clerc'],
+    legal_accounting: ['partner', 'associate', 'avocat_associe', 'notaire_titulaire', 'expert_comptable', 'premier_clerc'],
     logistics_delivery: ['manager', 'fleetmanager', 'dispatcher', 'responsable_flotte', 'chef_quai'],
-    construction_contractor: ['manager', 'conducteurtravaux', 'chefchantier', 'conducteur_travaux', 'chef_chantier'],
-    agriculture_livestock: ['manager', 'chefexploitation', 'chefculture', 'chef_exploitation', 'chef_culture', 'regisseur'],
+    construction_contractor: ['manager', 'conducteurtravaux', 'chefchantier', 'conducteur_travaux', 'chef_chantier', 'conducteur'],
+    agriculture_farming: ['manager', 'chefexploitation', 'chefculture', 'chef_exploitation', 'chef_culture', 'regisseur'],
     trading_commercial: ['manager', 'directeurcommercial', 'directeur_commercial', 'responsable_depot', 'chef_ventes'],
     rental_booking: ['manager', 'regisseur_general', 'coordinateur_site'],
   };
 
-  const allowedRoles = authorizedManagementRolesByCategory[category] || ['manager'];
+  const allowedRoles = authorizedManagementRolesByCategory[canonicalCategory] || ['manager'];
   return allowedRoles.some((r) => role.includes(r));
 }
 
@@ -182,7 +212,8 @@ export function canAccessStaffScreen(category: BusinessCategory | string, userRo
  */
 export function canCreateStaff(category: BusinessCategory | string, userRole: string | undefined): boolean {
   if (!userRole) return false;
-  const role = userRole.toLowerCase().trim();
+  const canonicalCategory = normalizeBusinessCategory(category);
+  const role = normalizeOperationalRole(userRole).toLowerCase();
 
   // Owners, Gerants, and Admins always have creation authority
   if (role === 'owner' || role === 'gerant' || role === 'directeur_general' || role === 'admin') {
@@ -198,31 +229,32 @@ export function canCreateStaff(category: BusinessCategory | string, userRole: st
     'freelance_solo',
   ];
 
-  if (dualRoleCategories.includes(category)) {
+  if (dualRoleCategories.includes(canonicalCategory)) {
     return false;
   }
 
   // Multi-Role Categories: Specific management roles authorized to create/edit staff
   const authorizedCreationRolesByCategory: Record<string, string[]> = {
-    project_milestone: ['manager', 'agencydirector', 'projectmanager', 'directeur_agence', 'chef_projet', 'direction'],
+    project_milestone: ['manager', 'agencydirector', 'projectmanager', 'directeur_agence', 'chef_projet', 'direction', 'rh'],
     medical_clinic: ['manager', 'doctor', 'medecinchef', 'medecin_chef'],
     auto_garage: ['manager', 'chefatelier', 'chef_atelier'],
     real_estate: ['manager', 'director', 'directeur_agence', 'directeur_commercial', 'direction'],
     manufacturing_production: ['manager', 'productionmanager', 'chefproduction', 'responsable_production', 'chef_atelier'],
-    legal_notary: ['partner', 'associate', 'avocat_associe'],
+    legal_accounting: ['partner', 'associate', 'avocat_associe', 'notaire_titulaire', 'expert_comptable'],
     logistics_delivery: ['manager', 'fleetmanager', 'dispatcher', 'responsable_flotte', 'chef_quai'],
     construction_contractor: ['manager', 'conducteurtravaux', 'conducteur_travaux', 'conducteur'],
-    agriculture_livestock: ['manager', 'chefexploitation', 'chefculture', 'chef_exploitation', 'chef_culture', 'regisseur'],
+    agriculture_farming: ['manager', 'chefexploitation', 'chefculture', 'chef_exploitation', 'chef_culture', 'regisseur'],
     trading_commercial: ['manager', 'directeurcommercial', 'directeur_commercial'],
     rental_booking: ['manager', 'regisseur_general'],
   };
 
-  const allowed = authorizedCreationRolesByCategory[category] || [];
+  const allowed = authorizedCreationRolesByCategory[canonicalCategory] || [];
   return allowed.some((r) => role.includes(r));
 }
 
 /**
  * Resolves the effective active user role by taking into account category-specific switcher states.
+ * Least-privilege fail-closed: missing currentUser / unset role NEVER escalates to Owner / Gerant / Direction.
  */
 export function getEffectiveUserRole(
   category: BusinessCategory | string,
@@ -242,35 +274,48 @@ export function getEffectiveUserRole(
     activeEducationRole?: string;
   }
 ): string {
-  switch (category) {
+  const canonicalCategory = normalizeBusinessCategory(category);
+  const userRole = normalizeOperationalRole(state.currentUser?.role) || '';
+
+  switch (canonicalCategory) {
     case 'membership_session':
-      return state.activeMembershipRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+      if (state.activeMembershipRole === 'staff') return 'Staff';
+      if (state.activeMembershipRole === 'owner') return userRole || 'Owner';
+      return userRole || 'Staff';
     case 'appointment_service':
-      return state.activeAppointmentRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+      if (state.activeAppointmentRole === 'staff') return 'Staff';
+      if (state.activeAppointmentRole === 'owner') return userRole || 'Owner';
+      return userRole || 'Staff';
     case 'pos_inventory':
-      return state.activePosRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+      if (state.activePosRole === 'staff') return 'Staff';
+      if (state.activePosRole === 'owner') return userRole || 'Owner';
+      return userRole || 'Staff';
     case 'education_cohort':
-      return state.activeEducationRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
-    case 'freelance_solo':
-      return state.currentUser?.role || 'Owner';
+      if (state.activeEducationRole === 'staff') return 'Staff';
+      if (state.activeEducationRole === 'owner') return userRole || 'Owner';
+      return userRole || 'Staff';
     case 'auto_garage':
-      return state.activeGarageRole || state.currentUser?.role || 'gerant';
+      return normalizeOperationalRole(state.activeGarageRole) || userRole || 'Staff';
     case 'construction_contractor':
-      return state.activeContractorRole || state.currentUser?.role || 'gerant';
+      return normalizeOperationalRole(state.activeContractorRole) || userRole || 'Staff';
     case 'logistics_delivery':
-      return state.activeLogisticsRole || state.currentUser?.role || 'gerant';
+      return normalizeOperationalRole(state.activeLogisticsRole) || userRole || 'Staff';
     case 'manufacturing_production':
-      return state.activeManufacturingRole || state.currentUser?.role || 'gerant';
-    case 'agriculture_livestock':
-      return state.activeAgriRole || state.currentUser?.role || 'gerant';
-    case 'legal_notary':
-      return state.activeLegalRole || state.currentUser?.role || 'avocat_associe';
+      return normalizeOperationalRole(state.activeManufacturingRole) || userRole || 'Staff';
+    case 'agriculture_farming':
+      return normalizeOperationalRole(state.activeAgriRole) || userRole || 'Staff';
+    case 'legal_accounting':
+      return normalizeOperationalRole(state.activeLegalRole) || userRole || 'Staff';
     case 'real_estate':
-      return state.activeRealEstateRole || state.currentUser?.role || 'direction';
+      return normalizeOperationalRole(state.activeRealEstateRole) || userRole || 'Staff';
     case 'project_milestone':
-      return state.activePmRole || state.currentUser?.role || 'direction';
+      return normalizeOperationalRole(state.activePmRole) || userRole || 'Staff';
+    case 'freelance_solo':
+    case 'trading_commercial':
+    case 'rental_booking':
+    case 'medical_clinic':
     default:
-      return state.currentUser?.role || 'Owner';
+      return userRole || 'Staff';
   }
 }
 
@@ -293,7 +338,8 @@ export function getCategoryPerformanceMetricLabel(category: BusinessCategory | s
   labelAr: string;
   unit: string;
 } {
-  switch (category) {
+  const canonicalCategory = normalizeBusinessCategory(category);
+  switch (canonicalCategory) {
     case 'medical_clinic':
       return { labelFr: 'Consultations', labelEn: 'Consultations', labelAr: 'الاستشارات', unit: 'visits' };
     case 'auto_garage':
@@ -314,9 +360,9 @@ export function getCategoryPerformanceMetricLabel(category: BusinessCategory | s
       return { labelFr: 'Prestations', labelEn: 'Services', labelAr: 'الخدمات', unit: 'jobs' };
     case 'education_cohort':
       return { labelFr: 'Cours', labelEn: 'Classes', labelAr: 'الحصص', unit: 'h' };
-    case 'agriculture_livestock':
+    case 'agriculture_farming':
       return { labelFr: 'Rendement', labelEn: 'Yield', labelAr: 'الإنتاج', unit: 'ha' };
-    case 'legal_notary':
+    case 'legal_accounting':
       return { labelFr: 'Dossiers', labelEn: 'Cases', labelAr: 'الملفات', unit: 'files' };
     case 'pos_inventory':
       return { labelFr: 'Ventes', labelEn: 'Sales', labelAr: 'المبيعات', unit: 'tkt/h' };

@@ -6,7 +6,7 @@ import { StaffMember } from '../../../types/index';
 import { Scale, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export const LegalStaffView: React.FC = () => {
-  const foundation = useStaffFoundation({ category: 'legal_firm' });
+  const foundation = useStaffFoundation({ category: 'legal_accounting' });
   const { isAr, isEn, language } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
@@ -141,7 +141,7 @@ export const LegalStaffView: React.FC = () => {
   return (
     <StandardStaffScreen
       foundation={foundation}
-      category="legal_firm"
+      category="legal_accounting"
       columns={columns}
       categoryTitle={isAr ? 'فريق المكتب القانوني والتوثيقي' : isEn ? 'Legal Associates & Clerks' : 'Avocats & Clercs d’Étude'}
       newStaffButtonLabel={isAr ? 'إضافة محامٍ / كاتب' : isEn ? 'Add Legal Staff' : 'Nouveau Juriste / Clerc'}

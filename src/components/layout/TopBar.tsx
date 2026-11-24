@@ -99,6 +99,8 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { Menu, MenuTriggerProps } from '@/atrium/core';
 import { isSupabaseConfigured as checkSupabaseConfigured } from '../../lib/supabase/client';
 import { LiveButton, LiveIconButton } from '../ui/live';
+import { canAccessRoute } from '../../utils/routePermissions';
+import { normalizeBusinessCategory } from '../../utils/staffRules';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -199,6 +201,10 @@ const TopBarInner: React.FC<TopBarProps> = ({
     activeLogisticsRole,
     activeContractorRole,
     activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
     unreadNotificationCount,
     isTopBarAutoHide,
   } = useAtriumSelector(
@@ -220,10 +226,33 @@ const TopBarInner: React.FC<TopBarProps> = ({
       activeLogisticsRole: s.activeLogisticsRole || 'gerant',
       activeContractorRole: s.activeContractorRole || 'gerant',
       activeAgriRole: s.activeAgriRole || 'gerant',
+      activeMembershipRole: s.activeMembershipRole || 'owner',
+      activeAppointmentRole: s.activeAppointmentRole || 'owner',
+      activePosRole: s.activePosRole || 'owner',
+      activeEducationRole: s.activeEducationRole || 'owner',
       unreadNotificationCount: selectUnreadNotificationCountFromState(s),
       isTopBarAutoHide: s.isTopBarAutoHide ?? false,
     }),
     shallowEqualObjects
+  );
+  const canOpenSettings = canAccessRoute(
+    normalizeBusinessCategory(currentBusiness?.category),
+    {
+      currentUser,
+      activePmRole,
+      activeGarageRole,
+      activeRealEstateRole,
+      activeManufacturingRole,
+      activeLegalRole,
+      activeLogisticsRole,
+      activeContractorRole,
+      activeAgriRole,
+      activeMembershipRole,
+      activeAppointmentRole,
+      activePosRole,
+      activeEducationRole,
+    },
+    'settings'
   );
   const isSupabaseConfigured = checkSupabaseConfigured();
 
@@ -1080,13 +1109,17 @@ const TopBarInner: React.FC<TopBarProps> = ({
                 icon: isFullscreen ? <Minimize2 size={16} strokeWidth={1.5} /> : <Maximize2 size={16} strokeWidth={1.5} />,
                 onSelect: () => toggleFullscreen(),
               },
-              {
-                id: 'settings',
-                label: t('settings_title', language),
-                description: language === 'ar' ? 'التفضيلات والمظهر' : language === 'fr' ? 'Préférences' : 'Preferences',
-                icon: <Settings size={16} strokeWidth={1.5} />,
-                onSelect: () => setScreen('settings'),
-              },
+              ...(canOpenSettings
+                ? [
+                    {
+                      id: 'settings',
+                      label: t('settings_title', language),
+                      description: language === 'ar' ? 'التفضيلات والمظهر' : language === 'fr' ? 'Préférences' : 'Preferences',
+                      icon: <Settings size={16} strokeWidth={1.5} />,
+                      onSelect: () => setScreen('settings'),
+                    },
+                  ]
+                : []),
               { type: 'separator' },
               {
                 id: 'logout',

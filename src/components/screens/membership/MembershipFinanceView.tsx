@@ -20,6 +20,7 @@ import {
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
@@ -85,8 +86,12 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
   );
 
   const { retryCloudSync, updateMember } = useAtriumActions();
+  const { t } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const estimatedBadgeLabel = t('membership_finance_estimated_badge');
+  const estimatedBannerText = t('membership_finance_estimated_banner');
+  const estimatedCsvNote = t('membership_finance_estimated_csv_note');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<'All' | 'Cash' | 'Card' | 'BaridiMob'>('All');
@@ -203,7 +208,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
 
   const getRowMeta = useCallback(
     (tx: MembershipTransaction): Partial<KineticRowData> => ({
-      subline: `${tx.id} · ${tx.date}`,
+      subline: `${tx.id} · ${tx.date} · ${estimatedBadgeLabel}`,
       categoryLabel: tx.plan,
       statusLabel:
         tx.status === 'Settled'
@@ -355,6 +360,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       isAr ? 'التاريخ' : isEn ? 'Date' : 'Date',
       isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
       isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant',
+      isAr ? 'مصدر الدفتر' : isEn ? 'Ledger Source' : 'Source Comptable',
     ];
     const rows = sortedTransactions.map((tx) => [
       tx.id,
@@ -365,6 +371,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       tx.date,
       tx.branchName || currentBranch?.name || 'Main',
       tx.amount,
+      estimatedCsvNote,
     ]);
     downloadCsvSafe(
       `atrium-membership-finance-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -376,7 +383,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       title: isAr ? 'تصدير السجل' : isEn ? 'Ledger Exported' : 'Journal exporté',
       message: `${rows.length} ${isAr ? 'عملية' : isEn ? 'transactions' : 'écritures'}`,
     });
-  }, [sortedTransactions, isAr, isEn, currentBranch, showToast]);
+  }, [sortedTransactions, isAr, isEn, currentBranch, showToast, estimatedCsvNote]);
 
   const statusOptions = useMemo(
     () => [
@@ -480,6 +487,9 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
               </span>
               <span className="tabular-nums t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold block">
                 {tx.id} · {tx.date}
+              </span>
+              <span className="t-cap text-amber-700 dark:text-amber-300 font-medium block">
+                {estimatedBadgeLabel}
               </span>
             </div>
           </div>
@@ -602,6 +612,22 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
             }),
         }}
       />
+
+      <div
+        data-testid="membership-finance-estimated-banner"
+        className="rounded-2xl border border-amber-500/30 bg-amber-50/90 dark:bg-amber-950/30 px-4 py-3 flex flex-wrap items-center justify-between gap-3"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Clock size={16} className="text-amber-700 dark:text-amber-300 shrink-0" />
+          <p className="t-small text-amber-950 dark:text-amber-100">
+            <span className="font-semibold me-2">{estimatedBadgeLabel}:</span>
+            <span>{estimatedBannerText}</span>
+          </p>
+        </div>
+        <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-800 dark:text-amber-200 t-cap font-semibold shrink-0">
+          {estimatedBadgeLabel}
+        </span>
+      </div>
 
       <ScreenKpiBanner
         heading={isAr ? 'ملخص الخزينة والتدفقات' : isEn ? 'Treasury Overview' : 'Trésorerie & Encaissements'}
@@ -829,7 +855,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
                   <InspectorListItem
                     title={tx.plan}
                     subtitle={tx.branchName || currentBranch?.name || 'Club Principal'}
-                    badge={{ label: isAr ? 'موثق' : 'Vérifié', tone: 'neutral' }}
+                    badge={{ label: estimatedBadgeLabel, tone: 'warn' }}
                     isLast
                   />
                 </InspectorCard>
@@ -921,6 +947,13 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
                     label={isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche'}
                     icon={<Building2 className="w-[15px] h-[15px]" />}
                     value={tx.branchName || currentBranch?.name || 'Main'}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'حالة الدفتر' : isEn ? 'Ledger Status' : 'État comptable'}
+                    icon={<Clock className="w-[15px] h-[15px]" />}
+                    value={estimatedBadgeLabel}
+                    tone="warn"
                     mono={false}
                     isLast
                   />

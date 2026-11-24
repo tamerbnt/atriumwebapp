@@ -7,7 +7,7 @@ import { formatMoney } from '../../../utils/rules';
 import { ShoppingBag, CreditCard } from 'lucide-react';
 
 export const PosStaffView: React.FC = () => {
-  const foundation = useStaffFoundation({ category: 'pos_retail' });
+  const foundation = useStaffFoundation({ category: 'pos_inventory' });
   const { isAr, isEn, language } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
@@ -127,7 +127,7 @@ export const PosStaffView: React.FC = () => {
   return (
     <StandardStaffScreen
       foundation={foundation}
-      category="pos_retail"
+      category="pos_inventory"
       columns={columns}
       categoryTitle={isAr ? 'أمناء الصناديق والمبيعات' : isEn ? 'Retail & POS Staff' : 'Caissiers & Vendeurs'}
       newStaffButtonLabel={isAr ? 'إضافة أمين صندوق' : isEn ? 'Add Cashier' : 'Nouveau Caissier'}

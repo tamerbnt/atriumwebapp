@@ -202,6 +202,7 @@ import {
   canViewSensitivePayroll,
   normalizePhone,
   getCategoryPerformanceMetricLabel,
+  getEffectiveUserRole,
 } from '../utils/staffRules';
 import { calculateAlgerianGrossToNet } from '../utils/algerianPayroll';
 import {
@@ -1765,105 +1766,72 @@ export function setDensityAction(density: AppDensity) {
 
 export function setScreenAction(activeScreen: ActiveScreen) {
   const currentBusiness = selectCurrentBusinessFromState(globalState);
-  let nextRole = globalState.activePmRole;
   let nextSubScreen = globalState.activePmSubScreen;
 
   if (activeScreen === 'pm_dir_dashboard') {
-    nextRole = 'direction';
     nextSubScreen = 'dashboard';
   } else if (activeScreen === 'pm_dir_new_project') {
-    nextRole = 'direction';
     nextSubScreen = 'new_project';
   } else if (activeScreen === 'pm_dir_projects') {
-    nextRole = 'direction';
     nextSubScreen = 'dashboard';
   } else if (activeScreen === 'pm_dir_approvals') {
-    nextRole = 'direction';
     nextSubScreen = 'approvals';
   } else if (activeScreen === 'pm_dir_reports') {
-    nextRole = 'direction';
     nextSubScreen = 'reports';
   } else if (activeScreen === 'pm_cp_projects') {
-    nextRole = 'chef_projet';
     nextSubScreen = 'portfolio';
   } else if (activeScreen === 'pm_cp_catalog') {
-    nextRole = 'chef_projet';
     nextSubScreen = 'catalog';
   } else if (activeScreen === 'pm_cp_orders') {
-    nextRole = 'chef_projet';
     nextSubScreen = 'orders';
   } else if (activeScreen === 'pm_cp_deliverables' || activeScreen === 'pm_cp_files') {
-    nextRole = 'chef_projet';
     nextSubScreen = 'bat';
   } else if (activeScreen === 'pm_cp_expenses') {
-    nextRole = 'chef_projet';
     nextSubScreen = 'expenses';
   } else if (activeScreen === 'pm_crea_kanban') {
-    nextRole = 'crea';
     nextSubScreen = 'demandes';
   } else if (activeScreen === 'pm_crea_production') {
-    nextRole = 'crea';
     nextSubScreen = 'production';
   } else if (activeScreen === 'pm_crea_upload') {
-    nextRole = 'crea';
     nextSubScreen = 'upload';
   } else if (activeScreen === 'pm_crea_briefs') {
-    nextRole = 'crea';
     nextSubScreen = 'briefs';
   } else if (activeScreen === 'pm_sup_missions') {
-    nextRole = 'superviseur';
     nextSubScreen = 'missions';
   } else if (activeScreen === 'pm_sup_attendance') {
-    nextRole = 'superviseur';
     nextSubScreen = 'attendance';
   } else if (activeScreen === 'pm_sup_staffing') {
-    nextRole = 'superviseur';
     nextSubScreen = 'staffing';
   } else if (activeScreen === 'pm_sup_expenses') {
-    nextRole = 'superviseur';
     nextSubScreen = 'expense';
   } else if (activeScreen === 'pm_rh_talents') {
-    nextRole = 'rh';
     nextSubScreen = 'talents';
   } else if (activeScreen === 'pm_rh_dossier') {
-    nextRole = 'rh';
     nextSubScreen = 'dossier';
   } else if (activeScreen === 'pm_rh_portal') {
-    nextRole = 'rh';
     nextSubScreen = 'portal';
   } else if (activeScreen === 'pm_rh_walkin') {
-    nextRole = 'rh';
     nextSubScreen = 'walkin';
   } else if (activeScreen === 'pm_compta_payroll') {
-    nextRole = 'compta';
     nextSubScreen = 'payroll';
   } else if (activeScreen === 'pm_compta_ccp') {
-    nextRole = 'compta';
     nextSubScreen = 'ccp';
   } else if (activeScreen === 'pm_compta_expenses') {
-    nextRole = 'compta';
     nextSubScreen = 'expenses';
   } else if (activeScreen === 'pm_compta_stock') {
-    nextRole = 'compta';
     nextSubScreen = 'stock';
   } else if (currentBusiness?.category === 'project_milestone') {
     if (activeScreen === 'dashboard') {
-      nextRole = 'direction';
       nextSubScreen = 'dashboard';
     } else if (activeScreen === 'scheduler') {
-      nextRole = 'chef_projet';
       nextSubScreen = 'portfolio';
     } else if (activeScreen === 'registrations') {
-      nextRole = 'crea';
       nextSubScreen = 'demandes';
     } else if (activeScreen === 'analytics') {
-      nextRole = 'superviseur';
       nextSubScreen = 'missions';
     } else if (activeScreen === 'members') {
-      nextRole = 'rh';
       nextSubScreen = 'talents';
     } else if (activeScreen === 'finance' || activeScreen === 'shop') {
-      nextRole = 'compta';
       nextSubScreen = 'payroll';
     }
   }
@@ -1871,7 +1839,6 @@ export function setScreenAction(activeScreen: ActiveScreen) {
   globalState = {
     ...globalState,
     activeScreen,
-    activePmRole: nextRole,
     activePmSubScreen: nextSubScreen,
   };
   notify(false, true);
@@ -1978,20 +1945,34 @@ export function clearSettingsFocusSectionAction() {
 }
 
 function resolveSubRolesForUserGlobal(user: CurrentUser) {
-  const isOwner = user.role === 'Owner' || (user.roleRank && user.roleRank >= 8);
+  const isOwner = user.role === 'Owner' || Boolean(user.roleRank && user.roleRank >= 8);
   const r = (user.role || '').toLowerCase();
+  const isManager = isOwner || r.includes('gerant') || r.includes('directeur') || r.includes('manager');
   return {
+    activePmRole: (isOwner || r.includes('direction') || r.includes('directeur')
+      ? 'direction'
+      : r.includes('chef') || r.includes('projet') || r.includes('projectmanager')
+      ? 'chef_projet'
+      : r.includes('crea')
+      ? 'crea'
+      : r.includes('supervis')
+      ? 'superviseur'
+      : r.includes('rh') || r.includes('humain')
+      ? 'rh'
+      : r.includes('compt')
+      ? 'compta'
+      : 'superviseur') as any,
     activeMembershipRole: (isOwner ? 'owner' : 'staff') as any,
     activeAppointmentRole: (isOwner ? 'owner' : 'staff') as any,
     activePosRole: (isOwner ? 'owner' : 'staff') as any,
     activeEducationRole: (isOwner ? 'owner' : 'staff') as any,
-    activeGarageRole: (isOwner ? 'gerant' : (r.includes('mecanic') ? 'mecanicien' : r.includes('magasin') ? 'magasinier' : r.includes('caisse') ? 'caisse' : r.includes('recept') ? 'reception' : 'gerant')) as any,
-    activeRealEstateRole: (isOwner ? 'direction' : (r.includes('negoc') ? 'negociateur' : r.includes('gest') ? 'gestionnaire_locatif' : r.includes('compt') || r.includes('notair') ? 'notaire_compta' : 'direction')) as any,
-    activeManufacturingRole: (isOwner ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('operat') ? 'operateur' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') ? 'controleur' : 'gerant')) as any,
-    activeLegalRole: (isOwner ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : r.includes('compt') || r.includes('caisse') ? 'secretaire_caisse' : 'avocat_associe')) as any,
-    activeLogisticsRole: (isOwner ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('tri') ? 'hub_sorter' : r.includes('stop') ? 'stop_desk_agent' : 'gerant')) as any,
-    activeContractorRole: (isOwner ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('chantier') ? 'chef_chantier' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'gerant')) as any,
-    activeAgriRole: (isOwner ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('zoo') ? 'zootechnicien' : r.includes('magasin') ? 'magasinier' : 'gerant')) as any,
+    activeGarageRole: (isManager ? 'gerant' : (r.includes('mecanic') ? 'mecanicien' : r.includes('magasin') ? 'magasinier' : r.includes('caisse') || r.includes('cash') ? 'caisse' : 'reception')) as any,
+    activeRealEstateRole: (isManager ? 'direction' : (r.includes('gest') ? 'gestionnaire_locatif' : r.includes('compt') || r.includes('notair') ? 'notaire_compta' : 'negociateur')) as any,
+    activeManufacturingRole: (isManager ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') || r.includes('control') ? 'qualite' : 'operateur')) as any,
+    activeLegalRole: (isOwner || r.includes('assoc') || r.includes('titul') || r.includes('expert') ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : 'secretaire_caisse')) as any,
+    activeLogisticsRole: (isManager ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('stop') ? 'stop_desk_agent' : 'hub_sorter')) as any,
+    activeContractorRole: (isManager ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'chef_chantier')) as any,
+    activeAgriRole: (isManager ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('magasin') ? 'magasinier' : 'zootechnicien')) as any,
   };
 }
 
@@ -8727,23 +8708,7 @@ function createAtriumActions() {
     return newProduct;
   };
 
-  const resolveSubRolesForUser = (user: CurrentUser) => {
-    const isOwner = user.role === 'Owner' || (user.roleRank && user.roleRank >= 8);
-    const r = (user.role || '').toLowerCase();
-    return {
-      activeMembershipRole: (isOwner ? 'owner' : 'staff') as any,
-      activeAppointmentRole: (isOwner ? 'owner' : 'staff') as any,
-      activePosRole: (isOwner ? 'owner' : 'staff') as any,
-      activeEducationRole: (isOwner ? 'owner' : 'staff') as any,
-      activeGarageRole: (isOwner ? 'gerant' : (r.includes('mecanic') ? 'mecanicien' : r.includes('magasin') ? 'magasinier' : r.includes('caisse') ? 'caisse' : r.includes('recept') ? 'reception' : 'gerant')) as any,
-      activeRealEstateRole: (isOwner ? 'direction' : (r.includes('negoc') ? 'negociateur' : r.includes('gest') ? 'gestionnaire_locatif' : r.includes('compt') || r.includes('notair') ? 'notaire_compta' : 'direction')) as any,
-      activeManufacturingRole: (isOwner ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('operat') ? 'operateur' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') ? 'controleur' : 'gerant')) as any,
-      activeLegalRole: (isOwner ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : r.includes('compt') || r.includes('caisse') ? 'secretaire_caisse' : 'avocat_associe')) as any,
-      activeLogisticsRole: (isOwner ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('tri') ? 'hub_sorter' : r.includes('stop') ? 'stop_desk_agent' : 'gerant')) as any,
-      activeContractorRole: (isOwner ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('chantier') ? 'chef_chantier' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'gerant')) as any,
-      activeAgriRole: (isOwner ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('zoo') ? 'zootechnicien' : r.includes('magasin') ? 'magasinier' : 'gerant')) as any,
-    };
-  };
+  const resolveSubRolesForUser = resolveSubRolesForUserGlobal;
 
   const login = (identifier: string, _password?: string) => {
     const cleanInput = identifier.trim().toLowerCase();
@@ -8876,22 +8841,38 @@ function createAtriumActions() {
 
   const switchStaffUser = (staffId: string) => {
     const target = globalState.staff.find((s) => s.id === staffId);
-    if (target) {
-      globalState = {
-        ...globalState,
-        currentUser: {
-          id: target.id,
-          fullName: target.fullName,
-          email: target.email,
-          role: target.role,
-          roleRank: target.roleRank,
-          branchId: target.facilityId,
-          pinCode: target.pinCode,
-        },
-        isFastSwitchOpen: false,
-      };
-      notify();
+    if (!target) return;
+    if (target.status === 'frozen' || target.status === 'terminated') {
+      const lang = globalState.language || 'fr';
+      showToast({
+        type: 'warning',
+        title: lang === 'ar' ? 'الحساب موقوف' : lang === 'fr' ? 'Compte désactivé' : 'Account disabled',
+        message:
+          lang === 'ar'
+            ? 'هذا الحساب معلق أو منتهي الخدمة حالياً.'
+            : lang === 'fr'
+            ? 'Ce compte est actuellement suspendu ou désactivé.'
+            : 'This staff account is currently suspended or terminated.',
+      });
+      return;
     }
+    const nextUser: CurrentUser = {
+      id: target.id,
+      fullName: target.fullName,
+      email: target.email,
+      role: target.role,
+      roleRank: target.roleRank,
+      branchId: target.facilityId,
+      pinCode: target.pinCode,
+    };
+    globalState = {
+      ...globalState,
+      currentUser: nextUser,
+      activeScreen: 'home',
+      isFastSwitchOpen: false,
+      ...resolveSubRolesForUser(nextUser),
+    };
+    notify();
   };
 
   const logout = logoutAction;
@@ -15879,10 +15860,16 @@ function createAtriumActions() {
   };
   const toggleListPodExpanded = toggleListPodExpandedAction;
   const setListPodExpanded = setListPodExpandedAction;
-  const canAccessStaffScreenFn = (cat: BusinessCategory | string, role?: string) =>
-    canAccessStaffScreen(cat, role || globalState.currentUser?.role);
-  const canViewSensitivePayrollFn = (role?: string) =>
-    canViewSensitivePayroll(role || globalState.currentUser?.role);
+  const canAccessStaffScreenFn = (cat: BusinessCategory | string, role?: string) => {
+    const resolvedCategory = cat || selectCurrentBusinessFromState(globalState).category;
+    const effectiveRole = role ?? getEffectiveUserRole(resolvedCategory, globalState);
+    return canAccessStaffScreen(resolvedCategory, effectiveRole);
+  };
+  const canViewSensitivePayrollFn = (role?: string) => {
+    const resolvedCategory = selectCurrentBusinessFromState(globalState).category;
+    const effectiveRole = role ?? getEffectiveUserRole(resolvedCategory, globalState);
+    return canViewSensitivePayroll(effectiveRole);
+  };
 
   const ensureExecutiveGuard = (): boolean => {
     const allowed = isExecutiveRole(globalState.currentUser?.role, globalState.currentUser?.roleRank);

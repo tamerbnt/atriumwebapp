@@ -354,7 +354,7 @@ export const MembershipHomeView: React.FC<HomeViewProps> = ({
               count: schedule.length,
               countLabel: `${schedule.length} ${l3(language, 'créneaux', 'sessions', 'حصص')}`,
               items: scheduleRows,
-              targetScreen: 'scheduler',
+              targetScreen: 'registrations',
               emptyTitle: l3(language, 'Aucune séance planifiée.', 'No scheduled sessions.', 'لا توجد حصص مبرمجة.'),
               emptyCtaLabel: l3(language, 'Planifier', 'Schedule', 'برمجة حصة'),
             }}
@@ -701,7 +701,7 @@ export const AppointmentHomeView: React.FC<HomeViewProps> = ({ onAddMember }) =>
               count: services.length,
               countLabel: `${services.length} ${l3(language, 'soins', 'services', 'خدمة')}`,
               items: serviceRows,
-              targetScreen: 'shop',
+              targetScreen: 'scheduler',
               emptyTitle: l3(language, 'Aucune prestation configurée.', 'No services configured.', 'لا توجد خدمات مضافة.'),
               emptyCtaLabel: l3(language, 'Voir la carte', 'View menu', 'عرض القائمة'),
             }}

@@ -20,6 +20,7 @@ import { useStaffFoundation } from './useStaffFoundation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import { formatMoney } from '../../../utils/rules';
+import { AccessRestrictedView } from '../AccessRestrictedView';
 
 export interface StandardStaffScreenProps {
   foundation: ReturnType<typeof useStaffFoundation>;
@@ -235,6 +236,16 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
     },
     [foundation, isAr, isEn]
   );
+
+  if (!foundation.hasAccess) {
+    return (
+      <AccessRestrictedView
+        attemptedScreen="staff"
+        category={String(category)}
+        effectiveRole={foundation.effectiveRole}
+      />
+    );
+  }
 
   if (showSkeleton && (foundation.facilityStaff.length === 0 || foundation.networkMode === 'force_skeleton')) {
     return (

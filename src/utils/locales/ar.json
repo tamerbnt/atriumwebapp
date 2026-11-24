@@ -2787,5 +2787,14 @@
   "offline_queue_quarantined_title": "تم عزل عملية مزامنة",
   "offline_queue_quarantined_msg": "تعذرت مزامنة عملية واحدة ({reason}) وتم نقلها إلى العزل دون إيقاف بقية الطابور.",
   "tenant_context_missing_title": "معلومات المؤسسة مطلوبة",
-  "tenant_context_missing_msg": "معرّف الحساب أو الفرع النشط مفقود. يرجى تسجيل الدخول أو اختيار مساحة عمل قبل الحفظ."
+  "tenant_context_missing_msg": "معرّف الحساب أو الفرع النشط مفقود. يرجى تسجيل الدخول أو اختيار مساحة عمل قبل الحفظ.",
+  "access_restricted_title": "الوصول مقيّد",
+  "access_restricted_desc": "دورك النشط لا يسمح بالوصول إلى هذه الشاشة. عُد إلى الرئيسية أو بدّل المشغّل.",
+  "access_restricted_screen_label": "الشاشة المطلوبة",
+  "access_restricted_role_label": "الدور النشط",
+  "access_restricted_return_home": "العودة إلى الرئيسية",
+  "access_restricted_switch_user": "تبديل المشغّل",
+  "membership_finance_estimated_badge": "تقديري، بانتظار دفتر الحسابات",
+  "membership_finance_estimated_banner": "الأرقام المعروضة تقديرية ومستخرجة من اشتراكات الأعضاء إلى حين مزامنة دفتر الحسابات.",
+  "membership_finance_estimated_csv_note": "تقديري، بانتظار دفتر الحسابات (مستخرج من الاشتراكات)"
 }

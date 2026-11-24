@@ -517,7 +517,7 @@ export const AutoGarageHomeView: React.FC<HomeViewProps> = () => {
                   lowPartsCount > 0
                     ? `${lowPartsCount} ${l3(language, 'ruptures', 'low parts', 'نقص')}`
                     : l3(language, 'Stock complet', 'Stock OK', 'المخزون متوفر'),
-                targetScreen: 'shop',
+                targetScreen: role === 'caisse' ? 'finance' : 'shop',
               }}
             />
           </>
@@ -812,7 +812,7 @@ export const RealEstateHomeView: React.FC<HomeViewProps> = () => {
                   leases.filter((l) => (l.arrearsDzd || 0) > 0).length > 0
                     ? `${leases.filter((l) => (l.arrearsDzd || 0) > 0).length} ${l3(language, 'impayés', 'arrears', 'متأخرات')}`
                     : l3(language, 'Loyers à jour', 'All paid', 'جميع الإيجارات خالصة'),
-                targetScreen: 'finance',
+                targetScreen: isNegociateur ? 'realestate_mandates' : 'finance',
               }}
             />
           </>
@@ -1116,7 +1116,7 @@ export const ManufacturingHomeView: React.FC<HomeViewProps> = () => {
               icon: <Boxes size={18} />,
               count: materials.length,
               items: materialRows,
-              targetScreen: 'members',
+              targetScreen: 'scheduler',
               emptyTitle: l3(language, 'Aucune matière listée.', 'No raw materials listed.', 'لا توجد مواد.'),
               emptyCtaLabel: l3(language, 'Voir magasin', 'Open depot', 'فتح المخزن'),
             }}
@@ -1130,7 +1130,7 @@ export const ManufacturingHomeView: React.FC<HomeViewProps> = () => {
               icon: <ShieldCheck size={18} />,
               count: qcRecords.length,
               items: qcRows,
-              targetScreen: 'finance',
+              targetScreen: 'dashboard',
               emptyTitle: l3(language, 'Aucun contrôle enregistré.', 'No QC inspections yet.', 'لا توجد فحوصات.'),
               emptyCtaLabel: l3(language, 'Voir QC', 'Open QC', 'فتح الجودة'),
             }}
@@ -1223,7 +1223,7 @@ export const ManufacturingHomeView: React.FC<HomeViewProps> = () => {
                   lowMaterialsCount > 0
                     ? `${lowMaterialsCount} ${l3(language, 'alertes MP', 'low stock', 'تحت الحد')}`
                     : l3(language, 'Stocks OK', 'Stock OK', 'المخزون متوازن'),
-                targetScreen: 'members',
+                targetScreen: isQuality ? 'finance' : 'members',
               }}
             />
           </>

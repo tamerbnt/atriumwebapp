@@ -6,7 +6,7 @@ import { StaffMember } from '../../../types/index';
 import { Truck, MapPin, CheckCircle2 } from 'lucide-react';
 
 export const LogisticsStaffView: React.FC = () => {
-  const foundation = useStaffFoundation({ category: 'logistics_courier' });
+  const foundation = useStaffFoundation({ category: 'logistics_delivery' });
   const { isAr, isEn, language } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
@@ -132,7 +132,7 @@ export const LogisticsStaffView: React.FC = () => {
   return (
     <StandardStaffScreen
       foundation={foundation}
-      category="logistics_courier"
+      category="logistics_delivery"
       columns={columns}
       categoryTitle={isAr ? 'السائقون وأعوان التوزيع' : isEn ? 'Fleet Drivers & Couriers' : 'Chauffeurs & Livreurs Hub'}
       newStaffButtonLabel={isAr ? 'إضافة سائق / عون توزيع' : isEn ? 'Add Courier' : 'Nouveau Chauffeur Livreur'}

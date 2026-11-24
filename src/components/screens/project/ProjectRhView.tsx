@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   selectCurrentBranchFromState,
   showToast,
@@ -11,6 +11,9 @@ import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMTalent } from '../../../types/index';
 import { ALGERIAN_WILAYAS, validateCcpAccount } from '../../../utils/algerianPtt';
 import { validateAlgerianPhone } from '../../../utils/logisticsRules';
+import { canAccessStaffScreen, getEffectiveUserRole } from '../../../utils/staffRules';
+import { recordRouteAccessDenied } from '../../../utils/routePermissions';
+import { AccessRestrictedView } from '../../common/AccessRestrictedView';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -117,6 +120,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     branches,
     pmTalents,
     activePmSubScreen,
+    activePmRole,
+    currentUser,
+    currentBusinessId,
+    currentBranchId,
     isSyncing,
     networkMode,
     lastSyncedAt,
@@ -127,12 +134,34 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       branches: s.branches,
       pmTalents: selectCurrentPmTalentsFromState(s),
       activePmSubScreen: s.activePmSubScreen || 'dashboard',
+      activePmRole: s.activePmRole,
+      currentUser: s.currentUser,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
       lastSyncedAt: s.lastSyncedAt,
     }),
     shallowEqualObjects
   );
+  const effectiveRole = getEffectiveUserRole('project_milestone', { currentUser, activePmRole });
+  const hasAccess = canAccessStaffScreen('project_milestone', effectiveRole);
+
+  useEffect(() => {
+    if (!hasAccess) {
+      void recordRouteAccessDenied({
+        attemptedScreen: initialTab === 'dossier' ? 'pm_rh_dossier' : initialTab === 'portal' ? 'pm_rh_portal' : initialTab === 'walkin' ? 'pm_rh_walkin' : 'pm_rh_talents',
+        category: 'project_milestone',
+        state: {
+          currentUser,
+          accountId: account?.id || null,
+          businessId: currentBusinessId,
+          branchId: currentBranchId,
+          activePmRole,
+        },
+      });
+    }
+  }, [hasAccess, initialTab, currentUser, account?.id, currentBusinessId, currentBranchId, activePmRole]);
   const {
     addPmTalent,
     updatePmTalentStatus,
@@ -731,6 +760,16 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: pmTalents.length > 0,
   });
+
+  if (!hasAccess) {
+    return (
+      <AccessRestrictedView
+        attemptedScreen={initialTab === 'dossier' ? 'pm_rh_dossier' : initialTab === 'portal' ? 'pm_rh_portal' : initialTab === 'walkin' ? 'pm_rh_walkin' : 'staff'}
+        category="project_milestone"
+        effectiveRole={effectiveRole}
+      />
+    );
+  }
 
   if (showSkeleton && (pmTalents.length === 0 || networkMode === 'force_skeleton')) {
     return (

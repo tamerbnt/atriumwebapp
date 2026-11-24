@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   useAtriumSelector,
   shallowEqualObjects,
@@ -16,6 +16,7 @@ import {
   getEffectiveUserRole,
   canCreateStaff,
 } from '../../../utils/staffRules';
+import { recordRouteAccessDenied } from '../../../utils/routePermissions';
 import {
   buildBranchesByIdMap,
   resolveRecordBranch,
@@ -31,6 +32,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     (s) => ({
       allStaff: s.staff,
       branches: s.branches,
+      accountId: s.account?.id || null,
       currentBusinessId: s.currentBusinessId,
       currentBranchId: s.currentBranchId,
       currentUser: s.currentUser,
@@ -77,6 +79,8 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const {
     allStaff,
     branches,
+    accountId,
+    currentBusinessId,
     currentBranchId,
     currentUser,
     staffAttendanceLogs,
@@ -145,6 +149,52 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const isOwnerViewer = canViewSensitivePayroll(effectiveRole);
   const canCreate = canCreateStaff(category, effectiveRole);
   const metricLabel = useMemo(() => getCategoryPerformanceMetricLabel(category), [category]);
+
+  useEffect(() => {
+    if (!hasAccess) {
+      void recordRouteAccessDenied({
+        attemptedScreen: 'staff',
+        category: String(category),
+        state: {
+          currentUser,
+          accountId,
+          businessId: currentBusinessId,
+          branchId: currentBranchId,
+          activePmRole,
+          activeGarageRole,
+          activeRealEstateRole,
+          activeManufacturingRole,
+          activeLegalRole,
+          activeLogisticsRole,
+          activeContractorRole,
+          activeAgriRole,
+          activeMembershipRole,
+          activeAppointmentRole,
+          activePosRole,
+          activeEducationRole,
+        },
+      });
+    }
+  }, [
+    hasAccess,
+    category,
+    currentUser,
+    accountId,
+    currentBusinessId,
+    currentBranchId,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  ]);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 

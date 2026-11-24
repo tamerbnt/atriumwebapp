@@ -33,6 +33,7 @@ import {
 } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { AccessRestrictedView } from '../../common/AccessRestrictedView';
 
 export const MembershipStaffView: React.FC<any> = () => {
   const foundation = useStaffFoundation({ category: 'membership_session' });
@@ -328,6 +329,16 @@ export const MembershipStaffView: React.FC<any> = () => {
     : isEn
     ? 'Add Coach / Staff'
     : 'Nouveau Collaborateur';
+
+  if (!foundation.hasAccess) {
+    return (
+      <AccessRestrictedView
+        attemptedScreen="staff"
+        category="membership_session"
+        effectiveRole={foundation.effectiveRole}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">

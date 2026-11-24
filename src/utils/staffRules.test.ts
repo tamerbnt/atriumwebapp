@@ -9,6 +9,8 @@ import {
   getCategoryPerformanceMetricLabel,
   canCreateStaff,
   getEffectiveUserRole,
+  normalizeBusinessCategory,
+  normalizeOperationalRole,
 } from './staffRules';
 import { StaffMember } from '../types/index';
 
@@ -235,6 +237,8 @@ test('Staff Rules: Strict RBAC allows operational team leads in multi-role categ
 
   // Agency
   assert.equal(canAccessStaffScreen('project_milestone', 'ProjectManager'), true);
+  assert.equal(canAccessStaffScreen('project_milestone', 'direction'), true);
+  assert.equal(canAccessStaffScreen('project_milestone', 'rh'), true);
   assert.equal(canAccessStaffScreen('project_milestone', 'Creative'), false);
 });
 
@@ -271,6 +275,8 @@ test('Staff Rules: canCreateStaff enforces owner-only in dual-role and operation
   assert.equal(canCreateStaff('auto_garage', 'Mecanicien'), false);
   assert.equal(canCreateStaff('logistics_delivery', 'Dispatcher'), true);
   assert.equal(canCreateStaff('logistics_delivery', 'Chauffeur'), false);
+  assert.equal(canCreateStaff('project_milestone', 'rh'), true);
+  assert.equal(canCreateStaff('project_milestone', 'compta'), false);
 });
 
 test('Staff Rules: getEffectiveUserRole properly resolves category switcher states', () => {
@@ -283,4 +289,44 @@ test('Staff Rules: getEffectiveUserRole properly resolves category switcher stat
   assert.equal(getEffectiveUserRole('auto_garage', { activeGarageRole: 'mecanicien' }), 'mecanicien');
   assert.equal(getEffectiveUserRole('construction_contractor', { activeContractorRole: 'conducteur' }), 'conducteur');
   assert.equal(getEffectiveUserRole('logistics_delivery', { activeLogisticsRole: 'dispatcher' }), 'dispatcher');
+});
+
+test('Staff Rules (5.6): getEffectiveUserRole fails closed on null/empty currentUser and normalizes categories/roles', () => {
+  const categories = [
+    'membership_session',
+    'appointment_service',
+    'pos_inventory',
+    'education_cohort',
+    'project_milestone',
+    'rental_booking',
+    'freelance_solo',
+    'trading_commercial',
+    'medical_clinic',
+    'auto_garage',
+    'real_estate',
+    'manufacturing_production',
+    'legal_accounting',
+    'logistics_delivery',
+    'construction_contractor',
+    'agriculture_farming',
+  ];
+
+  for (const cat of categories) {
+    assert.equal(getEffectiveUserRole(cat, { currentUser: null }), 'Staff');
+    assert.equal(canViewSensitivePayroll(getEffectiveUserRole(cat, { currentUser: null })), false);
+  }
+
+  // Non-executive authenticated user in non-switcher verticals must never escalate to Owner
+  assert.equal(getEffectiveUserRole('trading_commercial', { currentUser: { role: 'Cashier' } }), 'Cashier');
+  assert.equal(getEffectiveUserRole('rental_booking', { currentUser: { role: 'Reception' } }), 'Reception');
+  assert.equal(getEffectiveUserRole('trading_commercial', { currentUser: { role: 'Owner' } }), 'Owner');
+
+  // Category & operational role aliases
+  assert.equal(normalizeBusinessCategory('legal_notary'), 'legal_accounting');
+  assert.equal(normalizeBusinessCategory('agriculture_livestock'), 'agriculture_farming');
+  assert.equal(normalizeBusinessCategory('pos_retail'), 'pos_inventory');
+  assert.equal(normalizeOperationalRole('controleur'), 'qualite');
+  assert.equal(normalizeOperationalRole('conducteur_travaux'), 'conducteur');
+  assert.equal(normalizeOperationalRole('daf_metreur'), 'metreur');
+  assert.equal(getEffectiveUserRole('manufacturing_production', { activeManufacturingRole: 'controleur' }), 'qualite');
 });

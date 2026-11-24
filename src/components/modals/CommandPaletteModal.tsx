@@ -51,7 +51,12 @@ import {
 } from '../../services/store';
 import { t } from '../../utils/i18n';
 import { localizeStatus } from '../../utils/rules';
-import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
+import {
+  canAccessStaffScreen,
+  getEffectiveUserRole,
+  normalizeBusinessCategory,
+} from '../../utils/staffRules';
+import { canAccessRoute } from '../../utils/routePermissions';
 
 export interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -147,10 +152,25 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     }
   }, [isOpen]);
 
-  const category = currentBusiness?.category || 'pos_inventory';
+  const category = normalizeBusinessCategory(currentBusiness?.category);
 
   const items = useMemo<PaletteItem[]>(() => {
     const list: PaletteItem[] = [];
+    const permState = {
+      currentUser,
+      activePmRole,
+      activeGarageRole,
+      activeRealEstateRole,
+      activeManufacturingRole,
+      activeLegalRole,
+      activeLogisticsRole,
+      activeContractorRole,
+      activeAgriRole,
+      activeMembershipRole,
+      activeAppointmentRole,
+      activePosRole,
+      activeEducationRole,
+    };
 
     const navCategoryLabel = language === 'ar' ? 'التنقل' : language === 'fr' ? 'Navigation' : 'Navigation';
     const actionCategoryLabel = language === 'ar' ? 'إجراءات' : language === 'fr' ? 'Actions' : 'Actions';
@@ -228,19 +248,21 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'settings', label: t('nav_settings', language), role: language === 'ar' ? 'النظام' : language === 'fr' ? 'Système' : 'System', icon: <Settings size={15} /> },
       ];
 
-      pmNavItems.forEach((nav) => {
-        list.push({
-          id: `nav-${nav.id}`,
-          title: nav.label,
-          subtitle: nav.role,
-          category: navCategoryLabel,
-          icon: nav.icon,
-          onSelect: () => {
-            setScreen(nav.id);
-            onClose();
-          },
+      pmNavItems
+        .filter((nav) => canAccessRoute(category, permState, nav.id))
+        .forEach((nav) => {
+          list.push({
+            id: `nav-${nav.id}`,
+            title: nav.label,
+            subtitle: nav.role,
+            category: navCategoryLabel,
+            icon: nav.icon,
+            onSelect: () => {
+              setScreen(nav.id);
+              onClose();
+            },
+          });
         });
-      });
     } else if (category === 'trading_commercial') {
       const tradingNav: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
         { id: 'trading_dashboard', label: dashboardLabel, icon: <LayoutDashboard size={15} /> },
@@ -254,18 +276,20 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
       ];
 
-      tradingNav.forEach((nav) => {
-        list.push({
-          id: `nav-${nav.id}`,
-          title: nav.label,
-          category: navCategoryLabel,
-          icon: nav.icon,
-          onSelect: () => {
-            setScreen(nav.id);
-            onClose();
-          },
+      tradingNav
+        .filter((nav) => canAccessRoute(category, permState, nav.id))
+        .forEach((nav) => {
+          list.push({
+            id: `nav-${nav.id}`,
+            title: nav.label,
+            category: navCategoryLabel,
+            icon: nav.icon,
+            onSelect: () => {
+              setScreen(nav.id);
+              onClose();
+            },
+          });
         });
-      });
     } else {
       const navItems: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
         { id: 'dashboard', label: dashboardLabel, icon: <LayoutDashboard size={15} /> },
@@ -278,38 +302,26 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
       ];
 
-      navItems.forEach((nav) => {
-        list.push({
-          id: `nav-${nav.id}`,
-          title: nav.label,
-          category: navCategoryLabel,
-          icon: nav.icon,
-          onSelect: () => {
-            setScreen(nav.id);
-            onClose();
-          },
+      navItems
+        .filter((nav) => canAccessRoute(category, permState, nav.id))
+        .forEach((nav) => {
+          list.push({
+            id: `nav-${nav.id}`,
+            title: nav.label,
+            category: navCategoryLabel,
+            icon: nav.icon,
+            onSelect: () => {
+              setScreen(nav.id);
+              onClose();
+            },
+          });
         });
-      });
     }
 
     // Unified Staff Screen Navigation
-    const effectiveRole = getEffectiveUserRole(category, {
-      currentUser,
-      activePmRole,
-      activeGarageRole,
-      activeRealEstateRole,
-      activeManufacturingRole,
-      activeLegalRole,
-      activeLogisticsRole,
-      activeContractorRole,
-      activeAgriRole,
-      activeMembershipRole,
-      activeAppointmentRole,
-      activePosRole,
-      activeEducationRole,
-    });
+    const effectiveRole = getEffectiveUserRole(category, permState);
 
-    if (canAccessStaffScreen(category, effectiveRole)) {
+    if (canAccessStaffScreen(category, effectiveRole) && canAccessRoute(category, permState, 'staff')) {
       list.push({
         id: 'nav-staff',
         title: language === 'ar' ? 'الفريق' : language === 'en' ? 'Staff' : 'Équipe',
@@ -362,104 +374,121 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     });
 
 
-    // 3. CRM Records depending on vertical
-    if (category === 'education_cohort') {
-      eduStudents.slice(0, 15).forEach((st) => {
-        list.push({
-          id: `student-${st.id}`,
-          title: st.fullName,
-          subtitle: `Student • ${st.guardianPhone || st.email || 'Enrolled'}`,
-          category: 'Records',
-          icon: <GraduationCap size={15} className="text-emerald-500" />,
-          onSelect: () => {
-            setScreen('members');
-            onClose();
-          },
-        });
-      });
-      eduCohorts.slice(0, 5).forEach((co) => {
-        list.push({
-          id: `cohort-${co.id}`,
-          title: co.name,
-          subtitle: `Cohort • ${co.classroomName || 'Classroom'}`,
-          category: 'Records',
-          icon: <Calendar size={15} className="text-blue-500" />,
-          onSelect: () => {
-            setScreen('shop');
-            onClose();
-          },
-        });
-      });
-    } else if (category === 'freelance_solo') {
-      freelanceClients.slice(0, 15).forEach((cl) => {
-        list.push({
-          id: `client-${cl.id}`,
-          title: cl.name,
-          subtitle: `Client • ${cl.company || cl.email || ''}`,
-          category: 'Records',
-          icon: <User size={15} className="text-purple-500" />,
-          onSelect: () => {
-            setScreen('members');
-            onClose();
-          },
-        });
-      });
-      freelanceInvoices.slice(0, 5).forEach((inv) => {
-        list.push({
-          id: `invoice-${inv.id}`,
-          title: `Invoice ${inv.invoiceNumber}`,
-          subtitle: `${inv.clientName} • ${inv.currency} ${inv.totalAmount.toLocaleString()} (${inv.status})`,
-          category: 'Records',
-          icon: <FileText size={15} className="text-emerald-500" />,
-          onSelect: () => {
-            setScreen('shop');
-            onClose();
-          },
-        });
-      });
-    } else if (category === 'rental_booking') {
-      rentalRenters.slice(0, 10).forEach((ren) => {
-        list.push({
-          id: `renter-${ren.id}`,
-          title: ren.fullName,
-          subtitle: `Renter • ${ren.phone || ren.companyName || ''}`,
-          category: 'Records',
-          icon: <DoorOpen size={15} className="text-amber-500" />,
-          onSelect: () => {
-            setScreen('members');
-            onClose();
-          },
-        });
-      });
-    } else {
-      members.slice(0, 15).forEach((mem) => {
-        list.push({
-          id: `mem-${mem.id}`,
-          title: mem.fullName,
-          subtitle: `${localizeStatus(mem.status, language)} • ${mem.phoneNumber || mem.email || ''}`,
-          category: 'Records',
-          icon: <User size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
-          onSelect: () => {
-            selectMember(mem.id);
-            setScreen('members');
-            onClose();
-          },
-        });
-      });
+    // 3. CRM Records depending on vertical (filtered by target route authorization)
+    const canSeeMembers = canAccessRoute(category, permState, 'members');
+    const canSeeShop = canAccessRoute(category, permState, 'shop');
 
-      products.slice(0, 10).forEach((prod) => {
-        list.push({
-          id: `prod-${prod.id}`,
-          title: prod.name,
-          subtitle: `${language === 'ar' ? 'منتج' : language === 'fr' ? 'Article' : 'Product'} • ${prod.price} ${language === 'ar' ? 'د.ج' : 'DA'} • ${language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Stock'}: ${prod.stockQuantity}`,
-          category: 'Records',
-          icon: <Package size={15} className="text-blue-500" />,
-          onSelect: () => {
-            setScreen('shop');
-            onClose();
-          },
+    if (category === 'education_cohort') {
+      if (canSeeMembers) {
+        eduStudents.slice(0, 15).forEach((st) => {
+          list.push({
+            id: `student-${st.id}`,
+            title: st.fullName,
+            subtitle: `Student • ${st.guardianPhone || st.email || 'Enrolled'}`,
+            category: 'Records',
+            icon: <GraduationCap size={15} className="text-emerald-500" />,
+            onSelect: () => {
+              setScreen('members');
+              onClose();
+            },
+          });
         });
-      });
+      }
+      if (canSeeShop) {
+        eduCohorts.slice(0, 5).forEach((co) => {
+          list.push({
+            id: `cohort-${co.id}`,
+            title: co.name,
+            subtitle: `Cohort • ${co.classroomName || 'Classroom'}`,
+            category: 'Records',
+            icon: <Calendar size={15} className="text-blue-500" />,
+            onSelect: () => {
+              setScreen('shop');
+              onClose();
+            },
+          });
+        });
+      }
+    } else if (category === 'freelance_solo') {
+      if (canSeeMembers) {
+        freelanceClients.slice(0, 15).forEach((cl) => {
+          list.push({
+            id: `client-${cl.id}`,
+            title: cl.name,
+            subtitle: `Client • ${cl.company || cl.email || ''}`,
+            category: 'Records',
+            icon: <User size={15} className="text-purple-500" />,
+            onSelect: () => {
+              setScreen('members');
+              onClose();
+            },
+          });
+        });
+      }
+      if (canSeeShop) {
+        freelanceInvoices.slice(0, 5).forEach((inv) => {
+          list.push({
+            id: `invoice-${inv.id}`,
+            title: `Invoice ${inv.invoiceNumber}`,
+            subtitle: `${inv.clientName} • ${inv.currency} ${inv.totalAmount.toLocaleString()} (${inv.status})`,
+            category: 'Records',
+            icon: <FileText size={15} className="text-emerald-500" />,
+            onSelect: () => {
+              setScreen('shop');
+              onClose();
+            },
+          });
+        });
+      }
+    } else if (category === 'rental_booking') {
+      if (canSeeMembers) {
+        rentalRenters.slice(0, 10).forEach((ren) => {
+          list.push({
+            id: `renter-${ren.id}`,
+            title: ren.fullName,
+            subtitle: `Renter • ${ren.phone || ren.companyName || ''}`,
+            category: 'Records',
+            icon: <DoorOpen size={15} className="text-amber-500" />,
+            onSelect: () => {
+              setScreen('members');
+              onClose();
+            },
+          });
+        });
+      }
+    } else {
+      if (canSeeMembers) {
+        members.slice(0, 15).forEach((mem) => {
+          list.push({
+            id: `mem-${mem.id}`,
+            title: mem.fullName,
+            subtitle: `${localizeStatus(mem.status, language)} • ${mem.phoneNumber || mem.email || ''}`,
+            category: 'Records',
+            icon: <User size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
+            onSelect: () => {
+              selectMember(mem.id);
+              setScreen('members');
+              onClose();
+            },
+          });
+        });
+      }
+
+      if (canSeeShop) {
+        products.slice(0, 10).forEach((prod) => {
+          list.push({
+            id: `prod-${prod.id}`,
+            title: prod.name,
+            subtitle: `${language === 'ar' ? 'منتج' : language === 'fr' ? 'Article' : 'Product'} • ${prod.price} ${language === 'ar' ? 'د.ج' : 'DA'} • ${language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Stock'}: ${prod.stockQuantity}`,
+            category: 'Records',
+            icon: <Package size={15} className="text-blue-500" />,
+            onSelect: () => {
+              setScreen('shop');
+              onClose();
+            },
+          });
+        });
+      }
     }
 
     return list;
@@ -475,6 +504,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     eduStudents,
     eduCohorts,
     language,
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
   ]);
 
   const filteredItems = useMemo(() => {

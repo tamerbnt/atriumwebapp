@@ -2787,5 +2787,14 @@
   "offline_queue_quarantined_title": "Sync item quarantined",
   "offline_queue_quarantined_msg": "One offline mutation could not sync ({reason}) and was moved to quarantine without blocking other items.",
   "tenant_context_missing_title": "Tenant context required",
-  "tenant_context_missing_msg": "Active workspace account or branch is missing. Sign in or select a workspace before saving."
+  "tenant_context_missing_msg": "Active workspace account or branch is missing. Sign in or select a workspace before saving.",
+  "access_restricted_title": "Access restricted",
+  "access_restricted_desc": "Your active role does not allow access to this workspace screen. Return to Home or switch to an authorized operator.",
+  "access_restricted_screen_label": "Requested screen",
+  "access_restricted_role_label": "Active role",
+  "access_restricted_return_home": "Return Home",
+  "access_restricted_switch_user": "Switch Operator",
+  "membership_finance_estimated_badge": "Estimated, ledger pending",
+  "membership_finance_estimated_banner": "Figures on this screen are synthesized from active member dues until the dedicated membership ledger syncs.",
+  "membership_finance_estimated_csv_note": "Estimated, ledger pending (synthesized from member dues)"
 }
