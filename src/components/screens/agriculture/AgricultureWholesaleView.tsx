@@ -24,6 +24,7 @@ import {
   runUndoBatch,
 } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { t as i18nT } from '../../../utils/i18n';
 import { calculateArt317Timbre } from '../../../utils/agriRules';
 import { AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
@@ -954,13 +955,9 @@ export const AgricultureWholesaleView: React.FC = () => {
                 id: 'share',
                 label: isAr ? 'مشاركة الوصل' : 'Partager Bordereau',
                 icon: <Share2 size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr
-                      ? `تم نسخ رابط تتبع الشحنة ${t.ticketNumber}`
-                      : `Lien de télé-déclaration mandataire ${t.ticketNumber} copié`,
-                    'success'
-                  ),
+                disabled: true,
+                tooltip: i18nT('feature_not_available_phase2', language),
+                onClick: () => {},
               },
             ];
           }}
@@ -1082,14 +1079,9 @@ export const AgricultureWholesaleView: React.FC = () => {
                 <InspectorSection index={1}>
                   <InspectorWideButton
                     label={isAr ? 'مشاركة رابط التتبع' : 'Partager lien télé-déclaration'}
-                    onClick={() =>
-                      showToast(
-                        isAr
-                          ? `تم نسخ رابط تتبع الشحنة ${item.ticketNumber}`
-                          : `Lien de télé-déclaration mandataire ${item.ticketNumber} copié`,
-                        'success'
-                      )
-                    }
+                    disabled
+                    tooltip={i18nT('feature_not_available_phase2', language)}
+                    onClick={() => {}}
                   />
                 </InspectorSection>
               </>
@@ -1136,13 +1128,9 @@ export const AgricultureWholesaleView: React.FC = () => {
                       id: 'share',
                       label: isAr ? 'مشاركة' : 'Partager',
                       icon: <Share2 className="w-[18px] h-[18px]" />,
-                      onClick: () =>
-                        showToast(
-                          isAr
-                            ? `تم نسخ رابط تتبع الشحنة ${item.ticketNumber}`
-                            : `Lien de télé-déclaration mandataire ${item.ticketNumber} copié`,
-                          'success'
-                        ),
+                      disabled: true,
+                      tooltip: i18nT('feature_not_available_phase2', language),
+                      onClick: () => {},
                     },
                     {
                       id: 'csv',

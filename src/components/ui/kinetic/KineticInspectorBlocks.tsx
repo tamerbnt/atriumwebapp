@@ -41,6 +41,7 @@ export interface InspectorQuickActionItem {
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   primary?: boolean;
   disabled?: boolean;
+  tooltip?: string;
 }
 
 export const InspectorQuickActions: React.FC<{
@@ -65,6 +66,7 @@ export const InspectorQuickActions: React.FC<{
           data-sq="card"
           data-sq-border="solid"
           disabled={act.disabled}
+          title={act.tooltip || act.label}
           onClick={act.onClick}
           className={`flex flex-col items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-card,16px)] t-small text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
@@ -391,14 +393,16 @@ export const InspectorWideButton: React.FC<{
   icon?: React.ReactNode;
   tone?: 'accent' | 'dark' | 'neutral';
   disabled?: boolean;
+  tooltip?: string;
   onClick: () => void;
-}> = ({ label, icon, tone = 'accent', disabled = false, onClick }) => (
+}> = ({ label, icon, tone = 'accent', disabled = false, tooltip, onClick }) => (
   <button
     type="button"
     data-no-liquid="true"
     data-sq="ctl"
     data-sq-border="none"
     disabled={disabled}
+    title={tooltip}
     onClick={onClick}
     className={`wide w-full h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] t-btn font-semibold flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-colors hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
       tone === 'dark'

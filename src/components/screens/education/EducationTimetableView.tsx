@@ -20,10 +20,14 @@ import {
   selectCurrentEduSessionsFromState,
   selectCurrentEduCohortsFromState,
   selectCurrentEduClassroomsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduEnrollmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
@@ -64,11 +68,13 @@ export const EducationTimetableView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { eduSessions, eduCohorts, eduClassrooms, staff, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+  const { eduSessions, eduCohorts, eduClassrooms, eduStudents, eduEnrollments, staff, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
     (s) => ({
       eduSessions: selectCurrentEduSessionsFromState(s),
       eduCohorts: selectCurrentEduCohortsFromState(s),
       eduClassrooms: selectCurrentEduClassroomsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
       staff: selectCurrentStaffFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
@@ -100,6 +106,61 @@ export const EducationTimetableView: React.FC = () => {
 
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [rollCallSession, setRollCallSession] = useState<EduSession | null>(null);
+  const [attendancePrintState, setAttendancePrintState] = useState<{
+    pages: PrintSheetPage[];
+    warning?: string;
+  } | null>(null);
+
+  const openAttendanceSheetPrint = useCallback(
+    (sessionsToPrint: EduSession[], warning?: string) => {
+      const studentsById = new Map(eduStudents.map((st) => [st.id, st]));
+      const cohortsById = new Map(eduCohorts.map((c) => [c.id, c]));
+      const pages: PrintSheetPage[] = sessionsToPrint.map((s) => {
+        const cohort = cohortsById.get(s.cohortId);
+        const roster = eduEnrollments
+          .filter((enr) => enr.cohortId === s.cohortId && enr.status !== 'Dropped')
+          .map((enr, idx) => {
+            const stu = studentsById.get(enr.studentId);
+            return [
+              String(idx + 1),
+              stu ? stu.fullName : enr.studentName || enr.studentId,
+              stu?.phone || '—',
+              enr.status,
+              '☐ P   ☐ A   ☐ R',
+              '',
+            ];
+          });
+        return {
+          id: s.id,
+          title: isAr ? `ورقة الحضور — ${s.cohortName || cohort?.name || 'الفوج'}` : isEn ? `Attendance Sheet — ${s.cohortName || cohort?.name || 'Cohort'}` : `Feuille d'émargement — ${s.cohortName || cohort?.name || 'Cohorte'}`,
+          subtitle: `${s.date} · ${s.startTime} - ${s.endTime} · ${s.classroomName || 'Salle'}`,
+          badgeText: `${roster.length} ${isAr ? 'طالب' : isEn ? 'students' : 'apprenants'}`,
+          sections: [
+            {
+              rows: [
+                { label: isAr ? 'الأستاذ / المدرب' : isEn ? 'Instructor' : 'Formateur', value: s.instructorName || '—' },
+                { label: isAr ? 'القاعة' : isEn ? 'Classroom' : 'Salle', value: s.classroomName || '—' },
+                { label: isAr ? 'الموضوع' : isEn ? 'Topic' : 'Module / Thème', value: s.topic || '—' },
+              ],
+            },
+          ],
+          tableHeaders: [
+            '#',
+            isAr ? 'الاسم الكامل' : isEn ? 'Student' : 'Apprenant',
+            isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
+            isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+            isAr ? 'الحضور' : isEn ? 'Mark' : 'Présence',
+            isAr ? 'التوقيع' : isEn ? 'Signature' : 'Signature',
+          ],
+          tableRows: roster.length > 0 ? roster : [['1', isAr ? 'لا يوجد طلاب مسجلون' : isEn ? 'No enrolled students' : 'Aucun apprenant inscrit', '—', '—', '—', '—']],
+          signatureLeft: isAr ? 'توقيع الأستاذ' : isEn ? 'Instructor Signature' : 'Signature Formateur',
+          signatureRight: isAr ? 'توقيع الإدارة' : isEn ? 'Administration Stamp' : 'Visa Administration',
+        };
+      });
+      setAttendancePrintState({ pages, warning });
+    },
+    [eduStudents, eduCohorts, eduEnrollments, isAr, isEn]
+  );
 
   const [formData, setFormData] = useState({
     cohortId: eduCohorts[0]?.id || '',
@@ -743,28 +804,26 @@ export const EducationTimetableView: React.FC = () => {
               id: 'print',
               tooltip: isAr ? 'طباعة المحضر' : 'Imprimer Liste',
               icon: <Printer size={13} />,
-              onClick: () => {
-                showToast({
-                  type: 'info',
-                  title: isAr ? 'ورقة الحضور' : 'Émargement prêt',
-                  message: isAr
-                    ? `طباعة ورقة الحضور للفوج ${s.cohortName}`
-                    : `Feuille d'émargement générée pour ${s.cohortName}`,
-                });
-              },
+              onClick: () => openAttendanceSheetPrint([s]),
             },
           ]}
           bulkSecondaryAction={{
             label: isAr ? 'مناداة الحضور' : 'Feuille d’émargement',
             icon: <ClipboardList size={14} />,
             onClick: (ids) => {
-              showToast({
-                type: 'success',
-                title: isAr ? 'أوراق الحضور جاهزة' : 'Émargements prêts',
-                message: isAr
-                  ? `تم تجهيز أوراق الحضور لـ ${ids.size} حصص`
-                  : `Feuilles d'émargement prêtes pour ${ids.size} séances`,
-              });
+              const resolved = resolveBatchSelection(Array.from(ids), sortedSessions, (s) => s.id, 100);
+              if (resolved.selectedItems.length === 0) {
+                showToast({
+                  type: 'warning',
+                  title: isAr ? 'لا توجد حصص' : isEn ? 'No sessions selected' : 'Aucune séance sélectionnée',
+                  message: isAr ? 'اختر حصة واحدة على الأقل للطباعة.' : 'Sélectionnez au moins une séance valide.',
+                });
+                return;
+              }
+              openAttendanceSheetPrint(
+                resolved.selectedItems,
+                resolved.truncatedCount > 0 ? `Limité à 100 feuilles (${resolved.truncatedCount} ignorées).` : undefined
+              );
             },
           }}
           onBulkDelete={(ids) => {
@@ -884,13 +943,7 @@ export const EducationTimetableView: React.FC = () => {
                     label={isAr ? 'طباعة ورقة الحضور' : 'Imprimer Feuille d’Émargement'}
                     icon={<Printer size={15} />}
                     tone="neutral"
-                    onClick={() =>
-                      showToast({
-                        type: 'success',
-                        title: isAr ? 'طباعة ورقة الحضور' : 'Impression lancée',
-                        message: isAr ? 'جاري طباعة ورقة الحضور' : "Impression de la feuille d'émargement",
-                      })
-                    }
+                    onClick={() => openAttendanceSheetPrint([sess])}
                   />
                 </InspectorSection>
               </>
@@ -916,12 +969,7 @@ export const EducationTimetableView: React.FC = () => {
                       id: 'print',
                       label: isAr ? 'طباعة المحضر' : 'Imprimer',
                       icon: <Printer size={16} />,
-                      onClick: () =>
-                        showToast({
-                          type: 'success',
-                          title: isAr ? 'طباعة ورقة الحضور' : 'Impression lancée',
-                          message: isAr ? 'جاري طباعة ورقة الحضور' : "Impression de la feuille d'émargement",
-                        }),
+                      onClick: () => openAttendanceSheetPrint([sess]),
                     },
                   ]}
                 />
@@ -1064,6 +1112,17 @@ export const EducationTimetableView: React.FC = () => {
           setIsRollCallOpen(false);
           setRollCallSession(null);
         }}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(attendancePrintState)}
+        onClose={() => setAttendancePrintState(null)}
+        language={language}
+        format="a4"
+        title={isAr ? 'أوراق الحضور الرسمية' : isEn ? 'Official Attendance Sheets' : 'Feuilles d’émargement'}
+        subtitle={`${attendancePrintState?.pages.length || 0} ${isAr ? 'حصص' : isEn ? 'sessions' : 'séances'}`}
+        pages={attendancePrintState?.pages || []}
+        warningBanner={attendancePrintState?.warning}
       />
     </div>
   );

@@ -2804,5 +2804,15 @@
   "topbar_language_switch_desc": "تبديل العربية / الفرنسية / الإنجليزية",
   "topbar_density_menu": "الوضع المكثف",
   "topbar_density_toggle_desc": "تبديل الكثافة المكثفة أو القياسية",
-  "legal_vault_filing_only_banner": "نطاق الإيداع فقط: يمكنك تسجيل وطباعة مستندات الموكلين. ملفات الدفاع السرية والتعديل والحذف مقتصرة على المحامين المخولين."
+  "legal_vault_filing_only_banner": "نطاق الإيداع فقط: يمكنك تسجيل وطباعة مستندات الموكلين. ملفات الدفاع السرية والتعديل والحذف مقتصرة على المحامين المخولين.",
+  "feature_not_available_yet": "غير متاح حالياً",
+  "feature_not_available_phase2": "غير متاح حالياً — مجدول للمرحلة الثانية",
+  "step5_duplicata_watermark": "نسخة مكررة",
+  "step5_cmup_held_notice": "تم تسجيل عدم المطابقة والإتلاف. تبقى تعديلات المخزون والمنتج قيد التصنيع ومتوسط التكلفة المرجح (CMUP) معلّقة لحين التأكيد المحاسبي.",
+  "step5_enroll_member_title": "تسجيل عضو في الحصة",
+  "step5_coach_confirmed_badge": "تم تأكيد المدرب",
+  "step5_confirm_coach_action": "تأكيد المدرب",
+  "step5_duplicate_week_title": "تكرار جدول الأسبوع",
+  "step5_re_inspection_locked_badge": "مصادق ومقفل",
+  "step5_mfg_scrap_ncr_title": "تسجيل إتلاف وتقرير عدم مطابقة"
 }

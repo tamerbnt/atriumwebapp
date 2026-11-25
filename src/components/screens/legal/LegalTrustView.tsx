@@ -42,6 +42,7 @@ import {
   calculateArticle317Stamp,
 } from '../../../utils/legalRules';
 import { CashClosureModal } from '../../modals/CashClosureModal';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -134,6 +135,7 @@ export const LegalTrustView: React.FC<any> = () => {
   const [sortBy, setSortBy] = useState<string>('default');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [carpaMatterToPrint, setCarpaMatterToPrint] = useState<LegalMatter | null>(null);
 
   const handleTogglePin = useCallback(
     (id: string) => {
@@ -858,14 +860,7 @@ export const LegalTrustView: React.FC<any> = () => {
         id: 'statement',
         label: isAr ? 'كشف CARPA' : 'Relevé CARPA',
         icon: <Printer className="w-3.5 h-3.5" />,
-        onClick: () => {
-          showToast(
-            isAr
-              ? `طباعة كشف حساب الوديعة للقضية ${m.matterNumber}`
-              : `Génération du relevé officiel CARPA (${m.matterNumber})`,
-            'info'
-          );
-        },
+        onClick: () => setCarpaMatterToPrint(m),
       },
       {
         id: 'pin',
@@ -2773,14 +2768,7 @@ export const LegalTrustView: React.FC<any> = () => {
               id: 'statement',
               label: isAr ? 'كشف CARPA' : 'Relevé CARPA',
               icon: <Printer size={14} />,
-              onClick: () => {
-                showToast(
-                  isAr
-                    ? `طباعة كشف حساب الوديعة للقضية ${m.matterNumber}`
-                    : `Génération du relevé officiel CARPA (${m.matterNumber})`,
-                  'info'
-                );
-              },
+              onClick: () => setCarpaMatterToPrint(m),
             },
           ]}
           emptyTitle={isAr ? 'لا توجد حسابات CARPA' : 'Aucun compte CARPA'}
@@ -2895,14 +2883,7 @@ export const LegalTrustView: React.FC<any> = () => {
                       id: 'statement',
                       label: isAr ? 'كشف CARPA' : 'Relevé CARPA',
                       icon: <Printer size={16} />,
-                      onClick: () => {
-                        showToast(
-                          isAr
-                            ? `طباعة كشف حساب الوديعة للقضية ${m.matterNumber}`
-                            : `Génération du relevé officiel CARPA (${m.matterNumber})`,
-                          'info'
-                        );
-                      },
+                      onClick: () => setCarpaMatterToPrint(m),
                     },
                   ]}
                 />
@@ -2916,6 +2897,65 @@ export const LegalTrustView: React.FC<any> = () => {
             </>
           );
         }}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(carpaMatterToPrint)}
+        onClose={() => setCarpaMatterToPrint(null)}
+        language={language}
+        format="a4"
+        title={isAr ? 'كشف حساب الودائع CARPA' : 'Relevé Officiel Compte CARPA'}
+        subtitle={
+          carpaMatterToPrint
+            ? `${carpaMatterToPrint.matterNumber} · ${carpaMatterToPrint.clientName}`
+            : undefined
+        }
+        pages={
+          carpaMatterToPrint
+            ? [
+                {
+                  id: carpaMatterToPrint.id,
+                  title: isAr
+                    ? `كشف حساب الوديعة — ${carpaMatterToPrint.matterNumber}`
+                    : `RELEVÉ DE COMPTE SÉQUESTRE CARPA — ${carpaMatterToPrint.matterNumber}`,
+                  subtitle: carpaMatterToPrint.title,
+                  badgeText:
+                    (carpaMatterToPrint.trustEscrowBalanceDzd || 0) > 0
+                      ? 'Sous Séquestre'
+                      : 'Soldé',
+                  sections: [
+                    {
+                      heading: isAr ? 'بيانات الموكل والملف' : 'Identification du Mandat',
+                      rows: [
+                        { label: isAr ? 'رقم القضية' : 'N° Dossier', value: carpaMatterToPrint.matterNumber },
+                        { label: isAr ? 'الموكل' : 'Mandant', value: carpaMatterToPrint.clientName },
+                        { label: isAr ? 'الجهة القضائية' : 'Juridiction', value: carpaMatterToPrint.courtJurisdiction || '—' },
+                      ],
+                    },
+                    {
+                      heading: isAr ? 'الوضعية المالية' : 'Situation Séquestre & Honoraires',
+                      rows: [
+                        {
+                          label: isAr ? 'رصيد الوديعة CARPA' : 'Solde Séquestre CARPA (Inaliénable)',
+                          value: formatMoney(carpaMatterToPrint.trustEscrowBalanceDzd || 0, language),
+                        },
+                        {
+                          label: isAr ? 'اتفاقية الأتعاب' : "Convention d'honoraires",
+                          value: formatMoney(carpaMatterToPrint.retainerAmountDzd, language),
+                        },
+                        {
+                          label: isAr ? 'الرقابة النقابية' : 'Conformité Ordre',
+                          value: 'Séparation hermétique · Contrôle périodique',
+                        },
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? 'تأشيرة المحامي / أمين الودائع' : "Maître / Titulaire du Compte",
+                  signatureRight: isAr ? 'رقابة مجلس المنظمة / CARPA' : "Contrôle Conseil de l'Ordre / CARPA",
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

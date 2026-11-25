@@ -6,6 +6,8 @@ export interface KineticRowFanAction<_T = unknown> {
   label: string;
   icon: React.ReactNode;
   isDanger?: boolean;
+  disabled?: boolean;
+  tooltip?: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -78,15 +80,18 @@ export const KineticRowFan: React.FC<KineticRowFanProps> = React.memo(({
             type="button"
             data-no-liquid="true"
             data-a={action.id}
+            disabled={action.disabled}
             style={{ '--i': staggerIdx } as React.CSSProperties}
-            className={`act cursor-pointer border-0 bg-[var(--atr-bg,#F3EDE7)] text-[var(--atr-ink,#000000)] dark:bg-[#2B2927] dark:text-white ${
+            className={`act border-0 bg-[var(--atr-bg,#F3EDE7)] text-[var(--atr-ink,#000000)] dark:bg-[#2B2927] dark:text-white disabled:opacity-45 disabled:cursor-not-allowed ${
+              action.disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+            } ${
               action.isDanger ? 'act-danger' : ''
             } ${className}`}
             aria-label={action.label}
-            title={action.label}
+            title={action.tooltip || action.label}
             onClick={(e) => {
               e.stopPropagation();
-              action.onClick(e);
+              if (!action.disabled) action.onClick(e);
             }}
           >
             {action.icon}

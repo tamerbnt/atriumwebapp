@@ -107,6 +107,8 @@ export interface UniversalDataCollectionProps<T> {
     label: string;
     icon?: React.ReactNode;
     onClick: (selectedIds: Set<string>) => void;
+    disabled?: boolean;
+    tooltip?: string;
   }[];
 
   // Sorting
@@ -752,6 +754,8 @@ export function UniversalDataCollection<T>({
           id: act.id,
           label: act.label,
           icon: act.icon,
+          disabled: act.disabled,
+          tooltip: act.tooltip,
           onClick: () => act.onClick(effectiveSelectedIds),
         });
       });
@@ -926,6 +930,8 @@ export function UniversalDataCollection<T>({
           id: `custom_${id}`,
           label: firstCustom.label || firstCustom.tooltip || 'Action',
           icon: firstCustom.icon,
+          disabled: firstCustom.disabled,
+          tooltip: firstCustom.title || firstCustom.tooltip,
           onClick: () => firstCustom.onClick(),
         });
       }
@@ -1017,6 +1023,8 @@ export function UniversalDataCollection<T>({
             id: `c_${idx}_${act.label || idx}`,
             label: act.label || act.tooltip || 'Action',
             icon: act.icon,
+            disabled: act.disabled,
+            tooltip: act.title || act.tooltip,
             onClick: act.onClick,
           });
         });

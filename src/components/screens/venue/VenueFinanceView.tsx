@@ -17,7 +17,9 @@ import {
 } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
+import { t as i18nT } from '../../../utils/i18n';
 import { useTranslation } from '../../../utils/useTranslation';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -73,7 +75,12 @@ export const VenueFinanceView: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { releaseSecurityDeposit, deductSecurityDeposit, retryCloudSync } = useAtriumActions();
+  const {
+    releaseSecurityDeposit,
+    deductSecurityDeposit,
+    issueDepositReceiptPrint,
+    retryCloudSync,
+  } = useAtriumActions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -96,6 +103,50 @@ export const VenueFinanceView: React.FC = () => {
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('collectedAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [depositPrintPage, setDepositPrintPage] = useState<PrintSheetPage | null>(null);
+
+  const handleOpenDepositReceipt = useCallback(
+    async (dep: SecurityDepositRecord) => {
+      const res = await issueDepositReceiptPrint(dep.id);
+      const receiptNumber = res?.depositReceiptNumber || dep.depositReceiptNumber || `DEP-${dep.id.slice(0, 8).toUpperCase()}`;
+      const isDuplicate = res?.isDuplicate ?? ((dep.printedCount || 0) >= 1);
+      const count = res?.printedCount || (dep.printedCount || 0) + 1;
+      setDepositPrintPage({
+        id: dep.id,
+        title: isAr ? `وصل ضمان — ${receiptNumber}` : isFr ? `Reçu de Séquestre Caution — ${receiptNumber}` : `Security Deposit Receipt — ${receiptNumber}`,
+        subtitle: `${dep.unitName} · ${dep.renterName}`,
+        badgeText: `${localizeStatus(dep.status, language)} · #${count}`,
+        watermarkText: isDuplicate ? i18nT('step5_duplicata_watermark', language) : undefined,
+        sections: [
+          {
+            heading: isAr ? 'تفاصيل الضمان' : isFr ? 'Détails du séquestre' : 'Deposit Breakdown',
+            rows: [
+              { label: isAr ? 'رقم الوصل' : isFr ? 'N° Reçu' : 'Receipt N°', value: receiptNumber },
+              { label: isAr ? 'المستأجر' : isFr ? 'Locataire' : 'Renter', value: dep.renterName },
+              { label: isAr ? 'المساحة / الوحدة' : isFr ? 'Espace / Unité' : 'Unit / Venue', value: dep.unitName },
+              { label: isAr ? 'مرجع الحجز' : isFr ? 'Réf. Réservation' : 'Booking Ref', value: dep.bookingId },
+              { label: isAr ? 'المبلغ' : isFr ? 'Montant séquestré' : 'Amount', value: formatCurrencyAmount(dep.amount, dep.currency) },
+              { label: isAr ? 'طريقة الدفع' : isFr ? 'Moyen de paiement' : 'Method', value: dep.paymentMethod },
+              { label: isAr ? 'تاريخ التحصيل' : isFr ? 'Date d’encaissement' : 'Collected At', value: dep.collectedAt },
+              ...(dep.deductionReason
+                ? [{ label: isAr ? 'ملاحظة الاقتطاع' : isFr ? 'Motif retenue' : 'Deduction Reason', value: dep.deductionReason }]
+                : []),
+            ],
+          },
+        ],
+        signatureLeft: isAr ? 'توقيع المستأجر' : isFr ? 'Signature Locataire' : 'Renter Signature',
+        signatureRight: isAr ? 'ختم وتوقيع الإدارة' : isFr ? 'Cachet & Signature Gérance' : 'Management Stamp',
+        footerNote: isDuplicate
+          ? `${i18nT('step5_duplicata_watermark', language)} (${count})`
+          : isAr
+          ? 'نسخة أصلية'
+          : isFr
+          ? 'Exemplaire original'
+          : 'Original copy',
+      });
+    },
+    [issueDepositReceiptPrint, isAr, isFr, language]
+  );
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -654,14 +705,7 @@ export const VenueFinanceView: React.FC = () => {
               id: 'receipt',
               label: isAr ? 'وصل' : 'Reçu',
               icon: <Printer size={14} />,
-              onClick: () => {
-                showToast({
-                  type: 'info',
-                  title: 'Reçu Caution',
-                  message: `Reçu de séquestre caution émis pour ${dep.renterName}`,
-                  category: 'rental_booking',
-                });
-              },
+              onClick: () => void handleOpenDepositReceipt(dep),
             },
           ]}
           getDetailActions={(dep) => [
@@ -685,14 +729,7 @@ export const VenueFinanceView: React.FC = () => {
               id: 'receipt',
               label: isAr ? 'وصل الضمان' : 'Reçu Caution',
               icon: <Printer size={13} />,
-              onClick: () => {
-                showToast({
-                  type: 'info',
-                  title: 'Reçu Caution',
-                  message: `Reçu de séquestre caution émis pour ${dep.renterName}`,
-                  category: 'rental_booking',
-                });
-              },
+              onClick: () => void handleOpenDepositReceipt(dep),
             },
           ]}
           emptyTitle={isAr ? 'لا توجد ودائع' : isFr ? 'Aucune caution trouvée' : 'No deposits found'}
@@ -852,14 +889,7 @@ export const VenueFinanceView: React.FC = () => {
                     label: isAr ? 'وصل الضمان' : 'Reçu',
                     icon: <Printer size={15} />,
                     primary: dep.status !== 'Held',
-                    onClick: () => {
-                      showToast({
-                        type: 'info',
-                        title: 'Impression Reçu',
-                        message: `Bordereau de caution imprimé pour ${dep.renterName}`,
-                        category: 'rental_booking',
-                      });
-                    },
+                    onClick: () => void handleOpenDepositReceipt(dep),
                   },
                 ]}
               />
@@ -892,14 +922,7 @@ export const VenueFinanceView: React.FC = () => {
                 label={isAr ? 'طباعة وصل الوديعة' : 'Imprimer Reçu de Caution'}
                 icon={<Printer size={14} />}
                 tone="neutral"
-                onClick={() => {
-                  showToast({
-                    type: 'info',
-                    title: 'Impression Reçu',
-                    message: `Bordereau de caution imprimé pour ${dep.renterName}`,
-                    category: 'rental_booking',
-                  });
-                }}
+                onClick={() => void handleOpenDepositReceipt(dep)}
               />
             </div>
           );
@@ -976,6 +999,16 @@ export const VenueFinanceView: React.FC = () => {
           </div>
         )}
       </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(depositPrintPage)}
+        onClose={() => setDepositPrintPage(null)}
+        language={language}
+        format="a4"
+        title={depositPrintPage?.title || (isAr ? 'وصل الضمان' : 'Reçu Caution')}
+        subtitle={depositPrintPage?.subtitle}
+        pages={depositPrintPage ? [depositPrintPage] : []}
+      />
     </div>
   );
 };

@@ -28,6 +28,8 @@ import { LiveSelect } from '../../ui/live/LiveSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
+import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -139,6 +141,7 @@ export const LogisticsScannerView: React.FC = () => {
   );
 
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
+  const [labelShipment, setLabelShipment] = useState<LogisticsShipment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('colis');
   const [scanHistory, setScanHistory] = useState<
@@ -903,25 +906,15 @@ export const LogisticsScannerView: React.FC = () => {
                   id: 'barcode',
                   label: isAr ? 'طباعة الباركود' : 'Imprimer Barcode',
                   icon: <Printer size={14} />,
-                  onClick: () =>
-                    showToast(
-                      isAr
-                        ? `طباعة ملصق الباركود للطرد ${s.trackingCode}`
-                        : `Étiquette AWB générée pour ${s.trackingCode}`,
-                      'info'
-                    ),
+                  onClick: () => setLabelShipment(s),
                 },
                 {
                   id: 'share',
                   label: isAr ? 'مشاركة الوصل' : 'Partager Bordereau',
                   icon: <Share2 size={14} />,
-                  onClick: () =>
-                    showToast(
-                      isAr
-                        ? 'تم نسخ رابط تتبع الشحنة'
-                        : `Lien de tracking ${s.trackingCode} copié`,
-                      'success'
-                    ),
+                  disabled: true,
+                  tooltip: t('feature_not_available_phase2', language),
+                  onClick: () => {},
                 },
               ]}
               emptyTitle={isAr ? 'لا توجد طرود' : isEn ? 'No dock parcels' : 'Aucun colis au quai'}
@@ -1037,21 +1030,15 @@ export const LogisticsScannerView: React.FC = () => {
                         id: 'barcode',
                         label: isAr ? 'باركود' : 'Étiquette AWB',
                         icon: <Printer size={16} />,
-                        onClick: () =>
-                          showToast(
-                            isAr ? `طباعة ملصق ${s.trackingCode}` : `Étiquette ${s.trackingCode} générée`,
-                            'info'
-                          ),
+                        onClick: () => setLabelShipment(s),
                       },
                       {
                         id: 'share',
                         label: isAr ? 'مشاركة' : 'Partager',
                         icon: <Share2 size={16} />,
-                        onClick: () =>
-                          showToast(
-                            isAr ? 'تم نسخ رابط تتبع الشحنة' : `Lien de tracking ${s.trackingCode} copié`,
-                            'success'
-                          ),
+                        disabled: true,
+                        tooltip: t('feature_not_available_phase2', language),
+                        onClick: () => {},
                       },
                     ]}
                   />
@@ -1061,12 +1048,7 @@ export const LogisticsScannerView: React.FC = () => {
                     label={isAr ? 'طباعة ملصق الباركود الحراري' : 'Imprimer Étiquette Thermique AWB'}
                     icon={<Printer size={14} />}
                     tone="dark"
-                    onClick={() =>
-                      showToast(
-                        isAr ? `طباعة ملصق ${s.trackingCode}` : `Étiquette ${s.trackingCode} générée`,
-                        'info'
-                      )
-                    }
+                    onClick={() => setLabelShipment(s)}
                   />
                 </InspectorSection>
               </>
@@ -1163,6 +1145,41 @@ export const LogisticsScannerView: React.FC = () => {
           </div>
         )}
       </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(labelShipment)}
+        onClose={() => setLabelShipment(null)}
+        language={language}
+        format="label"
+        title={isAr ? 'ملصق الشحن والباركود AWB' : 'Étiquette Thermique AWB'}
+        subtitle={labelShipment ? `${labelShipment.trackingCode} · ${labelShipment.destinationWilaya}` : undefined}
+        pages={
+          labelShipment
+            ? [
+                {
+                  id: labelShipment.id,
+                  title: labelShipment.trackingCode,
+                  subtitle: labelShipment.deliveryMode === 'StopDesk' ? 'STOP-DESK' : 'DOMICILE',
+                  badgeText: labelShipment.destinationWilaya,
+                  sections: [
+                    {
+                      heading: isAr ? 'بيانات الوجهة' : 'Destinataire & Expéditeur',
+                      rows: [
+                        { label: isAr ? 'المرسل' : 'Marchand', value: labelShipment.merchantName || 'Comptoir' },
+                        { label: isAr ? 'المستلم' : 'Destinataire', value: labelShipment.recipientName },
+                        { label: isAr ? 'الهاتف' : 'Téléphone', value: labelShipment.recipientPhone },
+                        { label: isAr ? 'العنوان' : 'Adresse', value: `${labelShipment.destinationAddress} (${labelShipment.destinationWilaya})` },
+                        { label: isAr ? 'الوزن' : 'Poids', value: `${labelShipment.weightKg} kg` },
+                        { label: 'COD', value: `${labelShipment.codAmountDzd.toLocaleString()} DZD` },
+                      ],
+                    },
+                  ],
+                  footerNote: localizeStatus(labelShipment.status, language),
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 };

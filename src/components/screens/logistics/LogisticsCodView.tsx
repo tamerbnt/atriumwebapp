@@ -27,7 +27,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
 import { calculateDriverPayout } from '../../../utils/logisticsRules';
+import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -77,6 +79,7 @@ export const LogisticsCodView: React.FC<any> = () => {
   const [inspectorTab, setInspectorTab] = useState<string>('summary');
 
   const [isSfp01ModalOpen, setIsSfp01ModalOpen] = useState(false);
+  const [receiptShipment, setReceiptShipment] = useState<LogisticsShipment | null>(null);
   const [activeTab, setActiveTab] = useState<string>('shipments');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -383,13 +386,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           id: 'receipt',
           label: isAr ? 'وصل' : 'Reçu',
           icon: <Printer className="w-[15px] h-[15px]" />,
-          onClick: () =>
-            showToast(
-              isAr
-                ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}`
-                : `Bordereau de reversement émis pour ${s.trackingCode}`,
-              'info'
-            ),
+          onClick: () => setReceiptShipment(s),
         },
         {
           id: 'pin',
@@ -427,13 +424,9 @@ export const LogisticsCodView: React.FC<any> = () => {
           id: 'sms',
           label: isAr ? 'إشعار التاجر' : 'Avis SMS',
           icon: <Share2 className="w-3.5 h-3.5" />,
-          onClick: () =>
-            showToast(
-              isAr
-                ? `تم إرسال إشعار الدفع إلى ${s.merchantName}`
-                : `Notification SMS de reversement envoyée à ${s.merchantName}`,
-              'success'
-            ),
+          disabled: true,
+          tooltip: t('feature_not_available_phase2', language),
+          onClick: () => {},
         },
         {
           id: 'pin',
@@ -443,7 +436,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         },
       ];
     },
-    [settledIds, pinnedIds, isAr, handleSelectShipment, handleSettle, handleTogglePin]
+    [settledIds, pinnedIds, isAr, language, handleSelectShipment, handleSettle, handleTogglePin]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -875,25 +868,15 @@ export const LogisticsCodView: React.FC<any> = () => {
                   id: 'receipt',
                   label: isAr ? 'وصل التحويل' : 'Reçu Virement',
                   icon: <Printer size={14} />,
-                  onClick: () =>
-                    showToast(
-                      isAr
-                        ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}`
-                        : `Bordereau de reversement émis pour ${s.trackingCode}`,
-                      'info'
-                    ),
+                  onClick: () => setReceiptShipment(s),
                 },
                 {
                   id: 'sms',
                   label: isAr ? 'إشعار التاجر' : 'Avis SMS',
                   icon: <Share2 size={14} />,
-                  onClick: () =>
-                    showToast(
-                      isAr
-                        ? `تم إرسال إشعار الدفع إلى ${s.merchantName}`
-                        : `Notification SMS de reversement envoyée à ${s.merchantName}`,
-                      'success'
-                    ),
+                  disabled: true,
+                  tooltip: t('feature_not_available_phase2', language),
+                  onClick: () => {},
                 },
               ];
             }}
@@ -1444,25 +1427,15 @@ export const LogisticsCodView: React.FC<any> = () => {
                         id: 'receipt',
                         label: isAr ? 'وصل التحويل' : 'Reçu Virement',
                         icon: <Printer size={16} />,
-                        onClick: () =>
-                          showToast(
-                            isAr
-                              ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}`
-                              : `Bordereau de reversement émis pour ${s.trackingCode}`,
-                            'info'
-                          ),
+                        onClick: () => setReceiptShipment(s),
                       },
                       {
                         id: 'sms',
                         label: isAr ? 'إشعار التاجر' : 'Avis SMS',
                         icon: <Share2 size={16} />,
-                        onClick: () =>
-                          showToast(
-                            isAr
-                              ? `تم إرسال إشعار الدفع إلى ${s.merchantName}`
-                              : `Notification SMS envoyée à ${s.merchantName}`,
-                            'success'
-                          ),
+                        disabled: true,
+                        tooltip: t('feature_not_available_phase2', language),
+                        onClick: () => {},
                       },
                     ]}
                   />
@@ -1529,6 +1502,51 @@ export const LogisticsCodView: React.FC<any> = () => {
         isOpen={isSfp01ModalOpen}
         onClose={() => setIsSfp01ModalOpen(false)}
         batches={remittances}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(receiptShipment)}
+        onClose={() => setReceiptShipment(null)}
+        language={language}
+        format="80mm"
+        title={isAr ? 'وصل تحويل مستحقات التاجر COD' : 'Bordereau de Reversement COD'}
+        subtitle={receiptShipment ? `${receiptShipment.trackingCode} · ${receiptShipment.merchantName || receiptShipment.recipientName}` : undefined}
+        pages={
+          receiptShipment
+            ? (() => {
+                const net = receiptShipment.codAmountDzd - receiptShipment.shippingFeeDzd;
+                const isSettled = settledIds.includes(receiptShipment.id);
+                return [
+                  {
+                    id: receiptShipment.id,
+                    title: isAr ? `إيصال تحويل ${receiptShipment.trackingCode}` : `REÇU COD — ${receiptShipment.trackingCode}`,
+                    subtitle: receiptShipment.merchantName || 'Comptoir Marchand',
+                    badgeText: isSettled ? (isAr ? 'محوّل' : 'Reversé') : (isAr ? 'في الانتظار' : 'En attente'),
+                    sections: [
+                      {
+                        heading: isAr ? 'تفاصيل الطرد' : 'Détails Colis',
+                        rows: [
+                          { label: 'AWB', value: receiptShipment.trackingCode },
+                          { label: isAr ? 'المستلم' : 'Destinataire', value: receiptShipment.recipientName },
+                          { label: isAr ? 'الولاية' : 'Wilaya', value: receiptShipment.destinationWilaya },
+                        ],
+                      },
+                      {
+                        heading: isAr ? 'التسوية المالية' : 'Décompte Financier',
+                        rows: [
+                          { label: isAr ? 'المبلغ المحصل' : 'Brut Encaissé', value: formatMoney(receiptShipment.codAmountDzd, language) },
+                          { label: isAr ? 'عمولة التوصيل' : 'Commission Livraison', value: `-${formatMoney(receiptShipment.shippingFeeDzd, language)}` },
+                          { label: isAr ? 'صافي المستحقات' : 'Net Reversé Marchand', value: formatMoney(net, language) },
+                        ],
+                      },
+                    ],
+                    signatureLeft: isAr ? 'أمين الصندوق / المحاسب' : 'Caissier / Hub COD',
+                    signatureRight: isAr ? 'توقيع التاجر' : 'Signature Marchand',
+                  },
+                ];
+              })()
+            : []
+        }
       />
     </div>
   );

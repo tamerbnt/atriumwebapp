@@ -127,4 +127,26 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(sql).toContain('v_recent_count >= 20');
     expect(downSql).toContain('DROP FUNCTION IF EXISTS public.log_access_denied_event(');
   });
+
+  it('verifies Step 5 stub-remediation migration contracts, lock trigger, CMUP hold, and rollback parity', () => {
+    const step5Path = path.join(MIGRATIONS_DIR, '202611250001_step5_stub_actions.sql');
+    const step5DownPath = path.join(ROLLBACKS_DIR, '202611250001_step5_stub_actions.down.sql');
+    const sql = fs.readFileSync(step5Path, 'utf8');
+    const downSql = fs.readFileSync(step5DownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.gym_class_enrollments');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS coach_confirmed boolean');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS deposit_receipt_number text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS printed_count int');
+    expect(sql).toContain('trg_re_inspections_immutable_lock');
+    expect(sql).toContain('RE_INSPECTION_LOCKED_IMMUTABLE');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_ncr_records');
+    expect(sql).toContain('cmup_adjustment_held boolean NOT NULL DEFAULT true CHECK (cmup_adjustment_held = true)');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_scrap_with_ncr(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_scrap_with_ncr(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_ncr_records');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_re_inspections_immutable_lock');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.gym_class_enrollments');
+  });
 });

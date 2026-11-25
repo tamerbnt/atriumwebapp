@@ -2804,5 +2804,15 @@
   "topbar_language_switch_desc": "Switch EN / FR / AR (RTL)",
   "topbar_density_menu": "Compact Density",
   "topbar_density_toggle_desc": "Toggle dense vs standard spacing",
-  "legal_vault_filing_only_banner": "Filing-only scope: you can intake and print client deposits. Confidential defense briefs, edits, and deletions are restricted to authorized counsel."
+  "legal_vault_filing_only_banner": "Filing-only scope: you can intake and print client deposits. Confidential defense briefs, edits, and deletions are restricted to authorized counsel.",
+  "feature_not_available_yet": "Not available yet",
+  "feature_not_available_phase2": "Not available yet — scheduled for Phase 2",
+  "step5_duplicata_watermark": "DUPLICATE",
+  "step5_cmup_held_notice": "Non-Conformance & Scrapped verdict logged. Stock, WIP, and CMUP valuation adjustments are held pending accounting confirmation.",
+  "step5_enroll_member_title": "Enroll Member in Session",
+  "step5_coach_confirmed_badge": "Coach Confirmed",
+  "step5_confirm_coach_action": "Confirm Coach",
+  "step5_duplicate_week_title": "Duplicate Schedule Week",
+  "step5_re_inspection_locked_badge": "Validated & Locked",
+  "step5_mfg_scrap_ncr_title": "Record Scrap & NCR"
 }

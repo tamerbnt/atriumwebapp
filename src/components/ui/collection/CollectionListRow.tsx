@@ -19,6 +19,8 @@ export interface ActionButtonDef {
   iconColor?: string;
   onClick: (e?: any) => void;
   isSpecialDelete?: boolean;
+  disabled?: boolean;
+  title?: string;
 }
 
 interface CollectionListRowProps {
@@ -305,11 +307,12 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                 key={action.id ? `${action.id}-${idx}` : `action-${idx}`}
                 type="button"
                 data-no-liquid="true"
+                disabled={action.disabled}
                 onClick={action.onClick}
-                title={action.tooltip || action.label || ''}
+                title={action.title || action.tooltip || action.label || ''}
                 style={{
                   transform: isHovered ? 'translateY(0) scale(1)' : 'translateY(-14px) scale(0.82)',
-                  opacity: isHovered ? 1 : 0,
+                  opacity: isHovered ? (action.disabled ? 0.45 : 1) : 0,
                   transitionProperty: 'transform, opacity',
                   transitionDuration: isHovered ? '240ms, 140ms' : '140ms, 100ms',
                   transitionTimingFunction: isHovered
@@ -317,10 +320,12 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#2B2825] border-0 shadow-[0_4px_14px_rgba(23,19,15,0.09)] dark:shadow-[0_6px_16px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                  action.isSpecialDelete
-                    ? 'hover:bg-red-50 dark:hover:bg-red-950/40'
-                    : 'hover:bg-[#FDF4F0] dark:hover:bg-[#3A3632]'
+                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#2B2825] border-0 shadow-[0_4px_14px_rgba(23,19,15,0.09)] dark:shadow-[0_6px_16px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center transition-all disabled:opacity-45 disabled:cursor-not-allowed ${
+                  action.disabled
+                    ? ''
+                    : action.isSpecialDelete
+                    ? 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40'
+                    : 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-[#FDF4F0] dark:hover:bg-[#3A3632]'
                 }`}
               >
                 {action.icon}

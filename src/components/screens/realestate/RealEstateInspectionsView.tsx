@@ -24,6 +24,10 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { RealEstateInspection, BonDeVisiteRecord } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
+import { t } from '../../../utils/i18n';
+import { buildRealEstateInspectionShareText } from '../../../utils/step5Actions';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import { ShareArtifactModal } from '../../modals/ShareArtifactModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { BonDeVisiteModal } from './BonDeVisiteModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -66,7 +70,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { inspections, visits, properties, addVisit } = useRealEstateData();
+  const { inspections, visits, properties, addVisit, validateInspection } = useRealEstateData();
 
   const [mainTab, setMainTab] = useState<'inspections' | 'visits'>('inspections');
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,6 +93,13 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('constat');
   const [visitTab, setVisitTab] = useState<string>('visite');
+  const [printPage, setPrintPage] = useState<PrintSheetPage | null>(null);
+  const [shareTarget, setShareTarget] = useState<{
+    title: string;
+    subtitle?: string;
+    text: string;
+    onPrintPdf?: () => void;
+  } | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -199,17 +210,94 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
     });
   }, [visits, impressionFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
 
-  const handlePrintInspection = useCallback(
-    (title: string) => {
-      showToast(
-        isAr
-          ? 'جاري تجهيز محضر معاينة الأماكن للطباعة...'
-          : `Impression du procès-verbal d'état des lieux (${title})...`,
-        'info'
-      );
-      if (typeof window !== 'undefined') window.print();
+  const openInspectionPrint = useCallback(
+    (insp: RealEstateInspection) => {
+      setPrintPage({
+        id: insp.id,
+        title: isAr ? `محضر معاينة — ${insp.propertyTitle}` : isEn ? `Property Inspection PV — ${insp.propertyTitle}` : `Procès-Verbal d'État des Lieux — ${insp.propertyTitle}`,
+        subtitle: `${insp.inspectionDate} · ${insp.inspectorName || 'Expert Agence'}`,
+        badgeText: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : insp.generalCondition || 'Conforme',
+        sections: [
+          {
+            heading: isAr ? 'بيانات المحضر والمفاتيح' : isEn ? 'Inspection & Keys' : 'Constat & Remise des clés',
+            rows: [
+              { label: isAr ? 'العقار' : 'Bien', value: insp.propertyTitle },
+              { label: isAr ? 'النوع' : 'Type', value: String(insp.inspectionType || insp.type || 'Entry') },
+              { label: isAr ? 'التاريخ' : 'Date', value: insp.inspectionDate },
+              { label: isAr ? 'المفاتيح' : 'Clés remises', value: String(insp.keysDeliveredCount || insp.keysCount || 4) },
+              { label: 'Électricité', value: `${insp.meterReadings?.electricKwh ?? insp.meterElectricityKwh ?? 0} kWh` },
+              { label: 'Gaz / Eau', value: `${insp.meterReadings?.gasM3 ?? insp.meterGasM3 ?? 0} m³ / ${insp.meterReadings?.waterM3 ?? insp.meterWaterM3 ?? 0} m³` },
+            ],
+          },
+        ],
+        signatureLeft: isAr ? 'توقيع المستأجر' : 'Signature Occupant / Locataire',
+        signatureRight: isAr ? 'توقيع الخبير / الوكالة' : 'Signature Inspecteur / Agence',
+        footerNote: insp.isLocked
+          ? `${t('step5_re_inspection_locked_badge', language)}${insp.validatedAt ? ` · ${insp.validatedAt.slice(0, 10)}` : ''}`
+          : insp.notes || undefined,
+      });
     },
-    [isAr]
+    [isAr, isEn, language]
+  );
+
+  const openVisitPrint = useCallback(
+    (v: BonDeVisiteRecord) => {
+      setPrintPage({
+        id: v.id,
+        title: isAr ? `وصل زيارة عقارية — ${v.propertyTitle}` : isEn ? `Viewing Slip — ${v.propertyTitle}` : `Bon de Visite — ${v.propertyTitle}`,
+        subtitle: `${v.clientFullName} · ${v.visitTimestamp.slice(0, 10)}`,
+        badgeText: v.clientImpression || 'Interested',
+        sections: [
+          {
+            rows: [
+              { label: isAr ? 'الزائر' : 'Visiteur', value: v.clientFullName },
+              { label: isAr ? 'الهاتف' : 'Téléphone', value: v.clientPhone },
+              { label: 'CNI', value: v.clientNationalId || '—' },
+              { label: isAr ? 'المفاوض' : 'Négociateur', value: v.negotiatorName },
+              { label: 'GPS', value: `${v.gpsLatitude?.toFixed(4) ?? '—'}°N, ${v.gpsLongitude?.toFixed(4) ?? '—'}°E` },
+              ...(v.counterOfferDzd ? [{ label: 'Contre-Offre', value: formatMoney(v.counterOfferDzd, language) }] : []),
+            ],
+          },
+        ],
+        signatureLeft: isAr ? 'توقيع الزائر' : 'Signature Visiteur',
+        signatureRight: isAr ? 'توقيع الوكالة' : 'Cachet Agence',
+      });
+    },
+    [isAr, isEn, language]
+  );
+
+  const openInspectionShare = useCallback(
+    (insp: RealEstateInspection) => {
+      setShareTarget({
+        title: isAr ? `مشاركة محضر المعاينة — ${insp.propertyTitle}` : isEn ? `Share Inspection PV — ${insp.propertyTitle}` : `Partager PV — ${insp.propertyTitle}`,
+        subtitle: `${insp.inspectionDate} · ${insp.inspectorName || 'Atrium'}`,
+        text: buildRealEstateInspectionShareText(insp, language),
+        onPrintPdf: () => openInspectionPrint(insp),
+      });
+    },
+    [isAr, isEn, language, openInspectionPrint]
+  );
+
+  const openVisitShare = useCallback(
+    (v: BonDeVisiteRecord) => {
+      const gps = `${v.gpsLatitude?.toFixed(4) ?? '0'}°N, ${v.gpsLongitude?.toFixed(4) ?? '0'}°E`;
+      const text = [
+        `${isAr ? 'وصل زيارة عقارية' : isEn ? 'Property Viewing Slip' : 'Bon de Visite Immobilier'} — ${v.propertyTitle}`,
+        `${isAr ? 'الزائر' : 'Visiteur'}: ${v.clientFullName} (${v.clientPhone})`,
+        `${isAr ? 'المفاوض' : 'Négociateur'}: ${v.negotiatorName}`,
+        `GPS: ${gps}`,
+        v.counterOfferDzd ? `Offre: ${formatMoney(v.counterOfferDzd, language)}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+      setShareTarget({
+        title: isAr ? `مشاركة وصل الزيارة — ${v.clientFullName}` : `Partager Bon de Visite — ${v.clientFullName}`,
+        subtitle: v.propertyTitle,
+        text,
+        onPrintPdf: () => openVisitPrint(v),
+      });
+    },
+    [isAr, isEn, language, openVisitPrint]
   );
 
   const handleTogglePin = useCallback((item: { id: string }) => {
@@ -538,7 +626,18 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => handlePrintInspection('Ensemble')}
+              onClick={() => {
+                const target = selectedInspection || sortedInspections[0];
+                if (target) {
+                  openInspectionPrint(target);
+                } else {
+                  showToast({
+                    type: 'warning',
+                    title: isAr ? 'لا توجد محاضر' : isEn ? 'No inspections' : 'Aucun constat disponible',
+                    message: isAr ? 'اختر محضر معاينة للطباعة.' : isEn ? 'Select an inspection record to print.' : 'Sélectionnez un état des lieux à imprimer.',
+                  });
+                }
+              }}
               icon={<Printer size={14} />}
             >
               {isAr ? 'طباعة محضر معاينة' : 'Imprimer Constat'}
@@ -686,21 +785,18 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 icon: <Printer size={14} />,
                 onClick: (e) => {
                   e.stopPropagation();
-                  handlePrintInspection(insp.propertyTitle);
+                  openInspectionPrint(insp);
                 },
               },
               {
                 id: 'validate',
-                label: isAr ? 'التحقق' : 'Valider',
+                label: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : isAr ? 'التحقق' : 'Valider',
                 icon: <Check size={14} />,
+                disabled: Boolean(insp.isLocked),
+                tooltip: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : undefined,
                 onClick: (e) => {
                   e.stopPropagation();
-                  showToast(
-                    isAr
-                      ? `تم تأكيد مطابقة محضر المعاينة لعقار ${insp.propertyTitle}`
-                      : `État des lieux validé conforme pour ${insp.propertyTitle}`,
-                    'success'
-                  );
+                  validateInspection(insp.id);
                 },
               },
               {
@@ -721,29 +817,21 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 id: 'print',
                 label: isAr ? 'طباعة PV' : 'Imprimer PV',
                 icon: <Printer size={14} />,
-                onClick: () => handlePrintInspection(insp.propertyTitle),
+                onClick: () => openInspectionPrint(insp),
               },
               {
                 id: 'validate',
-                label: isAr ? 'التحقق والمطابقة' : 'Valider État',
+                label: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : isAr ? 'التحقق والمطابقة' : 'Valider État',
                 icon: <Check size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr
-                      ? `تم تأكيد مطابقة محضر المعاينة لعقار ${insp.propertyTitle}`
-                      : `État des lieux validé conforme pour ${insp.propertyTitle}`,
-                    'success'
-                  ),
+                disabled: Boolean(insp.isLocked),
+                tooltip: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : undefined,
+                onClick: () => validateInspection(insp.id),
               },
               {
                 id: 'share',
                 label: isAr ? 'مشاركة المحضر' : 'Partager PV',
                 icon: <Share2 size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr ? 'تم نسخ رابط محضر المعاينة الرقمي' : 'Lien du PV d’état des lieux copié',
-                    'success'
-                  ),
+                onClick: () => openInspectionShare(insp),
               },
             ]}
             emptyTitle={isAr ? 'لا توجد محاضر معاينة' : 'Aucun état des lieux'}
@@ -856,7 +944,11 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         avatarText="ED"
         avatarColor="#d4522f"
         branchName={activeInspBranch?.name}
-        statusLabel={selectedInspection?.generalCondition || 'Conforme'}
+        statusLabel={
+          selectedInspection?.isLocked
+            ? t('step5_re_inspection_locked_badge', language)
+            : selectedInspection?.generalCondition || 'Conforme'
+        }
         statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
         tabs={[
           { id: 'constat', label: isAr ? 'المحضر والمفاتيح' : 'Constat & Clés' },
@@ -877,17 +969,20 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                     label: isAr ? 'طباعة المحضر' : 'Imprimer PV',
                     icon: <Printer size={16} />,
                     primary: true,
-                    onClick: () => handlePrintInspection(insp.propertyTitle),
+                    onClick: () => openInspectionPrint(insp),
+                  },
+                  {
+                    id: 'validate',
+                    label: insp.isLocked ? t('step5_re_inspection_locked_badge', language) : isAr ? 'تأكيد' : 'Valider',
+                    icon: <Check size={16} />,
+                    disabled: Boolean(insp.isLocked),
+                    onClick: () => validateInspection(insp.id),
                   },
                   {
                     id: 'share',
                     label: isAr ? 'مشاركة' : 'Partager',
                     icon: <Share2 size={16} />,
-                    onClick: () =>
-                      showToast(
-                        isAr ? 'تم نسخ رابط محضر المعاينة الرقمي' : 'Lien du PV d’état des lieux copié',
-                        'success'
-                      ),
+                    onClick: () => openInspectionShare(insp),
                   },
                 ]}
               />
@@ -992,13 +1087,13 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                     label: isAr ? 'طباعة الوصل' : 'Imprimer Bon',
                     icon: <Printer size={16} />,
                     primary: true,
-                    onClick: () => handlePrintInspection(v.propertyTitle),
+                    onClick: () => openVisitPrint(v),
                   },
                   {
                     id: 'share',
                     label: isAr ? 'مشاركة' : 'Partager GPS',
                     icon: <Share2 size={16} />,
-                    onClick: () => showToast(isAr ? 'تم نسخ إحداثيات الزيارة' : 'Bon de visite GPS partagé', 'success'),
+                    onClick: () => openVisitShare(v),
                   },
                 ]}
               />
@@ -1062,6 +1157,26 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
           addVisit(visit);
           setIsBonDeVisiteModalOpen(false);
         }}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(printPage)}
+        onClose={() => setPrintPage(null)}
+        language={language}
+        format="a4"
+        title={printPage?.title || 'Procès-Verbal'}
+        subtitle={printPage?.subtitle}
+        pages={printPage ? [printPage] : []}
+      />
+
+      <ShareArtifactModal
+        isOpen={Boolean(shareTarget)}
+        onClose={() => setShareTarget(null)}
+        language={language}
+        title={shareTarget?.title || 'Partager'}
+        subtitle={shareTarget?.subtitle}
+        shareText={shareTarget?.text || ''}
+        onOpenPrintPdf={shareTarget?.onPrintPdf}
       />
     </div>
   );

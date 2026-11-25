@@ -198,6 +198,9 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
   { key: 'atrium_realestate_props_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Group B cache' },
   { key: 'atrium_realestate_quittances_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Group B cache' },
   { key: 'atrium_realestate_visits_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Group B cache' },
+  { key: 'atrium_gym_class_enrollments_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 class enrollment cache synced to gym_class_enrollments' },
+  { key: 'atrium_mfg_ncr_records_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 non-conformance scrap log synced to mfg_ncr_records' },
+  { key: 'atrium_garage_closures_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 garage register Z-closure records' },
 ];
 
 export const REGISTERED_LOCAL_STORAGE_KEYS = new Set(LOCAL_STORAGE_REGISTRY.map((e) => e.key));

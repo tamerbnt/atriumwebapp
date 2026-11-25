@@ -21,6 +21,7 @@ import {
 import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
@@ -130,6 +131,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState('');
+  const [bulkRestockParts, setBulkRestockParts] = useState<SparePart[] | null>(null);
+  const [bulkRestockQty, setBulkRestockQty] = useState<string>('5');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -797,11 +800,17 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             label: isAr ? 'إعادة طلب مجمّع' : 'Réassort groupé',
             icon: <Plus size={14} />,
             onClick: (ids) => {
-              showToast({
-                type: 'info',
-                title: isAr ? 'تموين' : 'Réassort',
-                message: isAr ? `تم تحضير أمر إعادة تموين لـ ${ids.size} قطع` : `Réassort préparé pour ${ids.size} références`,
-              });
+              const resolved = resolveBatchSelection(Array.from(ids), sortedParts, (p) => p.id, 200);
+              if (resolved.selectedItems.length === 0) {
+                showToast({
+                  type: 'warning',
+                  title: isAr ? 'لا توجد قطع محددة' : 'Aucune référence sélectionnée',
+                  message: isAr ? 'اختر قطعة غيار واحدة على الأقل.' : 'Sélectionnez au moins une référence de pièce.',
+                });
+                return;
+              }
+              setBulkRestockParts(resolved.selectedItems);
+              setBulkRestockQty('5');
             },
           }}
           onBulkDelete={(ids) => {
@@ -1327,6 +1336,109 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             </div>
           </form>
         </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(bulkRestockParts)}
+        onClose={() => setBulkRestockParts(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {bulkRestockParts && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h3 className="font-semibold t-card text-black dark:text-white">
+                {isAr
+                  ? `إعادة تموين مجمّع (${bulkRestockParts.length})`
+                  : `Réassort Groupé (${bulkRestockParts.length} références)`}
+              </h3>
+              <button
+                type="button"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setBulkRestockParts(null)}
+                className="p-1 text-black/55 dark:text-white/55 hover:text-black cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <LabelInput
+              field="bulkRestockQty"
+              label={isAr ? 'الكمية المضافة لكل قطعة' : 'Quantité à ajouter par référence'}
+              type="number"
+              value={bulkRestockQty}
+              onChange={setBulkRestockQty}
+              width="100%"
+              height={40}
+              corner={12}
+              required
+            />
+
+            <div className="max-h-48 overflow-y-auto divide-y divide-black/[0.06] dark:divide-white/[0.08] rounded-xl border border-black/[0.08] dark:border-white/[0.08]">
+              {bulkRestockParts.map((part) => (
+                <div key={part.id} className="px-3 py-2 flex items-center justify-between text-xs">
+                  <span className="font-medium text-black dark:text-white truncate">
+                    {part.sku} · {part.name}
+                  </span>
+                  <span className="tabular-nums text-black/60 dark:text-white/65 shrink-0 ms-2">
+                    {part.stockQuantity} → {part.stockQuantity + Math.max(1, parseInt(bulkRestockQty, 10) || 1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button
+                type="button"
+                tone="soft"
+                size={36}
+                onClick={() => {
+                  const qty = Math.max(1, parseInt(bulkRestockQty, 10) || 1);
+                  downloadCsvSafe(
+                    `reassort-pieces-${new Date().toISOString().slice(0, 10)}.csv`,
+                    ['SKU', 'Désignation', 'Stock Actuel', 'Qté Commandée', 'Coût Unitaire'],
+                    bulkRestockParts.map((p) => [p.sku, p.name, p.stockQuantity, qty, p.buyingPriceDzd])
+                  );
+                }}
+              >
+                CSV
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button type="button" tone="soft" size={40} onClick={() => setBulkRestockParts(null)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </Button>
+                <Button
+                  type="button"
+                  tone="accent"
+                  size={40}
+                  leading={<Check size={14} />}
+                  onClick={() => {
+                    const qty = Math.max(1, parseInt(bulkRestockQty, 10) || 1);
+                    bulkRestockParts.forEach((p) => {
+                      updatePart({ ...p, stockQuantity: (p.stockQuantity || 0) + qty });
+                    });
+                    showToast({
+                      type: 'success',
+                      title: isAr ? 'تم التموين' : 'Réassort enregistré',
+                      message: isAr
+                        ? `تمت إضافة +${qty} لـ ${bulkRestockParts.length} قطع`
+                        : `+${qty} unités ajoutées sur ${bulkRestockParts.length} référence(s).`,
+                    });
+                    setBulkRestockParts(null);
+                    setSelectedIds(new Set());
+                  }}
+                >
+                  {isAr ? 'تأكيد التموين' : 'Valider Réassort'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </KineticModalShell>
     </div>
   );

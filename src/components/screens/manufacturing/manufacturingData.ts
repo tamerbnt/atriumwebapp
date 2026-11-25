@@ -5,7 +5,9 @@ import {
   RawMaterialStockItem,
   MaterialTransferVoucher,
   QualityInspectionRecord,
+  MfgNcrRecord,
 } from '../../../types';
+import { buildScrapNcrArtifacts } from '../../../utils/step5Actions';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import {
@@ -671,12 +673,22 @@ export const useManufacturingData = () => {
     }
   });
 
+  const [ncrRecords, setNcrRecords] = useState<MfgNcrRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_ncr_records_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // LocalStorage synchronizers (idle-deferred)
   useIdlePersist('atrium_mfg_boms', boms);
   useIdlePersist('atrium_mfg_orders', orders);
   useIdlePersist('atrium_mfg_raw_materials_v2', materials);
   useIdlePersist('atrium_mfg_vouchers', vouchers);
   useIdlePersist('atrium_mfg_qc_records', qcRecords);
+  useIdlePersist('atrium_mfg_ncr_records_v1', ncrRecords);
 
   // Hydrate manufacturing vertical state from Supabase when configured
   useEffect(() => {
@@ -691,6 +703,7 @@ export const useManufacturingData = () => {
         remoteMaterials,
         remoteVouchers,
         remoteQc,
+        remoteNcrs,
       ] = await runWithConcurrency(
         [
           () => manufacturingService.fetchBoms(activeBranchId),
@@ -698,6 +711,7 @@ export const useManufacturingData = () => {
           () => manufacturingService.fetchRawMaterials(activeBranchId),
           () => manufacturingService.fetchMaterialVouchers(activeBranchId),
           () => manufacturingService.fetchQcInspections(activeBranchId),
+          () => manufacturingService.fetchNcrRecords(activeBranchId),
         ],
         4
       );
@@ -718,6 +732,9 @@ export const useManufacturingData = () => {
       if (Array.isArray(remoteQc) && remoteQc.length > 0) {
         setQcRecords((prev) => mergeMfgById(prev, remoteQc as QualityInspectionRecord[]));
       }
+      if (Array.isArray(remoteNcrs) && remoteNcrs.length > 0) {
+        setNcrRecords((prev) => mergeMfgById(prev, remoteNcrs as MfgNcrRecord[]));
+      }
     });
 
     return () => {
@@ -735,6 +752,7 @@ export const useManufacturingData = () => {
       'mfg_raw_materials',
       'mfg_material_vouchers',
       'mfg_qc_inspections',
+      'mfg_ncr_records',
     ];
 
     return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
@@ -750,6 +768,7 @@ export const useManufacturingData = () => {
       prune('mfg_raw_materials', setMaterials);
       prune('mfg_material_vouchers', setVouchers);
       prune('mfg_qc_inspections', setQcRecords);
+      prune('mfg_ncr_records', setNcrRecords);
 
       const changedSet = new Set(changedTables);
       const tasks: Array<() => Promise<void>> = [];
@@ -791,6 +810,14 @@ export const useManufacturingData = () => {
           const rows = await manufacturingService.fetchQcInspections(activeBranchId);
           if (!cancelled && Array.isArray(rows) && rows.length > 0) {
             setQcRecords((prev) => mergeMfgById(prev, rows as QualityInspectionRecord[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_ncr_records')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchNcrRecords(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setNcrRecords((prev) => mergeMfgById(prev, rows as MfgNcrRecord[]));
           }
         });
       }
@@ -865,6 +892,7 @@ export const useManufacturingData = () => {
     materials,
     vouchers,
     qcRecords,
+    ncrRecords,
   });
   latestRef.current = {
     boms,
@@ -872,6 +900,7 @@ export const useManufacturingData = () => {
     materials,
     vouchers,
     qcRecords,
+    ncrRecords,
   };
 
   const restoreAt = <T extends { id: string }>(
@@ -1289,6 +1318,76 @@ export const useManufacturingData = () => {
     }
   };
 
+  // Gate 1 Condition #2: Record Scrapped QC + MfgNcrRecord ONLY; hold all stock/WIP/CMUP valuation adjustments.
+  const recordScrapWithNcr = (input: {
+    orderId: string;
+    orderNumber: string;
+    batchLotNumber: string;
+    productName: string;
+    inspectorName: string;
+    scrappedQuantity: number;
+    reason: string;
+    notes?: string;
+  }) => {
+    const seq = latestRef.current.ncrRecords.length + 1;
+    const year = new Date().getFullYear();
+    const { qcRecord, ncrRecord } = buildScrapNcrArtifacts({
+      ncrId: `ncr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      qcId: `qc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ncrNumber: `NCR-${year}-${String(seq).padStart(4, '0')}`,
+      inspectionNumber: `QC-REB-${year}-${String(seq).padStart(4, '0')}`,
+      accountId: currentAccountId || (isDemoModeEnabled() ? 'acc_01' : ''),
+      businessId: currentBusinessId || 'biz_manufacturing',
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      orderId: input.orderId,
+      orderNumber: input.orderNumber,
+      batchLotNumber: input.batchLotNumber,
+      productName: input.productName,
+      inspectorName: input.inspectorName,
+      scrappedQuantity: input.scrappedQuantity,
+      reason: input.reason,
+      notes: input.notes,
+      inspectionDate: new Date().toISOString().slice(0, 10),
+    });
+
+    const scopedQc = withBranch(qcRecord) as QualityInspectionRecord;
+    const scopedNcr = withBranch(ncrRecord) as MfgNcrRecord;
+    setQcRecords((prev) => [scopedQc, ...prev]);
+    setNcrRecords((prev) => [scopedNcr, ...prev]);
+    void manufacturingService
+      .recordScrapWithNcr({ qcRecord: scopedQc, ncrRecord: scopedNcr })
+      .catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scopedNcr.ncrNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Rebut & NCR ${scopedNcr.ncrNumber} enregistrés (${scopedNcr.scrappedQuantity} U · CMUP en attente)`,
+        en: `Scrap & NCR ${scopedNcr.ncrNumber} recorded (${scopedNcr.scrappedQuantity} U · CMUP held)`,
+        ar: `تم تسجيل الإتلاف وتقرير ${scopedNcr.ncrNumber} (تعديل التكلفة معلق)`,
+      }),
+      undo: () => {
+        setQcRecords((prev) => prev.filter((q) => q.id !== scopedQc.id));
+        setNcrRecords((prev) => prev.filter((n) => n.id !== scopedNcr.id));
+        void syncCoordinator.softDeleteRow('mfg_ncr_records', scopedNcr.id, currentStaffId).catch(() => {});
+        void syncCoordinator.softDeleteRow('mfg_qc_inspections', scopedQc.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        setQcRecords((prev) => (prev.some((q) => q.id === scopedQc.id) ? prev : [scopedQc, ...prev]));
+        setNcrRecords((prev) => (prev.some((n) => n.id === scopedNcr.id) ? prev : [scopedNcr, ...prev]));
+        void manufacturingService
+          .recordScrapWithNcr({ qcRecord: scopedQc, ncrRecord: scopedNcr })
+          .catch(() => {});
+      },
+    });
+
+    return { qcRecord: scopedQc, ncrRecord: scopedNcr };
+  };
+
   const resetManufacturingDemoData = () => {
     const snap = cloneSnapshot(latestRef.current);
     setBoms((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
@@ -1296,6 +1395,7 @@ export const useManufacturingData = () => {
     setMaterials((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setVouchers((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setQcRecords((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
+    setNcrRecords((prev) => prev.filter((n) => !belongsToActiveBranch(n)));
 
     registerUndoEntry({
       vertical: 'manufacturing_production',
@@ -1314,6 +1414,7 @@ export const useManufacturingData = () => {
         setMaterials(s.materials);
         setVouchers(s.vouchers);
         setQcRecords(s.qcRecords);
+        setNcrRecords(s.ncrRecords);
       },
     });
   };
@@ -1323,6 +1424,7 @@ export const useManufacturingData = () => {
   const scopedMaterials = useMemo(() => materials.filter(belongsToActiveBranch), [materials, belongsToActiveBranch]);
   const scopedVouchers = useMemo(() => vouchers.filter(belongsToActiveBranch), [vouchers, belongsToActiveBranch]);
   const scopedQcRecords = useMemo(() => qcRecords.filter(belongsToActiveBranch), [qcRecords, belongsToActiveBranch]);
+  const scopedNcrRecords = useMemo(() => ncrRecords.filter(belongsToActiveBranch), [ncrRecords, belongsToActiveBranch]);
 
   return {
     boms: scopedBoms,
@@ -1330,6 +1432,7 @@ export const useManufacturingData = () => {
     materials: scopedMaterials,
     vouchers: scopedVouchers,
     qcRecords: scopedQcRecords,
+    ncrRecords: scopedNcrRecords,
     addOrder,
     updateOrder,
     deleteOrder,
@@ -1342,6 +1445,7 @@ export const useManufacturingData = () => {
     addVoucher,
     addQcRecord,
     updateQcRecord,
+    recordScrapWithNcr,
     resetManufacturingDemoData,
   };
 };

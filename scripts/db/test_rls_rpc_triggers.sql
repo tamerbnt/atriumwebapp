@@ -258,6 +258,64 @@ BEGIN
     RAISE EXCEPTION 'Expected 21st event within 60s to be RATE_LIMITED: %', v_seq_2;
   END IF;
 
+  -- 7. Verify Step 5 re_inspections immutability trigger & mfg_scrap_with_ncr RPC
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = 're_inspections'
+      AND t.tgname = 'trg_re_inspections_immutable_lock'
+      AND NOT t.tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'Expected trigger trg_re_inspections_immutable_lock on public.re_inspections';
+  END IF;
+
+  -- Locked re_inspections row must reject content updates
+  INSERT INTO public.re_inspections (
+    account_id, business_id, branch_id, property_title, inspection_type, overall_condition, is_locked, validated_at
+  ) VALUES (
+    v_user_a, v_biz_a, v_br_a, 'Villa Hydra Test', 'Entrée', 'Bon', true, now()
+  )
+  RETURNING id INTO v_staff_a;
+
+  BEGIN
+    UPDATE public.re_inspections
+    SET overall_condition = 'Dégradé'
+    WHERE id = v_staff_a;
+    RAISE EXCEPTION 'Locked re_inspections row unexpectedly allowed mutation';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Cross-tenant mfg_scrap_with_ncr call must fail
+  BEGIN
+    PERFORM public.mfg_scrap_with_ncr(
+      v_biz_b, v_br_b, NULL, 'OF-TEST', 'LOT-X', 'Piece Test', 'QC Lead', 5, 'Casse'
+    );
+    RAISE EXCEPTION 'User A unexpectedly invoked mfg_scrap_with_ncr on Tenant B';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Valid mfg_scrap_with_ncr inserts NCR with cmup_adjustment_held = true
+  v_seq_1 := public.mfg_scrap_with_ncr(
+    v_biz_a, v_br_a, NULL, 'OF-2026-01', 'LOT-2026-A', 'Profilé Alu', 'QC Lead', 4, 'Micro-fissures', 'Rebut Step 5'
+  );
+  IF COALESCE((v_seq_1->>'cmup_adjustment_held')::boolean, false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected mfg_scrap_with_ncr to return cmup_adjustment_held=true: %', v_seq_1;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.mfg_ncr_records
+    WHERE id = (v_seq_1->>'ncr_id')::uuid
+      AND disposition = 'Scrapped'
+      AND cmup_adjustment_held = true
+  ) THEN
+    RAISE EXCEPTION 'Expected mfg_ncr_records row with disposition=Scrapped and cmup_adjustment_held=true';
+  END IF;
+
   RESET ROLE;
 END $$;
 

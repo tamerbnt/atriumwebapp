@@ -38,6 +38,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ContractorDailyLog } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
 import {
   validateConcreteStrength,
   calculateFuelConsumptionAnomaly,
@@ -133,6 +134,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
   const [selectedLog, setSelectedLog] = useState<ContractorDailyLog | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('fiche');
+  const [pvLogToPrint, setPvLogToPrint] = useState<ContractorDailyLog | null>(null);
+  const [fuelAuditLog, setFuelAuditLog] = useState<(typeof equipmentLogs)[number] | null>(null);
 
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weather, setWeather] = useState('Ensoleillé');
@@ -655,21 +658,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         id: 'print',
         label: isAr ? 'طباعة' : 'PV',
         icon: <Printer size={14} />,
-        onClick: () =>
-          showToast(
-            isAr ? `جاري طباعة محضر ${log.date}` : `PV contradictoire (${log.date}) généré`,
-            'info'
-          ),
+        onClick: () => setPvLogToPrint(log),
       },
       {
         id: 'hse',
         label: 'HSE',
         icon: <ShieldCheck size={14} />,
-        onClick: () =>
-          showToast(
-            isAr ? `تأكيد السلامة ${log.date}` : `Audit HSE validé (${log.date})`,
-            'success'
-          ),
+        disabled: true,
+        tooltip: t('feature_not_available_phase2', language),
+        onClick: () => {},
       },
       {
         id: 'pin',
@@ -678,7 +675,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         onClick: () => handleTogglePinLog(log.id),
       },
     ],
-    [isAr, pinnedLogIds, handleTogglePinLog]
+    [isAr, language, pinnedLogIds, handleTogglePinLog]
   );
 
   const getDetailActions = useCallback(
@@ -687,11 +684,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         id: 'print',
         label: isAr ? 'طباعة PV' : 'Imprimer PV',
         icon: <Printer size={14} />,
-        onClick: () =>
-          showToast(
-            isAr ? `جاري طباعة محضر ${log.date}` : `PV contradictoire (${log.date}) généré`,
-            'info'
-          ),
+        onClick: () => setPvLogToPrint(log),
       },
       {
         id: 'duplicate',
@@ -1020,25 +1013,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 id: 'print',
                 label: isAr ? 'طباعة PV' : 'Imprimer PV',
                 icon: <Printer size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr
-                      ? `جاري طباعة محضر الورشة ليوم ${log.date}`
-                      : `Génération du PV contradictoire de chantier (${log.date})`,
-                    'info'
-                  ),
+                onClick: () => setPvLogToPrint(log),
               },
               {
                 id: 'hse',
                 label: isAr ? 'تأكيد السلامة' : 'Audit HSE',
                 icon: <ShieldCheck size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr
-                      ? `تم فحص وتأكيد معايير الوقاية والأمان ليوم ${log.date}`
-                      : `Contrôle de sécurité validé conforme pour le ${log.date}`,
-                    'success'
-                  ),
+                disabled: true,
+                tooltip: t('feature_not_available_phase2', language),
+                onClick: () => {},
               },
               {
                 id: 'duplicate',
@@ -1362,33 +1345,20 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 },
               };
             }}
-            getFanActions={(log): KineticRowFanAction[] => {
-              const anomaly = calculateFuelConsumptionAnomaly(
-                log.operatingHours,
-                log.fuelAddedLiters,
-                log.theoreticalHourlyBurnRate
-              );
-              return [
-                {
-                  id: 'audit-fuel',
-                  label: isAr ? 'فحص' : 'Contrôle',
-                  icon: <Eye size={14} />,
-                  onClick: () =>
-                    showToast(
-                      anomaly.isAnomaly
-                        ? `Alerte gasoil ${log.matriculeNumber}: +${anomaly.variancePercent}% vs norme`
-                        : `${log.matriculeNumber}: ratio ${anomaly.actualRateLph} L/h conforme`,
-                      anomaly.isAnomaly ? 'warning' : 'success'
-                    ),
-                },
-                {
-                  id: 'pin',
-                  label: pinnedEquipmentIds.has(log.id) ? 'Détacher' : 'Épingler',
-                  icon: <Pin size={14} />,
-                  onClick: () => handleTogglePinEquipment(log.id),
-                },
-              ];
-            }}
+            getFanActions={(log): KineticRowFanAction[] => [
+              {
+                id: 'audit-fuel',
+                label: isAr ? 'فحص' : 'Contrôle',
+                icon: <Eye size={14} />,
+                onClick: () => setFuelAuditLog(log),
+              },
+              {
+                id: 'pin',
+                label: pinnedEquipmentIds.has(log.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin size={14} />,
+                onClick: () => handleTogglePinEquipment(log.id),
+              },
+            ]}
             getDetailActions={(log): KineticDetailAction[] => [
               {
                 id: 'new-log',
@@ -1533,11 +1503,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       label: isAr ? 'طباعة' : 'Imprimer PV',
                       icon: <Printer className="w-[18px] h-[18px]" />,
                       primary: true,
-                      onClick: () =>
-                        showToast(
-                          isAr ? 'جاري طباعة محضر الورشة' : 'Impression du PV de chantier en cours',
-                          'success'
-                        ),
+                      onClick: () => setPvLogToPrint(log),
                     },
                     {
                       id: 'duplicate',
@@ -1558,8 +1524,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       id: 'hse',
                       label: 'Audit HSE',
                       icon: <ShieldCheck className="w-[18px] h-[18px]" />,
-                      onClick: () =>
-                        showToast(`Contrôle sécurité validé pour le ${log.date}`, 'success'),
+                      disabled: true,
+                      tooltip: t('feature_not_available_phase2', language),
+                      onClick: () => {},
                     },
                   ]}
                 />
@@ -2056,6 +2023,148 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               </div>
             </form>
             </div>
+      </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(pvLogToPrint)}
+        onClose={() => setPvLogToPrint(null)}
+        language={language}
+        format="a4"
+        title={isAr ? 'محضر الورشة اليومي' : isEn ? 'Daily Site Log PV' : 'PV Journalier de Chantier'}
+        subtitle={pvLogToPrint ? `${pvLogToPrint.date} · ${selectedProject?.projectName || 'Chantier'}` : undefined}
+        pages={
+          pvLogToPrint
+            ? [
+                {
+                  id: pvLogToPrint.id,
+                  title: isAr
+                    ? `محضر أشغال يوم ${pvLogToPrint.date}`
+                    : `Procès-Verbal de Chantier — ${pvLogToPrint.date}`,
+                  subtitle: `${selectedProject?.projectCode || 'BTP'} · ${selectedProject?.projectName || ''}`,
+                  badgeText: pvLogToPrint.weather,
+                  sections: [
+                    {
+                      heading: isAr ? 'المعطيات العامة' : 'Informations Générales',
+                      rows: [
+                        { label: isAr ? 'التاريخ' : 'Date', value: pvLogToPrint.date },
+                        { label: isAr ? 'الحالة الجوية' : 'Météo', value: pvLogToPrint.weather },
+                        { label: isAr ? 'إجمالي العمال' : 'Effectif total', value: `${pvLogToPrint.headcountWorkers}` },
+                        {
+                          label: isAr ? 'تفصيل الطاقم' : 'Répartition effectif',
+                          value: `Ingénieurs: ${pvLogToPrint.workersPresent?.engineers ?? 2} · Spécialistes: ${pvLogToPrint.workersPresent?.specializedCrafts ?? 12} · Manœuvres: ${pvLogToPrint.workersPresent?.laborers ?? 8}`,
+                        },
+                        {
+                          label: isAr ? 'العتاد المسخر' : 'Engins mobilisés',
+                          value: pvLogToPrint.equipmentOnSite?.join(', ') || '—',
+                        },
+                      ],
+                    },
+                    {
+                      heading: isAr ? 'الأشغال المنجزة والسلامة' : 'Travaux & Sécurité HSE',
+                      rows: [
+                        {
+                          label: isAr ? 'الأشغال المنجزة' : 'Travaux accomplis',
+                          value: pvLogToPrint.tasksAccomplished || pvLogToPrint.worksSummary || '—',
+                        },
+                        {
+                          label: isAr ? 'ملاحظات السلامة' : 'Incidents & HSE',
+                          value: pvLogToPrint.incidentsSafety || 'R.A.S.',
+                        },
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? `رئيس الورشة: ${pvLogToPrint.supervisorSignature}` : `Chef de chantier: ${pvLogToPrint.supervisorSignature}`,
+                  signatureRight: isAr ? 'تأشيرة مكتب الدراسات / CTC' : "Visa Maître d'Œuvre / CTC",
+                },
+              ]
+            : []
+        }
+      />
+
+      <KineticModalShell
+        isOpen={Boolean(fuelAuditLog)}
+        onClose={() => setFuelAuditLog(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {fuelAuditLog && (() => {
+          const audit = calculateFuelConsumptionAnomaly(
+            fuelAuditLog.operatingHours,
+            fuelAuditLog.fuelAddedLiters,
+            fuelAuditLog.theoreticalHourlyBurnRate
+          );
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
+                <div className="flex items-center gap-2">
+                  <Fuel size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="font-semibold t-label text-black dark:text-white">
+                    {isAr ? 'تدقيق استهلاك الوقود' : 'Contrôle Ratio Gasoil'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFuelAuditLog(null)}
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-2 t-cap">
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الآلية' : 'Engin'}</span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {fuelAuditLog.equipmentName} ({fuelAuditLog.matriculeNumber})
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الساعات / الكمية' : 'Heures / Gasoil'}</span>
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
+                    {fuelAuditLog.operatingHours} h · {fuelAuditLog.fuelAddedLiters} L
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">{isAr ? 'المعدل الفعلي / المرجعي' : 'Ratio réel vs Norme'}</span>
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
+                    {audit.actualRateLph} L/h vs {fuelAuditLog.theoreticalHourlyBurnRate} L/h
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الانحراف' : 'Écart constaté'}</span>
+                  <span className={`tabular-nums font-semibold ${audit.isAnomaly ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    {audit.variancePercent >= 0 ? `+${audit.variancePercent}%` : `${audit.variancePercent}%`}
+                  </span>
+                </div>
+              </div>
+              <div
+                className={`p-3 rounded-xl t-small font-semibold ${
+                  audit.isAnomaly
+                    ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                }`}
+              >
+                {audit.isAnomaly
+                  ? isAr
+                    ? `تنبيه: استهلاك زائد للوقود (+${audit.variancePercent}%) يتطلب المراجعة.`
+                    : `Anomalie détectée (+${audit.variancePercent}% au-dessus de la norme). Vérifier les bons de carburant.`
+                  : isAr
+                  ? 'استهلاك مطابق للمعايير الفنية.'
+                  : 'Consommation conforme à la norme constructeur.'}
+              </div>
+              <div className="flex justify-end pt-2 border-t border-[var(--atr-divider)]">
+                <Button tone="accent" size={36} onClick={() => setFuelAuditLog(null)}>
+                  {isAr ? 'إغلاق' : 'Fermer'}
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
       </KineticModalShell>
     </div>
   );

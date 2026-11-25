@@ -27,6 +27,7 @@ import {
   GarageInvoice,
   computeAlgerianTimbreFiscal,
 } from './garageData';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { Button } from '@/atrium/core';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -90,7 +91,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { orders, fleets, invoices, updateOrder, createInvoice } = useGarageData();
+  const { orders, fleets, invoices, updateOrder, createInvoice, closeCashRegisterZ } = useGarageData();
 
   const [activeScreenTab, setActiveScreenTab] = useState<'orders' | 'fleets' | 'invoices'>('orders');
   const [billingFilter, setBillingFilter] = useState<string>('all');
@@ -157,6 +158,11 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [activePrintInvoice, setActivePrintInvoice] = useState<GarageInvoice | null>(null);
   const [isTillModalOpen, setIsTillModalOpen] = useState(false);
+  const [billingPrintState, setBillingPrintState] = useState<{
+    format: 'a4' | '80mm';
+    page: PrintSheetPage;
+    onExportCsv?: () => void;
+  } | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -1104,10 +1110,60 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                       data-sq="ctl-sm"
                       data-sq-border="none"
                       onClick={() => {
-                        showToast({
-                          type: 'info',
-                          title: fleet.tradeName,
-                          message: `Génération du relevé mensuel pour ${fleet.companyName}...`,
+                        const fleetInvoices = invoices.filter(
+                          (inv) =>
+                            inv.clientName.toLowerCase().includes(fleet.companyName.toLowerCase()) ||
+                            inv.clientName.toLowerCase().includes(fleet.tradeName.toLowerCase())
+                        );
+                        const fleetOrders = orders.filter(
+                          (ord) =>
+                            (ord.clientName || '').toLowerCase().includes(fleet.companyName.toLowerCase()) ||
+                            (ord.clientName || '').toLowerCase().includes(fleet.tradeName.toLowerCase())
+                        );
+                        const rows = fleetInvoices.map((inv) => [
+                          inv.invoiceNumber,
+                          inv.issuedAt.slice(0, 10),
+                          inv.vehiclePlate || '—',
+                          inv.paymentMethod,
+                          formatMoney(inv.netToPayDzd, language),
+                          inv.isPaid ? (isAr ? 'مسدد' : 'Payée') : (isAr ? 'آجل' : 'En attente'),
+                        ]);
+                        setBillingPrintState({
+                          format: 'a4',
+                          page: {
+                            id: fleet.id,
+                            title: `${isAr ? 'الكشف الشهري للأسطول' : 'Relevé Mensuel Flotte'} — ${fleet.tradeName}`,
+                            subtitle: `${fleet.companyName} · NIF: ${fleet.nif || '—'}`,
+                            badgeText: `${fleetInvoices.length} ${isAr ? 'فواتير' : 'factures'}`,
+                            sections: [
+                              {
+                                rows: [
+                                  { label: isAr ? 'العميل' : 'Raison Sociale', value: fleet.companyName },
+                                  { label: isAr ? 'الرصيد المستحق' : 'Encours Actuel', value: formatMoney(fleet.currentOutstandingDzd, language) },
+                                  { label: isAr ? 'السقف الائتماني' : 'Plafond Accordé', value: formatMoney(fleet.creditLimitDzd, language) },
+                                  { label: isAr ? 'أوامر التصليح' : 'OR Flotte', value: String(fleetOrders.length) },
+                                ],
+                              },
+                            ],
+                            tableHeaders: [
+                              'N° Facture',
+                              'Date',
+                              'Matricule',
+                              'Paiement',
+                              'Net TTC',
+                              'Statut',
+                            ],
+                            tableRows: rows.length > 0 ? rows : [['—', '—', '—', '—', formatMoney(fleet.currentOutstandingDzd, language), 'Encours reporté']],
+                            signatureLeft: isAr ? 'إدارة الأسطول' : 'Visa Gestionnaire Flotte',
+                            signatureRight: isAr ? 'ختم الورشة' : 'Cachet Atelier & Comptabilité',
+                          },
+                          onExportCsv: () => {
+                            downloadCsvSafe(
+                              `releve-flotte-${fleet.tradeName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`,
+                              ['Facture', 'Date', 'Matricule', 'Paiement', 'Net TTC', 'Statut'],
+                              rows.length > 0 ? rows : [['ENCOURS', new Date().toISOString().slice(0, 10), '-', '-', fleet.currentOutstandingDzd, 'Ouvert']]
+                            );
+                          },
                         });
                       }}
                       className="flex-1 py-2 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black/70 dark:text-white/75 font-semibold t-small flex items-center justify-center gap-2 transition-colors cursor-pointer"
@@ -1741,12 +1797,30 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               tone="accent"
               size={40}
               onClick={() => {
-                showToast({
-                  type: 'success',
-                  title: 'Z de Caisse',
-                  message: 'Session de caisse clôturée et rapport Z imprimé',
-                });
+                const closure = closeCashRegisterZ();
                 setIsTillModalOpen(false);
+                setBillingPrintState({
+                  format: '80mm',
+                  page: {
+                    id: closure.id,
+                    title: `${isAr ? 'إغلاق الصندوق Z' : 'Clôture Z de Caisse'} — ${closure.zNumber}`,
+                    subtitle: new Date(closure.closedAt).toLocaleString(),
+                    badgeText: `${closure.invoiceCount} ${isAr ? 'فواتير' : 'tickets'}`,
+                    sections: [
+                      {
+                        rows: [
+                          { label: isAr ? 'نقداً (Espèces)' : 'Espèces', value: formatMoney(closure.cashTotalDzd, language) },
+                          { label: 'CIB / Edahabia', value: formatMoney(closure.cardTotalDzd, language) },
+                          { label: isAr ? 'تحويلات بنكية' : 'Virements', value: formatMoney(closure.transferTotalDzd, language) },
+                          { label: isAr ? 'شيكات' : 'Chèques', value: formatMoney(closure.checkTotalDzd, language) },
+                          { label: 'Timbre Fiscal (Art. 317)', value: formatMoney(closure.timbreFiscalTotalDzd, language) },
+                          { label: isAr ? 'الإجمالي الكلي' : 'Total Général Z', value: formatMoney(closure.grandTotalDzd, language) },
+                        ],
+                      },
+                    ],
+                    footerNote: `${isAr ? 'أُغلق بواسطة:' : 'Clôturé par :'} ${closure.closedBy}`,
+                  },
+                });
               }}
             >
               {isAr ? 'إغلاق الصندوق (Z)' : 'Clôturer la Caisse (Z)'}
@@ -1754,6 +1828,17 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           </div>
         </div>
       </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(billingPrintState)}
+        onClose={() => setBillingPrintState(null)}
+        language={language}
+        format={billingPrintState?.format || 'a4'}
+        title={billingPrintState?.page.title || 'Impression'}
+        subtitle={billingPrintState?.page.subtitle}
+        pages={billingPrintState ? [billingPrintState.page] : []}
+        onExportCsv={billingPrintState?.onExportCsv}
+      />
     </div>
   );
 };

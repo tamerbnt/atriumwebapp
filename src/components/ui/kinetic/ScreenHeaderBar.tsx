@@ -8,6 +8,7 @@ export interface ScreenHeaderPrimaryAction {
   icon?: React.ReactNode;
   dataAction?: string;
   disabled?: boolean;
+  tooltip?: string;
 }
 
 export interface ScreenHeaderBarProps {
@@ -80,6 +81,7 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
               variant="primary"
               size="md"
               disabled={resolvedAction.disabled}
+              title={resolvedAction.tooltip}
               data-action={resolvedAction.dataAction || addButtonDataAction}
               onClick={(e) => resolvedAction.onClick(e.currentTarget)}
               icon={resolvedAction.icon ?? <Plus size={16} strokeWidth={1.5} />}

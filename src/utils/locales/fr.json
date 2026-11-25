@@ -2804,5 +2804,15 @@
   "topbar_language_switch_desc": "Basculer FR / EN / AR (RTL)",
   "topbar_density_menu": "Densité compacte",
   "topbar_density_toggle_desc": "Basculer affichage compact / standard",
-  "legal_vault_filing_only_banner": "Périmètre dépôts uniquement : vous pouvez enregistrer et imprimer les pièces clients. Les pièces de défense, modifications et retraits sont réservés aux associés."
+  "legal_vault_filing_only_banner": "Périmètre dépôts uniquement : vous pouvez enregistrer et imprimer les pièces clients. Les pièces de défense, modifications et retraits sont réservés aux associés.",
+  "feature_not_available_yet": "Pas encore disponible",
+  "feature_not_available_phase2": "Pas encore disponible — prévu en Phase 2",
+  "step5_duplicata_watermark": "DUPLICATA",
+  "step5_cmup_held_notice": "Non-conformité et mise au rebut enregistrées. Les ajustements de stock, encours (WIP) et CMUP sont suspendus en attente de confirmation comptable.",
+  "step5_enroll_member_title": "Inscrire un adhérent à la séance",
+  "step5_coach_confirmed_badge": "Coach confirmé",
+  "step5_confirm_coach_action": "Confirmer coach",
+  "step5_duplicate_week_title": "Dupliquer le planning semaine",
+  "step5_re_inspection_locked_badge": "Validé & Verrouillé",
+  "step5_mfg_scrap_ncr_title": "Déclarer un rebut & Fiche NCR"
 }

@@ -210,6 +210,23 @@ export interface GarageInvoice {
   version?: number;
 }
 
+export interface GarageCashClosure {
+  id: string;
+  branchId: string;
+  businessId: string;
+  accountId: string;
+  zNumber: string;
+  closedAt: string;
+  closedBy: string;
+  cashTotalDzd: number;
+  cardTotalDzd: number;
+  transferTotalDzd: number;
+  checkTotalDzd: number;
+  timbreFiscalTotalDzd: number;
+  grandTotalDzd: number;
+  invoiceCount: number;
+}
+
 // ----------------------------------------------------------------------
 // Algerian Initial Seed Data
 // ----------------------------------------------------------------------
@@ -983,6 +1000,15 @@ export const useGarageData = () => {
     }
   });
 
+  const [cashClosures, setCashClosures] = useState<GarageCashClosure[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_closures_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // LocalStorage synchronizations (idle-deferred)
   useIdlePersist('atrium_garage_orders_v2', orders);
   useIdlePersist('atrium_garage_vehicles_v2', vehicles);
@@ -990,6 +1016,7 @@ export const useGarageData = () => {
   useIdlePersist('atrium_garage_bays_v2', bays);
   useIdlePersist('atrium_garage_fleets_v2', fleets);
   useIdlePersist('atrium_garage_invoices_v2', invoices);
+  useIdlePersist('atrium_garage_closures_v1', cashClosures);
 
   // Hydrate garage vertical state from Supabase when configured
   useEffect(() => {
@@ -2043,12 +2070,64 @@ export const useGarageData = () => {
     });
   };
 
+  const closeCashRegisterZ = (): GarageCashClosure => {
+    const activeInvoices = latestRef.current.invoices.filter(belongsToActiveBranch);
+    const paidInvoices = activeInvoices.filter((i) => i.isPaid);
+    const cashTotalDzd = paidInvoices.filter((i) => i.paymentMethod === 'especes').reduce((s, i) => s + i.netToPayDzd, 0);
+    const cardTotalDzd = paidInvoices.filter((i) => i.paymentMethod === 'cib_dahabia').reduce((s, i) => s + i.netToPayDzd, 0);
+    const transferTotalDzd = paidInvoices.filter((i) => i.paymentMethod === 'virement').reduce((s, i) => s + i.netToPayDzd, 0);
+    const checkTotalDzd = paidInvoices.filter((i) => i.paymentMethod === 'cheque').reduce((s, i) => s + i.netToPayDzd, 0);
+    const timbreFiscalTotalDzd = paidInvoices.reduce((s, i) => s + i.timbreFiscal, 0);
+    const seq = cashClosures.filter(belongsToActiveBranch).length + 1;
+    const zNumber = `Z-GAR-${new Date().getFullYear()}-${String(seq).padStart(4, '0')}`;
+    const closure: GarageCashClosure = {
+      id: `gar_z_${Date.now()}`,
+      branchId: activeBranchId,
+      businessId: garageCtx.businessId,
+      accountId: garageCtx.accountId,
+      zNumber,
+      closedAt: new Date().toISOString(),
+      closedBy: currentStaffId || 'Gérant',
+      cashTotalDzd,
+      cardTotalDzd,
+      transferTotalDzd,
+      checkTotalDzd,
+      timbreFiscalTotalDzd,
+      grandTotalDzd: cashTotalDzd + cardTotalDzd + transferTotalDzd + checkTotalDzd,
+      invoiceCount: paidInvoices.length,
+    };
+
+    setCashClosures((prev) => [closure, ...prev]);
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: zNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Clôture caisse ${zNumber} enregistrée (${closure.grandTotalDzd.toLocaleString()} DA)`,
+        en: `Register Z closure ${zNumber} recorded (${closure.grandTotalDzd.toLocaleString()} DA)`,
+        ar: `تم إقفال الصندوق ${zNumber} (${closure.grandTotalDzd.toLocaleString()} دج)`,
+      }),
+      undo: () => {
+        setCashClosures((prev) => prev.filter((c) => c.id !== closure.id));
+      },
+      redo: () => {
+        setCashClosures((prev) => (prev.some((c) => c.id === closure.id) ? prev : [closure, ...prev]));
+      },
+    });
+
+    return closure;
+  };
+
   const scopedOrders = useMemo(() => orders.filter(belongsToActiveBranch), [orders, belongsToActiveBranch]);
   const scopedVehicles = useMemo(() => vehicles.filter(belongsToActiveBranch), [vehicles, belongsToActiveBranch]);
   const scopedParts = useMemo(() => parts.filter(belongsToActiveBranch), [parts, belongsToActiveBranch]);
   const scopedBays = useMemo(() => bays.filter(belongsToActiveBranch), [bays, belongsToActiveBranch]);
   const scopedFleets = useMemo(() => fleets.filter(belongsToActiveBranch), [fleets, belongsToActiveBranch]);
   const scopedInvoices = useMemo(() => invoices.filter(belongsToActiveBranch), [invoices, belongsToActiveBranch]);
+  const scopedCashClosures = useMemo(() => cashClosures.filter(belongsToActiveBranch), [cashClosures, belongsToActiveBranch]);
 
   return {
     orders: scopedOrders,
@@ -2057,6 +2136,7 @@ export const useGarageData = () => {
     bays: scopedBays,
     fleets: scopedFleets,
     invoices: scopedInvoices,
+    cashClosures: scopedCashClosures,
     addOrder,
     updateOrder,
     deleteOrder,
@@ -2075,6 +2155,7 @@ export const useGarageData = () => {
     deleteFleet,
     createInvoice,
     markInvoicePaid,
+    closeCashRegisterZ,
     resetGarageDemoData,
   };
 };

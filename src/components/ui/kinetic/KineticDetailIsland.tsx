@@ -13,6 +13,8 @@ export interface KineticDetailAction {
   label: string;
   icon?: React.ReactNode;
   isDanger?: boolean;
+  disabled?: boolean;
+  tooltip?: string;
   onClick: () => void;
 }
 
@@ -202,15 +204,19 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
                     data-no-liquid="true"
                     data-sq="ctl-sm"
                     data-sq-border="solid"
+                    disabled={btn.disabled}
+                    title={btn.tooltip || btn.label}
                     tabIndex={dcRef ? -1 : isInteractive ? 0 : -1}
                     onClick={(e) => {
                       e.stopPropagation();
-                      btn.onClick();
+                      if (!btn.disabled) btn.onClick();
                     }}
-                    className={`relative h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors duration-140 cursor-pointer whitespace-nowrap ${
-                      btn.isDanger
-                        ? '[--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:[--sq-stroke:#c0283d]'
-                        : '[--sq-stroke:var(--sq-css-ctl)] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white hover:[--sq-stroke:#1F1D1B] dark:hover:bg-[var(--brand-fill)] dark:hover:text-white dark:hover:[--sq-stroke:var(--brand-fill)] text-[var(--text-1)]'
+                    className={`relative h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors duration-140 whitespace-nowrap disabled:opacity-45 disabled:cursor-not-allowed ${
+                      btn.disabled
+                        ? 'cursor-not-allowed [--sq-stroke:var(--sq-css-ctl)] bg-white/70 dark:bg-[#262422]/70 text-[var(--text-3)]'
+                        : btn.isDanger
+                        ? 'cursor-pointer [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:[--sq-stroke:#c0283d]'
+                        : 'cursor-pointer [--sq-stroke:var(--sq-css-ctl)] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white hover:[--sq-stroke:#1F1D1B] dark:hover:bg-[var(--brand-fill)] dark:hover:text-white dark:hover:[--sq-stroke:var(--brand-fill)] text-[var(--text-1)]'
                     }`}
                   >
                     {btn.icon}

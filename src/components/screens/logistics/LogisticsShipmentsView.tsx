@@ -24,6 +24,9 @@ import { useLogisticsData } from './logisticsData';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StopDeskHandoverModal } from './StopDeskHandoverModal';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -34,6 +37,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -91,6 +95,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState('');
+  const [isBulkStatusModalOpen, setIsBulkStatusModalOpen] = useState(false);
+  const [bulkStatusTarget, setBulkStatusTarget] = useState<LogisticsShipment['status']>('OutForDelivery');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -729,12 +735,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             label: isAr ? 'تحديث مرحلة التوصيل' : 'Mise à jour statut',
             icon: <Truck size={14} />,
             onClick: (ids) => {
-              showToast(
-                isAr
-                  ? `تم تحديد ${ids.size} طرد للشحن`
-                  : `${ids.size} colis pris en charge pour expédition`,
-                'info'
-              );
+              if (ids.size === 0) return;
+              setIsBulkStatusModalOpen(true);
             },
           }}
           onBulkDelete={(ids) => {
@@ -1049,6 +1051,72 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           }
         }}
       />
+
+      <KineticModalShell
+        isOpen={isBulkStatusModalOpen}
+        onClose={() => setIsBulkStatusModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {(() => {
+          const batch = resolveBatchSelection(selectedIds, shipments, (s) => s.id);
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+            >
+              <h3 className="font-semibold t-label text-black dark:text-white">
+                {isAr
+                  ? `تحديث حالة ${batch.selectedItems.length} شحنات`
+                  : `Mettre à jour ${batch.selectedItems.length} colis`}
+              </h3>
+              {batch.missingIds.length > 0 && (
+                <p className="t-small text-amber-700 dark:text-amber-300">
+                  {isAr
+                    ? `تم تجاهل ${batch.missingIds.length} سجلات محذوفة.`
+                    : `${batch.missingIds.length} colis supprimés ignorés.`}
+                </p>
+              )}
+              <LabelSelect
+                label={isAr ? 'المرحلة الجديدة' : 'Nouveau statut'}
+                value={bulkStatusTarget}
+                onChange={(val) => setBulkStatusTarget(val as LogisticsShipment['status'])}
+                options={[
+                  { value: 'ReceivedAtHub', label: isAr ? 'في المستودع' : 'Au Hub (ReceivedAtHub)' },
+                  { value: 'Sorted', label: isAr ? 'مفرز على الرصيف' : 'Trié Quai (Sorted)' },
+                  { value: 'OutForDelivery', label: isAr ? 'قيد التوزيع' : 'En Tournée (OutForDelivery)' },
+                  { value: 'Delivered', label: isAr ? 'تم التسليم' : 'Livré (Delivered)' },
+                  { value: 'Postponed', label: isAr ? 'مؤجل' : 'Reporté (Postponed)' },
+                  { value: 'Returned', label: isAr ? 'مسترجع' : 'Retourné (Returned)' },
+                ]}
+              />
+              <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                <AtriumButton variant="ghost" size="sm" onClick={() => setIsBulkStatusModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    batch.selectedItems.forEach((item) => {
+                      updateShipmentStatus(item.id, bulkStatusTarget);
+                    });
+                    if (selectedShipment && batch.selectedItems.some((item) => item.id === selectedShipment.id)) {
+                      setSelectedShipment({ ...selectedShipment, status: bulkStatusTarget });
+                    }
+                    setSelectedIds(new Set());
+                    setIsBulkStatusModalOpen(false);
+                  }}
+                >
+                  {isAr ? 'تأكيد التحديث' : 'Appliquer'}
+                </AtriumButton>
+              </div>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
     </div>
   );
 };

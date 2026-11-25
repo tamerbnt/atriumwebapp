@@ -9,6 +9,7 @@ import type {
   WalkInTicket,
   MembershipPlan,
   ScheduleEvent,
+  GymClassEnrollment,
 } from '../../../types/index';
 
 export const mapMembershipPlanFromDb = (row: any): MembershipPlan => ({
@@ -48,6 +49,25 @@ export const mapScheduleEventFromDb = (row: any): ScheduleEvent => ({
   capacity: Number(row.capacity || 20),
   enrolledCount: Number(row.enrolled_count || 0),
   category: row.category || 'Class',
+  coachConfirmed: Boolean(row.coach_confirmed),
+  coachConfirmedAt: row.coach_confirmed_at || undefined,
+  coachConfirmedBy: row.coach_confirmed_by || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapClassEnrollmentFromDb = (row: any): GymClassEnrollment => ({
+  id: row.id,
+  accountId: row.account_id || undefined,
+  businessId: row.business_id || undefined,
+  branchId: row.branch_id || undefined,
+  staffId: row.staff_id || undefined,
+  eventId: row.event_id,
+  memberId: row.member_id,
+  memberName: row.member_name || '',
+  status: (row.status || 'enrolled') as GymClassEnrollment['status'],
+  enrolledAt: row.enrolled_at || row.created_at || new Date().toISOString(),
+  cancelledAt: row.cancelled_at || undefined,
+  notes: row.notes || undefined,
   version: row.version != null ? Number(row.version) : undefined,
 });
 
@@ -290,7 +310,7 @@ export const memberService = {
       (client as any)
         .from('gym_schedule_events')
         .select(
-          'id, account_id, business_id, branch_id, staff_id, title, coach_name, room_name, day_of_week, start_time, end_time, capacity, enrolled_count, version'
+          'id, account_id, business_id, branch_id, staff_id, title, coach_name, room_name, day_of_week, start_time, end_time, capacity, enrolled_count, coach_confirmed, coach_confirmed_at, coach_confirmed_by, version'
         )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
@@ -322,6 +342,9 @@ export const memberService = {
       capacity: ev.capacity,
       enrolled_count: ev.enrolledCount,
       category: ev.category || 'Class',
+      coach_confirmed: Boolean(ev.coachConfirmed),
+      coach_confirmed_at: ev.coachConfirmedAt || null,
+      coach_confirmed_by: ev.coachConfirmedBy ? toValidUuid(ev.coachConfirmedBy) : null,
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('gym_schedule_events', payload, {
       expectedVersion: ev.version,
@@ -334,6 +357,63 @@ export const memberService = {
 
   async deleteScheduleEvent(eventId: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('gym_schedule_events', eventId, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchClassEnrollments(branchId: string): Promise<GymClassEnrollment[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const rows = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('gym_class_enrollments')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, event_id, member_id, member_name, status, enrolled_at, cancelled_at, notes, version'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('enrolled_at', { ascending: false })
+          .range(from, to)
+      );
+      return rows.map(mapClassEnrollmentFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertClassEnrollment(
+    enrollment: GymClassEnrollment,
+    ctx?: { accountId?: string; businessId?: string; branchId?: string; staffId?: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: enrollment.accountId || ctx?.accountId,
+      businessId: enrollment.businessId || ctx?.businessId,
+      branchId: enrollment.branchId || ctx?.branchId,
+      staffId: enrollment.staffId || ctx?.staffId,
+    });
+    const payload = {
+      id: toValidUuid(enrollment.id),
+      ...trace,
+      event_id: toValidUuid(enrollment.eventId),
+      member_id: toValidUuid(enrollment.memberId),
+      member_name: enrollment.memberName,
+      status: enrollment.status,
+      enrolled_at: enrollment.enrolledAt,
+      cancelled_at: enrollment.cancelledAt || null,
+      notes: enrollment.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('gym_class_enrollments', payload, {
+      expectedVersion: enrollment.version,
+      entityType: 'GymClassEnrollment',
+      entityLabel: enrollment.memberName,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteClassEnrollment(enrollmentId: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('gym_class_enrollments', enrollmentId, deletedByStaffId);
     return res.success;
   },
 

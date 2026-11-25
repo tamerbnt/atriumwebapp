@@ -9,6 +9,7 @@ import type {
   RawMaterialStockItem,
   MaterialTransferVoucher,
   QualityInspectionRecord,
+  MfgNcrRecord,
 } from '../../../types/index';
 
 type DbOrderStatus = 'Planned' | 'Released' | 'InProgress' | 'QualityHold' | 'Completed' | 'Cancelled';
@@ -682,6 +683,82 @@ export const manufacturingService = {
 
   async deleteQcInspection(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('mfg_qc_inspections', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchNcrRecords(branchId: string, updatedAfter?: string | null): Promise<MfgNcrRecord[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_ncr_records')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, ncr_number, order_id, qc_inspection_id, of_number, lot_number, product_name, scrapped_quantity, reason, disposition, status, cmup_adjustment_held, notes, version, created_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+
+      return rows.map((row: any): MfgNcrRecord => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || '',
+        ncrNumber: row.ncr_number,
+        orderId: row.order_id || undefined,
+        qcInspectionId: row.qc_inspection_id || undefined,
+        ofNumber: row.of_number,
+        lotNumber: row.lot_number || undefined,
+        productName: row.product_name,
+        scrappedQuantity: Number(row.scrapped_quantity || 0),
+        reason: row.reason || '',
+        disposition: (row.disposition || 'Scrapped') as MfgNcrRecord['disposition'],
+        status: (row.status || 'Open') as MfgNcrRecord['status'],
+        cmupAdjustmentHeld: row.cmup_adjustment_held !== false,
+        notes: row.notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async recordScrapWithNcr(params: {
+    qcRecord: QualityInspectionRecord;
+    ncrRecord: MfgNcrRecord;
+  }): Promise<boolean> {
+    const { qcRecord, ncrRecord } = params;
+    const rpcPayload = {
+      p_business_id: toValidUuid(ncrRecord.businessId),
+      p_branch_id: toValidUuid(ncrRecord.branchId),
+      p_order_id: ncrRecord.orderId ? toValidUuid(ncrRecord.orderId) : null,
+      p_of_number: ncrRecord.ofNumber,
+      p_lot_number: ncrRecord.lotNumber || null,
+      p_product_name: ncrRecord.productName,
+      p_inspector_name: qcRecord.inspectorName,
+      p_scrapped_quantity: Number(ncrRecord.scrappedQuantity || 1),
+      p_reason: ncrRecord.reason,
+      p_notes: ncrRecord.notes || null,
+      p_qc_id: toValidUuid(qcRecord.id),
+      p_ncr_id: toValidUuid(ncrRecord.id),
+    };
+
+    const res = await syncCoordinator.rpcOrQueue('mfg_scrap_with_ncr', rpcPayload);
+    return res.success;
+  },
+
+  async deleteNcrRecord(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('mfg_ncr_records', id, deletedByStaffId);
     return res.success;
   },
 };

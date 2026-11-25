@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { MandateModal } from './MandateModal';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { useRealEstateData } from './realEstateData';
 import { RealEstateMandate } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
@@ -58,6 +59,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
     }),
     shallowEqualObjects
   );
+  const [mandatePrintPage, setMandatePrintPage] = useState<PrintSheetPage | null>(null);
   const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -601,11 +603,25 @@ export const RealEstateMandatesView: React.FC<any> = () => {
               icon: <Printer size={14} />,
               onClick: (e) => {
                 e.stopPropagation();
-                showToast(
-                  isAr ? `جاري طباعة عقد الوكالة ${item.mandateNumber}...` : `Impression du mandat ${item.mandateNumber}...`,
-                  'info'
-                );
-                if (typeof window !== 'undefined') window.print();
+                setMandatePrintPage({
+                  id: item.id,
+                  title: `${isAr ? 'عقد الوكالة العقارية' : 'Mandat Immobilier'} — ${item.mandateNumber}`,
+                  subtitle: `${item.propertyTitle} · ${item.ownerFullName}`,
+                  badgeText: item.isExclusive ? 'Exclusif' : 'Simple',
+                  sections: [
+                    {
+                      rows: [
+                        { label: isAr ? 'الموكل' : 'Mandant', value: item.ownerFullName },
+                        { label: isAr ? 'الهاتف' : 'Téléphone', value: item.ownerPhone || '—' },
+                        { label: isAr ? 'السعر المطلوب' : 'Prix Demandé', value: formatMoney(item.askingPriceDzd, language) },
+                        { label: isAr ? 'الأتعاب المقدرة' : 'Honoraires TTC', value: formatMoney(item.commissionEstimatedTtcDzd, language) },
+                        { label: isAr ? 'الصلاحية' : 'Échéance', value: item.endDate },
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? 'توقيع الموكل' : 'Signature Mandant',
+                  signatureRight: isAr ? 'ختم الوكالة' : 'Cachet Agence',
+                });
               },
             },
             {
@@ -630,11 +646,25 @@ export const RealEstateMandatesView: React.FC<any> = () => {
               label: isAr ? 'طباعة العقد' : 'Imprimer Mandat',
               icon: <Printer size={14} />,
               onClick: () => {
-                showToast(
-                  isAr ? `جاري طباعة عقد الوكالة ${item.mandateNumber}...` : `Impression du mandat ${item.mandateNumber}...`,
-                  'info'
-                );
-                if (typeof window !== 'undefined') window.print();
+                setMandatePrintPage({
+                  id: item.id,
+                  title: `${isAr ? 'عقد الوكالة العقارية' : 'Mandat Immobilier'} — ${item.mandateNumber}`,
+                  subtitle: `${item.propertyTitle} · ${item.ownerFullName}`,
+                  badgeText: item.isExclusive ? 'Exclusif' : 'Simple',
+                  sections: [
+                    {
+                      rows: [
+                        { label: isAr ? 'الموكل' : 'Mandant', value: item.ownerFullName },
+                        { label: isAr ? 'الهاتف' : 'Téléphone', value: item.ownerPhone || '—' },
+                        { label: isAr ? 'السعر المطلوب' : 'Prix Demandé', value: formatMoney(item.askingPriceDzd, language) },
+                        { label: isAr ? 'الأتعاب المقدرة' : 'Honoraires TTC', value: formatMoney(item.commissionEstimatedTtcDzd, language) },
+                        { label: isAr ? 'الصلاحية' : 'Échéance', value: item.endDate },
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? 'توقيع الموكل' : 'Signature Mandant',
+                  signatureRight: isAr ? 'ختم الوكالة' : 'Cachet Agence',
+                });
               },
             },
           ]}
@@ -776,6 +806,16 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         onClose={() => setIsMandateModalOpen(false)}
         onSave={(newMnd) => addMandate(newMnd)}
         properties={properties}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(mandatePrintPage)}
+        onClose={() => setMandatePrintPage(null)}
+        language={language}
+        format="a4"
+        title={mandatePrintPage?.title || 'Mandat'}
+        subtitle={mandatePrintPage?.subtitle}
+        pages={mandatePrintPage ? [mandatePrintPage] : []}
       />
     </div>
   );

@@ -20,6 +20,7 @@ import {
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { t } from '../../../utils/i18n';
 import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -602,14 +603,9 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         primaryAction={{
           label: isAr ? 'تذكير بالمتأخرات' : isEn ? 'Send Reminders' : 'Relancer impayés',
           icon: <Send size={15} />,
-          onClick: () =>
-            showToast?.({
-              type: 'success',
-              title: isAr ? 'تم إرسال التنبيهات' : isEn ? 'Reminders Sent' : 'Relances envoyées',
-              message: `${financialMetrics.pendingCount} ${
-                isAr ? 'مشترك' : isEn ? 'members notified' : 'adhérents notifiés'
-              }`,
-            }),
+          disabled: true,
+          tooltip: t('feature_not_available_phase2', language),
+          onClick: () => {},
         }}
       />
 
@@ -900,12 +896,9 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
                       id: 'remind',
                       label: isAr ? 'تذكير' : isEn ? 'Remind' : 'Relancer',
                       icon: <Send className="w-[18px] h-[18px]" />,
-                      onClick: () =>
-                        showToast?.({
-                          type: 'success',
-                          title: isAr ? 'تم الإرسال' : 'Relance envoyée',
-                          message: tx.memberName,
-                        }),
+                      disabled: true,
+                      tooltip: t('feature_not_available_phase2', language),
+                      onClick: () => {},
                     },
                   ]}
                 />

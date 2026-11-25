@@ -17,9 +17,11 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { t } from '../../../utils/i18n';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
+import { LabelInput } from '../../ui/LabelInput';
 import { ManufacturingOrder } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -44,13 +46,14 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingQcView: React.FC<any> = () => {
-  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const { language, currentBranch, branches, isSyncing, networkMode, currentUser } = useAtriumSelector(
     (s) => ({
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
+      currentUser: s.currentUser,
     }),
     shallowEqualObjects
   );
@@ -58,7 +61,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { orders, updateOrder } = useManufacturingData();
+  const { orders, ncrRecords, updateOrder, recordScrapWithNcr } = useManufacturingData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [qcStatusFilter, setQcStatusFilter] = useState<string>('All');
@@ -96,6 +99,40 @@ export const ManufacturingQcView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('cq');
   const [orderForCertificate, setOrderForCertificate] = useState<ManufacturingOrder | null>(null);
+  const [scrapModalOrder, setScrapModalOrder] = useState<ManufacturingOrder | null>(null);
+  const [scrapQty, setScrapQty] = useState<string>('1');
+  const [scrapReason, setScrapReason] = useState<string>('');
+  const [scrapSeverity, setScrapSeverity] = useState<'Minor' | 'Major' | 'Critical'>('Major');
+  const retainedScrapOrder = useRetainedModalValue(scrapModalOrder);
+
+  const openScrapModal = useCallback((order: ManufacturingOrder) => {
+    setScrapModalOrder(order);
+    setScrapQty('1');
+    setScrapReason('');
+    setScrapSeverity('Major');
+  }, []);
+
+  const handleSubmitScrapNcr = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!scrapModalOrder) return;
+      const qty = Math.max(1, parseInt(scrapQty, 10) || 1);
+      const reasonText =
+        scrapReason.trim() || (isAr ? 'عدم مطابقة أثناء الفحص' : 'Non-conformité contrôle qualité');
+      recordScrapWithNcr({
+        orderId: scrapModalOrder.id,
+        orderNumber: scrapModalOrder.orderNumber,
+        batchLotNumber: scrapModalOrder.batchLotNumber,
+        productName: scrapModalOrder.productName,
+        inspectorName: currentUser?.fullName || (isAr ? 'مراقب الجودة' : 'Responsable CQ'),
+        scrappedQuantity: qty,
+        reason: reasonText,
+        notes: `[${scrapSeverity}] ${reasonText}`,
+      });
+      setScrapModalOrder(null);
+    },
+    [scrapModalOrder, scrapQty, scrapReason, scrapSeverity, recordScrapWithNcr, currentUser?.fullName, isAr]
+  );
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -589,13 +626,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
               id: 'scrap',
               label: isAr ? 'تسجيل تالف' : 'Rebut',
               icon: <AlertCircle className="w-3.5 h-3.5 text-[#c0283d]" />,
-              onClick: () =>
-                showToast(
-                  isAr
-                    ? `تم تسجيل تقرير عدم مطابقة للدفعة ${o.orderNumber}`
-                    : `Fiche de non-conformité ouverte pour le lot ${o.orderNumber}`,
-                  'info'
-                ),
+              onClick: () => openScrapModal(o),
             },
           ]}
           customActions={(o) => [
@@ -618,13 +649,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
               label: isAr ? 'تسجيل تالف' : 'Rebut',
               icon: <AlertCircle size={13} />,
               variant: 'danger',
-              onClick: () =>
-                showToast(
-                  isAr
-                    ? `تم تسجيل تقرير عدم مطابقة للدفعة ${o.orderNumber}`
-                    : `Fiche de non-conformité ouverte pour le lot ${o.orderNumber}`,
-                  'info'
-                ),
+              onClick: () => openScrapModal(o),
             },
           ]}
           renderCard={(o) => {
@@ -934,6 +959,102 @@ export const ManufacturingQcView: React.FC<any> = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(scrapModalOrder)}
+        onClose={() => setScrapModalOrder(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {retainedScrapOrder && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle size={20} className="text-[#c0283d]" />
+                <div>
+                  <h3 className="font-semibold t-card text-black dark:text-white">
+                    {t('step5_mfg_scrap_ncr_title', language)}
+                  </h3>
+                  <p className="t-small text-black/55 dark:text-white/55">
+                    {retainedScrapOrder.orderNumber} · {retainedScrapOrder.productName} ({ncrRecords.length} NCR)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setScrapModalOrder(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div
+              data-testid="mfg-cmup-hold-notice"
+              className="rounded-xl border border-amber-400/40 bg-amber-50 dark:bg-amber-950/35 px-3.5 py-2.5 text-xs text-amber-900 dark:text-amber-200"
+            >
+              {t('step5_cmup_held_notice', language)}
+            </div>
+
+            <form onSubmit={handleSubmitScrapNcr} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  field="ScrapQty"
+                  label={isAr ? 'الكمية المرفوضة' : isEn ? 'Scrapped Quantity' : 'Quantité rebutée'}
+                  type="number"
+                  value={scrapQty}
+                  onChange={setScrapQty}
+                  required
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-black/70 dark:text-white/75">
+                    {isAr ? 'الخطورة' : isEn ? 'Severity' : 'Gravité'}
+                  </label>
+                  <select
+                    value={scrapSeverity}
+                    onChange={(e) => setScrapSeverity(e.target.value as 'Minor' | 'Major' | 'Critical')}
+                    className="w-full h-10 px-3 rounded-xl bg-white dark:bg-[#191716] border border-black/15 dark:border-white/15 text-sm text-black dark:text-white"
+                  >
+                    <option value="Minor">{isAr ? 'طفيف' : isEn ? 'Minor' : 'Mineure'}</option>
+                    <option value="Major">{isAr ? 'كبير' : isEn ? 'Major' : 'Majeure'}</option>
+                    <option value="Critical">{isAr ? 'حرج' : isEn ? 'Critical' : 'Critique'}</option>
+                  </select>
+                </div>
+              </div>
+
+              <LabelInput
+                field="ScrapReason"
+                label={isAr ? 'سبب عدم المطابقة (NCR)' : isEn ? 'Non-conformity reason' : 'Motif de non-conformité'}
+                value={scrapReason}
+                onChange={setScrapReason}
+                placeholder={isAr ? 'مثال: خلل أبعاد أو لحام' : isEn ? 'e.g. Dimensional defect out of tolerance' : 'Ex: Défaut dimensionnel hors tolérance'}
+                required
+                width="100%"
+                height={40}
+                corner={12}
+              />
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                <AtriumButton type="button" variant="ghost" onClick={() => setScrapModalOrder(null)}>
+                  {t('action_cancel', language)}
+                </AtriumButton>
+                <AtriumButton type="submit" variant="danger">
+                  {isAr ? 'تسجيل التالف وفتح بطاقة NCR' : isEn ? 'Record Scrap & NCR' : 'Enregistrer Rebut & Fiche NCR'}
+                </AtriumButton>
+              </div>
+            </form>
           </div>
         )}
       </KineticModalShell>

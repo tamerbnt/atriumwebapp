@@ -115,6 +115,8 @@ export const mapRentalDepositFromDb = (row: any): SecurityDepositRecord => ({
   paymentMethod: row.payment_method || 'Cash',
   status: row.status || 'Held',
   deductionReason: row.deduction_reason || undefined,
+  depositReceiptNumber: row.deposit_receipt_number || undefined,
+  printedCount: row.printed_count != null ? Number(row.printed_count) : 0,
   version: row.version != null ? Number(row.version) : undefined,
   collectedAt: row.collected_at,
   releasedAt: row.released_at || undefined,
@@ -373,7 +375,7 @@ export const rentalService = {
         let query = (client as any)
           .from('rental_security_deposits')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, booking_id, renter_name, unit_name, amount, currency, payment_method, status, deduction_reason, version, collected_at, released_at'
+            'id, account_id, business_id, branch_id, staff_id, booking_id, renter_name, unit_name, amount, currency, payment_method, status, deduction_reason, deposit_receipt_number, printed_count, version, collected_at, released_at'
           )
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
@@ -410,6 +412,8 @@ export const rentalService = {
       payment_method: deposit.paymentMethod,
       status: deposit.status,
       deduction_reason: deposit.deductionReason || null,
+      deposit_receipt_number: deposit.depositReceiptNumber || null,
+      printed_count: Math.max(0, Number(deposit.printedCount || 0)),
       collected_at: deposit.collectedAt,
       released_at: deposit.releasedAt || null,
     };

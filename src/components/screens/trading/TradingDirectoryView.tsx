@@ -20,6 +20,7 @@ import {
 import { runUndoBatch } from '../../../services/undoEngine';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { B2bEntityModal } from './B2bEntityModal';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
@@ -673,10 +674,32 @@ export const TradingDirectoryView: React.FC = () => {
               label: isAr ? 'تصدير الشركاء' : 'Exporter Partenaires',
               icon: <Download size={14} />,
               onClick: (ids) => {
+                const resolved = resolveBatchSelection(Array.from(ids), filteredClients, (c) => c.id, 1000);
+                if (resolved.selectedItems.length === 0) {
+                  showToast({
+                    type: 'warning',
+                    title: isAr ? 'لا يوجد عملاء' : 'Aucun client sélectionné',
+                    message: isAr ? 'اختر عميلاً واحداً على الأقل للتصدير.' : 'Sélectionnez au moins un client valide.',
+                  });
+                  return;
+                }
+                const headers = ['Raison Sociale', 'NIF', 'Contact', 'Téléphone', 'Wilaya', 'Encours', 'Plafond'];
+                const rows = resolved.selectedItems.map((c) => [
+                  c.companyName,
+                  c.nif || '',
+                  c.contactName || '',
+                  c.phone || c.contactPhone || '',
+                  c.city || '',
+                  c.outstandingBalance || 0,
+                  c.creditLimit || 0,
+                ]);
+                downloadCsvSafe(`atrium-b2b-clients-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
                 showToast({
-                  type: 'info',
-                  title: 'Export B2B',
-                  message: isAr ? `تم تصدير ${ids.size} شركاء بنجاح` : `${ids.size} partenaires exportés`,
+                  type: 'success',
+                  title: isAr ? 'تم التصدير' : 'Export B2B CSV',
+                  message: isAr
+                    ? `تم تصدير ${resolved.selectedItems.length} عملاء`
+                    : `${resolved.selectedItems.length} client(s) exporté(s)`,
                 });
               },
             }}
@@ -815,10 +838,29 @@ export const TradingDirectoryView: React.FC = () => {
               label: isAr ? 'تصدير الموردين' : 'Exporter Fournisseurs',
               icon: <Download size={14} />,
               onClick: (ids) => {
+                const resolved = resolveBatchSelection(Array.from(ids), filteredSuppliers, (s) => s.id, 1000);
+                if (resolved.selectedItems.length === 0) {
+                  showToast({
+                    type: 'warning',
+                    title: isAr ? 'لا يوجد موردين' : 'Aucun fournisseur sélectionné',
+                    message: isAr ? 'اختر مورداً واحداً على الأقل للتصدير.' : 'Sélectionnez au moins un fournisseur valide.',
+                  });
+                  return;
+                }
+                const headers = ['Fournisseur', 'NIF', 'Contact', 'Téléphone', 'Catégorie', 'Délai (j)'];
+                const rows = resolved.selectedItems.map((s) => [
+                  s.supplierName,
+                  s.nif || '',
+                  s.contactName || '',
+                  s.phone || '',
+                  (s as any).category || 'Import/Gros',
+                  (s as any).leadTimeDays || 0,
+                ]);
+                downloadCsvSafe(`atrium-b2b-fournisseurs-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
                 showToast({
-                  type: 'info',
-                  title: 'Export Fournisseurs',
-                  message: `${ids.size} fournisseurs exportés`,
+                  type: 'success',
+                  title: isAr ? 'تم التصدير' : 'Export Fournisseurs CSV',
+                  message: `${resolved.selectedItems.length} fournisseur(s) exporté(s)`,
                 });
               },
             }}

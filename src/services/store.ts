@@ -19,6 +19,7 @@ import {
   RegistrationLead,
   Sale,
   ScheduleEvent,
+  GymClassEnrollment,
   ServiceItem,
   StaffMember,
   StaffRole,
@@ -247,6 +248,7 @@ import {
   projectMilestoneService,
   tradingService,
   configService,
+  sequenceService,
   syncCoordinator,
   subscribeConcurrencyConflicts,
   emitConcurrencyResolution,
@@ -269,6 +271,7 @@ import {
   mapSaleFromDb,
   mapAppointmentFromDb,
   mapScheduleEventFromDb,
+  mapClassEnrollmentFromDb,
   mapParkedOrderFromDb,
   mapStockMovementFromDb,
   mapSalonServiceFromDb,
@@ -322,6 +325,11 @@ import {
   TenantContextMissingError,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
+import {
+  evaluateClassEnrollment,
+  planWeekDuplication,
+  prepareDepositReceiptPrint,
+} from '../utils/step5Actions';
 
 
 export const ATRIUM_STORAGE_VERSION = 2;
@@ -416,10 +424,12 @@ interface AppState {
   staffPayrollRuns: StaffPayrollRunRecord[];
   staffPayrollSlips: StaffPayrollSlipRecord[];
   schedule: ScheduleEvent[];
+  classEnrollments: GymClassEnrollment[];
   devices: Device[];
   appointments: Appointment[];
   servicesCatalog: ServiceItem[];
   selectedMemberId: string | null;
+  pendingShopMemberId: string | null;
   isDetailOpen: boolean;
   currentUser: CurrentUser;
   isAuthenticated: boolean;
@@ -606,10 +616,12 @@ const DEFAULT_STATE: AppState = {
   staffPayrollRuns: INITIAL_STAFF_PAYROLL_RUNS,
   staffPayrollSlips: INITIAL_STAFF_PAYROLL_SLIPS,
   schedule: INITIAL_SCHEDULE,
+  classEnrollments: [],
   devices: INITIAL_DEVICES,
   appointments: INITIAL_APPOINTMENTS,
   servicesCatalog: INITIAL_SALON_SERVICES,
   selectedMemberId: INITIAL_MEMBERS[0]?.id || null,
+  pendingShopMemberId: null,
   isDetailOpen: false,
   currentUser: DEFAULT_USER,
   isAuthenticated: true,
@@ -888,6 +900,8 @@ let globalState: AppState = backfillTraceability((() => {
           sales: mergedSales,
           staff: mergedStaff,
           schedule: Array.isArray(parsed.schedule) ? parsed.schedule : INITIAL_SCHEDULE,
+          classEnrollments: Array.isArray(parsed.classEnrollments) ? parsed.classEnrollments : [],
+          pendingShopMemberId: null,
           devices: Array.isArray(parsed.devices) ? parsed.devices : INITIAL_DEVICES,
           appointments: Array.isArray(parsed.appointments) ? parsed.appointments : INITIAL_APPOINTMENTS,
           servicesCatalog: Array.isArray(parsed.servicesCatalog) ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
@@ -1324,6 +1338,10 @@ export const selectCurrentSalesFromState = createBranchSelector<Sale>(
 export const selectCurrentScheduleFromState = createBranchSelector<ScheduleEvent>(
   (s) => s.schedule,
   (sc, b) => sc.facilityId === b
+);
+export const selectCurrentClassEnrollmentsFromState = createBranchSelector<GymClassEnrollment>(
+  (s) => s.classEnrollments || [],
+  (ce, b) => (ce.branchId || '') === b
 );
 export const selectCurrentAppointmentsFromState = createBranchSelector<Appointment>(
   (s) => s.appointments,
@@ -3076,6 +3094,7 @@ function pruneDeletedRecords(
     gym_members: 'members',
     gym_registration_leads: 'leads',
     gym_schedule_events: 'schedule',
+    gym_class_enrollments: 'classEnrollments',
     salon_appointments: 'appointments',
     salon_services: 'servicesCatalog',
     salon_workstations: 'salonWorkstations',
@@ -3322,6 +3341,24 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
               ...(updatedAfter ? mergeById(currentBranchLeads, leads) : leads),
               ...otherLeads,
             ];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_schedule_events')) {
+        tasks.push(async () => {
+          const events = await memberService.fetchScheduleEvents(branchId);
+          if (events.length > 0) {
+            const others = (globalState.schedule || []).filter((e) => e.facilityId !== branchId && e.branchId !== branchId);
+            updates.schedule = [...events, ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_class_enrollments')) {
+        tasks.push(async () => {
+          const enrollments = await memberService.fetchClassEnrollments(branchId);
+          if (enrollments.length > 0) {
+            const others = (globalState.classEnrollments || []).filter((e) => e.branchId !== branchId);
+            updates.classEnrollments = [...enrollments, ...others];
           }
         });
       }
@@ -4117,6 +4154,8 @@ export function applyResolvedRowToSlice(
       return { leads: patchList(globalState.leads, mapLeadFromDb) };
     case 'gym_schedule_events':
       return { schedule: patchList(globalState.schedule, mapScheduleEventFromDb) };
+    case 'gym_class_enrollments':
+      return { classEnrollments: patchList(globalState.classEnrollments || [], mapClassEnrollmentFromDb) };
     case 'staff':
       return { staff: patchList(globalState.staff, (r) => mapStaffFromDb(r)) };
     case 'staff_attendance_logs':
@@ -6177,6 +6216,265 @@ function createAtriumActions() {
         }
       },
     });
+  };
+
+  const openShopForMember = (memberId: string) => {
+    globalState = {
+      ...globalState,
+      pendingShopMemberId: memberId,
+      isDetailOpen: false,
+    };
+    setScreenAction('shop');
+  };
+
+  const clearPendingShopMember = () => {
+    if (!globalState.pendingShopMemberId) return;
+    globalState = { ...globalState, pendingShopMemberId: null };
+    notify();
+  };
+
+  const enrollMemberInClass = (
+    eventId: string,
+    memberId: string,
+    notes?: string
+  ): {
+    success: boolean;
+    status?: 'enrolled' | 'waitlisted';
+    error?: 'EVENT_NOT_FOUND' | 'MEMBER_NOT_FOUND' | 'DUPLICATE_ENROLLMENT';
+  } => {
+    const targetEvent = (globalState.schedule || []).find((sc) => sc.id === eventId);
+    if (!targetEvent) return { success: false, error: 'EVENT_NOT_FOUND' };
+    const targetMember = (globalState.members || []).find((m) => m.id === memberId);
+    if (!targetMember) return { success: false, error: 'MEMBER_NOT_FOUND' };
+
+    const check = evaluateClassEnrollment({
+      eventId,
+      memberId,
+      capacity: targetEvent.capacity,
+      enrolledCount: targetEvent.enrolledCount,
+      existingEnrollments: globalState.classEnrollments || [],
+    });
+
+    if (!check.allowed || !check.assignedStatus) {
+      return { success: false, error: 'DUPLICATE_ENROLLMENT' };
+    }
+
+    const before = captureStoreSlices(['schedule', 'classEnrollments']);
+    const trace = getTraceContext();
+    const enrollment: GymClassEnrollment = {
+      id: `enr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...trace,
+      branchId: targetEvent.branchId || globalState.currentBranchId,
+      eventId,
+      memberId,
+      memberName: targetMember.fullName,
+      status: check.assignedStatus,
+      enrolledAt: new Date().toISOString(),
+      notes,
+    };
+
+    const updatedEvent: ScheduleEvent = {
+      ...targetEvent,
+      enrolledCount: check.nextEnrolledCount,
+    };
+
+    globalState = {
+      ...globalState,
+      classEnrollments: [enrollment, ...(globalState.classEnrollments || [])],
+      schedule: (globalState.schedule || []).map((sc) =>
+        sc.id === eventId ? updatedEvent : sc
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService
+        .upsertClassEnrollment(enrollment, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: targetEvent.branchId || globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+      if (check.assignedStatus === 'enrolled') {
+        memberService
+          .upsertScheduleEvent(updatedEvent, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: targetEvent.branchId || globalState.currentBranchId,
+            staffId: globalState.currentUser?.id,
+          })
+          .catch(() => {});
+      }
+    }
+
+    const after = captureStoreSlices(['schedule', 'classEnrollments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `${targetMember.fullName} ${check.assignedStatus === 'waitlisted' ? 'waitlisted for' : 'enrolled in'} ${targetEvent.title}`,
+        `${targetMember.fullName} ${check.assignedStatus === 'waitlisted' ? 'en liste d’attente pour' : 'inscrit à'} ${targetEvent.title}`,
+        `${check.assignedStatus === 'waitlisted' ? 'قائمة انتظار' : 'تسجيل'} ${targetMember.fullName} في ${targetEvent.title}`
+      ),
+      entityLabel: targetMember.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.deleteClassEnrollment(enrollment.id, globalState.currentUser?.id).catch(() => {});
+          memberService.upsertScheduleEvent(targetEvent).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_class_enrollments', enrollment.id, globalState.currentUser?.id).catch(() => {});
+          memberService.upsertClassEnrollment(enrollment).catch(() => {});
+          memberService.upsertScheduleEvent(updatedEvent).catch(() => {});
+        }
+      },
+    });
+
+    return { success: true, status: check.assignedStatus };
+  };
+
+  const confirmScheduleCoach = (eventId: string) => {
+    const targetEvent = (globalState.schedule || []).find((sc) => sc.id === eventId);
+    if (!targetEvent || targetEvent.coachConfirmed) return;
+    const before = captureStoreSlices(['schedule']);
+    const updatedEvent: ScheduleEvent = {
+      ...targetEvent,
+      coachConfirmed: true,
+      coachConfirmedAt: new Date().toISOString(),
+      coachConfirmedBy: globalState.currentUser?.id,
+    };
+
+    globalState = {
+      ...globalState,
+      schedule: (globalState.schedule || []).map((sc) =>
+        sc.id === eventId ? updatedEvent : sc
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService
+        .upsertScheduleEvent(updatedEvent, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: targetEvent.branchId || globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+
+    const after = captureStoreSlices(['schedule']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Coach confirmed: ${targetEvent.trainerOrStaff} (${targetEvent.title})`,
+        `Coach confirmé : ${targetEvent.trainerOrStaff} (${targetEvent.title})`,
+        `تم تأكيد المدرب: ${targetEvent.trainerOrStaff} (${targetEvent.title})`
+      ),
+      entityLabel: targetEvent.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.upsertScheduleEvent(targetEvent).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.upsertScheduleEvent(updatedEvent).catch(() => {});
+        }
+      },
+    });
+  };
+
+  const duplicateScheduleWeek = (options?: { selectedIds?: string[]; dayOffset?: number }) => {
+    const currentBranchSchedule = selectCurrentScheduleFromState(globalState);
+    const plan = planWeekDuplication(currentBranchSchedule, {
+      selectedIds: options?.selectedIds,
+      dayOffset: options?.dayOffset ?? 1,
+      generateId: (_src, idx) => `sched_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 5)}`,
+    });
+
+    if (plan.created.length === 0) {
+      return plan;
+    }
+
+    const before = captureStoreSlices(['schedule']);
+    const scopedCreated = plan.created.map((ev) => ({
+      ...ev,
+      ...getTraceContext(),
+      facilityId: globalState.currentBranchId,
+      branchId: globalState.currentBranchId,
+      coachConfirmed: false,
+      coachConfirmedAt: undefined,
+      coachConfirmedBy: undefined,
+    }));
+
+    globalState = {
+      ...globalState,
+      schedule: [...scopedCreated, ...(globalState.schedule || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        scopedCreated.map((ev) => () =>
+          memberService.upsertScheduleEvent(ev, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+            staffId: globalState.currentUser?.id,
+          })
+        ),
+        4
+      ).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['schedule']);
+    const createdIds = scopedCreated.map((e) => e.id);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: scopedCreated.length,
+      summary: ul(
+        `Duplicated ${scopedCreated.length} session(s) (${plan.conflicts.length} conflict(s) skipped)`,
+        `${scopedCreated.length} séance(s) dupliquée(s) (${plan.conflicts.length} conflit(s) ignoré(s))`,
+        `تم تكرار ${scopedCreated.length} حصة (تجاوز ${plan.conflicts.length} تعارض)`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            createdIds.map((id) => () => memberService.deleteScheduleEvent(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            scopedCreated.map((ev) => () =>
+              syncCoordinator
+                .restoreRow('gym_schedule_events', ev.id, globalState.currentUser?.id)
+                .then(() => memberService.upsertScheduleEvent(ev))
+            ),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
+
+    return plan;
   };
 
   const createStaffMember = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
@@ -11482,6 +11780,67 @@ function createAtriumActions() {
     });
   };
 
+  const issueDepositReceiptPrint = async (depositId: string) => {
+    const target = globalState.securityDeposits.find((d) => d.id === depositId);
+    if (!target) return null;
+
+    let allocatedNumber = target.depositReceiptNumber || '';
+    if (!allocatedNumber) {
+      const branchId = target.branchId || target.facilityId || globalState.currentBranchId;
+      const businessId = target.businessId || globalState.currentBusinessId;
+      if (isSupabaseConfigured() && businessId && branchId) {
+        const res = await sequenceService.allocateFromDeviceBlock({
+          businessId,
+          branchId,
+          docType: 'deposit_receipt',
+        });
+        if (res.data?.formattedNumber) {
+          allocatedNumber = res.data.formattedNumber;
+        }
+      }
+      if (!allocatedNumber) {
+        const year = new Date().getFullYear();
+        const existingSeqs = globalState.securityDeposits
+          .map((d) => {
+            const match = String(d.depositReceiptNumber || '').match(/(\d+)$/);
+            return match ? Number(match[1]) : 0;
+          })
+          .filter((n) => n > 0);
+        const nextNum = (existingSeqs.length > 0 ? Math.max(...existingSeqs) : 0) + 1;
+        allocatedNumber = `DR-${year}-${String(nextNum).padStart(5, '0')}`;
+      }
+    }
+
+    const prep = prepareDepositReceiptPrint(
+      allocatedNumber,
+      target.printedCount,
+      () => allocatedNumber
+    );
+
+    const updatedDeposit: SecurityDepositRecord = {
+      ...target,
+      depositReceiptNumber: prep.depositReceiptNumber,
+      printedCount: prep.printedCount,
+    };
+
+    globalState = {
+      ...globalState,
+      securityDeposits: globalState.securityDeposits.map((d) =>
+        d.id === depositId ? updatedDeposit : d
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.upsertDeposit(updatedDeposit).catch(console.warn);
+    }
+
+    return {
+      deposit: updatedDeposit,
+      ...prep,
+    };
+  };
+
   const resetVenueMockData = () => {
     const before = captureStoreSlices(['rentableUnits', 'rentalRenters', 'rentalBookings', 'securityDeposits']);
     const targetFacilityId = globalState.currentBranchId || 'branch_venue_main';
@@ -16612,6 +16971,11 @@ function createAtriumActions() {
     upsertScheduleEvent,
     deleteScheduleEvent,
     batchDeleteScheduleEvents,
+    openShopForMember,
+    clearPendingShopMember,
+    enrollMemberInClass,
+    confirmScheduleCoach,
+    duplicateScheduleWeek,
     createStaffMember,
     updateStaffMember,
     freezeStaffMember,
@@ -16707,6 +17071,7 @@ function createAtriumActions() {
     deleteRentalRenter,
     releaseSecurityDeposit,
     deductSecurityDeposit,
+    issueDepositReceiptPrint,
     resetVenueMockData,
     resetEduMockData,
     resetFreelanceMockData,
@@ -16881,6 +17246,7 @@ export function useAtriumStore() {
   const currentStaff = selectCurrentStaffFromState(state);
   const currentSales = selectCurrentSalesFromState(state);
   const currentSchedule = selectCurrentScheduleFromState(state);
+  const currentClassEnrollments = selectCurrentClassEnrollmentsFromState(state);
   const currentPlans = selectCurrentPlansFromState(state);
   const currentAppointments = selectCurrentAppointmentsFromState(state);
   const currentServices = selectCurrentServicesFromState(state);
@@ -16992,6 +17358,8 @@ export function useAtriumStore() {
     staff: currentStaff,
     sales: currentSales,
     schedule: currentSchedule,
+    classEnrollments: currentClassEnrollments,
+    pendingShopMemberId: state.pendingShopMemberId || null,
     plans: currentPlans,
     appointments: currentAppointments,
     servicesCatalog: currentServices,

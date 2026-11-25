@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "NODE_ENV=production vite build",
     "preview": "vite preview",
-    "test": "tsx --test src/utils/rules.test.ts src/utils/realEstateRules.test.ts src/utils/manufacturingRules.test.ts src/utils/legalRules.test.ts src/utils/logisticsRules.test.ts src/utils/contractorRules.test.ts src/utils/agriRules.test.ts src/utils/staffRules.test.ts src/utils/liquidButtons.test.ts src/utils/algerianPayroll.test.ts src/utils/businessConfig.test.ts",
+    "test": "tsx --test src/utils/rules.test.ts src/utils/realEstateRules.test.ts src/utils/manufacturingRules.test.ts src/utils/legalRules.test.ts src/utils/logisticsRules.test.ts src/utils/contractorRules.test.ts src/utils/agriRules.test.ts src/utils/staffRules.test.ts src/utils/liquidButtons.test.ts src/utils/algerianPayroll.test.ts src/utils/businessConfig.test.ts src/utils/step5Actions.test.ts",
     "test:atrium": "vitest run",
     "ci:guards": "node scripts/ci/phase1-guards.mjs",
     "clean": "rm -rf dist server.js",

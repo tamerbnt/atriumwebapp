@@ -23,6 +23,7 @@ import { LegalMatter, NotaryDeed } from '../../../types';
 import { useLegalData } from './legalData';
 import { LegalMatterModal } from './LegalMatterModal';
 import { NotaryDeedModal } from '../../modals/NotaryDeedModal';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -103,6 +104,7 @@ export const LegalMattersView: React.FC<any> = () => {
 
   const [selectedMatter, setSelectedMatter] = useState<LegalMatter | null>(null);
   const [selectedDeed, setSelectedDeed] = useState<NotaryDeed | null>(null);
+  const [deedToPrint, setDeedToPrint] = useState<NotaryDeed | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
 
@@ -519,14 +521,7 @@ export const LegalMattersView: React.FC<any> = () => {
         id: 'print_grosse',
         label: isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse',
         icon: <Printer className="w-[15px] h-[15px]" />,
-        onClick: () => {
-          showToast(
-            isAr
-              ? `جاري طباعة النسخة الرسمية للعقد ${d.repertoireNumber}`
-              : `Impression Grosse Authentique (${d.repertoireNumber})`,
-            'info'
-          );
-        },
+        onClick: () => setDeedToPrint(d),
       },
     ],
     [isAr]
@@ -558,14 +553,7 @@ export const LegalMattersView: React.FC<any> = () => {
         id: 'print_grosse',
         label: isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse',
         icon: <Printer className="w-3.5 h-3.5" />,
-        onClick: () => {
-          showToast(
-            isAr
-              ? `جاري طباعة النسخة الرسمية للعقد ${d.repertoireNumber}`
-              : `Impression Grosse Authentique (${d.repertoireNumber})`,
-            'info'
-          );
-        },
+        onClick: () => setDeedToPrint(d),
       },
     ],
     [isAr]
@@ -1129,14 +1117,7 @@ export const LegalMattersView: React.FC<any> = () => {
                 id: 'print_grosse',
                 label: isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse',
                 icon: <Printer size={14} />,
-                onClick: () => {
-                  showToast(
-                    isAr
-                      ? `جاري طباعة النسخة الرسمية للعقد ${d.repertoireNumber}`
-                      : `Impression Grosse Authentique (${d.repertoireNumber})`,
-                    'info'
-                  );
-                },
+                onClick: () => setDeedToPrint(d),
               },
             ]}
             emptyTitle={isAr ? 'لا توجد عقود مطابقة' : 'Aucun acte répertorié'}
@@ -1377,14 +1358,7 @@ export const LegalMattersView: React.FC<any> = () => {
                     label={isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse Authentique'}
                     icon={<Printer size={14} />}
                     tone="dark"
-                    onClick={() => {
-                      showToast(
-                        isAr
-                          ? 'جاري طباعة النسخة الرسمية للعقد'
-                          : "Impression de la Grosse d'Acte Authentique",
-                        'info'
-                      );
-                    }}
+                    onClick={() => setDeedToPrint(d)}
                   />
                 </InspectorSection>
               </>
@@ -1602,6 +1576,92 @@ export const LegalMattersView: React.FC<any> = () => {
         onClose={() => setIsNotaryModalOpen(false)}
         nextIndex={notaryDeeds.length + 1}
         onSaveDeed={addNotaryDeed}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(deedToPrint)}
+        onClose={() => setDeedToPrint(null)}
+        language={language}
+        format="a4"
+        title={isAr ? 'النسخة التنفيذية الرسمية للعقد' : 'Grosse Authentique — Extrait Notarié'}
+        subtitle={deedToPrint ? `${deedToPrint.repertoireNumber} · ${isAr && deedToPrint.titleAr ? deedToPrint.titleAr : deedToPrint.title}` : undefined}
+        pages={
+          deedToPrint
+            ? [
+                {
+                  id: deedToPrint.id,
+                  title: isAr
+                    ? `عقد توثيقي رسمي — ${deedToPrint.repertoireNumber}`
+                    : `GROSSE AUTHENTIQUE — Répertoire ${deedToPrint.repertoireNumber}`,
+                  subtitle: isAr && deedToPrint.titleAr ? deedToPrint.titleAr : deedToPrint.title,
+                  badgeText:
+                    deedToPrint.status === 'publie_conservation'
+                      ? 'Publié Conservation'
+                      : 'En instance publication',
+                  sections: [
+                    {
+                      heading: isAr ? 'أطراف العقد' : 'Parties Comparantes',
+                      rows: [
+                        {
+                          label: isAr ? 'البائع / المتنازل' : 'Vendeur / Cédant',
+                          value: `${deedToPrint.parties.vendorName} (NIN: ${deedToPrint.parties.vendorNin})`,
+                        },
+                        {
+                          label: isAr ? 'المشتري / المستفيد' : 'Acquéreur / Bénéficiaire',
+                          value: `${deedToPrint.parties.purchaserName} (NIN: ${deedToPrint.parties.purchaserNin})`,
+                        },
+                        {
+                          label: isAr ? 'الشهر العقاري' : 'Conservation Foncière',
+                          value: deedToPrint.conservationVolume
+                            ? `Vol. ${deedToPrint.conservationVolume} / N° ${deedToPrint.conservationNumber || '—'}`
+                            : 'En instance',
+                        },
+                        ...(deedToPrint.cadastralReference
+                          ? [
+                              {
+                                label: 'Cadastre',
+                                value: `${deedToPrint.cadastralReference.commune} · Sec ${deedToPrint.cadastralReference.section}`,
+                              },
+                            ]
+                          : []),
+                      ],
+                    },
+                    {
+                      heading: isAr ? 'التعريفة الرسمية (المرسوم 08-243)' : 'Décompte Légal (Décret 08-243)',
+                      rows: [
+                        {
+                          label: isAr ? 'قيمة المعاملة' : 'Valeur Transaction',
+                          value: formatMoney(deedToPrint.transactionValueDzd, language),
+                        },
+                        {
+                          label: isAr ? 'أتعاب التوثيق' : 'Honoraires HT',
+                          value: formatMoney(deedToPrint.financials.honorairesHtDzd, language),
+                        },
+                        {
+                          label: 'TVA (19%)',
+                          value: formatMoney(deedToPrint.financials.tvaAmountDzd, language),
+                        },
+                        {
+                          label: isAr ? 'حقوق التسجيل والشهر' : 'Enregistrement & Publicité',
+                          value: formatMoney(
+                            deedToPrint.financials.droitsEnregistrementDzd +
+                              deedToPrint.financials.droitsPubliciteDzd,
+                            language
+                          ),
+                        },
+                        {
+                          label: isAr ? 'إجمالي الوديعة' : 'Total Provision Due',
+                          value: formatMoney(deedToPrint.financials.totalProvisionClientDzd, language),
+                        },
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? 'الموثق الرئيسي (الختم والتوقيع)' : 'Le Notaire Titulaire (Sceau & Signature)',
+                  signatureRight: isAr ? 'توقيع الأطراف' : 'Signatures des Parties',
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

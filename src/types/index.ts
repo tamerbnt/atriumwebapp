@@ -520,6 +520,25 @@ export interface ScheduleEvent {
   capacity: number;
   enrolledCount: number;
   category: string;
+  coachConfirmed?: boolean;
+  coachConfirmedAt?: string;
+  coachConfirmedBy?: string;
+  version?: number;
+}
+
+export interface GymClassEnrollment {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  eventId: string;
+  memberId: string;
+  memberName: string;
+  status: 'enrolled' | 'waitlisted' | 'cancelled';
+  enrolledAt: string;
+  cancelledAt?: string;
+  notes?: string;
   version?: number;
 }
 
@@ -997,6 +1016,8 @@ export interface SecurityDepositRecord {
   paymentMethod: 'Cash' | 'Card' | 'Check';
   status: 'Held' | 'Released' | 'Deducted';
   deductionReason?: string;
+  depositReceiptNumber?: string;
+  printedCount?: number;
   collectedAt: string;
   releasedAt?: string;
   version?: number;
@@ -2594,6 +2615,9 @@ export interface RealEstateInspection {
   notes?: string;
   isSigned?: boolean;
   signatureSvgData?: string;
+  validatedBy?: string;
+  validatedAt?: string;
+  isLocked?: boolean;
   version?: number;
   createdAt?: string;
 }
@@ -2822,6 +2846,28 @@ export interface QualityInspectionRecord {
   certificateOfConformityGenerated: boolean;
   notes?: string;
   version?: number;
+}
+
+export interface MfgNcrRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ncrNumber: string;
+  orderId?: string;
+  qcInspectionId?: string;
+  ofNumber: string;
+  lotNumber?: string;
+  productName: string;
+  scrappedQuantity: number;
+  reason: string;
+  disposition: 'Scrapped' | 'Quarantined' | 'Rework';
+  status: 'Open' | 'Reviewed' | 'Closed';
+  cmupAdjustmentHeld: boolean;
+  notes?: string;
+  version?: number;
+  createdAt: string;
 }
 
 // ==========================================

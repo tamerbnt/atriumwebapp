@@ -19,6 +19,7 @@ import {
 } from '../../../services/store';
 import { registerUndoEntry } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { t } from '../../../utils/i18n';
 import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstateLease } from '../../../types';
@@ -598,11 +599,9 @@ export const RealEstateFinanceView: React.FC<any> = () => {
                 id: 'share',
                 label: isAr ? 'مشاركة الوصل' : 'Partager Reçu',
                 icon: <Share2 size={14} />,
-                onClick: () =>
-                  showToast(
-                    isAr ? `تم نسخ رابط الوصل للمستأجر ${l.tenantName}` : `Quittance électronique transmise à ${l.tenantName}`,
-                    'success'
-                  ),
+                disabled: true,
+                tooltip: t('feature_not_available_phase2', language),
+                onClick: () => {},
               },
             ];
           }}
@@ -681,11 +680,9 @@ export const RealEstateFinanceView: React.FC<any> = () => {
                       id: 'share',
                       label: isAr ? 'مشاركة' : 'Partager',
                       icon: <Share2 size={16} />,
-                      onClick: () =>
-                        showToast(
-                          isAr ? `تم نسخ رابط الوصل للمستأجر ${lease.tenantName}` : `Quittance électronique transmise à ${lease.tenantName}`,
-                          'success'
-                        ),
+                      disabled: true,
+                      tooltip: t('feature_not_available_phase2', language),
+                      onClick: () => {},
                     },
                   ]}
                 />

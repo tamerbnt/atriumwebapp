@@ -20,6 +20,7 @@ import {
 import { runUndoBatch } from '../../../services/undoEngine';
 import { CommercialDocument, CommercialDocType } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
@@ -678,10 +679,33 @@ export const TradingSalesView: React.FC = () => {
             label: isAr ? 'تصدير المستندات' : 'Exporter Sélection',
             icon: <Download size={13} />,
             onClick: (ids) => {
+              const resolved = resolveBatchSelection(Array.from(ids), sortedDocs, (d) => d.id, 1000);
+              if (resolved.selectedItems.length === 0) {
+                showToast({
+                  type: 'warning',
+                  title: isAr ? 'لا توجد مستندات' : 'Aucune sélection valide',
+                  message: isAr ? 'اختر مستنداً واحداً على الأقل للتصدير.' : 'Sélectionnez au moins une pièce commerciale.',
+                });
+                return;
+              }
+              const headers = ['N° Pièce', 'Type', 'Client', 'Date', 'Statut', 'Total HT', 'TVA', 'Total TTC'];
+              const rows = resolved.selectedItems.map((d) => [
+                d.docNumber,
+                d.type,
+                d.clientName,
+                d.date,
+                d.status,
+                d.totalHtFinal,
+                d.totalTva,
+                d.totalTtc,
+              ]);
+              downloadCsvSafe(`atrium-commercial-docs-selection-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
               showToast({
-                type: 'info',
-                title: 'Export commercial',
-                message: `${ids.size} pièces sélectionnées exportées.`,
+                type: 'success',
+                title: isAr ? 'تم التصدير' : 'Export commercial CSV',
+                message: isAr
+                  ? `تم تصدير ${resolved.selectedItems.length} مستنداً`
+                  : `${resolved.selectedItems.length} pièce(s) exportée(s).`,
               });
             },
           }}

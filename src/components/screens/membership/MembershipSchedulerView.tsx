@@ -17,6 +17,8 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentScheduleFromState,
+  selectCurrentClassEnrollmentsFromState,
+  selectCurrentMembersFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
   selectTerminologyFromState,
@@ -60,6 +62,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   const {
     account,
     schedule,
+    classEnrollments,
+    members,
     branches,
     currentBranch,
     terminology,
@@ -72,6 +76,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     (s) => ({
       account: s.account,
       schedule: selectCurrentScheduleFromState(s),
+      classEnrollments: selectCurrentClassEnrollmentsFromState(s),
+      members: selectCurrentMembersFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
       terminology: selectTerminologyFromState(s),
@@ -84,7 +90,14 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { retryCloudSync, upsertScheduleEvent, batchDeleteScheduleEvents } = useAtriumActions();
+  const {
+    retryCloudSync,
+    upsertScheduleEvent,
+    batchDeleteScheduleEvents,
+    enrollMemberInClass,
+    confirmScheduleCoach,
+    duplicateScheduleWeek,
+  } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -106,7 +119,31 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+  const [enrollModalEvent, setEnrollModalEvent] = useState<ScheduleEvent | null>(null);
+  const [enrollMemberId, setEnrollMemberId] = useState<string>('');
+  const [isDuplicateWeekOpen, setIsDuplicateWeekOpen] = useState(false);
+  const [duplicateTargetIds, setDuplicateTargetIds] = useState<string[]>([]);
+  const [duplicateDayOffset, setDuplicateDayOffset] = useState<number>(1);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
+  const resolvedSelectedEvent = useMemo(
+    () => (selectedEvent ? allScheduleEvents.find((ev) => ev.id === selectedEvent.id) || selectedEvent : null),
+    [selectedEvent, allScheduleEvents]
+  );
+
+  const openEnrollModal = useCallback(
+    (ev: ScheduleEvent) => {
+      setEnrollModalEvent(ev);
+      const enrolledMemberIds = new Set(
+        classEnrollments
+          .filter((ce) => ce.eventId === ev.id && ce.status !== 'cancelled')
+          .map((ce) => ce.memberId)
+      );
+      const firstCandidate = members.find((m) => !enrolledMemberIds.has(m.id)) || members[0];
+      setEnrollMemberId(firstCandidate?.id || '');
+    },
+    [classEnrollments, members]
+  );
 
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(() => new Set());
   const [pinnedEventIds, setPinnedEventIds] = useState<Set<string>>(() => new Set());
@@ -508,12 +545,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         id: 'enroll',
         label: isAr ? 'تسجيل حضور' : isEn ? 'Enroll +1' : 'Inscrire +1',
         icon: <UserPlus className="w-[15px] h-[15px]" />,
-        onClick: () =>
-          showToast?.({
-            type: 'success',
-            title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
-            message: `${ev.title} (+1)`,
-          }),
+        onClick: () => openEnrollModal(ev),
       },
       {
         id: 'view',
@@ -532,7 +564,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         onClick: () => handleDeleteEvent(ev),
       },
     ],
-    [isAr, isEn, handleDeleteEvent]
+    [isAr, isEn, handleDeleteEvent, openEnrollModal]
   );
 
   const getDetailActions = useCallback(
@@ -547,15 +579,10 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         id: 'enroll',
         label: isAr ? 'تسجيل مشترك' : isEn ? 'Enroll Member' : 'Inscrire adhérent',
         icon: <UserPlus className="w-3.5 h-3.5 text-[#096b40]" />,
-        onClick: () =>
-          showToast?.({
-            type: 'success',
-            title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
-            message: `${ev.title} (+1)`,
-          }),
+        onClick: () => openEnrollModal(ev),
       },
     ],
-    [isAr, isEn]
+    [isAr, isEn, openEnrollModal]
   );
 
   if (showSkeleton && (allScheduleEvents.length === 0 || networkMode === 'force_skeleton')) {
@@ -828,11 +855,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             label: isAr ? 'نسخ للأسبوع المقبل' : 'Dupliquer semaine',
             icon: <Plus size={13} />,
             onClick: (ids) => {
-              showToast?.({
-                type: 'success',
-                title: 'Planification',
-                message: `${ids.size} sessions dupliquées.`,
-              });
+              setDuplicateTargetIds(Array.from(ids));
+              setIsDuplicateWeekOpen(true);
             },
             variant: 'primary',
           }}
@@ -859,19 +883,19 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
       />
 
       <KineticSlideOverInspector<ScheduleEvent>
-        isOpen={selectedEvent !== null}
-        item={selectedEvent}
+        isOpen={resolvedSelectedEvent !== null}
+        item={resolvedSelectedEvent}
         allItems={sortedCollectionEvents}
         keyExtractor={(e) => e.id}
         openerElement={drawerOpenerEl}
         language={language}
-        title={selectedEvent?.title || ''}
+        title={resolvedSelectedEvent?.title || ''}
         subtitle={
-          selectedEvent
-            ? `${getDayName(selectedEvent.dayOfWeek)} · ${selectedEvent.startTime} - ${selectedEvent.endTime}`
+          resolvedSelectedEvent
+            ? `${getDayName(resolvedSelectedEvent.dayOfWeek)} · ${resolvedSelectedEvent.startTime} - ${resolvedSelectedEvent.endTime}`
             : undefined
         }
-        avatarText={selectedEvent ? selectedEvent.title.slice(0, 2).toUpperCase() : undefined}
+        avatarText={resolvedSelectedEvent ? resolvedSelectedEvent.title.slice(0, 2).toUpperCase() : undefined}
         categoryLabel={selectedEvent?.category}
         branchName={
           selectedEvent
@@ -949,13 +973,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                     label={isAr ? 'تسجيل مشترك في الحصة' : isEn ? 'Enroll Member in Session' : 'Inscrire un adhérent'}
                     icon={<UserPlus className="w-4 h-4" />}
                     tone="accent"
-                    onClick={() =>
-                      showToast?.({
-                        type: 'success',
-                        title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
-                        message: `${ev.title} (+1)`,
-                      })
-                    }
+                    onClick={() => openEnrollModal(ev)}
                   />
                 </InspectorSection>
               </>
@@ -996,12 +1014,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                       label: isAr ? 'تسجيل مشترك' : isEn ? 'Enroll +1' : 'Inscrire adhérent',
                       icon: <UserPlus className="w-[18px] h-[18px]" />,
                       primary: true,
-                      onClick: () =>
-                        showToast?.({
-                          type: 'success',
-                          title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
-                          message: `${ev.title} (+1)`,
-                        }),
+                      onClick: () => openEnrollModal(ev),
                     },
                     {
                       id: 'duplicate',
@@ -1029,14 +1042,14 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                     },
                     {
                       id: 'confirm',
-                      label: isAr ? 'تأكيد الحصة' : isEn ? 'Confirm' : 'Confirmer coach',
+                      label: ev.coachConfirmed
+                        ? t('step5_coach_confirmed_badge', language)
+                        : t('step5_confirm_coach_action', language),
                       icon: <CheckCircle2 className="w-[18px] h-[18px] text-[#096b40]" />,
-                      onClick: () =>
-                        showToast?.({
-                          type: 'success',
-                          title: isAr ? 'تم التأكيد' : 'Coach confirmé',
-                          message: ev.trainerOrStaff,
-                        }),
+                      disabled: Boolean(ev.coachConfirmed),
+                      onClick: () => {
+                        confirmScheduleCoach(ev.id);
+                      },
                     },
                   ]}
                 />
@@ -1160,6 +1173,150 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                   ? 'Enregistrer le créneau'
                   : 'Save Schedule'}
               </span>
+            </AtriumButton>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Class Enrollment Modal (3.4) */}
+      <Modal
+        isOpen={enrollModalEvent !== null}
+        onClose={() => setEnrollModalEvent(null)}
+        title={t('step5_enroll_member_title', language)}
+      >
+        {enrollModalEvent && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-[#F7F3EE] dark:bg-[#191715] p-3.5 text-xs space-y-1">
+              <div className="font-semibold text-[var(--text-1)] dark:text-white">
+                {enrollModalEvent.title} · {getDayName(enrollModalEvent.dayOfWeek)} {enrollModalEvent.startTime}-{enrollModalEvent.endTime}
+              </div>
+              <div className="text-[var(--text-2)] dark:text-white/65 tabular-nums">
+                {enrollModalEvent.enrolledCount} / {enrollModalEvent.capacity}{' '}
+                {isAr ? 'أماكن محجوزة' : isEn ? 'enrolled' : 'inscrits'}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-1)] dark:text-white">
+                {isAr ? 'اختر المشترك' : isEn ? 'Select Member' : 'Choisir un adhérent'}
+              </label>
+              <select
+                value={enrollMemberId}
+                onChange={(e) => setEnrollMemberId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-white dark:bg-[#22201E] border border-black/15 dark:border-white/15 text-sm text-black dark:text-white"
+              >
+                {members.length === 0 ? (
+                  <option value="">{isAr ? 'لا يوجد مشتركين' : isEn ? 'No members available' : 'Aucun adhérent disponible'}</option>
+                ) : (
+                  members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.fullName} ({m.phoneNumber})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            {classEnrollments.filter((ce) => ce.eventId === enrollModalEvent.id && ce.status !== 'cancelled').length > 0 && (
+              <div className="space-y-1.5">
+                <span className="block text-xs font-semibold text-[var(--text-2)] dark:text-white/70">
+                  {isAr ? 'المسجلون في هذه الحصة' : isEn ? 'Current Roster' : 'Liste des inscrits'}
+                </span>
+                <div className="max-h-36 overflow-y-auto divide-y divide-black/[0.06] dark:divide-white/[0.08] rounded-xl border border-black/[0.08] dark:border-white/[0.08]">
+                  {classEnrollments
+                    .filter((ce) => ce.eventId === enrollModalEvent.id && ce.status !== 'cancelled')
+                    .map((ce) => {
+                      const mem = members.find((m) => m.id === ce.memberId);
+                      return (
+                        <div key={ce.id} className="px-3 py-2 flex items-center justify-between text-xs">
+                          <span className="font-medium text-black dark:text-white">
+                            {mem ? mem.fullName : ce.memberName || ce.memberId}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${ce.status === 'waitlisted' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {ce.status === 'waitlisted'
+                              ? isAr ? 'قائمة انتظار' : isEn ? 'Waitlist' : 'Liste d’attente'
+                              : isAr ? 'مؤكد' : isEn ? 'Enrolled' : 'Inscrit'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <AtriumButton type="button" variant="ghost" onClick={() => setEnrollModalEvent(null)}>
+                {t('action_cancel', language)}
+              </AtriumButton>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                disabled={!enrollMemberId}
+                onClick={() => {
+                  const res = enrollMemberInClass(enrollModalEvent.id, enrollMemberId);
+                  if (res.success) setEnrollModalEvent(null);
+                }}
+              >
+                {isAr ? 'تأكيد التسجيل' : isEn ? 'Confirm Enrollment' : 'Valider inscription'}
+              </AtriumButton>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Week Duplication Modal (3.6) */}
+      <Modal
+        isOpen={isDuplicateWeekOpen}
+        onClose={() => setIsDuplicateWeekOpen(false)}
+        title={t('step5_duplicate_week_title', language)}
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-[var(--text-2)] dark:text-white/75">
+            {duplicateTargetIds.length > 0
+              ? isAr
+                ? `سيتم نسخ ${duplicateTargetIds.length} حصص محددة إلى الجدول الجديد مع التحقق من التعارضات.`
+                : isEn
+                ? `${duplicateTargetIds.length} selected sessions will be duplicated while checking coach/room conflicts.`
+                : `${duplicateTargetIds.length} créneaux sélectionnés seront dupliqués avec contrôle des conflits salle/coach.`
+              : isAr
+              ? `سيتم نسخ جميع حصص الفرع (${allScheduleEvents.length}) مع التحقق من التعارضات.`
+              : isEn
+              ? `All ${allScheduleEvents.length} branch sessions will be duplicated while checking conflicts.`
+              : `Tous les créneaux de la branche (${allScheduleEvents.length}) seront dupliqués.`}
+          </p>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-1)] dark:text-white">
+              {isAr ? 'إزاحة اليوم' : isEn ? 'Day Offset' : 'Décalage de jour'}
+            </label>
+            <select
+              value={duplicateDayOffset}
+              onChange={(e) => setDuplicateDayOffset(Number(e.target.value))}
+              className="w-full h-10 px-3 rounded-xl bg-white dark:bg-[#22201E] border border-black/15 dark:border-white/15 text-sm text-black dark:text-white"
+            >
+              <option value={0}>{isAr ? 'نفس الأيام (تحديث أسبوعي)' : isEn ? 'Same week days (+7d copy)' : 'Mêmes jours (copie semaine suivante)'}</option>
+              <option value={1}>{isAr ? '+1 يوم (إزاحة يوم واحد)' : isEn ? '+1 day shift' : '+1 jour (décalage)'}</option>
+              <option value={2}>{isAr ? '+2 أيام' : isEn ? '+2 days shift' : '+2 jours (décalage)'}</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <AtriumButton type="button" variant="ghost" onClick={() => setIsDuplicateWeekOpen(false)}>
+              {t('action_cancel', language)}
+            </AtriumButton>
+            <AtriumButton
+              type="button"
+              variant="primary"
+              onClick={() => {
+                duplicateScheduleWeek({
+                  selectedIds: duplicateTargetIds.length > 0 ? duplicateTargetIds : undefined,
+                  dayOffset: duplicateDayOffset,
+                });
+                setSelectedEventIds(new Set());
+                setIsDuplicateWeekOpen(false);
+              }}
+            >
+              {isAr ? 'تنفيذ النسخ' : isEn ? 'Duplicate Sessions' : 'Lancer la duplication'}
             </AtriumButton>
           </div>
         </div>

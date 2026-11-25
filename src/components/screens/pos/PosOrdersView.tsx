@@ -58,6 +58,8 @@ import {
   downloadCsvSafe,
   useRetainedModalValue,
 } from '../../ui/kinetic';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import { resolveBatchSelection } from '../../../utils/step5Actions';
 
 const getInitials2 = (name: string): string => {
   const parts = (name || '').trim().split(/\s+/).filter(Boolean);
@@ -118,6 +120,10 @@ export const PosOrdersView: React.FC = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const [selectedSaleIds, setSelectedSaleIds] = useState<Set<string>>(() => new Set<string>());
+  const [batchPrintState, setBatchPrintState] = useState<{
+    pages: PrintSheetPage[];
+    warning?: string;
+  } | null>(null);
   const [pinnedSaleIds, setPinnedSaleIds] = useState<Set<string>>(() => new Set<string>());
   const [selectedParkedIds, setSelectedParkedIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedParkedIds, setPinnedParkedIds] = useState<Set<string>>(() => new Set<string>());
@@ -958,14 +964,93 @@ export const PosOrdersView: React.FC = () => {
             selectedIds={selectedSaleIds}
             onSelectionChange={setSelectedSaleIds}
             bulkSecondaryAction={{
-              label: 'Imprimer reçus',
+              label: isAr ? 'طباعة الإيصالات' : isEn ? 'Print Receipts' : 'Imprimer reçus',
               icon: <Printer size={13} />,
               onClick: (ids) => {
-                showToast({
-                  type: 'info',
-                  title: 'Impression en lot',
-                  message: `${ids.size} reçus envoyés à l'imprimante thermique.`,
-                });
+                const resolved = resolveBatchSelection(
+                  Array.from(ids),
+                  sortedSales,
+                  (sale) => sale.id,
+                  1000
+                );
+                if (resolved.selectedItems.length === 0) {
+                  showToast({
+                    type: 'warning',
+                    title: isAr ? 'لا توجد إيصالات' : isEn ? 'No receipts selected' : 'Aucun ticket sélectionné',
+                    message:
+                      isAr
+                        ? 'اختر عملية بيع صالحة واحدة على الأقل للطباعة.'
+                        : isEn
+                        ? 'Select at least one valid sale receipt to print.'
+                        : 'Sélectionnez au moins un ticket valide pour lancer l’impression.',
+                  });
+                  return;
+                }
+                const headerTitle = receiptConfig?.headerTitle || currentBranch?.name || 'ATRIUM POS';
+                const pages: PrintSheetPage[] = resolved.selectedItems.map((sale) => ({
+                  id: sale.id,
+                  title: `${headerTitle} · #${sale.id.slice(0, 8).toUpperCase()}`,
+                  subtitle: new Date(sale.createdAt).toLocaleString(),
+                  badgeText: sale.paymentMethod,
+                  watermarkText:
+                    sale.status === 'Refunded'
+                      ? isAr
+                        ? 'مرتجع'
+                        : isEn
+                        ? 'REFUNDED'
+                        : 'AVOIR / REMBOURSÉ'
+                      : sale.status === 'Voided'
+                      ? isAr
+                        ? 'ملغى'
+                        : isEn
+                        ? 'VOIDED'
+                        : 'ANNULÉ'
+                      : undefined,
+                  sections: [
+                    {
+                      rows: [
+                        {
+                          label: isAr ? 'العميل' : isEn ? 'Customer' : 'Client',
+                          value: (sale as any).customerName || (isAr ? 'عميل عابر' : 'Client comptoir'),
+                        },
+                        {
+                          label: isAr ? 'الدفع' : isEn ? 'Payment' : 'Règlement',
+                          value: sale.paymentMethod,
+                        },
+                        {
+                          label: isAr ? 'المبلغ الإجمالي' : isEn ? 'Total' : 'Total TTC',
+                          value: formatMoney(sale.totalAmount),
+                        },
+                      ],
+                    },
+                  ],
+                  tableHeaders: [
+                    isAr ? 'الصنف' : isEn ? 'Item' : 'Article',
+                    isAr ? 'الكمية' : isEn ? 'Qty' : 'Qté',
+                    isAr ? 'المجموع' : isEn ? 'Total' : 'Total',
+                  ],
+                  tableRows: (sale.items || []).map((it) => [
+                    it.productName,
+                    String(it.quantity),
+                    formatMoney(it.unitPrice * it.quantity),
+                  ]),
+                  footerNote: receiptConfig?.footerMessage || undefined,
+                }));
+                let warning: string | undefined;
+                if (resolved.truncatedCount > 0) {
+                  warning = isAr
+                    ? `تم تحديد الحد الأقصى (1000 وصل). تم استبعاد ${resolved.truncatedCount} وصل.`
+                    : isEn
+                    ? `Batch capped at 1000 receipts (${resolved.truncatedCount} excluded).`
+                    : `Impression plafonnée à 1000 tickets (${resolved.truncatedCount} exclus).`;
+                } else if (resolved.missingIds.length > 0) {
+                  warning = isAr
+                    ? `تعذر العثور على ${resolved.missingIds.length} سجلات محذوفة.`
+                    : isEn
+                    ? `${resolved.missingIds.length} deleted/missing receipt(s) skipped.`
+                    : `${resolved.missingIds.length} ticket(s) introuvable(s) ignoré(s).`;
+                }
+                setBatchPrintState({ pages, warning });
               },
               variant: 'primary',
             }}
@@ -1524,6 +1609,17 @@ export const PosOrdersView: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <PrintSheetModal
+        isOpen={Boolean(batchPrintState)}
+        onClose={() => setBatchPrintState(null)}
+        language={language}
+        format="80mm"
+        title={isAr ? 'طباعة دفعة الإيصالات (80 مم)' : isEn ? 'Batch Receipt Print (80mm)' : 'Impression en lot des tickets (80mm)'}
+        subtitle={`${batchPrintState?.pages.length || 0} ${isAr ? 'وصل' : isEn ? 'receipts' : 'tickets'}`}
+        pages={batchPrintState?.pages || []}
+        warningBanner={batchPrintState?.warning}
+      />
     </div>
   );
 };

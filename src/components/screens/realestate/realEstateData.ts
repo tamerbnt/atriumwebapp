@@ -1468,6 +1468,44 @@ export const useRealEstateData = () => {
     });
   };
 
+  const validateInspection = (inspectionId: string) => {
+    const existing = latestRef.current.inspections.find((i) => i.id === inspectionId);
+    if (!existing || existing.isLocked) return;
+    const prevSnap = cloneSnapshot(existing);
+    const updated: RealEstateInspection = withBranch({
+      ...existing,
+      isSigned: true,
+      isLocked: true,
+      validatedAt: new Date().toISOString(),
+      validatedBy: currentStaffId || existing.staffId,
+    });
+    const nextSnap = cloneSnapshot(updated);
+    setInspections((prev) => prev.map((i) => (i.id === inspectionId ? updated : i)));
+    void realEstateService.upsertInspection(updated).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: updated.propertyTitle,
+      summary: pickLocalizedText(language, {
+        fr: `PV ${updated.propertyTitle} validé et verrouillé`,
+        en: `Inspection ${updated.propertyTitle} validated and locked`,
+        ar: `تمت مصادقة وقفل معاينة ${updated.propertyTitle}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setInspections((prev) => prev.map((i) => (i.id === prevCopy.id ? prevCopy : i)));
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setInspections((prev) => prev.map((i) => (i.id === nextCopy.id ? nextCopy : i)));
+        void realEstateService.upsertInspection(nextCopy).catch(() => {});
+      },
+    });
+  };
+
   const addBuyer = (buyer: BuyerDemandProfile) => {
     const scoped = withBranch(buyer);
     const snap = cloneSnapshot(scoped);
@@ -1562,6 +1600,7 @@ export const useRealEstateData = () => {
     addQuittance,
     addVisit,
     addInspection,
+    validateInspection,
     addBuyer,
     resetToDemoSeeds,
   };

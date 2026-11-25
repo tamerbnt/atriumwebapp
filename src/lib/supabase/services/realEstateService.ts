@@ -583,7 +583,7 @@ export const realEstateService = {
         let query = (client as any)
           .from('re_inspections')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, lease_id, property_title, inspection_type, inspection_date, inspector_name, overall_condition, notes, version, created_at'
+            'id, account_id, business_id, branch_id, staff_id, lease_id, property_title, inspection_type, inspection_date, inspector_name, overall_condition, notes, validated_by, validated_at, is_locked, version, created_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -621,6 +621,9 @@ export const realEstateService = {
           notes: plain || undefined,
           isSigned: meta.isSigned,
           signatureSvgData: meta.signatureSvgData,
+          validatedBy: row.validated_by || meta.validatedBy || undefined,
+          validatedAt: row.validated_at || meta.validatedAt || undefined,
+          isLocked: Boolean(row.is_locked ?? meta.isLocked),
           version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
@@ -647,6 +650,9 @@ export const realEstateService = {
       inspector_name: insp.inspectorName || null,
       checklist: insp.meterReadings ? [insp.meterReadings] : [],
       overall_condition: insp.generalCondition || 'Good',
+      validated_by: insp.validatedBy ? toValidUuid(insp.validatedBy) : null,
+      validated_at: insp.validatedAt || null,
+      is_locked: Boolean(insp.isLocked),
       notes: packMeta(insp.observations || insp.notes, {
         leaseId: insp.leaseId,
         tenantName: insp.tenantName,
@@ -660,6 +666,9 @@ export const realEstateService = {
         keysDeliveredCount: insp.keysDeliveredCount,
         isSigned: insp.isSigned,
         signatureSvgData: insp.signatureSvgData,
+        validatedBy: insp.validatedBy,
+        validatedAt: insp.validatedAt,
+        isLocked: Boolean(insp.isLocked),
       }),
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('re_inspections', payload, {

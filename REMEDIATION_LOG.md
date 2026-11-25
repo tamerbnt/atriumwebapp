@@ -348,6 +348,44 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - `legal_accounting` + `secretaire_caisse` → `Filing` renders `<LegalVaultView />` with `"Filing-only scope:"` banner, displays `DEP-2026-101`, and excludes `DOC-2026-999` (`avocat` `Confidential`).
   - `pos_inventory` + `staff` → `Settings` renders `<AccessRestrictedView />`, and `Return Home` navigates cleanly to Home with **`0` console errors / `0` uncaught page errors**.
 
+---
+
+## Step 5 — Toast-Only Stubs (`3.1`–`3.13` & Guard 1 Full Sweep)
+
+- **Shared Infrastructure & Pure Helpers**:
+  - `src/utils/step5Actions.ts` + `src/utils/step5Actions.test.ts`: Added pure helpers `resolveBatchSelection` (`0`, deleted IDs, `1000` print cap / `5000` CSV cap), `evaluateClassEnrollment` (capacity + waitlist + duplicate check), `planWeekDuplication` (room/coach overlap conflict detection), `prepareDepositReceiptPrint` (`deposit_receipt` sequence + `printedCount > 1` `DUPLICATA` trigger), `isInspectionEditable`, `buildRealEstateInspectionShareText` / `buildRealEstateVisitSlipShareText`, and `buildScrapNcrArtifacts` (`cmupAdjustmentHeld: true`).
+  - `src/components/modals/PrintSheetModal.tsx`: Unified print sheet preview (`a4` / `80mm` / `label`), `dir={isRtl ? 'rtl' : 'ltr'}`, watermark (`DUPLICATA` / `ANNULÉ` / `REMBOURSÉ`), plain-text clipboard fallback, and CSV callback.
+  - `src/components/modals/ShareArtifactModal.tsx`: Real Clipboard + `navigator.share()` + `wa.me` share modal with optional print-to-PDF handoff (zero `window.open()` or fabricated share URLs).
+  - `src/lib/supabase/migrations` & `src/services/store.ts` / `*Data.ts`: Persisted `gym_class_enrollments`, `gym_schedule_events`, `rental_security_deposits` (`deposit_receipt_number`, `printed_count`), `re_inspections` (`is_locked`, `validated_at`, `validated_by_staff_id`), and `mfg_ncr_records` (`cmup_adjustment_held = true`) with offline queue priority registration.
+
+| Item | File(s) | Status | Implementation Summary |
+|---|---|---|---|
+| `3.1`–`3.2` Collect balance / New invoice | `src/components/screens/membership/MemberSlideOverInspector.tsx` | **DEFERRED** | Disabled buttons + localized tooltip `t('feature_not_available_phase2', locale)` |
+| `3.3` New sale from Member drawer | `MemberSlideOverInspector.tsx`, `MembershipShopView.tsx`, `src/services/store.ts` | **DONE** | Closes inspector, navigates to POS Shop (`openShopForMember`), pre-binds member into cart checkout |
+| `3.4` Enroll member in class | `src/components/screens/membership/MembershipSchedulerView.tsx` | **DONE** | Real enrollment modal (`enrollMemberInClass`) + live session roster + waitlist/duplicate validation |
+| `3.5` Confirm coach | `src/components/screens/membership/MembershipSchedulerView.tsx` | **DONE** | `confirmScheduleCoach` store mutation + confirmed status badge |
+| `3.6` Duplicate schedule week | `src/components/screens/membership/MembershipSchedulerView.tsx` | **DONE** | Real week-duplication modal with day offset + room/coach conflict feedback |
+| `3.7` POS batch print receipts | `src/components/screens/pos/PosOrdersView.tsx` | **DONE** | `PrintSheetModal` (`80mm`) over `resolveBatchSelection(..., 1000)` with Voided/Refunded watermarks |
+| `3.8` Education attendance sheets | `src/components/screens/education/EducationTimetableView.tsx` | **DONE** | `PrintSheetModal` (`a4`) generating printable cohort attendance sheets from live rosters |
+| `3.9` Venue deposit receipt | `src/components/screens/venue/VenueFinanceView.tsx` | **DONE** | Sequential `issueDepositReceiptPrint()` (`deposit_receipt`) + `printed_count` + `DUPLICATA` watermark |
+| `3.10` Validate real estate inspection | `src/components/screens/realestate/RealEstateInspectionsView.tsx` | **DONE** | `validateInspection(insp.id)` sets `isLocked: true` + disables further validation/edits |
+| `3.11` Share inspection / GPS slip | `src/components/screens/realestate/RealEstateInspectionsView.tsx` | **DONE** | Wired to `ShareArtifactModal` (Clipboard / Web Share / `wa.me`) and `PrintSheetModal` (`a4`) |
+| `3.12` Manufacturing Scrap & NCR | `src/components/screens/manufacturing/ManufacturingQcView.tsx` | **DONE** | Scrap + NCR modal (`recordScrapWithNcr`) sets `Scrapped` + `cmupAdjustmentHeld: true`; zero stock/WIP/CMUP mutation |
+| `3.13` Trading bulk CSV export | `TradingSalesView.tsx`, `TradingDirectoryView.tsx` | **DONE** | Wired to `resolveBatchSelection` + `downloadCsvSafe` |
+| Unbacked Reminders / Transfers / SMS / Links | `MembershipFinanceView.tsx`, `RealEstateFinanceView.tsx`, `AgricultureWholesaleView.tsx`, `LogisticsCodView.tsx`, `LogisticsScannerView.tsx`, `ContractorDailyLogsView.tsx`, `MedicalBillingView.tsx` | **DEFERRED** | Disabled payment reminders (`Relancer`), RE `Partager Reçu`, Agri tele-declaration link, Logistics SMS/tracking share, Contractor HSE audit, and Medical practitioner payout (`Émettre Règlement`) with `disabled` + `t('feature_not_available_phase2', language)` |
+| Legitimate Print / Export / State Mutations | `AutoGarageBillingView.tsx`, `AutoGaragePartsView.tsx`, `ContractorDailyLogsView.tsx`, `LegalMattersView.tsx`, `LegalTrustView.tsx`, `LogisticsCodView.tsx`, `LogisticsScannerView.tsx`, `LogisticsShipmentsView.tsx`, `RealEstateMandatesView.tsx`, `MedicalBillingView.tsx`, `MedicalPrescriptionsView.tsx`, `MedicalQueueView.tsx` | **DONE** | Wired Garage fleet statement & Z-close receipt (`closeCashRegisterZ`), Garage bulk parts restock modal (`updatePart`), Contractor PV `PrintSheetModal` & fuel anomaly diagnostic modal, Legal Grosse & CARPA `PrintSheetModal`, Logistics COD 80mm receipt & AWB thermal label & bulk status modal (`updateShipmentStatus`), Mandate `PrintSheetModal`, Medical CNAS `PrintSheetModal`, Prescription renewal (`addPrescription`), and Waiting Queue 80mm ticket |
+
+- **CI Guard Ratchet (`scripts/ci/phase1-guards-baseline.json`)**: Lowered `showToastOnly` from `66` → **`0`** (`0` forbidden literals, `0` unregistered `localStorage` keys, `0` FR/EN/AR i18n asymmetry; `npm run ci:guards -- --strict` passes cleanly).
+- **Step 5 Final Verification Counts (Observed After Final Code Edit)**:
+  - **`npx tsc --noEmit` / `lint_applet`**: **0 errors** (PASS).
+  - **`npm run build` / `compile_applet`**: **0 errors** (PASS).
+  - **`npm test` (`tsx --test`)**: **108 / 108 passed** (4 suites, incl. `src/utils/step5Actions.test.ts` 6/6).
+  - **`npm run test:atrium` (`vitest run`)**: **33 / 33 files, 274 / 274 tests passed** (incl. `src/atrium/__tests__/step5Workflows.test.tsx` 4/4).
+  - **`npm run ci:guards -- --strict`**: **0 total findings** (`showToastOnly: 0`, `forbiddenLiterals: 0`, `unregisteredStorageKeys: 0`, `i18nAsymmetry: 0`).
+  - **Live Browser Verification (`playwright-cli` on `http://localhost:3000`, `1440×900`)**: Verified workspace launch, `Schedule` session creation (`Morning Workout`), `Enroll Member in Session` dropdown (`Amira Cherif`), enrollment confirmation (`1 / 20`, `Roster` check-in update), and **`0` console errors / `0` console warnings**.
+  - **`5.11` Orphans**: **Zero** files deleted (awaiting explicit approval).
+
+
 
 
 

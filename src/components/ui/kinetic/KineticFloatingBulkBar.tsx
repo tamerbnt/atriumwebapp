@@ -10,6 +10,8 @@ export interface KineticBulkAction {
   icon?: React.ReactNode;
   onClick: () => void;
   tone?: 'default' | 'danger' | 'accent';
+  disabled?: boolean;
+  tooltip?: string;
 }
 
 export interface KineticFloatingBulkBarProps {
@@ -116,14 +118,18 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
           key={act.id}
           type="button"
           data-no-liquid="true"
+          disabled={act.disabled}
+          title={act.tooltip || act.label}
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={act.onClick}
-          className={`h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border-0 rounded-full text-[#F4EDE6] flex items-center gap-[var(--btn-icon-gap,8px)] t-btn transition-colors cursor-pointer whitespace-nowrap ${
-            act.tone === 'danger'
-              ? 'bg-[#F4EDE6]/12 hover:bg-[var(--brand-fill)] hover:text-white'
+          className={`h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border-0 rounded-full text-[#F4EDE6] flex items-center gap-[var(--btn-icon-gap,8px)] t-btn transition-colors whitespace-nowrap disabled:opacity-45 disabled:cursor-not-allowed ${
+            act.disabled
+              ? 'bg-[#F4EDE6]/10 cursor-not-allowed'
+              : act.tone === 'danger'
+              ? 'bg-[#F4EDE6]/12 hover:bg-[var(--brand-fill)] hover:text-white cursor-pointer'
               : act.tone === 'accent'
-              ? 'bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white'
-              : 'bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25'
+              ? 'bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white cursor-pointer'
+              : 'bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 cursor-pointer'
           }`}
         >
           {act.icon}

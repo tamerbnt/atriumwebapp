@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   ShoppingBag,
   Plus,
@@ -12,12 +12,15 @@ import {
   Eye,
   Copy,
   Package,
+  UserCheck,
+  X,
 } from 'lucide-react';
 import {
   useAtriumSelector,
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentProductsFromState,
+  selectCurrentMembersFromState,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
@@ -65,6 +68,8 @@ interface CartItem {
 export const MembershipShopView: React.FC = React.memo(() => {
   const {
     products,
+    members,
+    pendingShopMemberId,
     branches,
     currentBranch,
     language,
@@ -75,6 +80,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
   } = useAtriumSelector(
     (s) => ({
       products: selectCurrentProductsFromState(s),
+      members: selectCurrentMembersFromState(s),
+      pendingShopMemberId: s.pendingShopMemberId || null,
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
@@ -86,7 +93,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { processSale, retryCloudSync } = useAtriumActions();
+  const { processSale, clearPendingShopMember, retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -103,6 +110,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [boundMemberId, setBoundMemberId] = useState<string>(() => pendingShopMemberId || '');
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card'>('Cash');
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set());
   const [pinnedProductIds, setPinnedProductIds] = useState<Set<string>>(() => new Set());
@@ -110,6 +118,18 @@ export const MembershipShopView: React.FC = React.memo(() => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  useEffect(() => {
+    if (pendingShopMemberId) {
+      setBoundMemberId(pendingShopMemberId);
+      clearPendingShopMember();
+    }
+  }, [pendingShopMemberId, clearPendingShopMember]);
+
+  const boundMember = useMemo(
+    () => members.find((m) => m.id === boundMemberId) || null,
+    [members, boundMemberId]
+  );
 
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -248,9 +268,15 @@ export const MembershipShopView: React.FC = React.memo(() => {
       quantity: item.quantity,
       discount: item.discount,
     }));
-    processSale(saleItems, paymentMethod);
+    processSale(
+      saleItems,
+      paymentMethod,
+      boundMember?.id,
+      boundMember ? `${isAr ? 'مبيعات المشترك' : 'Vente adhérent'}: ${boundMember.fullName}` : undefined
+    );
     setCart([]);
-  }, [cart, processSale, paymentMethod]);
+    setBoundMemberId('');
+  }, [cart, processSale, paymentMethod, boundMember, isAr]);
 
   const handleResetFilters = useCallback(() => {
     setSelectedCategory('All');
@@ -709,6 +735,42 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   {isAr ? 'تفريغ' : isEn ? 'Clear' : 'Vider'}
                 </button>
               )}
+            </div>
+
+            <div className="px-4 py-2.5 border-b border-black/[0.045] dark:border-white/[0.06] bg-[#F7F3EE] dark:bg-[#1F1D1B]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 t-cap font-semibold text-black/70 dark:text-white/75">
+                  <UserCheck size={13} className="text-[#096b40] dark:text-[#5BE3A3]" />
+                  <span>{isAr ? 'المشترك:' : isEn ? 'Member:' : 'Adhérent :'}</span>
+                </span>
+                {boundMember ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] t-small font-semibold max-w-[190px]">
+                    <span className="truncate">{boundMember.fullName}</span>
+                    <button
+                      type="button"
+                      onClick={() => setBoundMemberId('')}
+                      aria-label={isAr ? 'إلغاء ربط المشترك' : isEn ? 'Clear bound member' : 'Dissocier adhérent'}
+                      className="hover:opacity-75 cursor-pointer"
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ) : (
+                  <select
+                    aria-label={isAr ? 'اختر مشتركاً' : isEn ? 'Bind member to sale' : 'Associer un adhérent'}
+                    value={boundMemberId}
+                    onChange={(e) => setBoundMemberId(e.target.value)}
+                    className="max-w-[195px] h-7 px-2 rounded-lg bg-white dark:bg-[#2B2825] border border-black/10 dark:border-white/10 text-xs text-black dark:text-white"
+                  >
+                    <option value="">{isAr ? 'عميل عابر (بدون ربط)' : isEn ? 'Walk-in (no member)' : 'Passage libre'}</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.fullName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-[200px]">

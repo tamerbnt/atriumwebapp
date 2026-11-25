@@ -23,11 +23,13 @@ import { Sp, TUNES, subscribeFrame, wake } from './motion/adherentsMotion';
 import { clamp, computePanelMetrics } from './motion/adherentsMath';
 import {
   useAtriumSelector,
+  useAtriumActions,
   shallowEqualObjects,
   selectCurrentMemberCheckInsFromState,
   selectCurrentSalesFromState,
   selectCurrentPlansFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import {
   EmptyState,
   resolveCompactCheckinsEmptyState,
@@ -77,6 +79,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
   const [notesText, setNotesText] = useState(() => member?.notes || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const { openShopForMember } = useAtriumActions();
 
   const branchState = useAtriumSelector(
     (s) => ({
@@ -960,8 +963,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           type="button"
                           tone="accent"
                           size={40}
-                          className="mt-2 w-full"
-                          onClick={() => showToast(`${L('Balance collected for', 'Solde encaissé pour', 'تم تحصيل الرصيد لـ')} ${memberName}`)}
+                          className="mt-2 w-full opacity-55 cursor-not-allowed"
+                          disabled
+                          title={t('feature_not_available_phase2', esLocale)}
+                          onClick={() => {}}
                         >
                           {L('Collect balance', 'Encaisser le solde', 'تحصيل الرصيد')}
                         </Button>
@@ -978,7 +983,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           tone="accent"
                           size={32}
                           leading={<Plus className="w-3.5 h-3.5" />}
-                          onClick={() => showToast(`${L('New invoice for', 'Nouvelle facture pour', 'فاتورة جديدة لـ')} ${memberName}`)}
+                          disabled
+                          className="opacity-55 cursor-not-allowed"
+                          title={t('feature_not_available_phase2', esLocale)}
+                          onClick={() => {}}
                         >
                           {L('New', 'Nouvelle', 'جديدة')}
                         </Button>
@@ -1025,7 +1033,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <KineticEmptyStateMotion motionKey={`member-billing-empty-${activeMember.id}-${esLocale}`}>
                         <EmptyState
                           {...resolveCompactInvoicesEmptyState({
-                            onAction: () => showToast(`${L('New sale for', 'Nouvelle vente pour', 'عملية جديدة لـ')} ${memberName}`),
+                            onAction: () => {
+                              onClose();
+                              openShopForMember(activeMember.id);
+                            },
                             locale: esLocale,
                           })}
                         />

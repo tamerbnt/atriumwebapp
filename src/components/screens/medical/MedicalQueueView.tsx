@@ -27,6 +27,7 @@ import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalWaitingRoomTvModal } from './MedicalWaitingRoomTvModal';
 import { MedicalAgendaView } from './MedicalAgendaView';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -110,6 +111,7 @@ export const MedicalQueueView: React.FC<any> = () => {
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['cons_01']));
 
   const [inspectedConsultation, setInspectedConsultation] = useState<MedicalConsultation | null>(null);
+  const [ticketConsultToPrint, setTicketConsultToPrint] = useState<MedicalConsultation | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeInspectorTab, setActiveInspectorTab] = useState<string>('fiche');
   const [isConsultModalOpen, setIsConsultModalOpen] = useState(false);
@@ -1027,12 +1029,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                             id: 'ticket',
                             label: isAr ? 'تذكرة' : 'Ticket',
                             icon: <Printer size={15} />,
-                            onClick: () =>
-                              showToast({
-                                type: 'info',
-                                title: 'Impression Ticket',
-                                message: `Impression du ticket ${cons.ticketNumber || cons.id}...`,
-                              }),
+                            onClick: () => setTicketConsultToPrint(cons),
                           },
                         ]}
                       />
@@ -1181,13 +1178,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                         <InspectorWideButton
                           label="Imprimer ticket d'attente"
                           icon={<Printer size={15} />}
-                          onClick={() =>
-                            showToast({
-                              type: 'info',
-                              title: 'Impression Ticket',
-                              message: `Impression du ticket ${cons.ticketNumber || cons.id}...`,
-                            })
-                          }
+                          onClick={() => setTicketConsultToPrint(cons)}
                         />
                       </div>
                     </InspectorSection>
@@ -1210,6 +1201,50 @@ export const MedicalQueueView: React.FC<any> = () => {
         onClose={() => setIsTvModalOpen(false)}
         consultations={consultations}
         practitioners={practitioners}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(ticketConsultToPrint)}
+        onClose={() => setTicketConsultToPrint(null)}
+        language={language}
+        format="80mm"
+        title={isAr ? 'تذكرة قاعة الانتظار' : "Ticket Salle d'Attente"}
+        subtitle={
+          ticketConsultToPrint
+            ? `${ticketConsultToPrint.ticketNumber || ticketConsultToPrint.id} · ${ticketConsultToPrint.patientName}`
+            : undefined
+        }
+        pages={
+          ticketConsultToPrint
+            ? [
+                {
+                  id: ticketConsultToPrint.id,
+                  title: ticketConsultToPrint.ticketNumber || ticketConsultToPrint.id,
+                  subtitle: ticketConsultToPrint.patientName,
+                  badgeText: ticketConsultToPrint.urgencyLevel || 'Normal',
+                  sections: [
+                    {
+                      heading: isAr ? 'بيانات الموعد والانتظار' : 'Accueil & Triage',
+                      rows: [
+                        { label: isAr ? 'المريض' : 'Patient', value: ticketConsultToPrint.patientName },
+                        { label: isAr ? 'التاريخ' : 'Date', value: ticketConsultToPrint.consultationDate.split('T')[0] },
+                        { label: isAr ? 'سبب الزيارة' : 'Motif', value: ticketConsultToPrint.chiefComplaint },
+                        {
+                          label: isAr ? 'الأولوية' : 'Urgence',
+                          value: ticketConsultToPrint.urgencyLevel || 'Normal',
+                        },
+                        {
+                          label: isAr ? 'الدفع' : 'Encaissement',
+                          value: ticketConsultToPrint.isPaid ? (isAr ? 'مسدد' : 'Réglé') : (isAr ? 'عند الاستقبال' : 'À régler'),
+                        },
+                      ],
+                    },
+                  ],
+                  footerNote: isAr ? 'يرجى الانتظار في القاعة حتى النداء على الرقم' : 'Merci de patienter en salle d’attente.',
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

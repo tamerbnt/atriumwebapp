@@ -1351,13 +1351,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <InspectorWideButton
                           label="Renouveler / Dupliquer traitement"
                           icon={<FileText size={15} />}
-                          onClick={() =>
-                            showToast({
-                              type: 'success',
-                              title: 'Renouvellement',
-                              message: 'Ordonnance dupliquée avec succès',
-                            })
-                          }
+                          onClick={() => {
+                            const renewed: MedicalPrescription = {
+                              ...rx,
+                              id: `rx_${Date.now()}`,
+                              prescriptionDate: new Date().toISOString().slice(0, 10),
+                              items: rx.items.map((it) => ({ ...it })),
+                              qrCodeHash: `ALG-ORD-${Math.floor(1e5 + Math.random() * 9e5)}`,
+                            };
+                            addPrescription(renewed);
+                            setInspectedRx(renewed);
+                          }}
                         />
                       </div>
                     </InspectorSection>

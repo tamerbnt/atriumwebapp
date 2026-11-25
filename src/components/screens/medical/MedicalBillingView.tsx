@@ -28,6 +28,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -120,6 +122,8 @@ export const MedicalBillingView: React.FC<any> = () => {
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [countedCash, setCountedCash] = useState('');
   const [closureNotes, setClosureNotes] = useState('');
+  const [cnasPrintPages, setCnasPrintPages] = useState<PrintSheetPage[] | null>(null);
+  const [cnasPrintTitle, setCnasPrintTitle] = useState('Bordereau Chifa / CNAS');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -859,12 +863,27 @@ export const MedicalBillingView: React.FC<any> = () => {
                   data-sq="ctl-sm"
                   data-sq-border="none"
                   onClick={() => {
-                    showToast({
-                      type: 'info',
-                      title: 'Export CNAS',
-                      message: 'Export du bordereau officiel CNAS au format PDF réglementaire',
-                    });
-                    window.print();
+                    setCnasPrintTitle(isAr ? 'جدول CNAS / Chifa الشهري' : 'Bordereau Mensuel Chifa / CNAS');
+                    setCnasPrintPages([
+                      {
+                        id: 'cnas_bordereau',
+                        title: 'BORDEREAU DE TÉLÉTRANSMISSION CHIFA / CNAS',
+                        subtitle: 'Centre de Paiement CNAS 1601 · BOR-2026-05-ALGER',
+                        badgeText: `${totalClaimsCount} dossiers`,
+                        tableHeaders: ['Dossier', 'Assuré(e)', 'Chifa', 'NGAP', 'Part CNAS', 'Ticket Mod.'],
+                        tableRows: sortedChifaClaims.map((cl) => [
+                          cl.id,
+                          cl.patientName,
+                          cl.chifaNumber,
+                          `${cl.ngapCode} (${cl.coverageRate ?? cl.chifaCoveragePercent ?? 80}%)`,
+                          formatMoney(cl.cnasShareDzd ?? cl.chifaShareDzd ?? 0, 'DZD'),
+                          formatMoney(cl.ticketModerateurDzd ?? cl.copayPaidDzd ?? 0, 'DZD'),
+                        ]),
+                        footerNote: `Total Créance CNAS: ${formatMoney(totalCnasShare, 'DZD')} · Ticket Modérateur: ${formatMoney(totalTicketModerateur, 'DZD')}`,
+                        signatureLeft: 'Direction Polyclinique',
+                        signatureRight: 'Visa Centre CNAS 1601',
+                      },
+                    ]);
                   }}
                   className="px-3 py-2 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors t-small font-semibold flex items-center gap-2 cursor-pointer"
                 >
@@ -1103,12 +1122,42 @@ export const MedicalBillingView: React.FC<any> = () => {
                   label: 'PDF CNAS',
                   icon: <Download size={13} />,
                   onClick: () => {
-                    showToast({
-                      type: 'info',
-                      title: 'Export CNAS',
-                      message: `Fiche CNAS ${claim.id} prête pour impression PDF`,
-                    });
-                    window.print();
+                    const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
+                    const cnasShare = claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0;
+                    const tm = claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0;
+                    setCnasPrintTitle(`Fiche Chifa / CNAS — ${claim.id}`);
+                    setCnasPrintPages([
+                      {
+                        id: claim.id,
+                        title: `FICHE CHIFA / CNAS — ${claim.id}`,
+                        subtitle: `${claim.patientName} · Carte Chifa ${claim.chifaNumber}`,
+                        badgeText: `${claim.ngapCode} · ${rate}%`,
+                        sections: [
+                          {
+                            heading: 'Identification Assuré(e)',
+                            rows: [
+                              { label: 'N° Dossier', value: claim.id },
+                              { label: 'Assuré(e)', value: claim.patientName },
+                              { label: 'N° Carte Chifa', value: claim.chifaNumber },
+                              { label: 'Cotation NGAP', value: `${claim.ngapCode} (${rate}%)` },
+                            ],
+                          },
+                          {
+                            heading: 'Décompte Tiers-Payant',
+                            rows: [
+                              { label: 'Part CNAS', value: formatMoney(cnasShare, 'DZD') },
+                              { label: 'Ticket Modérateur', value: formatMoney(tm, 'DZD') },
+                              {
+                                label: 'Statut',
+                                value: (claim.isTransmitted ?? claim.status === 'Submitted') ? 'Transmis' : "Prêt à l'envoi",
+                              },
+                            ],
+                          },
+                        ],
+                        signatureLeft: 'Cachet Polyclinique',
+                        signatureRight: 'Signature Assuré(e)',
+                      },
+                    ]);
                   },
                 },
                 {
@@ -1130,12 +1179,42 @@ export const MedicalBillingView: React.FC<any> = () => {
                   label: 'PDF CNAS',
                   icon: <Download size={14} />,
                   onClick: () => {
-                    showToast({
-                      type: 'info',
-                      title: 'Export CNAS',
-                      message: `Fiche CNAS ${claim.id} prête pour impression PDF`,
-                    });
-                    window.print();
+                    const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
+                    const cnasShare = claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0;
+                    const tm = claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0;
+                    setCnasPrintTitle(`Fiche Chifa / CNAS — ${claim.id}`);
+                    setCnasPrintPages([
+                      {
+                        id: claim.id,
+                        title: `FICHE CHIFA / CNAS — ${claim.id}`,
+                        subtitle: `${claim.patientName} · Carte Chifa ${claim.chifaNumber}`,
+                        badgeText: `${claim.ngapCode} · ${rate}%`,
+                        sections: [
+                          {
+                            heading: 'Identification Assuré(e)',
+                            rows: [
+                              { label: 'N° Dossier', value: claim.id },
+                              { label: 'Assuré(e)', value: claim.patientName },
+                              { label: 'N° Carte Chifa', value: claim.chifaNumber },
+                              { label: 'Cotation NGAP', value: `${claim.ngapCode} (${rate}%)` },
+                            ],
+                          },
+                          {
+                            heading: 'Décompte Tiers-Payant',
+                            rows: [
+                              { label: 'Part CNAS', value: formatMoney(cnasShare, 'DZD') },
+                              { label: 'Ticket Modérateur', value: formatMoney(tm, 'DZD') },
+                              {
+                                label: 'Statut',
+                                value: (claim.isTransmitted ?? claim.status === 'Submitted') ? 'Transmis' : "Prêt à l'envoi",
+                              },
+                            ],
+                          },
+                        ],
+                        signatureLeft: 'Cachet Polyclinique',
+                        signatureRight: 'Signature Assuré(e)',
+                      },
+                    ]);
                   },
                 },
                 {
@@ -1227,20 +1306,13 @@ export const MedicalBillingView: React.FC<any> = () => {
                         </span>
                         <button
                           type="button"
+                          disabled
+                          title={t('feature_not_available_phase2', language)}
                           data-no-liquid="true"
                           data-sq="ctl-sm"
                           data-sq-border="none"
-                          onClick={() =>
-                            showToast({
-                              type: 'success',
-                              title: 'Règlement Praticien',
-                              message: `Virement généré pour ${docName}: ${formatMoney(
-                                doctorPayout,
-                                'DZD'
-                              )}`,
-                            })
-                          }
-                          className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small hover:bg-[#b3694c] transition-colors cursor-pointer"
+                          onClick={() => {}}
+                          className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small transition-colors opacity-45 cursor-not-allowed"
                         >
                           Émettre Règlement
                         </button>
@@ -1745,6 +1817,15 @@ export const MedicalBillingView: React.FC<any> = () => {
             )}
           </div>
         )}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(cnasPrintPages)}
+        onClose={() => setCnasPrintPages(null)}
+        language={language}
+        format="a4"
+        title={cnasPrintTitle}
+        pages={cnasPrintPages || []}
       />
     </div>
   );
