@@ -64,6 +64,8 @@ import {
   Building,
   User,
   LayoutDashboard,
+  Globe,
+  Layout,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -86,6 +88,7 @@ import {
   resumeTimerAction as resumeTimer,
   stopTimerAction as stopTimer,
   setLanguageAction as setLanguage,
+  setDensityAction as setDensity,
   setSystemDefaultLanguageAction as setSystemDefaultLanguage,
   switchBusinessAction as switchBusiness,
   switchBranchAction as switchBranch,
@@ -207,6 +210,7 @@ const TopBarInner: React.FC<TopBarProps> = ({
     activeEducationRole,
     unreadNotificationCount,
     isTopBarAutoHide,
+    density,
   } = useAtriumSelector(
     (s) => ({
       activeScreen: s.activeScreen,
@@ -232,28 +236,28 @@ const TopBarInner: React.FC<TopBarProps> = ({
       activeEducationRole: s.activeEducationRole || 'owner',
       unreadNotificationCount: selectUnreadNotificationCountFromState(s),
       isTopBarAutoHide: s.isTopBarAutoHide ?? false,
+      density: s.density || 'default',
     }),
     shallowEqualObjects
   );
-  const canOpenSettings = canAccessRoute(
-    normalizeBusinessCategory(currentBusiness?.category),
-    {
-      currentUser,
-      activePmRole,
-      activeGarageRole,
-      activeRealEstateRole,
-      activeManufacturingRole,
-      activeLegalRole,
-      activeLogisticsRole,
-      activeContractorRole,
-      activeAgriRole,
-      activeMembershipRole,
-      activeAppointmentRole,
-      activePosRole,
-      activeEducationRole,
-    },
-    'settings'
-  );
+  const topBarCategory = normalizeBusinessCategory(currentBusiness?.category);
+  const topBarPermState = {
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  };
+  const canOpenSettings = canAccessRoute(topBarCategory, topBarPermState, 'settings');
+  const canOpenPreferences = canAccessRoute(topBarCategory, topBarPermState, 'preferences');
   const isSupabaseConfigured = checkSupabaseConfigured();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -463,11 +467,18 @@ const TopBarInner: React.FC<TopBarProps> = ({
       onClick: goHome,
     };
 
-    // Settings
-    if (activeScreen === 'settings') {
+    // Settings & Preferences
+    if (activeScreen === 'settings' || activeScreen === 'preferences') {
       return renderBreadcrumbTrail([
         homeNode,
-        { id: 'settings', label: t('nav_settings', language), icon: Settings },
+        {
+          id: activeScreen,
+          label:
+            activeScreen === 'preferences' || !canOpenSettings
+              ? t('nav_preferences', language)
+              : t('nav_settings', language),
+          icon: Settings,
+        },
       ]);
     }
 
@@ -1109,6 +1120,33 @@ const TopBarInner: React.FC<TopBarProps> = ({
                 icon: isFullscreen ? <Minimize2 size={16} strokeWidth={1.5} /> : <Maximize2 size={16} strokeWidth={1.5} />,
                 onSelect: () => toggleFullscreen(),
               },
+              {
+                id: 'language-cycle',
+                label: t('topbar_language_menu', language),
+                description:
+                  language === 'ar'
+                    ? 'العربية → Français → English'
+                    : language === 'fr'
+                    ? 'Français → English → العربية'
+                    : 'English → العربية → Français',
+                icon: <Globe size={16} strokeWidth={1.5} />,
+                onSelect: () => {
+                  const nextLang =
+                    language === 'fr' ? 'en' : language === 'en' ? 'ar' : 'fr';
+                  setLanguage(nextLang, false);
+                },
+              },
+              {
+                id: 'density-toggle',
+                label: t('topbar_density_menu', language),
+                description:
+                  density === 'compact'
+                    ? (language === 'ar' ? 'مكثف' : language === 'fr' ? 'Compact' : 'Compact')
+                    : (language === 'ar' ? 'قياسي' : language === 'fr' ? 'Standard' : 'Standard'),
+                icon: <Layout size={16} strokeWidth={1.5} />,
+                onSelect: () =>
+                  setDensity(density === 'compact' ? 'default' : 'compact'),
+              },
               ...(canOpenSettings
                 ? [
                     {
@@ -1117,6 +1155,16 @@ const TopBarInner: React.FC<TopBarProps> = ({
                       description: language === 'ar' ? 'التفضيلات والمظهر' : language === 'fr' ? 'Préférences' : 'Preferences',
                       icon: <Settings size={16} strokeWidth={1.5} />,
                       onSelect: () => setScreen('settings'),
+                    },
+                  ]
+                : canOpenPreferences
+                ? [
+                    {
+                      id: 'preferences',
+                      label: t('nav_preferences', language),
+                      description: t('topbar_language_switch_desc', language),
+                      icon: <Settings size={16} strokeWidth={1.5} />,
+                      onSelect: () => setScreen('preferences'),
                     },
                   ]
                 : []),

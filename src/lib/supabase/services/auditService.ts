@@ -1,4 +1,5 @@
-import { getSupabaseClient, toValidUuid } from '../client';
+import { getSupabaseClient, isSupabaseConfigured, toValidUuid } from '../client';
+import { enqueueMutation, OfflineQueueCapacityError } from '../offlineQueue';
 
 export interface AuditLogRecord {
   id: string;
@@ -37,6 +38,30 @@ function mapAuditRow(row: any): AuditLogRecord {
     newData: row.new_data ?? null,
     occurredAt: String(row.occurred_at || new Date().toISOString()),
   };
+}
+
+const NON_RETRYABLE_AUDIT_CODES = new Set(['22P02', '42501', 'PGRST202']);
+
+function tryEnqueueAuditRpc(
+  rpcArgs: Record<string, any>,
+  attemptedScreen: string
+): boolean {
+  try {
+    enqueueMutation({
+      kind: 'rpc',
+      fn: 'log_access_denied_event',
+      table: 'immutable_audit_logs',
+      args: rpcArgs,
+      entityType: 'security_audit',
+      entityLabel: attemptedScreen,
+    });
+    return true;
+  } catch (err) {
+    if (err instanceof OfflineQueueCapacityError) {
+      return false;
+    }
+    return false;
+  }
 }
 
 export const auditService = {
@@ -132,44 +157,50 @@ export const auditService = {
     rawRole?: string | null;
     reason?: string;
     occurredAt: string;
-  }): Promise<{ ok: boolean; persistedRemote: boolean }> {
-    const client = getSupabaseClient();
-    if (!client || !params.accountId) {
-      return { ok: true, persistedRemote: false };
-    }
-
-    const accountUuid = toValidUuid(params.accountId);
-    if (!accountUuid) {
-      return { ok: true, persistedRemote: false };
-    }
-
+  }): Promise<{ ok: boolean; persistedRemote: boolean; queued?: boolean }> {
     const businessUuid = params.businessId ? toValidUuid(params.businessId) : null;
     const branchUuid = params.branchId ? toValidUuid(params.branchId) : null;
-    const actorStaffUuid = params.actorStaffId ? toValidUuid(params.actorStaffId) : null;
+
+    // Actor identity (actor_auth_id / actor_staff_id) is strictly server-derived inside the RPC.
+    const rpcArgs = {
+      p_attempted_screen: params.attemptedScreen,
+      p_category: params.category,
+      p_effective_role: params.effectiveRole,
+      p_raw_role: params.rawRole ?? null,
+      p_reason: params.reason ?? 'ROLE_NOT_AUTHORIZED',
+      p_business_id: businessUuid,
+      p_branch_id: branchUuid,
+      p_occurred_at: params.occurredAt,
+    };
+
+    const client = getSupabaseClient();
+    const configured = isSupabaseConfigured();
+    const isOffline =
+      typeof navigator !== 'undefined' && navigator.onLine === false;
+
+    if (!configured || !client) {
+      return { ok: true, persistedRemote: false, queued: false };
+    }
+
+    if (isOffline) {
+      const queued = tryEnqueueAuditRpc(rpcArgs, params.attemptedScreen);
+      return { ok: true, persistedRemote: false, queued };
+    }
 
     try {
-      const { error } = await (client as any).from('immutable_audit_logs').insert({
-        account_id: accountUuid,
-        business_id: businessUuid,
-        branch_id: branchUuid,
-        actor_staff_id: actorStaffUuid,
-        table_name: 'security_access_denied',
-        record_id: params.attemptedScreen,
-        action: 'INSERT',
-        new_data: {
-          event: 'ACCESS_DENIED',
-          attemptedScreen: params.attemptedScreen,
-          category: params.category,
-          effectiveRole: params.effectiveRole,
-          rawRole: params.rawRole ?? null,
-          reason: params.reason ?? 'ROLE_NOT_AUTHORIZED',
-          occurredAt: params.occurredAt,
-        },
-        occurred_at: params.occurredAt,
-      });
-      return { ok: !error, persistedRemote: !error };
+      const { error } = await (client as any).rpc('log_access_denied_event', rpcArgs);
+      if (!error) {
+        return { ok: true, persistedRemote: true, queued: false };
+      }
+      const errCode = String(error?.code || error?.sqlstate || '');
+      if (NON_RETRYABLE_AUDIT_CODES.has(errCode)) {
+        return { ok: false, persistedRemote: false, queued: false };
+      }
+      const queued = tryEnqueueAuditRpc(rpcArgs, params.attemptedScreen);
+      return { ok: queued, persistedRemote: false, queued };
     } catch {
-      return { ok: false, persistedRemote: false };
+      const queued = tryEnqueueAuditRpc(rpcArgs, params.attemptedScreen);
+      return { ok: queued, persistedRemote: false, queued };
     }
   },
 };

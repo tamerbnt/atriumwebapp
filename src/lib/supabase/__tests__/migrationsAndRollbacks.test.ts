@@ -110,4 +110,21 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP FUNCTION IF EXISTS public.reserve_sequence_block(');
     expect(downSql).toContain('DROP FUNCTION IF EXISTS public.allocate_sequence_number(');
   });
+
+  it('verifies Step 4 security audit RPC migration enforces server-derived actor identity, dedupe, and rate-limiting', () => {
+    const step4Path = path.join(MIGRATIONS_DIR, '202611240003_phase1_security_audit_rpc.sql');
+    const step4DownPath = path.join(ROLLBACKS_DIR, '202611240003_phase1_security_audit_rpc.down.sql');
+    const sql = fs.readFileSync(step4Path, 'utf8');
+    const downSql = fs.readFileSync(step4DownPath, 'utf8');
+
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.log_access_denied_event(');
+    expect(sql).toContain('SECURITY DEFINER');
+    expect(sql).toContain('public.get_auth_account_id()');
+    expect(sql).toContain('public.get_auth_staff_id()');
+    expect(sql).toContain('public.can_access_branch(p_branch_id)');
+    expect(sql).toContain("interval '4 seconds'");
+    expect(sql).toContain("interval '60 seconds'");
+    expect(sql).toContain('v_recent_count >= 20');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.log_access_denied_event(');
+  });
 });

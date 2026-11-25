@@ -156,6 +156,78 @@ export function normalizeOperationalRole(role: string | undefined): string {
 }
 
 /**
+ * Step 4 / 5.5: Migrates legacy persisted operational role identifiers to canonical stored roles.
+ */
+export function migrateStoredOperationalRole(role: string | undefined | null): string {
+  const trimmed = (role || '').toString().trim();
+  if (!trimmed) return '';
+  const lower = trimmed.toLowerCase();
+  if (lower === 'conducteur') return 'conducteur_travaux';
+  if (lower === 'metreur') return 'daf_metreur';
+  if (lower === 'controleur') return 'qualite';
+  return trimmed;
+}
+
+/**
+ * Safely hydrates a persisted currentUser snapshot:
+ * - Missing/null currentUser returns null (fail-closed in getEffectiveUserRole -> 'Staff').
+ * - Existing legitimate account owner whose role field was unset/blank recovers 'Owner' (no lockout).
+ * - Non-owner accounts with unset role fail closed to 'Staff'.
+ */
+export function hydrateCurrentUserSafe<
+  T extends { id?: string; email?: string; role?: string; roleRank?: number }
+>(
+  rawUser: T | null | undefined,
+  staffList: Array<{ id?: string; email?: string; role?: string; roleRank?: number }> = [],
+  account?: { email?: string | null } | null
+): T | null {
+  if (!rawUser || typeof rawUser !== 'object') return null;
+
+  const existingRole = typeof rawUser.role === 'string' ? rawUser.role.trim() : '';
+  if (existingRole) {
+    return {
+      ...rawUser,
+      role: migrateStoredOperationalRole(existingRole),
+    };
+  }
+
+  const matchedStaff = staffList.find(
+    (s) =>
+      (rawUser.id && s.id === rawUser.id) ||
+      (rawUser.email && s.email && s.email.toLowerCase() === rawUser.email.toLowerCase())
+  );
+  if (matchedStaff && matchedStaff.role && matchedStaff.role.trim()) {
+    return {
+      ...rawUser,
+      role: migrateStoredOperationalRole(matchedStaff.role),
+      roleRank: rawUser.roleRank ?? matchedStaff.roleRank,
+    };
+  }
+
+  const matchesAccountEmail = Boolean(
+    account?.email &&
+      rawUser.email &&
+      rawUser.email.toLowerCase() === account.email.toLowerCase()
+  );
+  const isOwnerFallback =
+    rawUser.id === 'stf_01' || matchesAccountEmail || Number(rawUser.roleRank ?? 0) >= 8;
+
+  if (isOwnerFallback) {
+    return {
+      ...rawUser,
+      role: 'Owner',
+      roleRank: Number(rawUser.roleRank) >= 8 ? Number(rawUser.roleRank) : 8,
+    };
+  }
+
+  return {
+    ...rawUser,
+    role: 'Staff',
+    roleRank: Number(rawUser.roleRank) || 1,
+  };
+}
+
+/**
  * Strict RBAC Access Check for Staff & Workforce Screen.
  * 
  * - Dual-role categories (Gym, Salon, Retail POS, Education, Freelance):

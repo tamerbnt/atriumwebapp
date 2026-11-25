@@ -67,12 +67,18 @@ import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
 import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab';
 import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
+import { getEffectivePermissionContext } from '../../utils/routePermissions';
+import { normalizeBusinessCategory } from '../../utils/staffRules';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
+  preferencesOnly?: boolean;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherModal }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
+  onOpenVoucherModal,
+  preferencesOnly = false,
+}) => {
   const {
     account,
     subscription,
@@ -97,6 +103,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     settingsTab,
     settingsFocusSection,
     currentBusinessConfig,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
   } = useAtriumSelector(
     (s) => ({
       account: s.account,
@@ -122,9 +140,41 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       settingsTab: s.settingsTab || 'preferences',
       settingsFocusSection: s.settingsFocusSection || null,
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+      activePmRole: s.activePmRole,
+      activeGarageRole: s.activeGarageRole,
+      activeRealEstateRole: s.activeRealEstateRole,
+      activeManufacturingRole: s.activeManufacturingRole,
+      activeLegalRole: s.activeLegalRole,
+      activeLogisticsRole: s.activeLogisticsRole,
+      activeContractorRole: s.activeContractorRole,
+      activeAgriRole: s.activeAgriRole,
+      activeMembershipRole: s.activeMembershipRole,
+      activeAppointmentRole: s.activeAppointmentRole,
+      activePosRole: s.activePosRole,
+      activeEducationRole: s.activeEducationRole,
     }),
     shallowEqualObjects
   );
+  const permissionContext = getEffectivePermissionContext(
+    normalizeBusinessCategory(currentBusiness?.category),
+    {
+      currentUser,
+      activePmRole,
+      activeGarageRole,
+      activeRealEstateRole,
+      activeManufacturingRole,
+      activeLegalRole,
+      activeLogisticsRole,
+      activeContractorRole,
+      activeAgriRole,
+      activeMembershipRole,
+      activeAppointmentRole,
+      activePosRole,
+      activeEducationRole,
+    }
+  );
+  const effectivePreferencesOnly = Boolean(preferencesOnly) || !permissionContext.isExecutive;
+  const effectiveTab: SettingsTabId = effectivePreferencesOnly ? 'preferences' : settingsTab;
   const { isSyncing, networkMode, lastSyncedAt, retryCloudSync } = useDashboardShellState();
   const isSupabaseConfigured = checkSupabaseConfigured();
   const {
@@ -347,11 +397,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
           <div className="flex flex-col gap-[var(--ph-sub-gap,4px)]">
             <h1 className="t-page text-[var(--text-1)] dark:text-white">
-              {t('settings_title', language)}
+              {effectivePreferencesOnly
+                ? t('settings_preferences_only_title', language)
+                : t('settings_title', language)}
             </h1>
           </div>
         </div>
 
+        {!effectivePreferencesOnly && (
         <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
           <input
             ref={fileInputRef}
@@ -405,7 +458,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span>{t('action_relaunch_wizard', language)}</span>
           </button>
         </div>
+        )}
       </div>
+
+      {effectivePreferencesOnly && (
+        <div
+          data-testid="settings-preferences-only-banner"
+          data-sq="card"
+          className="p-[var(--s3,12px)] bg-[#F3EDE7] dark:bg-[#191716] text-[var(--text-1)] dark:text-white t-small flex items-center gap-[var(--s2,8px)]"
+        >
+          <Globe size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
+          <span>{t('settings_preferences_only_notice', language)}</span>
+        </div>
+      )}
 
       {exportedStatus && (
         <div
@@ -458,14 +523,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           },
         ];
 
+        const visibleTabs = effectivePreferencesOnly
+          ? tabs.filter((tab) => tab.id === 'preferences')
+          : tabs;
+
         return (
           <div
             role="tablist"
             aria-label={language === 'ar' ? 'أقسام الإعدادات' : language === 'fr' ? 'Onglets des paramètres' : 'Settings sections'}
             className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[2px] border-b border-[var(--atr-divider)]"
           >
-            {tabs.map((tab, idx) => {
-              const isSelected = settingsTab === tab.id;
+            {visibleTabs.map((tab, idx) => {
+              const isSelected = effectiveTab === tab.id;
               return (
                 <button
                   key={tab.id}
@@ -476,10 +545,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   onClick={() => setSettingsTab(tab.id)}
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowRight') {
-                      const next = tabs[(idx + 1) % tabs.length];
+                      const next = visibleTabs[(idx + 1) % visibleTabs.length];
                       setSettingsTab(next.id);
                     } else if (e.key === 'ArrowLeft') {
-                      const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+                      const prev = visibleTabs[(idx - 1 + visibleTabs.length) % visibleTabs.length];
                       setSettingsTab(prev.id);
                     }
                   }}
@@ -499,18 +568,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       })()}
 
       <div className="flex flex-col gap-[var(--pod-gap,16px)]">
-      {settingsTab === 'business_fiscal' && (
+      {effectiveTab === 'business_fiscal' && (
         <SettingsBusinessFiscalTab
           focusSection={settingsFocusSection}
           onClearFocus={clearSettingsFocusSection}
         />
       )}
 
-      {settingsTab === 'formules' && <SettingsFormulesTab />}
+      {effectiveTab === 'formules' && <SettingsFormulesTab />}
 
-      {settingsTab === 'reference_rates' && <SettingsReferenceRatesTab />}
+      {effectiveTab === 'reference_rates' && <SettingsReferenceRatesTab />}
 
-      {settingsTab === 'preferences' && (
+      {effectiveTab === 'preferences' && (
         <>
       {/* Row 1: Language & Regional Localization */}
       <div className="sq-elev-card">
@@ -993,7 +1062,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </>
       )}
 
-      {settingsTab === 'license' && (
+      {effectiveTab === 'license' && (
       /* Row 2: License Status Banner */
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] relative overflow-hidden">
@@ -1127,7 +1196,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
       )}
 
-      {settingsTab === 'cloud_backup' && (
+      {effectiveTab === 'cloud_backup' && (
         <>
       {/* Row 1.5: Cloud Sync */}
       <div className="sq-elev-card">
@@ -1400,7 +1469,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </>
       )}
 
-      {settingsTab === 'branches_devices' && (
+      {effectiveTab === 'branches_devices' && (
         <>
       {/* Row 2: Branches Management */}
       <div className="sq-elev-card">

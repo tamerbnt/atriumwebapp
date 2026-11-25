@@ -147,8 +147,10 @@ jobs:
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/db/test_rls_rpc_triggers.sql
 
-      - name: Verify Phase 1 & Phase 5 rollback & re-apply parity
+      - name: Verify Phase 1, Step 4 & Phase 5 rollback & re-apply parity
         run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611240003_phase1_security_audit_rpc.down.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611240003_phase1_security_audit_rpc.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611240001_phase1_trust_infrastructure.down.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611240001_phase1_trust_infrastructure.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611190005_enterprise_100pct_hardening.down.sql

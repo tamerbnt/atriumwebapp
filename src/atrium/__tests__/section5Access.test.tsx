@@ -1,24 +1,36 @@
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AccessRestrictedView } from '../../components/common/AccessRestrictedView';
 import { MembershipFinanceView } from '../../components/screens/membership/MembershipFinanceView';
-import { setLanguageAction, switchBusinessAction, useAtriumStore } from '../../services/store';
+import { LegalVaultView } from '../../components/screens/legal/LegalVaultView';
+import { SettingsScreen } from '../../components/screens/SettingsScreen';
+import { TopBar } from '../../components/layout/TopBar';
+import {
+  setLanguageAction,
+  switchBusinessAction,
+  useAtriumStore,
+} from '../../services/store';
 
-function initMembershipStore() {
-  let businesses: Array<{ id: string; category: string }> = [];
+function initBusinessAndActions(targetCategory: string) {
+  let storeActions: ReturnType<typeof useAtriumStore> | null = null;
   const Probe: React.FC = () => {
-    businesses = useAtriumStore().businesses.map((b) => ({ id: b.id, category: b.category }));
+    storeActions = useAtriumStore();
     return null;
   };
   renderToStaticMarkup(<Probe />);
-  const gym = businesses.find((b) => b.category === 'membership_session');
-  if (gym) switchBusinessAction(gym.id);
+  const biz = storeActions!.businesses.find((b) => b.category === targetCategory);
+  if (biz) switchBusinessAction(biz.id);
+  return storeActions!;
 }
 
-describe('Section 5 AccessRestrictedView & MembershipFinanceView UI verification', () => {
+describe('Section 5 AccessRestrictedView, MembershipFinanceView, Scoped Vault & Preferences UI verification', () => {
   beforeEach(() => {
     setLanguageAction('en');
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('renders localized AccessRestrictedView in EN, FR, and AR (RTL) with native actions', () => {
@@ -48,7 +60,7 @@ describe('Section 5 AccessRestrictedView & MembershipFinanceView UI verification
   });
 
   it('renders MembershipFinanceView with explicit Estimated ledger pending banner and indicator (5.1)', () => {
-    initMembershipStore();
+    initBusinessAndActions('membership_session');
     setLanguageAction('en');
     const html = renderToStaticMarkup(<MembershipFinanceView />);
     expect(html).toContain('data-testid="membership-finance-estimated-banner"');
@@ -59,5 +71,80 @@ describe('Section 5 AccessRestrictedView & MembershipFinanceView UI verification
     setLanguageAction('fr');
     const frHtml = renderToStaticMarkup(<MembershipFinanceView />);
     expect(frHtml).toContain('Estimé, grand livre en attente');
+  });
+
+  it('enforces filing-only scope on LegalVaultView for secretaire_caisse and hides avocat confidential items (5.3)', () => {
+    const storageMap = new Map<string, string>();
+    storageMap.set(
+      'atrium_legal_vault_v2',
+      JSON.stringify([
+        {
+          id: 'v_sec_1',
+          code: 'DEP-2026-101',
+          title: 'Dossier NIN Client Benali',
+          matterReference: 'DOS-2026-01',
+          category: 'Identité NIN/NIF',
+          depositDate: '2026-11-20',
+          status: 'PieceClient',
+          roleScope: 'secretaire',
+        },
+        {
+          id: 'v_av_secret',
+          code: 'DOC-2026-999',
+          title: 'Secret Defense Strategy Memo',
+          matterReference: 'DOS-2026-99',
+          category: 'Mémoires',
+          depositDate: '2026-11-20',
+          status: 'Confidential',
+          roleScope: 'avocat',
+        },
+      ])
+    );
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => storageMap.get(k) ?? null,
+      setItem: (k: string, v: string) => storageMap.set(k, v),
+      removeItem: (k: string) => storageMap.delete(k),
+      clear: () => storageMap.clear(),
+      key: () => null,
+      get length() {
+        return storageMap.size;
+      },
+    });
+
+    const storeActions = initBusinessAndActions('legal_accounting');
+    storeActions.setActiveLegalRole('secretaire_caisse');
+    setLanguageAction('en');
+
+    const html = renderToStaticMarkup(<LegalVaultView />);
+    expect(html).toContain('data-testid="legal-vault-filing-only-banner"');
+    expect(html).toContain('Filing-only scope:');
+    expect(html).toContain('SECRETAIRE');
+    expect(html).toContain('>1</div>');
+    expect(html).not.toContain('DOC-2026-999');
+    expect(html).not.toContain('Secret Defense Strategy Memo');
+    expect(html).not.toContain('Retirer');
+    expect(html).not.toContain('>Delete<');
+  });
+
+  it('renders SettingsScreen in preferences-only mode for operational roles and exposes TopBar menu', () => {
+    const storeActions = initBusinessAndActions('logistics_delivery');
+    storeActions.setActiveLogisticsRole('dispatcher');
+    storeActions.setSettingsTab('business_fiscal');
+    setLanguageAction('en');
+
+    const settingsHtml = renderToStaticMarkup(
+      <SettingsScreen onOpenVoucherModal={() => {}} />
+    );
+    expect(settingsHtml).toContain('data-testid="settings-preferences-only-banner"');
+    expect(settingsHtml).toContain('Workspace Preferences');
+    expect(settingsHtml).not.toContain('Business &amp; Fiscal');
+    expect(settingsHtml).not.toContain('License &amp; Billing');
+    expect(settingsHtml).not.toContain('Cloud &amp; Backup');
+
+    const topBarHtml = renderToStaticMarkup(
+      <TopBar onOpenVoucherModal={() => {}} />
+    );
+    expect(topBarHtml).toContain('aria-haspopup="menu"');
+    expect(topBarHtml).toContain('Operator:');
   });
 });

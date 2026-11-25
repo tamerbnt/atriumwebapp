@@ -135,6 +135,7 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   staff_attendance_logs: 40,
   staff_salary_advances: 40,
   staff_payroll_slips: 46,
+  immutable_audit_logs: 50,
 };
 
 let memoryFallbackQueue: OfflineMutationItem[] = [];

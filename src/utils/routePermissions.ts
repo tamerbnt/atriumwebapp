@@ -50,6 +50,48 @@ const EXECUTIVE_ROLES = new Set([
   'expert_comptable',
 ]);
 
+export const PREFERENCES_ONLY_SETTINGS_ROLES = new Set([
+  'secretaire_caisse',
+  'dispatcher',
+  'metreur',
+  'daf_metreur',
+]);
+
+export function resolveSemanticRoute(
+  category: BusinessCategory | string,
+  _state: RolePermissionState,
+  screen: string
+): string {
+  const canonicalCategory = normalizeBusinessCategory(category);
+  switch (screen) {
+    case 'qc':
+      if (canonicalCategory === 'manufacturing_production') return 'finance';
+      if (canonicalCategory === 'construction_contractor') return 'scheduler';
+      if (canonicalCategory === 'project_milestone') return 'pm_cp_deliverables';
+      return 'qc';
+    case 'orders':
+      if (canonicalCategory === 'project_milestone') return 'pm_cp_orders';
+      if (canonicalCategory === 'auto_garage' || canonicalCategory === 'manufacturing_production') {
+        return 'scheduler';
+      }
+      if (canonicalCategory === 'pos_inventory') return 'registrations';
+      if (canonicalCategory === 'trading_commercial') return 'trading_purchases';
+      return 'orders';
+    case 'attendance':
+      if (canonicalCategory === 'project_milestone') return 'pm_sup_attendance';
+      if (canonicalCategory === 'education_cohort') return 'analytics';
+      if (canonicalCategory === 'construction_contractor') return 'scheduler';
+      if (canonicalCategory === 'agriculture_farming') return 'shop';
+      return 'staff';
+    case 'pm_dir_projects':
+      return 'pm_dir_dashboard';
+    case 'pm_cp_files':
+      return 'pm_cp_deliverables';
+    default:
+      return screen;
+  }
+}
+
 export function getEffectivePermissionContext(
   category: BusinessCategory | string,
   state: RolePermissionState
@@ -326,7 +368,15 @@ const ROUTE_ALLOWLIST_BY_CATEGORY_ROLE: Record<string, Record<string, Set<string
     ]),
     avocat_collaborateur: new Set(['home', 'dashboard', 'members', 'scheduler', 'registrations', 'finance', 'history']),
     clerc_notaire: new Set(['home', 'dashboard', 'members', 'scheduler', 'registrations', 'finance', 'history']),
-    secretaire_caisse: new Set(['home', 'dashboard', 'finance', 'members', 'scheduler']),
+    secretaire_caisse: new Set([
+      'home',
+      'dashboard',
+      'finance',
+      'members',
+      'scheduler',
+      'registrations',
+      'settings',
+    ]),
   },
   logistics_delivery: {
     gerant: new Set([
@@ -340,7 +390,15 @@ const ROUTE_ALLOWLIST_BY_CATEGORY_ROLE: Record<string, Record<string, Set<string
       'staff',
       'settings',
     ]),
-    dispatcher: new Set(['home', 'scheduler', 'members', 'registrations', 'dashboard', 'staff']),
+    dispatcher: new Set([
+      'home',
+      'scheduler',
+      'members',
+      'registrations',
+      'dashboard',
+      'staff',
+      'settings',
+    ]),
     hub_sorter: new Set(['home', 'dashboard', 'registrations', 'members', 'scheduler']),
     stop_desk_agent: new Set(['home', 'dashboard', 'registrations', 'members', 'scheduler', 'finance']),
   },
@@ -359,7 +417,16 @@ const ROUTE_ALLOWLIST_BY_CATEGORY_ROLE: Record<string, Record<string, Set<string
     ]),
     conducteur: new Set(['home', 'dashboard', 'members', 'registrations', 'shop', 'scheduler', 'finance', 'staff']),
     chef_chantier: new Set(['home', 'dashboard', 'scheduler', 'members', 'registrations', 'shop', 'finance', 'staff']),
-    metreur: new Set(['home', 'dashboard', 'shop', 'scheduler', 'finance', 'members', 'registrations']),
+    metreur: new Set([
+      'home',
+      'dashboard',
+      'shop',
+      'scheduler',
+      'finance',
+      'members',
+      'registrations',
+      'settings',
+    ]),
     comptable: new Set(['home', 'dashboard', 'finance', 'scheduler', 'shop', 'members']),
   },
   agriculture_farming: {
@@ -429,41 +496,51 @@ export function canAccessRoute(
   options?: { isDev?: boolean }
 ): boolean {
   if (!screen) return false;
-  if (screen === 'home') return true;
-  if (screen === 'chart_catalog') return Boolean(options?.isDev);
 
   const ctx = getEffectivePermissionContext(category, state);
+  const targetScreen = resolveSemanticRoute(ctx.category, state, screen);
 
-  if (screen === 'staff') {
+  if (targetScreen === 'home') return true;
+  if (targetScreen === 'chart_catalog') return Boolean(options?.isDev);
+
+  if (targetScreen === 'preferences') {
+    return Boolean(state.currentUser || ctx.rawRole || ctx.normalizedRole !== 'staff');
+  }
+
+  if (targetScreen === 'staff') {
     return canAccessStaffScreen(ctx.category, ctx.effectiveRole);
   }
 
-  if (screen === 'settings') {
-    return ctx.isExecutive;
+  if (targetScreen === 'settings') {
+    return (
+      ctx.isExecutive ||
+      PREFERENCES_ONLY_SETTINGS_ROLES.has(ctx.normalizedRole) ||
+      PREFERENCES_ONLY_SETTINGS_ROLES.has(ctx.rawRole)
+    );
   }
 
   if (ctx.category === 'project_milestone') {
     const allowedSet = PM_ROLE_ROUTES[ctx.normalizedRole];
-    return Boolean(allowedSet?.has(screen));
+    return Boolean(allowedSet?.has(targetScreen));
   }
 
   const noSwitcherRoutes = OPERATIONAL_ROUTES_NO_SWITCHER[ctx.category];
   if (noSwitcherRoutes) {
     if (ctx.isExecutive) {
-      return noSwitcherRoutes.has(screen) || screen === 'history' || screen === 'settings';
+      return noSwitcherRoutes.has(targetScreen) || targetScreen === 'history' || targetScreen === 'settings';
     }
-    return noSwitcherRoutes.has(screen);
+    return noSwitcherRoutes.has(targetScreen);
   }
 
   const categoryMap = ROUTE_ALLOWLIST_BY_CATEGORY_ROLE[ctx.category];
   if (categoryMap) {
     if (categoryMap[ctx.normalizedRole]) {
-      return categoryMap[ctx.normalizedRole].has(screen);
+      return categoryMap[ctx.normalizedRole].has(targetScreen);
     }
     if (ctx.isExecutive) {
       const execKey = Object.keys(categoryMap).find((k) => EXECUTIVE_ROLES.has(k));
       if (execKey && categoryMap[execKey]) {
-        return categoryMap[execKey].has(screen);
+        return categoryMap[execKey].has(targetScreen);
       }
     }
     // Fail-closed for unknown or unauthenticated staff role in multi-role/dual-role verticals

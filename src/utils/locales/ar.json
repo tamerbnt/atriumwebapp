@@ -2796,5 +2796,13 @@
   "access_restricted_switch_user": "تبديل المشغّل",
   "membership_finance_estimated_badge": "تقديري، بانتظار دفتر الحسابات",
   "membership_finance_estimated_banner": "الأرقام المعروضة تقديرية ومستخرجة من اشتراكات الأعضاء إلى حين مزامنة دفتر الحسابات.",
-  "membership_finance_estimated_csv_note": "تقديري، بانتظار دفتر الحسابات (مستخرج من الاشتراكات)"
+  "membership_finance_estimated_csv_note": "تقديري، بانتظار دفتر الحسابات (مستخرج من الاشتراكات)",
+  "nav_preferences": "التفضيلات",
+  "settings_preferences_only_title": "تفضيلات واجهة العمل",
+  "settings_preferences_only_notice": "عرض مخصص للتفضيلات فقط لدورك النشط. تُطبق اللغة والمظهر والكثافة فوراً عبر مساحة العمل.",
+  "topbar_language_menu": "اللغة",
+  "topbar_language_switch_desc": "تبديل العربية / الفرنسية / الإنجليزية",
+  "topbar_density_menu": "الوضع المكثف",
+  "topbar_density_toggle_desc": "تبديل الكثافة المكثفة أو القياسية",
+  "legal_vault_filing_only_banner": "نطاق الإيداع فقط: يمكنك تسجيل وطباعة مستندات الموكلين. ملفات الدفاع السرية والتعديل والحذف مقتصرة على المحامين المخولين."
 }

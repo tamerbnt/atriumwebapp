@@ -872,12 +872,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Commandes' : 'Purchases',
           label: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Commandes' : 'Purchases',
         },
-        {
-          id: 'finance',
-          icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Deliveries',
-          label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Deliveries',
-        },
       ];
     } else if (activeGarageRole === 'caisse') {
       items = [
@@ -1358,6 +1352,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
           label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
         },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_preferences', language),
+          label: t('nav_preferences', language),
+        },
       ];
     } else {
       items = [
@@ -1431,6 +1431,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <LayoutDashboard size={19} />,
           title: dashboardLabel,
           label: dashboardLabel,
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_preferences', language),
+          label: t('nav_preferences', language),
         },
       ];
     } else if (activeLogisticsRole === 'hub_sorter') {
@@ -1664,6 +1670,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Layers size={19} />,
           title: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
           label: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_preferences', language),
+          label: t('nav_preferences', language),
         },
       ];
     } else {

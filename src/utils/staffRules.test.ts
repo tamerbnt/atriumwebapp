@@ -11,6 +11,8 @@ import {
   getEffectiveUserRole,
   normalizeBusinessCategory,
   normalizeOperationalRole,
+  migrateStoredOperationalRole,
+  hydrateCurrentUserSafe,
 } from './staffRules';
 import { StaffMember } from '../types/index';
 
@@ -329,4 +331,39 @@ test('Staff Rules (5.6): getEffectiveUserRole fails closed on null/empty current
   assert.equal(normalizeOperationalRole('conducteur_travaux'), 'conducteur');
   assert.equal(normalizeOperationalRole('daf_metreur'), 'metreur');
   assert.equal(getEffectiveUserRole('manufacturing_production', { activeManufacturingRole: 'controleur' }), 'qualite');
+});
+
+test('Staff Rules (5.5 & Owner Fallback): migrateStoredOperationalRole & hydrateCurrentUserSafe', () => {
+  assert.equal(migrateStoredOperationalRole('conducteur'), 'conducteur_travaux');
+  assert.equal(migrateStoredOperationalRole('metreur'), 'daf_metreur');
+  assert.equal(migrateStoredOperationalRole('controleur'), 'qualite');
+  assert.equal(migrateStoredOperationalRole('gerant'), 'gerant');
+
+  // Unauthenticated null stays null
+  assert.equal(hydrateCurrentUserSafe(null, MOCK_STAFF_LIST, { email: 'owner@atrium.dz' }), null);
+
+  // Existing legitimate owner with unset role recovers 'Owner' via staffList match or account email/stf_01
+  const recoveredByStaff = hydrateCurrentUserSafe(
+    { id: 'stf_owner_01', role: '' },
+    MOCK_STAFF_LIST,
+    { email: 'other@atrium.dz' }
+  );
+  assert.equal(recoveredByStaff?.role, 'Owner');
+  assert.equal(canViewSensitivePayroll(recoveredByStaff?.role || 'Staff'), true);
+
+  const recoveredByAccount = hydrateCurrentUserSafe(
+    { id: 'usr_99', email: 'owner@atrium.dz', role: '' },
+    [],
+    { email: 'owner@atrium.dz' }
+  );
+  assert.equal(recoveredByAccount?.role, 'Owner');
+
+  // Unknown non-owner with unset role fails closed to 'Staff'
+  const failClosedStaff = hydrateCurrentUserSafe(
+    { id: 'usr_unknown', email: 'unknown@atrium.dz', role: '' },
+    [],
+    { email: 'owner@atrium.dz' }
+  );
+  assert.equal(failClosedStaff?.role, 'Staff');
+  assert.equal(canViewSensitivePayroll(failClosedStaff?.role || 'Staff'), false);
 });

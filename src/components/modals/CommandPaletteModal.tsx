@@ -32,6 +32,8 @@ import {
   Boxes,
   Building2,
   LayoutDashboard,
+  Globe,
+  Layout,
 } from 'lucide-react';
 import {
   ActiveScreen,
@@ -51,11 +53,7 @@ import {
 } from '../../services/store';
 import { t } from '../../utils/i18n';
 import { localizeStatus } from '../../utils/rules';
-import {
-  canAccessStaffScreen,
-  getEffectiveUserRole,
-  normalizeBusinessCategory,
-} from '../../utils/staffRules';
+import { normalizeBusinessCategory } from '../../utils/staffRules';
 import { canAccessRoute } from '../../utils/routePermissions';
 
 export interface CommandPaletteModalProps {
@@ -76,11 +74,12 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { setScreen, setTheme, openFastSwitch, openOnboarding, selectMember } = useAtriumActions();
+  const { setScreen, setTheme, setLanguage, setDensity, openFastSwitch, openOnboarding, selectMember } = useAtriumActions();
   const {
     activeScreen,
     currentBusiness,
     theme,
+    density,
     terminology,
     members,
     products,
@@ -109,6 +108,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       activeScreen: s.activeScreen,
       currentBusiness: selectCurrentBusinessFromState(s),
       theme: s.theme,
+      density: s.density || 'default',
       terminology: selectTerminologyFromState(s),
       members: selectCurrentMembersFromState(s),
       products: selectCurrentProductsFromState(s),
@@ -189,24 +189,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       },
     });
 
-    const canAccessHistoryScreen = (() => {
-      if (category === 'project_milestone') return activePmRole === 'direction';
-      if (category === 'freelance_solo' || category === 'rental_booking' || category === 'trading_commercial' || category === 'medical_clinic') {
-        return true;
-      }
-      if (category === 'membership_session') return activeMembershipRole !== 'staff';
-      if (category === 'appointment_service') return activeAppointmentRole !== 'staff';
-      if (category === 'pos_inventory') return activePosRole !== 'staff';
-      if (category === 'education_cohort') return activeEducationRole !== 'staff';
-      if (category === 'auto_garage') return !['reception', 'mecanicien', 'magasinier', 'caisse'].includes(activeGarageRole || '');
-      if (category === 'real_estate') return !activeRealEstateRole || activeRealEstateRole === 'direction';
-      if (category === 'manufacturing_production') return !activeManufacturingRole || activeManufacturingRole === 'gerant';
-      if (category === 'legal_accounting') return activeLegalRole !== 'secretaire_caisse';
-      if (category === 'logistics_delivery') return !['dispatcher', 'hub_sorter', 'stop_desk_agent'].includes(activeLogisticsRole || '');
-      if (category === 'construction_contractor') return !activeContractorRole || activeContractorRole === 'gerant';
-      if (category === 'agriculture_farming') return !['chef_culture', 'zootechnicien', 'magasinier'].includes(activeAgriRole || '');
-      return true;
-    })();
+    const canAccessHistoryScreen = canAccessRoute(category, permState, 'history');
 
     if (category === 'project_milestone') {
       const pmNavItems: Array<{ id: ActiveScreen; label: string; role: string; icon: React.ReactNode }> = [
@@ -319,9 +302,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     }
 
     // Unified Staff Screen Navigation
-    const effectiveRole = getEffectiveUserRole(category, permState);
-
-    if (canAccessStaffScreen(category, effectiveRole) && canAccessRoute(category, permState, 'staff')) {
+    if (canAccessRoute(category, permState, 'staff')) {
       list.push({
         id: 'nav-staff',
         title: language === 'ar' ? 'الفريق' : language === 'en' ? 'Staff' : 'Équipe',
@@ -330,6 +311,20 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         icon: <Users size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onSelect: () => {
           setScreen('staff');
+          onClose();
+        },
+      });
+    }
+
+    if (!canAccessRoute(category, permState, 'settings') && canAccessRoute(category, permState, 'preferences')) {
+      list.push({
+        id: 'nav-preferences',
+        title: t('nav_preferences', language),
+        subtitle: t('topbar_language_switch_desc', language),
+        category: navCategoryLabel,
+        icon: <Settings size={15} />,
+        onSelect: () => {
+          setScreen('preferences');
           onClose();
         },
       });
@@ -357,6 +352,54 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       icon: theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-indigo-400" />,
       onSelect: () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
+        onClose();
+      },
+    });
+
+    list.push({
+      id: 'action-lang-fr',
+      title: 'Français (FR)',
+      subtitle: t('topbar_language_switch_desc', language),
+      category: actionCategoryLabel,
+      icon: <Globe size={15} />,
+      onSelect: () => {
+        setLanguage('fr', false);
+        onClose();
+      },
+    });
+
+    list.push({
+      id: 'action-lang-en',
+      title: 'English (EN)',
+      subtitle: t('topbar_language_switch_desc', language),
+      category: actionCategoryLabel,
+      icon: <Globe size={15} />,
+      onSelect: () => {
+        setLanguage('en', false);
+        onClose();
+      },
+    });
+
+    list.push({
+      id: 'action-lang-ar',
+      title: 'العربية (AR)',
+      subtitle: t('topbar_language_switch_desc', language),
+      category: actionCategoryLabel,
+      icon: <Globe size={15} />,
+      onSelect: () => {
+        setLanguage('ar', false);
+        onClose();
+      },
+    });
+
+    list.push({
+      id: 'action-density',
+      title: t('topbar_density_menu', language),
+      subtitle: t('topbar_density_toggle_desc', language),
+      category: actionCategoryLabel,
+      icon: <Layout size={15} />,
+      onSelect: () => {
+        setDensity(density === 'compact' ? 'default' : 'compact');
         onClose();
       },
     });

@@ -202,6 +202,62 @@ BEGIN
     NULL;
   END;
 
+  -- 6. Verify immutable_audit_logs direct INSERT ban & log_access_denied_event RPC anti-forgery, dedupe & rate limit
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+
+  -- Direct INSERT from authenticated client must fail RLS (no INSERT policy)
+  BEGIN
+    INSERT INTO public.immutable_audit_logs (
+      account_id, actor_auth_id, table_name, record_id, action, new_data
+    ) VALUES (
+      v_user_b, v_user_b, 'security_access_denied', NULL, 'INSERT', '{"forged":true}'::jsonb
+    );
+    RAISE EXCEPTION 'Authenticated client unexpectedly inserted directly into immutable_audit_logs';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+
+  -- Cross-tenant business/branch scope in log_access_denied_event must fail
+  BEGIN
+    PERFORM public.log_access_denied_event('settings', 'logistics_delivery', 'dispatcher', 'dispatcher', 'UNAUTHORIZED_ROUTE', v_biz_b, v_br_b, now());
+    RAISE EXCEPTION 'User A unexpectedly recorded audit event against Tenant B business/branch';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Valid call writes row with server-bound actor_auth_id = v_user_a and record_id IS NULL
+  v_seq_1 := public.log_access_denied_event('settings', 'pos_inventory', 'Staff', 'Cashier', 'ROUTE_GUARD_DENIED', v_biz_a, v_br_a, now());
+  IF COALESCE((v_seq_1->>'recorded')::boolean, false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected first log_access_denied_event to record row: %', v_seq_1;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.immutable_audit_logs
+    WHERE id = (v_seq_1->>'id')::uuid
+      AND (actor_auth_id <> v_user_a OR account_id <> v_user_a OR record_id IS NOT NULL)
+  ) THEN
+    RAISE EXCEPTION 'Security audit row had wrong server-bound actor/account or non-NULL record_id';
+  END IF;
+
+  -- Immediate repeat on same attemptedScreen is deduped within 4 seconds
+  v_seq_2 := public.log_access_denied_event('settings', 'pos_inventory', 'Staff', 'Cashier', 'ROUTE_GUARD_DENIED', v_biz_a, v_br_a, now());
+  IF COALESCE((v_seq_2->>'recorded')::boolean, true) IS NOT FALSE OR v_seq_2->>'reason' <> 'DEDUPED' THEN
+    RAISE EXCEPTION 'Expected immediate repeat log_access_denied_event to be DEDUPED: %', v_seq_2;
+  END IF;
+
+  -- Different screen names record up to 20 per 60s rolling limit, then return RATE_LIMITED
+  FOR i IN 1..19 LOOP
+    v_seq_1 := public.log_access_denied_event('screen_' || i::text, 'pos_inventory', 'Staff', 'Cashier', 'ROUTE_GUARD_DENIED', v_biz_a, v_br_a, now());
+    IF COALESCE((v_seq_1->>'recorded')::boolean, false) IS NOT TRUE THEN
+      RAISE EXCEPTION 'Expected screen_% within rate limit to record: %', i, v_seq_1;
+    END IF;
+  END LOOP;
+
+  v_seq_2 := public.log_access_denied_event('screen_flood_21', 'pos_inventory', 'Staff', 'Cashier', 'ROUTE_GUARD_DENIED', v_biz_a, v_br_a, now());
+  IF COALESCE((v_seq_2->>'recorded')::boolean, true) IS NOT FALSE OR v_seq_2->>'reason' <> 'RATE_LIMITED' THEN
+    RAISE EXCEPTION 'Expected 21st event within 60s to be RATE_LIMITED: %', v_seq_2;
+  END IF;
+
   RESET ROLE;
 END $$;
 

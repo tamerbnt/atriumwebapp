@@ -203,7 +203,11 @@ import {
   normalizePhone,
   getCategoryPerformanceMetricLabel,
   getEffectiveUserRole,
+  migrateStoredOperationalRole,
+  hydrateCurrentUserSafe,
+  normalizeBusinessCategory,
 } from '../utils/staffRules';
+import { resolveSemanticRoute } from '../utils/routePermissions';
 import { calculateAlgerianGrossToNet } from '../utils/algerianPayroll';
 import {
   isExecutiveRole,
@@ -336,6 +340,10 @@ export type ActiveScreen =
   | 'finance'
   | 'history'
   | 'settings'
+  | 'preferences'
+  | 'qc'
+  | 'orders'
+  | 'attendance'
   // PM Direction Screens
   | 'pm_dir_dashboard'
   | 'pm_dir_new_project'
@@ -786,10 +794,11 @@ let globalState: AppState = backfillTraceability((() => {
         const parsed = JSON.parse(raw);
         const rawBusinesses = Array.isArray(parsed.businesses) && parsed.businesses.length > 0 ? parsed.businesses : INITIAL_BUSINESSES;
         const businesses = rawBusinesses.map((b: any) => {
+          const normalizedCat = normalizeBusinessCategory(b.category);
           if (b.id === 'biz_restaurant' && b.name === 'Bistrot Saint-Germain') {
-            return { ...b, name: 'Artis Commerce & Point of Sale', displayName: 'Artis Retail & POS Store' };
+            return { ...b, category: normalizedCat, name: 'Artis Commerce & Point of Sale', displayName: 'Artis Retail & POS Store' };
           }
-          return b;
+          return b.category === normalizedCat ? b : { ...b, category: normalizedCat };
         });
 
         const rawBranches = Array.isArray(parsed.branches) && parsed.branches.length > 0 ? parsed.branches : INITIAL_BRANCHES;
@@ -851,6 +860,11 @@ let globalState: AppState = backfillTraceability((() => {
             ...INITIAL_STAFF.filter((s) => !storedStaffIds.has(s.id)),
           ];
         }
+
+        mergedStaff = mergedStaff.map((s: any) => {
+          const migratedRole = migrateStoredOperationalRole(s?.role);
+          return migratedRole && migratedRole !== s?.role ? { ...s, role: migratedRole } : s;
+        });
 
         const langConfig = getInitialLanguageConfig();
         const effectiveLanguage = langConfig.isAuto ? getSystemDefaultLanguage() : (parsed.language || langConfig.language);
@@ -925,12 +939,21 @@ let globalState: AppState = backfillTraceability((() => {
           commercialDocs: Array.isArray(parsed.commercialDocs) ? parsed.commercialDocs : INITIAL_COMMERCIAL_DOCS,
           purchaseDocs: Array.isArray(parsed.purchaseDocs) ? parsed.purchaseDocs : INITIAL_PURCHASE_DOCS,
           stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
-          currentUser: parsed.currentUser || DEFAULT_USER,
-          // Dual-Role Hydration
+          currentUser:
+            parsed.currentUser === undefined
+              ? DEFAULT_USER
+              : hydrateCurrentUserSafe(parsed.currentUser, mergedStaff, parsed.account),
+          // Dual-Role Hydration + Legacy Operational Role Migration (5.5)
           activeMembershipRole: parsed.activeMembershipRole || 'owner',
           activeAppointmentRole: parsed.activeAppointmentRole || 'owner',
           activePosRole: parsed.activePosRole || 'owner',
           activeEducationRole: parsed.activeEducationRole || 'owner',
+          activeManufacturingRole: (parsed.activeManufacturingRole
+            ? migrateStoredOperationalRole(parsed.activeManufacturingRole)
+            : 'gerant') as any,
+          activeContractorRole: (parsed.activeContractorRole
+            ? migrateStoredOperationalRole(parsed.activeContractorRole)
+            : 'gerant') as any,
           memberCheckIns: Array.isArray(parsed.memberCheckIns) ? parsed.memberCheckIns : [],
           walkInTickets: Array.isArray(parsed.walkInTickets) ? parsed.walkInTickets : [],
           salonChairStations: Array.isArray(parsed.salonChairStations) ? parsed.salonChairStations : [],
@@ -1766,27 +1789,36 @@ export function setDensityAction(density: AppDensity) {
 
 export function setScreenAction(activeScreen: ActiveScreen) {
   const currentBusiness = selectCurrentBusinessFromState(globalState);
+  const effectiveScreen = resolveSemanticRoute(
+    normalizeBusinessCategory(currentBusiness?.category),
+    globalState,
+    activeScreen
+  );
   let nextSubScreen = globalState.activePmSubScreen;
 
-  if (activeScreen === 'pm_dir_dashboard') {
+  if (effectiveScreen === 'pm_dir_dashboard') {
     nextSubScreen = 'dashboard';
-  } else if (activeScreen === 'pm_dir_new_project') {
+  } else if (effectiveScreen === 'pm_dir_new_project') {
     nextSubScreen = 'new_project';
-  } else if (activeScreen === 'pm_dir_projects') {
+  } else if (effectiveScreen === 'pm_dir_projects') {
     nextSubScreen = 'dashboard';
-  } else if (activeScreen === 'pm_dir_approvals') {
+  } else if (effectiveScreen === 'pm_dir_approvals') {
     nextSubScreen = 'approvals';
-  } else if (activeScreen === 'pm_dir_reports') {
+  } else if (effectiveScreen === 'pm_dir_reports') {
     nextSubScreen = 'reports';
-  } else if (activeScreen === 'pm_cp_projects') {
+  } else if (effectiveScreen === 'pm_cp_projects') {
     nextSubScreen = 'portfolio';
-  } else if (activeScreen === 'pm_cp_catalog') {
+  } else if (effectiveScreen === 'pm_cp_catalog') {
     nextSubScreen = 'catalog';
-  } else if (activeScreen === 'pm_cp_orders') {
+  } else if (effectiveScreen === 'pm_cp_orders' || activeScreen === 'orders') {
     nextSubScreen = 'orders';
-  } else if (activeScreen === 'pm_cp_deliverables' || activeScreen === 'pm_cp_files') {
+  } else if (
+    effectiveScreen === 'pm_cp_deliverables' ||
+    effectiveScreen === 'pm_cp_files' ||
+    activeScreen === 'qc'
+  ) {
     nextSubScreen = 'bat';
-  } else if (activeScreen === 'pm_cp_expenses') {
+  } else if (effectiveScreen === 'pm_cp_expenses') {
     nextSubScreen = 'expenses';
   } else if (activeScreen === 'pm_crea_kanban') {
     nextSubScreen = 'demandes';
@@ -1796,9 +1828,9 @@ export function setScreenAction(activeScreen: ActiveScreen) {
     nextSubScreen = 'upload';
   } else if (activeScreen === 'pm_crea_briefs') {
     nextSubScreen = 'briefs';
-  } else if (activeScreen === 'pm_sup_missions') {
+  } else if (effectiveScreen === 'pm_sup_missions') {
     nextSubScreen = 'missions';
-  } else if (activeScreen === 'pm_sup_attendance') {
+  } else if (effectiveScreen === 'pm_sup_attendance' || activeScreen === 'attendance') {
     nextSubScreen = 'attendance';
   } else if (activeScreen === 'pm_sup_staffing') {
     nextSubScreen = 'staffing';
@@ -1971,7 +2003,7 @@ function resolveSubRolesForUserGlobal(user: CurrentUser) {
     activeManufacturingRole: (isManager ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') || r.includes('control') ? 'qualite' : 'operateur')) as any,
     activeLegalRole: (isOwner || r.includes('assoc') || r.includes('titul') || r.includes('expert') ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : 'secretaire_caisse')) as any,
     activeLogisticsRole: (isManager ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('stop') ? 'stop_desk_agent' : 'hub_sorter')) as any,
-    activeContractorRole: (isManager ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'chef_chantier')) as any,
+    activeContractorRole: (isManager ? 'gerant' : (r.includes('conduct') ? 'conducteur_travaux' : r.includes('metreur') ? 'daf_metreur' : r.includes('compt') ? 'comptable' : 'chef_chantier')) as any,
     activeAgriRole: (isManager ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('magasin') ? 'magasinier' : 'zootechnicien')) as any,
   };
 }
@@ -1980,8 +2012,20 @@ export function loginWithPinAction(pin: string) {
   const cleanPin = pin.trim();
   const staffMatch = globalState.staff.find((s) => s.pinCode === cleanPin);
   if (staffMatch) {
-    if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
-      return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+    if (
+      (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') &&
+      !isSoleActiveOwner(staffMatch.id, globalState.staff)
+    ) {
+      const lang = globalState.language || 'fr';
+      return {
+        success: false,
+        message:
+          lang === 'ar'
+            ? 'هذا الحساب معلق أو منتهي الخدمة حالياً.'
+            : lang === 'en'
+            ? 'This account is currently suspended or disabled.'
+            : 'Ce compte est actuellement suspendu ou désactivé.',
+      };
     }
     const user: CurrentUser = {
       id: staffMatch.id,
@@ -6298,6 +6342,16 @@ function createAtriumActions() {
   };
 
   const vacationStaffMember = (id: string, vacationUntil?: string) => {
+    if (isSoleActiveOwner(id, globalState.staff)) {
+      const lang = globalState.language || 'fr';
+      throw new Error(
+        lang === 'ar'
+          ? 'الإجراء مرفوض: لا يمكن وضع المالك الوحيد النشط في عطلة.'
+          : lang === 'en'
+          ? 'Action denied: the sole active owner cannot be placed on leave.'
+          : 'Action refusée : le seul propriétaire actif ne peut pas être mis en congé.'
+      );
+    }
     const target = globalState.staff.find((s) => s.id === id);
     if (!target) return;
     const before = captureStoreSlices(['staff']);
@@ -8720,8 +8774,20 @@ function createAtriumActions() {
     });
 
     if (staffMatch) {
-      if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
-        return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+      if (
+        (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') &&
+        !isSoleActiveOwner(staffMatch.id, globalState.staff)
+      ) {
+        const lang = globalState.language || 'fr';
+        return {
+          success: false,
+          message:
+            lang === 'ar'
+              ? 'هذا الحساب معلق أو منتهي الخدمة حالياً.'
+              : lang === 'en'
+              ? 'This account is currently suspended or disabled.'
+              : 'Ce compte est actuellement suspendu ou désactivé.',
+        };
       }
       const user: CurrentUser = {
         id: staffMatch.id,
@@ -8791,8 +8857,20 @@ function createAtriumActions() {
     const cleanPin = pin.trim();
     const staffMatch = globalState.staff.find((s) => s.pinCode === cleanPin);
     if (staffMatch) {
-      if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
-        return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+      if (
+        (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') &&
+        !isSoleActiveOwner(staffMatch.id, globalState.staff)
+      ) {
+        const lang = globalState.language || 'fr';
+        return {
+          success: false,
+          message:
+            lang === 'ar'
+              ? 'هذا الحساب معلق أو منتهي الخدمة حالياً.'
+              : lang === 'en'
+              ? 'This account is currently suspended or disabled.'
+              : 'Ce compte est actuellement suspendu ou désactivé.',
+        };
       }
       const user: CurrentUser = {
         id: staffMatch.id,
@@ -8842,7 +8920,10 @@ function createAtriumActions() {
   const switchStaffUser = (staffId: string) => {
     const target = globalState.staff.find((s) => s.id === staffId);
     if (!target) return;
-    if (target.status === 'frozen' || target.status === 'terminated') {
+    if (
+      (target.status === 'frozen' || target.status === 'terminated') &&
+      !isSoleActiveOwner(target.id, globalState.staff)
+    ) {
       const lang = globalState.language || 'fr';
       showToast({
         type: 'warning',
@@ -9221,6 +9302,8 @@ function createAtriumActions() {
       isAuthenticated: true,
       isOnboardingOpen: false,
       activeScreen: 'home',
+      settingsTab: 'preferences',
+      ...resolveSubRolesForUserGlobal(newCurrentUser),
     };
 
     notify();

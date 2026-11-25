@@ -2796,5 +2796,13 @@
   "access_restricted_switch_user": "Switch Operator",
   "membership_finance_estimated_badge": "Estimated, ledger pending",
   "membership_finance_estimated_banner": "Figures on this screen are synthesized from active member dues until the dedicated membership ledger syncs.",
-  "membership_finance_estimated_csv_note": "Estimated, ledger pending (synthesized from member dues)"
+  "membership_finance_estimated_csv_note": "Estimated, ledger pending (synthesized from member dues)",
+  "nav_preferences": "Preferences",
+  "settings_preferences_only_title": "Workspace Preferences",
+  "settings_preferences_only_notice": "Preferences-only view for your active role. Language, theme, and layout density apply immediately across the workspace.",
+  "topbar_language_menu": "Language",
+  "topbar_language_switch_desc": "Switch EN / FR / AR (RTL)",
+  "topbar_density_menu": "Compact Density",
+  "topbar_density_toggle_desc": "Toggle dense vs standard spacing",
+  "legal_vault_filing_only_banner": "Filing-only scope: you can intake and print client deposits. Confidential defense briefs, edits, and deletions are restricted to authorized counsel."
 }

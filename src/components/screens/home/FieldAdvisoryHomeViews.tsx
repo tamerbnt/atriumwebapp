@@ -379,22 +379,36 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
           }}
         />
 
-        {!isSecretary && (
-          <HomePreviewCard
-            config={{
-              id: 'legal-vault',
-              tone: 'brown',
-              title: l3(language, 'Coffre & Pièces', 'Document Vault', 'أرشيف المستندات'),
-              subtitle: l3(language, 'Actes signés & pièces justificatives', 'Verified legal archive', 'الوثائق الرسمية'),
-              icon: <FileText size={18} />,
-              count: isAccountant ? scfEntries.length : notaryDeeds.length + matters.length,
-              items: isAccountant ? scfRows : deedRows.slice(0, 3),
-              targetScreen: 'registrations',
-              emptyTitle: l3(language, 'Aucun document archivé.', 'No archived files.', 'لا توجد وثائق.'),
-              emptyCtaLabel: l3(language, 'Ouvrir coffre', 'Open vault', 'فتح الأرشيف'),
-            }}
-          />
-        )}
+        <HomePreviewCard
+          config={{
+            id: 'legal-vault',
+            tone: 'brown',
+            title: isSecretary
+              ? l3(language, 'Accueil & Dépôts', 'Client Intake & Filing', 'الاستقبال والإيداع')
+              : l3(language, 'Coffre & Pièces', 'Document Vault', 'أرشيف المستندات'),
+            subtitle: isSecretary
+              ? l3(language, 'Dépôts clients, NIN/NIF et récépissés', 'Client deposits, IDs & receipts', 'ملفات الإيداع والوصولات')
+              : l3(language, 'Actes signés & pièces justificatives', 'Verified legal archive', 'الوثائق الرسمية'),
+            icon: <FileText size={18} />,
+            count: isSecretary
+              ? cashReceipts.length
+              : isAccountant
+              ? scfEntries.length
+              : notaryDeeds.length + matters.length,
+            items: isSecretary
+              ? receiptRows
+              : isAccountant
+              ? scfRows
+              : deedRows.slice(0, 3),
+            targetScreen: 'registrations',
+            emptyTitle: isSecretary
+              ? l3(language, 'Aucun dépôt enregistré.', 'No filing deposits.', 'لا توجد إيداعات.')
+              : l3(language, 'Aucun document archivé.', 'No archived files.', 'لا توجد وثائق.'),
+            emptyCtaLabel: isSecretary
+              ? l3(language, 'Ouvrir dépôts', 'Open filing', 'فتح الإيداع')
+              : l3(language, 'Ouvrir coffre', 'Open vault', 'فتح الأرشيف'),
+          }}
+        />
 
         <HomePreviewCard
           config={{

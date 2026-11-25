@@ -21,6 +21,7 @@ import {
 } from '../../../services/store';
 import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { localizeStatus } from '../../../utils/rules';
+import { t } from '../../../utils/i18n';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -150,9 +151,20 @@ export const LegalVaultView: React.FC<any> = () => {
     return 'avocat';
   }, [activeLegalRole]);
 
+  const isFilingOnly = targetScope === 'secretaire';
+
   const roleScopedItems = useMemo(() => {
-    return vaultItems.filter((i) => i.roleScope === targetScope || i.roleScope === 'avocat');
-  }, [vaultItems, targetScope]);
+    if (isFilingOnly) {
+      return vaultItems.filter(
+        (i) => i.roleScope === 'secretaire' && i.status !== 'Confidential'
+      );
+    }
+    return vaultItems.filter(
+      (i) =>
+        i.roleScope === targetScope ||
+        (targetScope === 'avocat' && i.roleScope === 'secretaire')
+    );
+  }, [vaultItems, targetScope, isFilingOnly]);
 
   const activeItem = useMemo(() => {
     if (!selectedItem) return null;
@@ -279,18 +291,26 @@ export const LegalVaultView: React.FC<any> = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = useCallback((item: VaultItem) => {
-    setVaultToEdit(item);
-    setCode(item.code);
-    setTitle(item.title);
-    setMatterReference(item.matterReference);
-    setCategory(item.category);
-    setStatus(item.status);
-    setIsModalOpen(true);
-  }, []);
+  const openEditModal = useCallback(
+    (item: VaultItem) => {
+      if (isFilingOnly) return;
+      setVaultToEdit(item);
+      setCode(item.code);
+      setTitle(item.title);
+      setMatterReference(item.matterReference);
+      setCategory(item.category);
+      setStatus(item.status);
+      setIsModalOpen(true);
+    },
+    [isFilingOnly]
+  );
 
   const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isFilingOnly && vaultToEdit) {
+      setIsModalOpen(false);
+      return;
+    }
     if (!title.trim() || !matterReference.trim()) {
       showToast(
         isAr ? 'يرجى إدخال عنوان الوثيقة ورقم الملف' : 'Veuillez saisir le titre et dossier',
@@ -298,6 +318,10 @@ export const LegalVaultView: React.FC<any> = () => {
       );
       return;
     }
+    const safeStatus: VaultItem['status'] =
+      isFilingOnly && status !== 'PieceClient' && status !== 'OriginalScanned'
+        ? 'PieceClient'
+        : status;
     const payload: VaultItem = {
       id: vaultToEdit?.id || `v_${Date.now()}`,
       code: code.trim(),
@@ -305,7 +329,7 @@ export const LegalVaultView: React.FC<any> = () => {
       matterReference: matterReference.trim(),
       category: category.trim(),
       depositDate: vaultToEdit?.depositDate || new Date().toISOString().split('T')[0],
-      status,
+      status: safeStatus,
       roleScope: targetScope,
       branchId: vaultToEdit?.branchId || currentBranch?.id || 'branch_legal_main',
       officialSealNumber:
@@ -446,65 +470,79 @@ export const LegalVaultView: React.FC<any> = () => {
   );
 
   const getFanActions = useCallback(
-    (item: VaultItem): KineticRowFanAction[] => [
-      {
-        id: 'inspect',
-        label: isAr ? 'معاينة' : 'Inspecter',
-        icon: <Eye className="w-[15px] h-[15px]" />,
-        onClick: (e) => {
-          setDrawerOpenerEl(e.currentTarget);
-          setSelectedItem(item);
-          setActiveTab('piece');
+    (item: VaultItem): KineticRowFanAction[] => {
+      const actions: KineticRowFanAction[] = [
+        {
+          id: 'inspect',
+          label: isAr ? 'معاينة' : 'Inspecter',
+          icon: <Eye className="w-[15px] h-[15px]" />,
+          onClick: (e) => {
+            setDrawerOpenerEl(e.currentTarget);
+            setSelectedItem(item);
+            setActiveTab('piece');
+          },
         },
-      },
-      {
-        id: 'edit',
-        label: isAr ? 'تعديل' : 'Modifier',
-        icon: <Edit className="w-[15px] h-[15px]" />,
-        onClick: () => openEditModal(item),
-      },
-      {
-        id: 'del',
-        label: isAr ? 'سحب' : 'Retirer',
-        icon: <Trash2 className="w-[15px] h-[15px]" />,
-        isDanger: true,
-        onClick: () => handleDelete(item),
-      },
-    ],
-    [isAr, openEditModal, handleDelete]
+      ];
+      if (!isFilingOnly) {
+        actions.push(
+          {
+            id: 'edit',
+            label: isAr ? 'تعديل' : 'Modifier',
+            icon: <Edit className="w-[15px] h-[15px]" />,
+            onClick: () => openEditModal(item),
+          },
+          {
+            id: 'del',
+            label: isAr ? 'سحب' : 'Retirer',
+            icon: <Trash2 className="w-[15px] h-[15px]" />,
+            isDanger: true,
+            onClick: () => handleDelete(item),
+          }
+        );
+      }
+      return actions;
+    },
+    [isAr, isFilingOnly, openEditModal, handleDelete]
   );
 
   const getDetailActions = useCallback(
-    (item: VaultItem): KineticDetailAction[] => [
-      {
-        id: 'inspect',
-        label: isAr ? 'بطاقة الوثيقة' : 'Fiche Pièce',
-        icon: <Eye className="w-3.5 h-3.5" />,
-        onClick: () => {
-          setSelectedItem(item);
-          setActiveTab('piece');
+    (item: VaultItem): KineticDetailAction[] => {
+      const actions: KineticDetailAction[] = [
+        {
+          id: 'inspect',
+          label: isAr ? 'بطاقة الوثيقة' : 'Fiche Pièce',
+          icon: <Eye className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setSelectedItem(item);
+            setActiveTab('piece');
+          },
         },
-      },
-      {
-        id: 'certify',
-        label: isAr ? 'فحص SHA-256' : 'Empreinte SHA-256',
-        icon: <FileCheck className="w-3.5 h-3.5 text-[#096b40]" />,
-        onClick: () => handleCertifyHash(item),
-      },
-      {
-        id: 'edit',
-        label: isAr ? 'تعديل' : 'Modifier',
-        icon: <Edit className="w-3.5 h-3.5" />,
-        onClick: () => openEditModal(item),
-      },
-      {
-        id: 'delete',
-        label: isAr ? 'سحب' : 'Retirer',
-        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
-        onClick: () => handleDelete(item),
-      },
-    ],
-    [isAr, handleCertifyHash, openEditModal, handleDelete]
+        {
+          id: 'certify',
+          label: isAr ? 'فحص SHA-256' : 'Empreinte SHA-256',
+          icon: <FileCheck className="w-3.5 h-3.5 text-[#096b40]" />,
+          onClick: () => handleCertifyHash(item),
+        },
+      ];
+      if (!isFilingOnly) {
+        actions.push(
+          {
+            id: 'edit',
+            label: isAr ? 'تعديل' : 'Modifier',
+            icon: <Edit className="w-3.5 h-3.5" />,
+            onClick: () => openEditModal(item),
+          },
+          {
+            id: 'delete',
+            label: isAr ? 'سحب' : 'Retirer',
+            icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+            onClick: () => handleDelete(item),
+          }
+        );
+      }
+      return actions;
+    },
+    [isAr, isFilingOnly, handleCertifyHash, openEditModal, handleDelete]
   );
 
   const handleExportBordereau = () => {
@@ -811,6 +849,17 @@ export const LegalVaultView: React.FC<any> = () => {
         }}
       />
 
+      {isFilingOnly && (
+        <div
+          data-testid="legal-vault-filing-only-banner"
+          data-sq="card"
+          className="p-[var(--s3,12px)] bg-[#F3EDE7] dark:bg-[#191716] text-[var(--text-1)] dark:text-white t-small flex items-center gap-[var(--s2,8px)]"
+        >
+          <Lock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
+          <span>{t('legal_vault_filing_only_banner', language)}</span>
+        </div>
+      )}
+
       <ScreenKpiBanner
         heading={
           isAr ? 'أمان الوثائق والقوة الإثباتية' : 'Force Probante & Intégrité des Pièces'
@@ -906,31 +955,35 @@ export const LegalVaultView: React.FC<any> = () => {
           defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
-          onBulkDelete={(ids) => {
-            const prevItems = cloneSnapshot(vaultItems);
-            const updated = vaultItems.filter((i) => !ids.has(i.id));
-            saveVault(updated);
-            setSelectedIds(new Set());
-            if (selectedItem && ids.has(selectedItem.id)) setSelectedItem(null);
-            registerUndoEntry({
-              vertical: 'legal_accounting',
-              operationType: 'bulk',
-              summary: pickLocalizedText(language, {
-                en: `Removed ${ids.size} vault item(s)`,
-                fr: `${ids.size} pièce(s) retirée(s) du coffre`,
-                ar: `تم سحب ${ids.size} وثائق من الخزينة`,
-              }),
-              affectedCount: ids.size,
-              toastType: 'info',
-              undo: () => {
-                saveVault(cloneSnapshot(prevItems));
-              },
-              redo: () => {
-                saveVault(cloneSnapshot(updated));
-                setSelectedItem((cur) => (cur && ids.has(cur.id) ? null : cur));
-              },
-            });
-          }}
+          onBulkDelete={
+            isFilingOnly
+              ? undefined
+              : (ids) => {
+                  const prevItems = cloneSnapshot(vaultItems);
+                  const updated = vaultItems.filter((i) => !ids.has(i.id));
+                  saveVault(updated);
+                  setSelectedIds(new Set());
+                  if (selectedItem && ids.has(selectedItem.id)) setSelectedItem(null);
+                  registerUndoEntry({
+                    vertical: 'legal_accounting',
+                    operationType: 'bulk',
+                    summary: pickLocalizedText(language, {
+                      en: `Removed ${ids.size} vault item(s)`,
+                      fr: `${ids.size} pièce(s) retirée(s) du coffre`,
+                      ar: `تم سحب ${ids.size} وثائق من الخزينة`,
+                    }),
+                    affectedCount: ids.size,
+                    toastType: 'info',
+                    undo: () => {
+                      saveVault(cloneSnapshot(prevItems));
+                    },
+                    redo: () => {
+                      saveVault(cloneSnapshot(updated));
+                      setSelectedItem((cur) => (cur && ids.has(cur.id) ? null : cur));
+                    },
+                  });
+                }
+          }
           isPinned={(i) => pinnedIds.has(i.id)}
           onTogglePin={togglePin}
           sortBy={sortBy}
@@ -951,8 +1004,8 @@ export const LegalVaultView: React.FC<any> = () => {
           getRowMeta={getRowMeta}
           getFanActions={getFanActions}
           getDetailActions={getDetailActions}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
+          onEdit={isFilingOnly ? undefined : openEditModal}
+          onDelete={isFilingOnly ? undefined : handleDelete}
           customActions={(item) => [
             {
               id: 'certify',
@@ -1019,8 +1072,8 @@ export const LegalVaultView: React.FC<any> = () => {
         onTabChange={setActiveTab}
         onSelectItem={(item) => setSelectedItem(item)}
         onClose={() => setSelectedItem(null)}
-        onDelete={handleDelete}
-        holdToDelete
+        onDelete={isFilingOnly ? undefined : handleDelete}
+        holdToDelete={!isFilingOnly}
         renderBody={(item, tab) => {
           if (tab === 'sceau') {
             return (
@@ -1118,12 +1171,16 @@ export const LegalVaultView: React.FC<any> = () => {
                       primary: true,
                       onClick: () => handleCertifyHash(item),
                     },
-                    {
-                      id: 'edit',
-                      label: isAr ? 'تعديل' : 'Modifier',
-                      icon: <Edit size={16} />,
-                      onClick: () => openEditModal(item),
-                    },
+                    ...(!isFilingOnly
+                      ? [
+                          {
+                            id: 'edit',
+                            label: isAr ? 'تعديل' : 'Modifier',
+                            icon: <Edit size={16} />,
+                            onClick: () => openEditModal(item),
+                          },
+                        ]
+                      : []),
                     {
                       id: 'seal',
                       label: isAr ? 'الختم الرسمي' : 'Sceau Légal',
@@ -1267,12 +1324,19 @@ export const LegalVaultView: React.FC<any> = () => {
                 label={isAr ? 'مستوى الحماية' : 'Sécurité'}
                 value={status}
                 onChange={(v) => setStatus(extractStr(v) as VaultItem['status'])}
-                options={[
-                  { value: 'OriginalScanned', label: 'Original Scellé' },
-                  { value: 'Confidential', label: 'Confidentiel Défense' },
-                  { value: 'MinuteOfficielle', label: 'Minute Notariée' },
-                  { value: 'DossierAudit', label: 'Dossier Audit CAC' },
-                ]}
+                options={
+                  isFilingOnly
+                    ? [
+                        { value: 'PieceClient', label: isAr ? 'وثيقة عميل' : isEn ? 'Client Filing' : 'Pièce Client' },
+                        { value: 'OriginalScanned', label: isAr ? 'نسخة ممسوحة' : isEn ? 'Scanned Original' : 'Original Scanné' },
+                      ]
+                    : [
+                        { value: 'OriginalScanned', label: 'Original Scellé' },
+                        { value: 'Confidential', label: 'Confidentiel Défense' },
+                        { value: 'MinuteOfficielle', label: 'Minute Notariée' },
+                        { value: 'DossierAudit', label: 'Dossier Audit CAC' },
+                      ]
+                }
               />
             </div>
 

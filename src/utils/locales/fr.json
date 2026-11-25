@@ -2796,5 +2796,13 @@
   "access_restricted_switch_user": "Changer d'opérateur",
   "membership_finance_estimated_badge": "Estimé, grand livre en attente",
   "membership_finance_estimated_banner": "Les montants affichés sont estimés à partir des cotisations adhérents en attendant la synchronisation du grand livre.",
-  "membership_finance_estimated_csv_note": "Estimé, grand livre en attente (synthétisé depuis les cotisations)"
+  "membership_finance_estimated_csv_note": "Estimé, grand livre en attente (synthétisé depuis les cotisations)",
+  "nav_preferences": "Préférences",
+  "settings_preferences_only_title": "Préférences de l'espace",
+  "settings_preferences_only_notice": "Vue limitée aux préférences pour votre rôle actif. La langue, le thème et la densité s'appliquent immédiatement.",
+  "topbar_language_menu": "Langue",
+  "topbar_language_switch_desc": "Basculer FR / EN / AR (RTL)",
+  "topbar_density_menu": "Densité compacte",
+  "topbar_density_toggle_desc": "Basculer affichage compact / standard",
+  "legal_vault_filing_only_banner": "Périmètre dépôts uniquement : vous pouvez enregistrer et imprimer les pièces clients. Les pièces de défense, modifications et retraits sont réservés aux associés."
 }

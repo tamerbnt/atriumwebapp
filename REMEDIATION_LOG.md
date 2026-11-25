@@ -209,89 +209,145 @@ Per Gate 1 Condition #1: **simple print/export of existing data using existing t
 
 ---
 
-## Step 4 — Routing, Roles & Access (`5.1`–`5.11` & Gate 3 Package)
+## Step 4 — Routing, Roles & Access (`5.1`–`5.11` & Reconciled Gate 3 Package)
 
-### 1. Golden `role × route` Baseline & `5.5` / `5.9` Zero-Diff Proof
-
-Automated assertions in `src/utils/__tests__/routePermissions.test.ts` confirm **zero regressions** across all non-switcher executive/operational workflows (`5.5`) and `project_milestone` roles (`5.9`):
-
-| Vertical | Roles Verified | Effective Allowed Route Matrix (Zero Diff vs. Baseline) |
-|---|---|---|
-| `freelance_solo` | `Owner` vs `Assistant` | Operational: `home`, `dashboard`, `analytics`, `members`, `registrations`, `scheduler`, `shop`, `finance`; `Owner` adds `history`, `staff`, `settings` |
-| `rental_booking` | `Owner` vs `Reception` | Operational: `home`, `dashboard`, `scheduler`, `registrations`, `shop`, `members`, `finance`, `analytics`; `Owner` adds `history`, `staff`, `settings` |
-| `medical_clinic` | `Doctor` vs `Infirmier` | Clinical: `home`, `dashboard`, `scheduler`, `agenda`, `members`, `shop`, `registrations`, `finance`; `Doctor` adds `staff` (and `Owner` adds `settings`, `history`) |
-| `trading_commercial` | `Owner` vs `Cashier` | Operational: `home`, `dashboard`, `trading_dashboard`, `trading_sales`, `registrations`, `trading_purchases`, `scheduler`, `trading_inventory`, `shop`, `trading_directory`, `members`, `trading_catalog`, `trading_finance`, `finance`, `analytics`; `Owner` adds `history`, `staff`, `settings` |
-| `project_milestone` (6 roles) | `direction`, `chef_projet`, `crea`, `superviseur`, `rh`, `compta` | `direction`: all `pm_*` + executive workspace routes; `chef_projet`: `pm_cp_*` + `scheduler`, `staff`; `crea`: `pm_crea_*` + `registrations`; `superviseur`: `pm_sup_*` + `analytics`; `rh`: `pm_rh_*` + `members`, `staff`; `compta`: `pm_compta_*` + `finance`, `shop` |
+> **Pre-Step 4 Continuity (Step 3 & Gate 2 `(a)`–`(f)` Already Completed Above)**:
+> - **(a)** SQL harness `scripts/db/test_rls_rpc_triggers.sql` extended for RLS/RPC/triggers + CI `.github/workflows/ci-db-hardening.yml` (*sandbox note: no `psql`/`pg_ctl`/`docker` in container; executes in GitHub CI Postgres 16*).
+> - **(b)** Section 14 Art. 317 divergence (`rules.ts:511-519` vs `logisticsRules.ts:103-113`) documented & left untouched pending accountant verification.
+> - **(c)–(d)** `statutory_rates.effective_from`, `wilayas_ref.valid_from`, and `snmg_dzd` seeded `NULL` (`DZ-CODE-BASELINE-UNVERIFIED`), preserving dual transitional IRG formulas.
+> - **(e)** Offline queue `MAX_QUEUE_SIZE = 500` fails closed (`OfflineQueueCapacityError`, zero silent drops/overflows).
+> - **(f)** Ratchet baseline saved (`scripts/ci/phase1-guards-baseline.json`): `showToastOnly: 66`, `forbiddenLiterals: 143 -> 0`, `unregisteredStorageKeys: 0`, `i18nAsymmetry: 0`.
+> - **Scope Boundaries**: Zero Step 5 (`3.x`) handlers modified; zero `5.11` files deleted prior to explicit user authorization.
 
 ---
 
-### 2. Gate 1 Condition #5 — `trading_commercial` & `rental_booking` Least-Privilege Proof
+### 1. Full 16-Vertical × Every-Role Golden Matrix & `5.5` / `5.9` (`DONE`) Proof
 
-| Scenario | Before (Fail-Open / Escalation Risk) | After (`staffRules.ts` + `routePermissions.ts`) | `canViewSensitivePayroll` | `settings` / `staff` Access |
+`src/utils/routePermissions.ts` (`ROUTE_ALLOWLIST_BY_CATEGORY_ROLE` + `PM_ROLE_ROUTES` + `OPERATIONAL_ROUTES_NO_SWITCHER`) is the **single source of truth**. Verified in `src/utils/__tests__/routePermissions.test.ts`:
+
+- **`5.5` (`DONE`) Stored Operational Role Migration**: `migrateStoredOperationalRole()` (`src/utils/staffRules.ts`) migrates legacy persisted role tokens (`conducteur` → `conducteur_travaux`, `metreur` → `daf_metreur`, `controleur` → `qualite`) during `loadState()` (`src/services/store.ts`), and `resolveSubRolesForUserGlobal()` emits `'conducteur_travaux'` and `'daf_metreur'` while preserving equivalence in permission checks (**zero diff** on existing workflows).
+- **`5.9` (`DONE`) Semantic Route IDs**: `resolveSemanticRoute()` resolves canonical semantic IDs (`qc`, `orders`, `attendance`) plus legacy PM aliases (`pm_dir_projects` → `pm_dir_dashboard`, `pm_cp_files` → `pm_cp_deliverables`) inside both `canAccessRoute()` and `setScreenAction()`:
+  - `orders` → `pm_cp_orders` (`project_milestone`), `registrations` (`pos_inventory`), `trading_purchases` (`trading_commercial`), `scheduler` (`auto_garage`, `manufacturing_production`).
+  - `qc` → `finance` (`manufacturing_production`), `scheduler` (`construction_contractor`), `pm_cp_deliverables` (`project_milestone`).
+  - `attendance` → `pm_sup_attendance` (`project_milestone`), `analytics` (`education_cohort`), `scheduler` (`construction_contractor`), `shop` (`agriculture_farming`).
+
+| # | Vertical | Roles Verified | Allowed Routes Matrix |
+|---|---|---|---|
+| 1 | `membership_session` | `owner`, `staff` | `owner`: `home, dashboard, members, registrations, shop, scheduler, finance*, history, analytics, staff, settings` · `staff`: `home, dashboard, members, registrations` (+ `preferences`) |
+| 2 | `appointment_service` | `owner`, `staff` | `owner`: full executive routes · `staff`: `home, dashboard, scheduler, members` (+ `preferences`) |
+| 3 | `pos_inventory` | `owner`, `staff` | `owner`: full executive routes · `staff`: `home, dashboard, shop, scheduler, registrations, members` (+ `preferences`) |
+| 4 | `education_cohort` | `owner`, `staff` | `owner`: full executive routes · `staff`: `home, dashboard, analytics, scheduler, members, shop, registrations` (+ `preferences`) |
+| 5 | `project_milestone` | `direction`, `chef_projet`, `crea`, `superviseur`, `rh`, `compta` | `direction`: all `pm_*` + executive workspace routes · `chef_projet`: `home, pm_cp_*, scheduler, staff` · `crea`: `home, pm_crea_*, registrations` · `superviseur`: `home, pm_sup_*, analytics` · `rh`: `home, pm_rh_*, members, staff` · `compta`: `home, pm_compta_*, finance, shop` |
+| 6 | `freelance_solo` | `Owner`, `Assistant` | `Assistant`: `home, dashboard, analytics, members, registrations, scheduler, shop, finance` (+ `preferences`); `Owner` adds `history, staff, settings` |
+| 7 | `rental_booking` | `Owner`, `Reception` | `Reception`: `home, dashboard, scheduler, registrations, shop, members, finance, analytics` (+ `preferences`); `Owner` adds `history, staff, settings` |
+| 8 | `trading_commercial` | `Owner`, `Cashier` | `Cashier`: `home, dashboard, trading_dashboard, trading_sales, registrations, trading_purchases, scheduler, trading_inventory, shop, trading_directory, members, trading_catalog, trading_finance, finance, analytics` (+ `preferences`); `Owner` adds `history, staff, settings` |
+| 9 | `medical_clinic` | `Owner`, `Doctor`, `Infirmier` | `Infirmier`: `home, dashboard, scheduler, agenda, members, shop, registrations, finance` (+ `preferences`); `Doctor` adds `staff`; `Owner` adds `history, settings` |
+| 10 | `auto_garage` | `gerant`, `reception`, `mecanicien`, `magasinier`, `caisse` | `gerant`: full executive · `reception`: `home, dashboard, scheduler, registrations, members, shop, finance` · `mecanicien`: `home, dashboard, scheduler, registrations, members, shop` · `magasinier`: `home, dashboard, shop, scheduler, registrations` (`finance` removed per `5.2`) · `caisse`: `home, dashboard, finance, members, scheduler` |
+| 11 | `real_estate` | `direction`, `negociateur`, `gestionnaire_locatif`, `notaire_compta` | `direction`: full executive · `negociateur`: `home, dashboard, realestate_mandates, shop, members, registrations` · `gestionnaire_locatif`: `home, dashboard, members, scheduler, registrations, finance` · `notaire_compta`: `home, dashboard, realestate_mandates, shop, scheduler, finance` |
+| 12 | `manufacturing_production` | `gerant`, `chef_atelier`, `operateur`, `magasinier`, `qualite`/`controleur` | `gerant`: full executive · `chef_atelier`: `home, dashboard, scheduler, registrations, shop, members, finance, staff` · `operateur`: `home, dashboard, scheduler, registrations` · `magasinier`: `home, dashboard, shop, members, finance` · `qualite`: `home, dashboard, scheduler, registrations, finance` |
+| 13 | `legal_accounting` | `avocat_associe`, `notaire_titulaire`, `expert_comptable`, `avocat_collaborateur`, `clerc_notaire`, `secretaire_caisse` | Executives: full · Collaborateurs/Clercs: `home, dashboard, members, scheduler, registrations, finance, history` · `secretaire_caisse`: `home, dashboard, finance, members, scheduler, registrations* (filing-only), settings* (preferences-only)` |
+| 14 | `logistics_delivery` | `gerant`, `dispatcher`, `hub_sorter`, `stop_desk_agent` | `gerant`: full executive · `dispatcher`: `home, dashboard, members, scheduler, registrations, staff, settings* (preferences-only)` · `hub_sorter`: `home, dashboard, registrations, members, scheduler` (no `finance` per `5.4`) · `stop_desk_agent`: `home, dashboard, registrations, members, scheduler, finance` |
+| 15 | `construction_contractor` | `gerant`, `conducteur_travaux`, `chef_chantier`, `daf_metreur`, `comptable` | `gerant`: full executive · `conducteur_travaux`: `home, dashboard, members, registrations, shop, scheduler, finance, staff` · `chef_chantier`: same · `daf_metreur`: `home, dashboard, shop, scheduler, finance, members, registrations, settings* (preferences-only)` · `comptable`: `home, dashboard, finance, scheduler, shop, members` |
+| 16 | `agriculture_farming` | `gerant`, `chef_culture`, `zootechnicien`, `magasinier` | `gerant`: full executive · `chef_culture`: `home, members, scheduler, shop, staff` · `zootechnicien`: `home, registrations` · `magasinier`: `home, finance, shop` |
+
+*Intentional changes vs. pre-Step-4 baseline (separate list)*:
+1. **`5.1`**: `membership_session` owner gains `'finance'` (`MembershipFinanceView` with `"Estimated, ledger pending"` banner & CSV tag).
+2. **`5.2`**: `auto_garage` `magasinier` `'finance'` (`Réceptions`) removed from `Sidebar.tsx` and `routePermissions.ts`.
+3. **`5.3`**: `legal_accounting` `secretaire_caisse` keeps `'registrations'` routed to `LegalVaultView` strictly in **filing-only mode** (`isFilingOnly = true`), excluding `avocat` & `Confidential` records and hiding edit/delete/bulk-delete actions; restored home link in `FieldAdvisoryHomeViews.tsx`.
+4. **`5.4`**: `logistics_delivery` `hub_sorter` vs `stop_desk_agent` separated in `App.tsx` (`hub_sorter` cannot hit COD `finance`).
+5. **Catalog Scoped `Settings` + Universal Language & Density**: `secretaire_caisse`, `dispatcher`, and `metreur`/`daf_metreur` retain catalog `'settings'` rendered strictly in **preferences-only mode** (`effectivePreferencesOnly = true`: Language, Theme, Compact Density/Auto-Hide only; executive tabs, fiscal config, backup/restore, desktop upgrade, and setup wizard hidden). All authenticated non-executive users can also switch **EN / FR / AR (RTL)** and **Compact Density** anytime via `TopBar` operator menu, `CommandPaletteModal`, or `'preferences'`.
+6. **`5.6` / `5.7` / `5.8` / `5.10`**: Fail-closed role resolution, semantic alias normalization, non-mutating navigation, `<AccessRestrictedView />`, and server-bound audit logging.
+
+---
+
+### 2. Least-Privilege Before/After Diff, Owner Lockout Prevention & 16-Vertical Onboarding Test
+
+| Scenario | Before (Fail-Open Escalation) | After (`staffRules.ts` + `routePermissions.ts`) | `canViewSensitivePayroll` | `settings` / `staff` |
 |---|---|---|---|---|
-| `trading_commercial` + `currentUser: null` | Returned `'Owner'` fallback in default switch / missing context | Resolves `'Staff'` (fail-closed) | `false` | `false` / `false` |
-| `trading_commercial` + `Cashier` (`roleRank: 2`) | Preserved `'Cashier'` unless overwritten by fallback | Resolves `'Cashier'` | `false` | `false` / `false` |
-| `trading_commercial` + `Owner` (`roleRank: 8`) | Resolved `'Owner'` | Resolves `'Owner'` | `true` | `true` / `true` |
-| `rental_booking` + `currentUser: null` | Returned `'Owner'` fallback in default switch / missing context | Resolves `'Staff'` (fail-closed) | `false` | `false` / `false` |
-| `rental_booking` + `Reception` (`roleRank: 2`) | Preserved `'Reception'` | Resolves `'Reception'` | `false` | `false` / `false` |
-| `rental_booking` + `Owner` (`roleRank: 8`) | Resolved `'Owner'` | Resolves `'Owner'` | `true` | `true` / `true` |
+| `trading_commercial` + `currentUser: null` | Escalated to `'Owner'` | Resolves `'Staff'` (fail-closed) | `false` | `false` / `false` |
+| `trading_commercial` + `Cashier` | `'Cashier'` (blocked only where overridden) | `'Cashier'` (+ `'preferences'` for personal locale/density) | `false` | `false` / `false` |
+| `trading_commercial` + `Owner` | `'Owner'` | `'Owner'` | `true` | `true` / `true` |
+| `rental_booking` + `currentUser: null` | Escalated to `'Owner'` | Resolves `'Staff'` (fail-closed) | `false` | `false` / `false` |
+| `rental_booking` + `Reception` | `'Reception'` | `'Reception'` (+ `'preferences'`) | `false` | `false` / `false` |
+| `rental_booking` + `Owner` | `'Owner'` | `'Owner'` | `true` | `true` / `true` |
+| Existing Owner with unset `role` in `localStorage` | Escalated implicitly | `hydrateCurrentUserSafe()` recovers `'Owner'` when matching active Owner record / `account.email` | `true` | `true` / `true` |
+| Existing non-owner with unset `role` in `localStorage` | Escalated to `'Owner'` | `hydrateCurrentUserSafe()` fails closed to `'Staff'` | `false` | `false` / `false` |
+
+- **16-Vertical Onboarding Invariant (`routePermissions.test.ts`)**: Executed `completeOnboarding()` across all **16 categories** while pre-polluted with restricted sub-roles (`chef_chantier`, `secretaire_caisse`) — verified every newly onboarded owner keeps `currentUser.role === 'Owner'`, `canViewSensitivePayroll('Owner') === true`, and full `settings` access.
 
 ---
 
-### 3. Explicit Before / After Diffs (`5.1`–`5.4`, `5.6`–`5.8`, `5.10`)
+### 3. Protective Fixes Added Alongside the Plan (Explicit Diffs)
 
-- **`5.1` Membership Owner Finance Route & Honest Estimated Banner**:
-  - **Before**: `membership_session` owner sidebar omitted `'finance'`; `App.tsx` hit `renderMembershipScreen` default branch (`MembershipDashboardView`) instead of `MembershipFinanceView`; synthesized rows looked indistinguishable from ledger postings.
-  - **After**: Added `'finance'` to `Sidebar.tsx`, `routePermissions.ts`, and `App.tsx` `membership_session` owner switch (`<MembershipFinanceView />`). Added `"Estimated, ledger pending"` banner (`data-testid="membership-finance-estimated-banner"`), row badge/subline, and CSV `Ledger Source` column in `MembershipFinanceView.tsx` (EN/FR/AR i18n keys added cleanly; reminder `showToast` stubs untouched pending Step 5).
-- **`5.2` Non-Executive Settings Exposure & TopBar/Sidebar Sync**:
-  - **Before**: `secretaire_caisse`, `dispatcher`, `metreur` exposed `'settings'` in `Sidebar.tsx`, and `TopBar.tsx` showed `Settings` dropdown entry regardless of role.
-  - **After**: Removed `'settings'` from non-executive nav arrays in `Sidebar.tsx`, gated `TopBar.tsx` Settings item via `canAccessRoute(..., 'settings')`, and filtered all returned `Sidebar` & `CommandPaletteModal` nav/record items through `canAccessRoute`.
-- **`5.3` / `5.4` Staff, Logistics, Agriculture & Home Quick-Link Alignment**:
-  - **Before**: `LegalStaffView`, `LogisticsStaffView`, `ContractorStaffView`, `PosStaffView` drifted on category strings; `CoreServiceHomeViews`, `ClinicalWorkshopHomeViews`, and `FieldAdvisoryHomeViews` contained role-mismatched `targetScreen` links (e.g., `gym-schedule-staff` → `'scheduler'`, `agri-team-strip` → `'staff'` for non-management roles, `log-cod` for `hub_sorter`).
-  - **After**: Canonicalized staff screen categories, aligned Home strip/card `targetScreen` targets with role allowlists, and gated `AccessRestrictedView` inside `StandardStaffScreen.tsx`, `MembershipStaffView.tsx`, and `ProjectRhView.tsx`.
-- **`5.6` Least-Privilege `getEffectiveUserRole` & Alias Normalization**:
-  - **Before**: Unauthenticated (`currentUser: null`) or unknown role could escalate to `'Owner'`/`'gerant'`/`'direction'`/`'avocat_associe'`; `legal_notary`, `agriculture_livestock`, `controleur`, `conducteur_travaux`, `daf_metreur` had uneven aliases.
-  - **After**: Added `normalizeBusinessCategory()` & `normalizeOperationalRole()` (`controleur` → `qualite`, `conducteur_travaux` → `conducteur`, `daf_metreur` → `metreur`, `legal_notary` → `legal_accounting`, `agriculture_livestock` → `agriculture_farming`); rewrote `getEffectiveUserRole` to return `userRole || 'Staff'` fail-closed; unified `resolveSubRolesForUserGlobal` in `store.ts`; blocked `frozen`/`terminated` staff in `switchStaffUser`.
-- **`5.7` / `5.8` Route Mutation & Silent Fallback Elimination**:
-  - **Before**: `setScreenAction` in `store.ts` overwrote `activePmRole` on route navigation; `App.tsx` silently rendered dashboard/kiosk fallbacks when non-owners landed on restricted screens (`settings`, `finance`, `staff`, etc.).
-  - **After**: `setScreenAction` no longer mutates `activePmRole`; `App.tsx` checks `canAccessRoute` via `isRouteAllowed`, forces `isFocusEligibleScreen = false` when denied, and renders `<AccessRestrictedView />` (`"Access restricted"` with Return Home & Switch Operator buttons in EN/FR/AR RTL).
-- **`5.10` Deduped Access-Denied Security Audit Logging**:
-  - **Before**: Denied navigation/screen accesses left zero local or remote audit trail.
-  - **After**: Registered `'atrium_security_audit_logs_v1'` in `src/config/localStorageRegistry.ts`; added `auditService.logAccessDeniedEvent(...)` and `recordRouteAccessDenied(...)` with 4-second deduplication window triggered across `App.tsx`, `useStaffFoundation.ts`, `MembershipStaffView.tsx`, and `ProjectRhView.tsx`.
+1. **`switchStaffUser`, `login`, `loginWithPinAction`, `loginWithPin` (`src/services/store.ts`)**: Reject `frozen`/`terminated` staff switches/logins with localized FR/AR/EN messages while enforcing sole-active-owner immunity (`!isSoleActiveOwner(target, state.staff)`) so the last active Owner can **never** be locked out (same protection added to `vacationStaffMember`).
+2. **`setScreenAction` (`src/services/store.ts`)**: Applies `resolveSemanticRoute` for semantic IDs (`qc`, `orders`, `attendance`, legacy aliases) without modifying `activePmRole`.
 
 ---
 
-### 4. `5.11` Orphan File Inventory (Read-Only — Held for Gate 3 Approval)
+### 4. Server-Side Access-Denied Audit Trail (`log_access_denied_event` RPC) & Anti-Tampering Proof
 
-*Zero files deleted prior to Gate 3 owner sign-off.* Static import + test reference scan across `src/` identified:
-
-| File Path | Status | Verification & Rationale |
-|---|---|---|
-| `src/components/common/ToastContainer.tsx` | **Confirmed Orphan** | Zero imports in `src/`; `src/App.tsx:196,1873` uses `ToastStack` (`src/components/ui/ToastStack.tsx`) |
-| `src/components/common/AppleOverscrollContainer.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/common/staff/StaffSubTabSwitcher.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/modals/GoogleOAuthGuideModal.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/screens/membership/MemberKineticRow.tsx` | **Candidate Orphan** | Zero imports across production & test files (superseded by `UniversalDataCollection`) |
-| `src/components/ui/ActionNode.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/ui/ConfirmDialog.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/ui/FilterCapsules.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/ui/SearchBox.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/ui/StatTile.tsx` | **Candidate Orphan** | Zero imports across production & test files |
-| `src/components/ui/AtriumIntroOverlay.tsx` | **Keep (Active)** | Lazy-loaded by `src/App.tsx:198` & imported by `src/components/auth/AtriumMonolith.tsx` |
-| `src/components/ui/UndoHistoryPopover.tsx` | **Keep (Active)** | Imported & covered by `src/atrium/__tests__/undoEngine.test.tsx` |
-| `src/atrium/components/EmptyState/EmptyState.stories.tsx` | **Keep (Storybook Doc)** | Non-runtime component story file |
+- **Migration & Rollback**: `supabase/migrations/202611240003_phase1_security_audit_rpc.sql` + `supabase/rollbacks/202611240003_phase1_security_audit_rpc.down.sql`.
+  - `public.log_access_denied_event(...)` is `SECURITY DEFINER` (`REVOKE ALL FROM PUBLIC`, `GRANT EXECUTE TO authenticated`).
+  - **Anti-forgery**: Server derives `actor_auth_id := auth.uid()` and `actor_staff_id := get_auth_staff_id(v_account_id)` from the JWT/staff table — client cannot supply or forge `actor_auth_id` or `actor_staff_id`, nor pass non-UUID `record_id` (`record_id = NULL`).
+  - **Tenant/Branch authorization**: Validates caller belongs to `v_account_id` and any supplied `business_id`/`branch_id`; rejects unauthorized/unauthenticated callers (`42501`).
+  - **Server Rate Limit + Dedupe**: Partial index `idx_audit_access_denied_rate_limit` enforces 4-second server deduplication (`DEDUPED`) and caps events at **20 per 60 seconds** per `(actor_auth_id, actor_staff_id)` (`RATE_LIMITED`), independent of the client's 4-second map.
+- **Offline Replay & Local Fallback**: `auditService.logAccessDeniedEvent()` (`src/lib/supabase/services/auditService.ts`) calls `.rpc('log_access_denied_event', ...)`, enqueues `kind: 'rpc'` against `table: 'immutable_audit_logs'` (`TABLE_REPLAY_PRIORITY = 50`) when offline or on transient errors, honors `OfflineQueueCapacityError` safely without crashing, and skips queuing on non-retryable `42501`/`22P02`/`PGRST202` errors. Local `atrium_security_audit_logs_v1` remains strictly a read cache/offline UX log.
+- **Tests**: Covered in `auditService.test.ts` (3/3 Vitest), `migrationsAndRollbacks.test.ts`, and `scripts/db/test_rls_rpc_triggers.sql` Section 6 (CI Postgres 16).
 
 ---
 
-### 5. Step 4 Verification Results (Observed After Last Code Edit)
+### 5. Single-Source-of-Truth Grep Parity & Negative Mutation Proof
 
-- **`npm test` (`tsx --test`)**: **101 / 101 passed** (`staffRules.test.ts` updated with fail-closed `currentUser: null`, category/role normalization, and `project_milestone` `'direction'`/`'rh'` coverage).
-- **`npm run test:atrium` (`vitest run`)**: **31 / 31 files, 263 / 263 tests passed** (includes `routePermissions.test.ts` & `section5Access.test.tsx` covering EN/FR/AR RTL `<AccessRestrictedView />` and `<MembershipFinanceView />`).
-- **`npm run ci:guards`**: **RATCHET PASS** (`showToastOnly: 66 <= 66`, `forbiddenLiterals: 0`, `unregisteredStorageKeys: 0`, `i18nAsymmetry: 0`).
-- **`compile_applet` (`vite build`) & `lint_applet` (`tsc --noEmit`)**: Both passed with 0 errors.
-- **Live Browser Verification (`http://localhost:3000` via `playwright-cli`)**:
-  - Verified `membership_session` Owner `Finance` view renders `<MembershipFinanceView />` with `"Estimated, ledger pending"` banner and row markers (`0` console errors).
-  - Verified Staff operator switch (`Karim Mansouri`) filters `Sidebar` to allowed routes (`Home`, `Front Desk`, `Members`, `Registrations`), hides `Settings` in `TopBar` dropdown, renders `<AccessRestrictedView />` (`"Access restricted"`) in both light and dark modes on restricted routes (`finance`, `settings`), persists audit event to `atrium_security_audit_logs_v1`, and returns cleanly via `"Return Home"`.
+- **Grep Proof (`grep -rnE "ROUTE_ALLOWLIST_BY_CATEGORY_ROLE|canAccessHistoryScreen" src`)**:
+  - `ROUTE_ALLOWLIST_BY_CATEGORY_ROLE` exists **only** at `src/utils/routePermissions.ts:216,535`.
+  - Duplicate inline allowlist table removed from `App.tsx` (`isFocusEligibleScreen`) and duplicate `canAccessHistoryScreen` table removed from `CommandPaletteModal.tsx` (`canAccessRoute(category, permState, 'history')`).
+  - `App.tsx`, `Sidebar.tsx`, `TopBar.tsx`, `CommandPaletteModal.tsx`, and `SettingsScreen.tsx` all evaluate the exact same `canAccessRoute()` / `getEffectivePermissionContext()` helpers.
+- **Negative Mutation Check**: `routePermissions.test.ts` includes an explicit assertion proving changing any restricted role permission (e.g., `hub_sorter` → `finance`) causes the test suite to fail immediately.
+
+---
+
+### 6. `5.11` Reconciled Orphan Inventory (All 20 Scanned Files — Zero Deleted, Pending Approval)
+
+Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan across `src/`:
+
+| # | File Path | Classification | External Imports / Barrel / Test Refs | Decision Recommendation |
+|---|---|---|---|---|
+| 1 | `src/components/common/ToastContainer.tsx` | **Confirmed Orphan** | Zero imports, lazy loads, barrel re-exports, or tests (`App.tsx` uses `ToastStack.tsx`) | **Ready to Delete (awaiting user confirm)** |
+| 2 | `src/components/modals/GoogleOAuthGuideModal.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | **Owner Decision Needed (keep for OAuth setup or delete)** |
+| 3 | `src/components/common/AppleOverscrollContainer.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 4 | `src/components/common/staff/StaffSubTabSwitcher.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 5 | `src/components/screens/membership/MemberKineticRow.tsx` | **Candidate Orphan** | Zero imports/references across `src/` (superseded by `UniversalDataCollection`) | Hold for approval |
+| 6 | `src/components/ui/ActionNode.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 7 | `src/components/ui/ConfirmDialog.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 8 | `src/components/ui/FilterCapsules.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 9 | `src/components/ui/SearchBox.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 10 | `src/components/ui/StatTile.tsx` | **Candidate Orphan** | Zero imports/references across `src/` | Hold for approval |
+| 11 | `src/components/screens/membership/components/FloatingBulkBar.tsx` | **Candidate Orphan (Legacy Kit)** | Re-exported only inside `membership/components/index.ts`; zero external consumers (`UniversalDataCollection` uses `KineticFloatingBulkBar`) | Hold for approval |
+| 12 | `src/components/screens/membership/components/MemberRow.tsx` | **Candidate Orphan (Legacy Kit)** | Self-internal (`RowFan`, `RowDetailIsland`) + `membership/components/index.ts`; zero external consumers | Hold for approval |
+| 13 | `src/components/screens/membership/components/RowDetailIsland.tsx` | **Candidate Orphan (Legacy Kit)** | Used only by `MemberRow.tsx` + `membership/components/index.ts`; superseded by `KineticDetailIsland` | Hold for approval |
+| 14 | `src/components/screens/membership/components/RowFan.tsx` | **Candidate Orphan (Legacy Kit)** | Used only by `MemberRow.tsx` + `membership/components/index.ts`; superseded by `KineticRowFan` | Hold for approval |
+| 15 | `src/components/screens/membership/components/SlideInPanel.tsx` | **Candidate Orphan (Legacy Kit)** | Re-exported only inside `membership/components/index.ts`; zero external consumers | Hold for approval |
+| 16 | `src/components/screens/membership/components/StatusTabs.tsx` | **Candidate Orphan (Legacy Kit)** | Re-exported only inside `membership/components/index.ts`; zero external consumers | Hold for approval |
+| 17 | `src/components/screens/membership/components/index.ts` | **Candidate Orphan (Legacy Barrel)** | Barrel for items #11–#16 above; zero external imports anywhere in `src/` | Hold for approval |
+| 18 | `src/components/ui/AtriumIntroOverlay.tsx` | **Keep (Active)** | Lazy-loaded by `App.tsx:200` + imported by `AtriumMonolith.tsx:2` | **Keep** |
+| 19 | `src/components/ui/UndoHistoryPopover.tsx` | **Keep (Active)** | Imported & tested by `src/atrium/__tests__/undoEngine.test.tsx:24` | **Keep** |
+| 20 | `src/atrium/components/EmptyState/EmptyState.stories.tsx` | **Keep (Active Test/Story)** | Imported by `src/atrium/components/EmptyState/EmptyState.test.tsx:15` | **Keep** |
+
+---
+
+### 7. Post-Remediation Verification Counts (Observed After Final Edit)
+
+- **`npx tsc --noEmit` / `lint_applet`**: **0 errors** (PASS).
+- **`npm run build` / `compile_applet`**: **0 errors** (PASS).
+- **`npm test` (`tsx --test`)**: **102 / 102 passed** (3 suites, 0 failed).
+- **`npm run test:atrium` (`vitest run`)**: **32 / 32 files, 269 / 269 tests passed** (`routePermissions.test.ts`, `section5Access.test.tsx`, `auditService.test.ts`, `migrationsAndRollbacks.test.ts`, plus full existing suite).
+- **`npm run ci:guards`**: **RATCHET PASS** — `showToastOnly: 66` (`baseline: 66`), `forbiddenLiterals: 0` (`down from 143`), `unregisteredStorageKeys: 0`, `i18nAsymmetry: 0`.
+- **SQL Test Harness (`scripts/db/test_rls_rpc_triggers.sql` Section 6)**: Extended with `log_access_denied_event` auth forgery, dedupe, and rate-limit assertions; **not run locally** (container has no `psql`/`docker`), runs in `.github/workflows/ci-db-hardening.yml`.
+- **Live Browser Verification (`playwright-cli` on `http://localhost:3000`, `1440×900`)**:
+  - `logistics_delivery` + `dispatcher` → `Settings` renders strictly `"Workspace Preferences"` (`data-testid="settings-preferences-only-banner"`), hides fiscal/license/backup tabs, and TopBar menu Language cycle flips cleanly to Arabic RTL (`dir="rtl"`, `lang="ar"`).
+  - `legal_accounting` + `secretaire_caisse` → `Filing` renders `<LegalVaultView />` with `"Filing-only scope:"` banner, displays `DEP-2026-101`, and excludes `DOC-2026-999` (`avocat` `Confidential`).
+  - `pos_inventory` + `staff` → `Settings` renders `<AccessRestrictedView />`, and `Return Home` navigates cleanly to Home with **`0` console errors / `0` uncaught page errors**.
+
 
 
 

@@ -26,7 +26,9 @@ import { ScreenFocusProvider } from './components/ui/kinetic/ScreenFocusContext'
 import { AccessRestrictedView } from './components/common/AccessRestrictedView';
 import {
   canAccessRoute,
+  getEffectivePermissionContext,
   recordRouteAccessDenied,
+  resolveSemanticRoute,
   type RolePermissionState,
 } from './utils/routePermissions';
 import { getEffectiveUserRole, normalizeBusinessCategory } from './utils/staffRules';
@@ -567,9 +569,19 @@ export default function App() {
     ]
   );
 
+  const permissionCtx = useMemo(
+    () => getEffectivePermissionContext(canonicalCategory, permissionState),
+    [canonicalCategory, permissionState]
+  );
+
   const effectiveRole = useMemo(
     () => getEffectiveUserRole(canonicalCategory, permissionState),
     [canonicalCategory, permissionState]
+  );
+
+  const resolvedScreen = useMemo(
+    () => resolveSemanticRoute(canonicalCategory, permissionState, activeScreen),
+    [canonicalCategory, permissionState, activeScreen]
   );
 
   const isRouteAllowed = useMemo(
@@ -595,193 +607,44 @@ export default function App() {
 
   const isFocusEligibleScreen = React.useMemo(() => {
     if (!isRouteAllowed) return false;
-    if (activeScreen === 'home' || activeScreen === 'chart_catalog') return false;
-    if (activeScreen === 'staff') return true;
-
-    const cat = canonicalCategory;
-
-    if (cat === 'project_milestone') {
-      if (activeScreen === 'settings' || activeScreen === 'pm_dir_dashboard' || activeScreen === 'dashboard') {
-        return false;
-      }
-      if (activeScreen === 'history') return activePmRole === 'direction';
-      return [
-        'pm_dir_new_project',
-        'pm_dir_projects',
-        'pm_dir_approvals',
-        'pm_dir_reports',
-        'pm_cp_projects',
-        'pm_cp_catalog',
-        'pm_cp_orders',
-        'pm_cp_files',
-        'pm_cp_deliverables',
-        'pm_cp_expenses',
-        'pm_crea_kanban',
-        'pm_crea_production',
-        'pm_crea_upload',
-        'pm_crea_briefs',
-        'pm_sup_missions',
-        'pm_sup_attendance',
-        'pm_sup_staffing',
-        'pm_sup_expenses',
-        'pm_rh_talents',
-        'pm_rh_dossier',
-        'pm_rh_portal',
-        'pm_rh_walkin',
-        'pm_compta_payroll',
-        'pm_compta_ccp',
-        'pm_compta_expenses',
-        'pm_compta_stock',
-        'scheduler',
-        'registrations',
-        'analytics',
-        'members',
-        'finance',
-        'shop',
-      ].includes(activeScreen);
+    if (
+      resolvedScreen === 'home' ||
+      resolvedScreen === 'chart_catalog' ||
+      resolvedScreen === 'settings' ||
+      resolvedScreen === 'preferences' ||
+      resolvedScreen === 'pm_dir_dashboard' ||
+      resolvedScreen === 'trading_dashboard'
+    ) {
+      return false;
     }
-
-    if (cat === 'freelance_solo') {
-      return ['analytics', 'members', 'registrations', 'scheduler', 'shop', 'finance', 'history'].includes(
-        activeScreen
+    if (resolvedScreen === 'dashboard') {
+      return (
+        activeMembershipRole === 'staff' ||
+        activeAppointmentRole === 'staff' ||
+        activePosRole === 'staff' ||
+        activeEducationRole === 'staff' ||
+        activeGarageRole === 'mecanicien' ||
+        activeGarageRole === 'magasinier' ||
+        activeManufacturingRole === 'operateur' ||
+        activeLegalRole === 'secretaire_caisse' ||
+        activeLogisticsRole === 'hub_sorter' ||
+        activeLogisticsRole === 'stop_desk_agent' ||
+        activeContractorRole === 'chef_chantier'
       );
     }
-
-    if (cat === 'rental_booking') {
-      return ['scheduler', 'registrations', 'shop', 'members', 'finance', 'history'].includes(activeScreen);
-    }
-
-    if (cat === 'education_cohort') {
-      if (activeEducationRole === 'staff') return true;
-      return ['scheduler', 'members', 'shop', 'registrations', 'analytics', 'finance', 'history'].includes(
-        activeScreen
-      );
-    }
-
-    if (cat === 'trading_commercial') {
-      return [
-        'trading_sales',
-        'registrations',
-        'trading_purchases',
-        'scheduler',
-        'trading_inventory',
-        'shop',
-        'trading_directory',
-        'members',
-        'trading_catalog',
-        'trading_finance',
-        'finance',
-        'history',
-      ].includes(activeScreen);
-    }
-
-    if (cat === 'medical_clinic') {
-      return ['scheduler', 'agenda', 'members', 'shop', 'registrations', 'finance', 'history'].includes(
-        activeScreen
-      );
-    }
-
-    if (cat === 'auto_garage') {
-      if (activeScreen === 'settings') return false;
-      if (activeGarageRole === 'mecanicien' || activeGarageRole === 'magasinier') return true;
-      if (activeScreen === 'history') {
-        return activeGarageRole !== 'reception' && activeGarageRole !== 'caisse';
-      }
-      return ['scheduler', 'registrations', 'members', 'shop', 'finance'].includes(activeScreen);
-    }
-
-    if (cat === 'real_estate') {
-      if (activeScreen === 'settings') return false;
-      if (activeRealEstateRole === 'negociateur' && (activeScreen === 'scheduler' || activeScreen === 'finance')) {
-        return false;
-      }
-      if (
-        activeRealEstateRole === 'gestionnaire_locatif' &&
-        (activeScreen === 'realestate_mandates' || activeScreen === 'shop')
-      ) {
-        return false;
-      }
-      if (activeRealEstateRole === 'notaire_compta' && (activeScreen === 'registrations' || activeScreen === 'members')) {
-        return false;
-      }
-      if (activeScreen === 'history') return activeRealEstateRole === 'direction';
-      return ['realestate_mandates', 'shop', 'members', 'scheduler', 'registrations', 'finance'].includes(
-        activeScreen
-      );
-    }
-
-    if (cat === 'manufacturing_production') {
-      if (activeScreen === 'settings') return false;
-      if (activeManufacturingRole === 'operateur') return true;
-      if (activeManufacturingRole === 'magasinier') {
-        return ['shop', 'members', 'finance'].includes(activeScreen);
-      }
-      if (activeManufacturingRole === 'qualite') {
-        return ['scheduler', 'registrations', 'finance'].includes(activeScreen);
-      }
-      if (activeManufacturingRole === 'chef_atelier') {
-        return ['scheduler', 'registrations', 'shop', 'members', 'finance'].includes(activeScreen);
-      }
-      return ['scheduler', 'registrations', 'shop', 'members', 'finance', 'history'].includes(activeScreen);
-    }
-
-    if (cat === 'legal_accounting') {
-      if (activeScreen === 'settings') return false;
-      if (activeLegalRole === 'secretaire_caisse') return true;
-      return ['members', 'scheduler', 'registrations', 'finance', 'history'].includes(activeScreen);
-    }
-
-    if (cat === 'logistics_delivery') {
-      if (activeScreen === 'settings') return false;
-      if (activeLogisticsRole === 'hub_sorter' || activeLogisticsRole === 'stop_desk_agent') return true;
-      if (activeScreen === 'history') return activeLogisticsRole !== 'dispatcher';
-      return ['members', 'scheduler', 'registrations', 'finance'].includes(activeScreen);
-    }
-
-    if (cat === 'construction_contractor') {
-      if (activeScreen === 'settings') return false;
-      if (activeContractorRole === 'chef_chantier') return true;
-      if (activeScreen === 'history') return activeContractorRole === 'gerant';
-      return ['members', 'registrations', 'shop', 'scheduler', 'finance'].includes(activeScreen);
-    }
-
-    if (cat === 'agriculture_farming') {
-      if (activeScreen === 'settings') return false;
-      if (activeAgriRole !== 'gerant') return true;
-      return ['members', 'scheduler', 'shop', 'registrations', 'finance', 'history'].includes(activeScreen);
-    }
-
-    if (cat === 'membership_session') {
-      if (activeMembershipRole === 'staff') return true;
-      return ['members', 'registrations', 'shop', 'scheduler', 'finance', 'history'].includes(activeScreen);
-    }
-
-    if (cat === 'appointment_service') {
-      if (activeAppointmentRole === 'staff') return true;
-      return ['members', 'scheduler', 'shop', 'finance', 'history', 'registrations'].includes(activeScreen);
-    }
-
-    if (cat === 'pos_inventory') {
-      if (activePosRole === 'staff') return true;
-      return ['shop', 'scheduler', 'registrations', 'finance', 'history', 'members'].includes(activeScreen);
-    }
-
-    return ['members', 'registrations', 'shop', 'scheduler', 'finance', 'history'].includes(activeScreen);
+    return true;
   }, [
-    activeScreen,
-    currentBusiness?.category,
-    activePmRole,
+    isRouteAllowed,
+    resolvedScreen,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
     activeEducationRole,
     activeGarageRole,
-    activeRealEstateRole,
     activeManufacturingRole,
     activeLegalRole,
     activeLogisticsRole,
     activeContractorRole,
-    activeAgriRole,
-    activeMembershipRole,
-    activeAppointmentRole,
-    activePosRole,
   ]);
 
   const renderRestrictedFallback = () => (
@@ -793,7 +656,7 @@ export default function App() {
   );
 
   const renderActiveScreen = () => {
-    if (import.meta.env.DEV && activeScreen === 'chart_catalog') {
+    if (import.meta.env.DEV && resolvedScreen === 'chart_catalog') {
       return <DashboardCatalogScreen />;
     }
 
@@ -801,7 +664,20 @@ export default function App() {
       return renderRestrictedFallback();
     }
 
-    if (activeScreen === 'staff') {
+    if (resolvedScreen === 'preferences') {
+      return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} preferencesOnly />;
+    }
+
+    if (resolvedScreen === 'settings') {
+      return (
+        <SettingsScreen
+          onOpenVoucherModal={handleOpenVoucherModal}
+          preferencesOnly={!permissionCtx.isExecutive}
+        />
+      );
+    }
+
+    if (resolvedScreen === 'staff') {
       const cat = canonicalCategory;
       if (cat === 'project_milestone') return <ProjectRhView initialTab="talents" />;
       if (cat === 'freelance_solo') return <FreelanceStaffView />;
@@ -821,7 +697,7 @@ export default function App() {
       return <MembershipStaffView />;
     }
 
-    if (activeScreen === 'home') {
+    if (resolvedScreen === 'home') {
       return (
         <CategoryHomeView
           onAddMember={handleOpenAddMember}
@@ -832,7 +708,7 @@ export default function App() {
     }
 
     if (isProjectMilestone) {
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         // Role 1: Direction (4 screens)
         case 'pm_dir_dashboard':
           return <ProjectDirectionView initialTab="dashboard" />;
@@ -926,7 +802,7 @@ export default function App() {
     }
 
     if (isFreelance) {
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <FreelanceDashboardView />;
         case 'analytics':
@@ -952,7 +828,7 @@ export default function App() {
 
     const isRental = canonicalCategory === 'rental_booking';
     if (isRental) {
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <VenueDashboardView />;
         case 'scheduler':
@@ -979,7 +855,7 @@ export default function App() {
     const isEducation = canonicalCategory === 'education_cohort';
     if (isEducation) {
       if (activeEducationRole === 'staff') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'analytics':
             return <AcademyRollCallKiosk />;
@@ -996,7 +872,7 @@ export default function App() {
         }
       }
 
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <EducationDashboardView />;
         case 'scheduler':
@@ -1022,7 +898,7 @@ export default function App() {
 
     const isTrading = canonicalCategory === 'trading_commercial';
     if (isTrading) {
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
         case 'trading_dashboard':
           return <TradingDashboardView />;
@@ -1058,7 +934,7 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <MedicalDashboardView />;
         case 'scheduler':
@@ -1085,7 +961,7 @@ export default function App() {
         return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeGarageRole === 'mecanicien') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'scheduler':
           case 'registrations':
@@ -1099,7 +975,7 @@ export default function App() {
         }
       }
       if (activeGarageRole === 'magasinier') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'shop':
             return <AutoGaragePartsView />;
@@ -1110,7 +986,7 @@ export default function App() {
             return renderRestrictedFallback();
         }
       }
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <AutoGarageDashboardView />;
         case 'scheduler':
@@ -1143,20 +1019,20 @@ export default function App() {
 
       // Role-specific screen permission guards
       if (activeRealEstateRole === 'negociateur') {
-        if (activeScreen === 'scheduler' || activeScreen === 'finance') {
+        if (resolvedScreen === 'scheduler' || resolvedScreen === 'finance') {
           return renderRestrictedFallback();
         }
       } else if (activeRealEstateRole === 'gestionnaire_locatif') {
-        if (activeScreen === 'realestate_mandates' || activeScreen === 'shop') {
+        if (resolvedScreen === 'realestate_mandates' || resolvedScreen === 'shop') {
           return renderRestrictedFallback();
         }
       } else if (activeRealEstateRole === 'notaire_compta') {
-        if (activeScreen === 'registrations' || activeScreen === 'members') {
+        if (resolvedScreen === 'registrations' || resolvedScreen === 'members') {
           return renderRestrictedFallback();
         }
       }
 
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <RealEstateDashboardView />;
         case 'realestate_mandates':
@@ -1191,7 +1067,7 @@ export default function App() {
 
       // Role-specific screen permission guards & specialized routing
       if (activeManufacturingRole === 'operateur') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <ManufacturingWorkstationView />;
           case 'scheduler':
@@ -1203,7 +1079,7 @@ export default function App() {
       }
 
       if (activeManufacturingRole === 'magasinier') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <ManufacturingDashboardView />;
           case 'shop':
@@ -1216,7 +1092,7 @@ export default function App() {
       }
 
       if (activeManufacturingRole === 'qualite') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <ManufacturingDashboardView />;
           case 'scheduler':
@@ -1230,7 +1106,7 @@ export default function App() {
       }
 
       if (activeManufacturingRole === 'chef_atelier') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <ManufacturingDashboardView />;
           case 'scheduler':
@@ -1248,7 +1124,7 @@ export default function App() {
       }
 
       // Default: Gérant (Full access)
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <ManufacturingDashboardView />;
         case 'scheduler':
@@ -1268,11 +1144,8 @@ export default function App() {
     }
 
     if (canonicalCategory === 'legal_accounting') {
-      if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
-      }
       if (activeLegalRole === 'secretaire_caisse') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'finance':
             return <LegalTrustView />;
@@ -1280,11 +1153,13 @@ export default function App() {
             return <LegalMattersView />;
           case 'scheduler':
             return <LegalHearingsView />;
+          case 'registrations':
+            return <LegalVaultView />;
           default:
             return renderRestrictedFallback();
         }
       }
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <LegalDashboardView />;
         case 'members':
@@ -1303,11 +1178,21 @@ export default function App() {
     }
 
     if (canonicalCategory === 'logistics_delivery') {
-      if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
+      if (activeLogisticsRole === 'hub_sorter') {
+        switch (resolvedScreen) {
+          case 'dashboard':
+          case 'registrations':
+            return <LogisticsScannerView />;
+          case 'members':
+            return <LogisticsShipmentsView />;
+          case 'scheduler':
+            return <LogisticsManifestsView />;
+          default:
+            return renderRestrictedFallback();
+        }
       }
-      if (activeLogisticsRole === 'hub_sorter' || activeLogisticsRole === 'stop_desk_agent') {
-        switch (activeScreen) {
+      if (activeLogisticsRole === 'stop_desk_agent') {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'registrations':
             return <LogisticsScannerView />;
@@ -1321,7 +1206,7 @@ export default function App() {
             return renderRestrictedFallback();
         }
       }
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <LogisticsDashboardView />;
         case 'members':
@@ -1348,7 +1233,7 @@ export default function App() {
         return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeContractorRole === 'chef_chantier') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'scheduler':
             return <ContractorDailyLogsView />;
@@ -1363,7 +1248,7 @@ export default function App() {
             return renderRestrictedFallback();
         }
       }
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <ContractorDashboardView />;
         case 'members':
@@ -1396,7 +1281,7 @@ export default function App() {
 
       // Role-specific screen permission guards & specialized routing
       if (activeAgriRole === 'chef_culture') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'members':
             return <AgricultureParcelsView />;
           case 'scheduler':
@@ -1409,7 +1294,7 @@ export default function App() {
       }
 
       if (activeAgriRole === 'zootechnicien') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'registrations':
             return <AgricultureLivestockView />;
           default:
@@ -1418,7 +1303,7 @@ export default function App() {
       }
 
       if (activeAgriRole === 'magasinier') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'finance':
             return <AgricultureWholesaleView />;
           case 'shop':
@@ -1429,7 +1314,7 @@ export default function App() {
       }
 
       // Default: Gérant / Exploitant Agricole (Full macro access)
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return <AgricultureDashboardView />;
         case 'members':
@@ -1452,7 +1337,7 @@ export default function App() {
     const isMembership = canonicalCategory === 'membership_session';
     if (isMembership) {
       if (activeMembershipRole === 'staff') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <GymFrontDeskKiosk />;
           case 'members':
@@ -1469,7 +1354,7 @@ export default function App() {
         }
       }
 
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return (
             <MembershipDashboardView
@@ -1511,7 +1396,7 @@ export default function App() {
     const isAppointment = canonicalCategory === 'appointment_service';
     if (isAppointment) {
       if (activeAppointmentRole === 'staff') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
             return <SalonQuickChairKiosk />;
           case 'scheduler':
@@ -1528,7 +1413,7 @@ export default function App() {
         }
       }
 
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return (
             <AppointmentDashboardView
@@ -1570,7 +1455,7 @@ export default function App() {
     const isPOS = canonicalCategory === 'pos_inventory';
     if (isPOS) {
       if (activePosRole === 'staff') {
-        switch (activeScreen) {
+        switch (resolvedScreen) {
           case 'dashboard':
           case 'shop':
             return <PosRegisterView initialTab="register" />;
@@ -1584,7 +1469,7 @@ export default function App() {
         }
       }
 
-      switch (activeScreen) {
+      switch (resolvedScreen) {
         case 'dashboard':
           return (
             <PosDashboardView
@@ -1618,7 +1503,7 @@ export default function App() {
       }
     }
 
-    switch (activeScreen) {
+    switch (resolvedScreen) {
       case 'dashboard':
         return (
           <MembershipDashboardView
@@ -1660,11 +1545,12 @@ export default function App() {
   const renderedActiveScreen = useMemo(() => {
     return renderActiveScreen();
   }, [
-    activeScreen,
+    resolvedScreen,
     canonicalCategory,
     currentBusiness?.id,
     currentBranchId,
     isRouteAllowed,
+    permissionCtx.isExecutive,
     effectiveRole,
     activePmRole,
     activeGarageRole,
