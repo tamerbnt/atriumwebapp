@@ -24,6 +24,7 @@ import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { B2bEntityModal } from './B2bEntityModal';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
+import { Customer360Panel } from '../../common/crm/Customer360Panel';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -59,7 +60,7 @@ const STATUS_PILL_INFO =
   'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type DirectoryMode = 'clients' | 'suppliers';
-type DrawerTab = 'fiche' | 'credit' | 'docs';
+type DrawerTab = 'fiche' | 'credit' | 'docs' | 'crm360';
 
 export const TradingDirectoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -1025,6 +1026,7 @@ export const TradingDirectoryView: React.FC = () => {
           { id: 'fiche', label: isAr ? 'الملف' : isEn ? 'Profile' : 'Identité' },
           { id: 'credit', label: isAr ? 'الائتمان' : isEn ? 'Credit' : 'Encours' },
           { id: 'docs', label: isAr ? 'المستندات' : isEn ? 'Docs' : 'Pièces' },
+          { id: 'crm360', label: 'CRM 360°' },
         ]}
         activeTab={drawerTab}
         onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
@@ -1041,6 +1043,24 @@ export const TradingDirectoryView: React.FC = () => {
           const balance = isClient ? ent.outstandingBalance || 0 : ent.outstandingPayable || 0;
           const limit = isClient ? ent.creditLimit || 0 : 0;
           const ratio = limit > 0 ? Math.min(100, Math.round((balance / limit) * 100)) : 0;
+
+          if (tab === 'crm360') {
+            return (
+              <Customer360Panel
+                sourceVertical="trading_commercial"
+                entityType={isClient ? 'b2b_client' : 'b2b_supplier'}
+                entityId={ent.id}
+                partyKind="company"
+                displayName={'companyName' in ent ? ent.companyName : ent.supplierName}
+                phone={ent.phone}
+                email={(ent as any).email}
+                nif={ent.nif}
+                rc={ent.rc}
+                ai={ent.ai}
+                address={ent.address}
+              />
+            );
+          }
 
           if (tab === 'credit') {
             return (

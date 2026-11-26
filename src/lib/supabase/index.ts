@@ -33,3 +33,5 @@ export * from './services/sequenceService';
 export * from './services/storageService';
 export * from './services/invoicingService';
 export * from './services/scfAccountingService';
+export * from './services/crmService';
+export * from './services/reminderService';

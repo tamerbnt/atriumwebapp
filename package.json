@@ -7,8 +7,8 @@
     "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "NODE_ENV=production vite build",
     "preview": "vite preview",
-    "test": "tsx --test src/utils/rules.test.ts src/utils/realEstateRules.test.ts src/utils/manufacturingRules.test.ts src/utils/legalRules.test.ts src/utils/logisticsRules.test.ts src/utils/contractorRules.test.ts src/utils/agriRules.test.ts src/utils/staffRules.test.ts src/utils/liquidButtons.test.ts src/utils/algerianPayroll.test.ts src/utils/businessConfig.test.ts src/utils/step5Actions.test.ts src/utils/step6Persistence.test.ts src/utils/payrollMigrationDryRun.test.ts src/utils/step7bPayroll.test.ts src/utils/invoicingEngine.test.ts src/utils/scfAccountingEngine.test.ts",
-    "test:atrium": "vitest run",
+    "test": "tsx --test src/utils/rules.test.ts src/utils/realEstateRules.test.ts src/utils/manufacturingRules.test.ts src/utils/legalRules.test.ts src/utils/logisticsRules.test.ts src/utils/contractorRules.test.ts src/utils/agriRules.test.ts src/utils/staffRules.test.ts src/utils/liquidButtons.test.ts src/utils/algerianPayroll.test.ts src/utils/businessConfig.test.ts src/utils/step5Actions.test.ts src/utils/step6Persistence.test.ts src/utils/payrollMigrationDryRun.test.ts src/utils/step7bPayroll.test.ts src/utils/invoicingEngine.test.ts src/utils/scfAccountingEngine.test.ts src/utils/crmPartyEngine.test.ts src/utils/reminderEngine.test.ts",
+    "test:atrium": "vitest run --maxWorkers=2",
     "ci:guards": "node scripts/ci/phase1-guards.mjs",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

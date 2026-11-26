@@ -144,6 +144,15 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   journal_entries: 44,
   journal_lines: 45,
   scf_posting_failures: 47,
+  crm_message_templates: 18,
+  crm_parties: 19,
+  crm_party_links: 26,
+  crm_party_notes: 38,
+  crm_follow_up_tasks: 39,
+  crm_communication_logs: 43,
+  reminder_quiet_hours_configs: 16,
+  reminder_rules: 19,
+  reminder_delivery_logs: 44,
   immutable_audit_logs: 50,
 };
 
@@ -487,6 +496,9 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'set_scf_period_status') return 175;
     if (item.fn === 'reconcile_scf_journal_lines') return 470;
     if (item.fn === 'approve_payroll_run') return 480;
+    if (item.fn === 'merge_crm_parties') return 268;
+    if (item.fn === 'record_crm_communication_attempt') return 435;
+    if (item.fn === 'dispatch_reminder_idempotent') return 445;
   }
   return (item.table ? TABLE_REPLAY_PRIORITY[item.table] ?? 35 : 48) * 10 + getKindPriority(item.kind);
 }

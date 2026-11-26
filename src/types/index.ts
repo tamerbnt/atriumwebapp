@@ -4037,6 +4037,7 @@ export type SettingsTabId =
   | 'business_fiscal'
   | 'formules'
   | 'reference_rates'
+  | 'reminders'
   | 'branches_devices'
   | 'license'
   | 'cloud_backup';
@@ -4570,6 +4571,259 @@ export interface ScfPostingFailure {
   updatedAt: string;
 }
 
+// ============================================================================
+// PHASE 2 SECTION 6.4: UNIFIED CRM & COMMUNICATION (PARTY MASTER & 360)
+// ============================================================================
 
+export type CrmPartyKind = 'person' | 'company';
 
+export type CrmChannel = 'sms' | 'whatsapp' | 'email';
+
+export type CrmTaskChannel = 'in_app' | 'sms' | 'whatsapp' | 'email' | 'call';
+
+export type CrmTaskStatus = 'open' | 'done' | 'snoozed' | 'cancelled';
+
+export type CrmCommunicationStatus = 'queued' | 'sent' | 'failed' | 'blocked_opt_out';
+
+export type CrmLinkEntityType =
+  | 'member'
+  | 'lead'
+  | 'b2b_client'
+  | 'b2b_supplier'
+  | 'patient'
+  | 'renter'
+  | 'student'
+  | 'freelance_client'
+  | 'appointment_client'
+  | 'owner'
+  | 'merchant';
+
+export interface CrmParty {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  partyKind: CrmPartyKind;
+  displayName: string;
+  phoneRaw?: string;
+  phoneE164?: string;
+  phoneLocal?: string;
+  phoneValid: boolean;
+  sharedPhoneGroup?: boolean;
+  email?: string;
+  nif?: string;
+  rc?: string;
+  nis?: string;
+  ai?: string;
+  address?: string;
+  wilayaCode?: string;
+  preferredLanguage: 'en' | 'fr' | 'ar';
+  consentSms: boolean;
+  consentWhatsapp: boolean;
+  consentEmail: boolean;
+  optOutAll: boolean;
+  optOutReason?: string;
+  optOutAt?: string;
+  mergedIntoPartyId?: string;
+  mergedAt?: string;
+  mergedByStaffId?: string;
+  notes?: string;
+  tags?: string[];
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface CrmPartyLink {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  partyId: string;
+  sourceVertical: string;
+  entityType: CrmLinkEntityType;
+  entityId: string;
+  entityLabel?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface CrmPartyNote {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  partyId: string;
+  sourceVertical?: string;
+  authorStaffId?: string;
+  authorName?: string;
+  noteType: 'note' | 'call' | 'visit' | 'incident';
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface CrmFollowUpTask {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  partyId: string;
+  assignedStaffId?: string;
+  assignedStaffName?: string;
+  title: string;
+  description?: string;
+  channel: CrmTaskChannel;
+  dueAt: string;
+  status: CrmTaskStatus;
+  completedAt?: string;
+  createdByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface CrmMessageTemplate {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  code: string;
+  channel: CrmChannel;
+  name: string;
+  subjectFr?: string;
+  subjectAr?: string;
+  subjectEn?: string;
+  bodyFr: string;
+  bodyAr: string;
+  bodyEn: string;
+  variables: string[];
+  isSystem?: boolean;
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface CrmCommunicationLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  partyId: string;
+  templateId?: string;
+  channel: CrmChannel;
+  recipientAddress: string;
+  language: 'en' | 'fr' | 'ar';
+  subject?: string;
+  renderedBody: string;
+  missingVariables: string[];
+  status: CrmCommunicationStatus;
+  providerName?: string;
+  providerMessageId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  attempts: number;
+  lastAttemptAt: string;
+  sentAt?: string;
+  sentByStaffId?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+// ============================================================================
+// PHASE 2 SECTION 6.5: REMINDER & NOTIFICATION ENGINE
+// ============================================================================
+
+export type ReminderEventType =
+  | 'membership_expiring'
+  | 'invoice_overdue'
+  | 'installment_due'
+  | 'rent_due'
+  | 'appointment_tomorrow'
+  | 'low_stock'
+  | 'expiry_date'
+  | 'service_due'
+  | 'dar_lockout'
+  | 'cheque_due'
+  | 'deadline_cpca'
+  | 'contract_expiry'
+  | 'vehicle_documents_expiry';
+
+export type ReminderChannel = 'in_app' | 'sms' | 'whatsapp' | 'email';
+
+export type ReminderDeliveryStatus =
+  | 'scheduled'
+  | 'sent'
+  | 'deferred_quiet_hours'
+  | 'blocked_opt_out'
+  | 'failed'
+  | 'skipped_duplicate';
+
+export interface ReminderQuietHoursConfig {
+  id: string;
+  accountId: string;
+  businessId: string;
+  enabled: boolean;
+  startTime: string; // HH:mm e.g. '21:00'
+  endTime: string;   // HH:mm e.g. '08:00'
+  timezone: string;  // e.g. 'Africa/Algiers'
+  allowInAppDuringQuiet: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface ReminderRule {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  eventType: ReminderEventType;
+  name: string;
+  isEnabled: boolean;
+  leadDays: number;
+  channels: ReminderChannel[];
+  templateId?: string;
+  respectQuietHours: boolean;
+  cooldownHours: number;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface ReminderDeliveryLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  ruleId?: string;
+  eventType: ReminderEventType;
+  entityType: string;
+  entityId: string;
+  entityLabel?: string;
+  partyId?: string;
+  channel: ReminderChannel;
+  idempotencyKey: string;
+  status: ReminderDeliveryStatus;
+  scheduledFor?: string;
+  deliveredAt?: string;
+  title: string;
+  message: string;
+  crmCommLogId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  attempts: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
 

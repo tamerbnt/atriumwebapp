@@ -502,8 +502,42 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Members -> Amira Cherif -> Sales -> New` (`LabelSelect` dropdowns & values rendered cleanly), `Issue & Number` (`FAC-2026-00001`), A4 print view with notes and `Stamp & Signature`, `Finance -> Collect Payment` (cheque `#CHQ-2026-88`), and `Deposit -> Bounce` reopening invoice balance with `0` console/page errors.
 - **Remaining Phase 2 Scope (`6.3`–`6.10`)**: Shared SCF accounting layer (`6.3`), Unified CRM `party` (`6.4`), Reminder engine (`6.5`), Shared WMS (`6.6`), CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 
+---
 
+## Phase 2 Step 2 — Shared Accounting Layer (`6.3` SCF Loi 07-11)
 
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270002_phase2_shared_accounting_scf.sql` + `supabase/rollbacks/202611270002_phase2_shared_accounting_scf.down.sql`.
+  - Extended `sequence_counters` (`journal_entry` / `EC`), created `scf_chart_of_accounts`, `scf_accounting_periods`, `journal_entries`, `journal_lines`, and `scf_posting_failures` with tenant/branch RLS, double-entry immutability triggers (`fn_protect_immutable_scf_entries`), and transactional RPCs (`post_scf_journal_entry`, `reverse_scf_journal_entry`, `set_scf_period_status`, `reconcile_scf_journal_lines`, `seed_scf_chart_of_accounts`).
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 11) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts`.
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/scfAccountingEngine.ts` + `src/utils/scfAccountingEngine.test.ts`: Double-entry validator (`validateScfJournalLines` reusing `validateAndBalanceSCFEntry`), FX/rounding absorption (`656000`/`756000`), posting builders for unified invoices/payments/cheque transitions, payroll runs (`buildPostingForPayrollRun` accounting for `primesNonImposables` allowances & `slips` advances/deductions), purchase receipts, stock vouchers, and POS sales; Trial Balance, General Ledger, Bank/Cash Reconciliation, TVA/G50 preparation aid with mandatory non-filing disclaimer, and CSV export.
+  - `src/lib/supabase/services/scfAccountingService.ts`, `src/lib/supabase/offlineQueue.ts`, and `src/services/store.ts`: Auto-posting hooks with closed-period / imbalance failure queuing (`scfPostingFailures`) + retry & reversal (`contre-passation`) actions, integrated into `TradingFinanceView`, `MembershipFinanceView`, and `LegalTrustView`.
+  - `src/components/common/accounting/` (`ScfAccountingWorkspace`, `ScfManualEntryModal`, `ScfPrintReportModal`): Journal, Unposted Queue, Trial Balance, General Ledger, Bank/Cash Reconciliation, TVA / G50 Aid, and Periods & Chart views with A4 print + CSV export.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`npm run lint`) & `npm run build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **130 / 130 passed** (6 suites, incl. `scfAccountingEngine.test.ts`).
+  - `npm run test:atrium` (`vitest run`): **37 / 37 files, 297 / 297 tests passed** (incl. `phase2ScfAccounting.test.tsx` 5/5).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Finance -> SCF Accounting (Loi 07-11)` workspace and `TVA / G50 Aid` tab with visible G50 preparation disclaimer and `0` console errors / `0` warnings.
+- **Remaining Phase 2 Scope (`6.4`–`6.10`)**: Unified CRM `party` (`6.4`), Reminder engine (`6.5`), Shared WMS (`6.6`), CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 
+---
 
+## Phase 2 Step 3 — Unified CRM & Communication (`6.4`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270003_phase2_unified_crm_party.sql` + `supabase/rollbacks/202611270003_phase2_unified_crm_party.down.sql`.
+  - Created `crm_parties` (single `party` master for persons & companies with normalized E.164 phone/operator, NIF/RC/NIS/AI, `shared_phone_group`, granular channel consent flags, `opt_out_all`, and merge audit columns), `crm_party_links` (unique active vertical entity links across `member`, `lead`, `b2b_client`, `b2b_supplier`, `patient`, `renter`, `student`, `freelance_client`, `appointment_client`, `owner`, `merchant`), `crm_party_notes`, `crm_follow_up_tasks`, `crm_message_templates` (FR/AR/EN + variables), and `crm_communication_logs`.
+  - Added atomic `merge_crm_parties` RPC (re-pointing links, notes, tasks, and communication logs while preserving strictest opt-out/consent state and writing immutable audit logs) and `record_crm_communication_attempt` RPC (server-enforced `blocked_opt_out` guard).
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 12) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (11/11).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/crmPartyEngine.ts` + `src/utils/crmPartyEngine.test.ts`: Algerian `+213` phone normalization reusing `validateAlgerianPhone`, duplicate detection (NIF, email, phone with shared-family-phone policy), merge planner, FR/AR/EN variable rendering with missing-variable guard, channel opt-out / provider failure evaluation, and cross-vertical `buildParty360Summary`.
+  - `src/lib/supabase/services/crmService.ts`, `src/lib/supabase/offlineQueue.ts` (dependency-ordered replay priorities + merge/comms RPC replay), and `src/services/store.ts` (CRM slices, selectors, and 10 actions exported via `atriumActions` & `useAtriumStore`).
+  - `src/components/common/crm/` (`Customer360Panel`, `CrmPartyMergeModal`): Integrated into `MemberSlideOverInspector`, `TradingDirectoryView`, and `FreelanceClientsView`, plus `phase2_crm_*` keys in `en/fr/ar.json`.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`npm run lint`) & `npm run build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **135 / 135 passed** (6 suites, incl. `crmPartyEngine.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **38 / 38 files, 302 / 302 tests passed** (incl. `phase2UnifiedCrm.test.tsx` 4/4).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Members -> Amira Cherif -> CRM`, `+213550112233 · Ooredoo` operator badge, 2×2 consent/opt-out switches, `Messages` tab opt-out block banner (`blocked_opt_out` in Delivery Log), and `0` console errors / `0` warnings.
+- **Remaining Phase 2 Scope (`6.5`–`6.10`)**: Reminder engine (`6.5`), Shared WMS (`6.6`), CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 

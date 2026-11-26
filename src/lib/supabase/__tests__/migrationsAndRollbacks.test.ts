@@ -244,4 +244,49 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_fiscal_years');
     expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_chart_of_accounts');
   });
+
+  it('verifies Phase 2 Step 3 (6.4) unified CRM party migration and rollback parity', () => {
+    const crmPath = path.join(MIGRATIONS_DIR, '202611270003_phase2_unified_crm_party.sql');
+    const crmDownPath = path.join(ROLLBACKS_DIR, '202611270003_phase2_unified_crm_party.down.sql');
+    const sql = fs.readFileSync(crmPath, 'utf8');
+    const downSql = fs.readFileSync(crmDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_parties');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_party_links');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_party_notes');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_follow_up_tasks');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_message_templates');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.crm_communication_logs');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.merge_crm_parties(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.record_crm_communication_attempt(');
+    expect(sql).toContain('blocked_opt_out');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.record_crm_communication_attempt(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.merge_crm_parties(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_communication_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_message_templates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_follow_up_tasks');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_party_notes');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_party_links');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.crm_parties');
+  });
+
+  it('verifies Phase 2 Step 4 (6.5) reminder engine migration and rollback parity', () => {
+    const remPath = path.join(MIGRATIONS_DIR, '202611270004_phase2_reminder_engine.sql');
+    const remDownPath = path.join(ROLLBACKS_DIR, '202611270004_phase2_reminder_engine.down.sql');
+    const sql = fs.readFileSync(remPath, 'utf8');
+    const downSql = fs.readFileSync(remDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.reminder_quiet_hours_configs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.reminder_rules');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.reminder_delivery_logs');
+    expect(sql).toContain('uq_reminder_delivery_idempotency');
+    expect(sql).toContain('vehicle_documents_expiry');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.dispatch_reminder_idempotent(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.dispatch_reminder_idempotent(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.reminder_delivery_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.reminder_rules');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.reminder_quiet_hours_configs');
+  });
 });

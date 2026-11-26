@@ -17,6 +17,7 @@ import type {
   ScfJournalLine,
   ScfPostingEventType,
   StaffPayrollRunRecord,
+  StaffPayrollSlipRecord,
   StockMovementVoucher,
   UnifiedCurrency,
   UnifiedDocument,
@@ -532,16 +533,39 @@ export function buildPostingForInstrumentTransition(
 
 export function buildPostingForPayrollRun(
   run: StaffPayrollRunRecord,
-  options?: { employerCnasRatePercent?: number }
+  options?: { employerCnasRatePercent?: number; slips?: StaffPayrollSlipRecord[] }
 ): ScfPostingDraft {
   const grossCentimes = dzdToCentimes(Math.max(0, run.totalGrossCotisable || 0));
   const netCentimes = dzdToCentimes(Math.max(0, run.totalNet || 0));
   const employeeCnasCentimes = dzdToCentimes(Math.max(0, run.totalCnasSalarial || 0));
   const irgCentimes = dzdToCentimes(Math.max(0, run.totalIrg || 0));
-  const advancesCentimes = Math.max(
-    0,
-    grossCentimes - employeeCnasCentimes - irgCentimes - netCentimes
-  );
+
+  const slips = Array.isArray(options?.slips) && options.slips.length > 0 ? options.slips : null;
+  const impliedNetMinusNetOfGross =
+    netCentimes + employeeCnasCentimes + irgCentimes - grossCentimes;
+
+  const nonTaxableAllowancesCentimes = slips
+    ? dzdToCentimes(
+        slips.reduce(
+          (sum, slip) =>
+            sum +
+            (slip.primesNonImposables || []).reduce((pSum, p) => pSum + Math.max(0, p.amount || 0), 0),
+          0
+        )
+      )
+    : Math.max(0, impliedNetMinusNetOfGross);
+
+  const otherDeductionsCentimes = slips
+    ? dzdToCentimes(slips.reduce((sum, slip) => sum + Math.max(0, slip.autresRetenues || 0), 0))
+    : 0;
+
+  const advancesCentimes = slips
+    ? dzdToCentimes(slips.reduce((sum, slip) => sum + Math.max(0, slip.acomptesDeduits || 0), 0))
+    : Math.max(
+        0,
+        grossCentimes + nonTaxableAllowancesCentimes - employeeCnasCentimes - irgCentimes - netCentimes - otherDeductionsCentimes
+      );
+
   const employerCnasRate = options?.employerCnasRatePercent ?? 26;
   const employerCnasCentimes =
     run.totalCnasPatronal && run.totalCnasPatronal > 0
@@ -550,11 +574,12 @@ export function buildPostingForPayrollRun(
   const periodMonth = String(run.periodMonth).padStart(2, '0');
   const entryDate = `${run.periodYear}-${periodMonth}-28`;
 
+  const totalRemunerationCentimes = grossCentimes + nonTaxableAllowancesCentimes;
   const lines: ScfLineDraftInput[] = [
     {
       accountCode: '631000',
       accountLabel: 'Rémunérations du personnel',
-      debitCentimes: grossCentimes,
+      debitCentimes: totalRemunerationCentimes,
       creditCentimes: 0,
     },
   ];
@@ -596,12 +621,13 @@ export function buildPostingForPayrollRun(
     });
   }
 
-  if (advancesCentimes > 0) {
+  const totalAdvancesAndOther = advancesCentimes + otherDeductionsCentimes;
+  if (totalAdvancesAndOther > 0) {
     lines.push({
       accountCode: '425000',
       accountLabel: 'Personnel - Avances et acomptes',
       debitCentimes: 0,
-      creditCentimes: advancesCentimes,
+      creditCentimes: totalAdvancesAndOther,
     });
   }
 

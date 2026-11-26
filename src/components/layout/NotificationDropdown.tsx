@@ -21,6 +21,7 @@ import {
   markAllNotificationsAsRead,
   clearAllNotifications,
   removeNotification,
+  openSettingsTabAction,
   setScreenAction as setScreen,
 } from '../../services/store';
 import { AppNotification, SupportedLanguage } from '../../types/index';
@@ -281,6 +282,28 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
             })
           )}
         </AnimatePresence>
+      </div>
+
+      <div className="px-[var(--s3,12px)] py-[var(--s2,8px)] border-t border-[var(--atr-divider)] flex items-center justify-between gap-2">
+        <button
+          type="button"
+          data-no-liquid=""
+          data-testid="notif-manage-reminders-btn"
+          onClick={() => {
+            openSettingsTabAction('reminders');
+            onClose();
+          }}
+          className="t-small font-medium text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] hover:underline flex items-center gap-1.5 cursor-pointer"
+        >
+          <Bell size={14} strokeWidth={1.75} />
+          <span>
+            {language === 'ar'
+              ? 'إعدادات وقواعد التذكير'
+              : language === 'fr'
+              ? 'Règles de rappels'
+              : 'Reminder Rules'}
+          </span>
+        </button>
       </div>
 
       </div>

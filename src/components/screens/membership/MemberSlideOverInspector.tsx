@@ -46,13 +46,14 @@ import { Button } from '@/atrium/core';
 import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
 import { UnifiedInvoiceComposerModal } from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
+import { Customer360Panel } from '../../common/crm/Customer360Panel';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
   member: Member | null;
   allMembers: Member[];
   openerElement?: HTMLElement | null;
-  initialTab?: 'overview' | 'access' | 'billing';
+  initialTab?: 'overview' | 'access' | 'billing' | 'crm360';
   onClose: () => void;
   onSelectMember: (member: Member) => void;
   onEdit: (member: Member, originEl?: HTMLElement | null) => void;
@@ -82,7 +83,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   onUpdateNotes,
   showToast,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing' | 'crm360'>(initialTab);
   const [notesText, setNotesText] = useState(() => member?.notes || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -650,12 +651,13 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 size="md"
                 fullWidth
                 value={activeTab}
-                onValueChange={(val) => setActiveTab(val as 'overview' | 'access' | 'billing')}
+                onValueChange={(val) => setActiveTab(val as 'overview' | 'access' | 'billing' | 'crm360')}
                 aria-label={L('Member sections', 'Sections du dossier adhérent', 'أقسام ملف العضو')}
                 options={[
-                  { value: 'overview', label: L('Overview & Plan', 'Aperçu & Forfait', 'نظرة عامة والاشتراك') },
-                  { value: 'access', label: L('Access & Sessions', 'Accès & Séances', 'الدخول والحصص') },
-                  { value: 'billing', label: L('Sales & Invoices', 'Ventes & Factures', 'المبيعات والفواتير') },
+                  { value: 'overview', label: L('Overview', 'Aperçu', 'نظرة عامة') },
+                  { value: 'access', label: L('Access', 'Accès', 'الدخول') },
+                  { value: 'billing', label: L('Billing', 'Factures', 'الفواتير') },
+                  { value: 'crm360', label: 'CRM', 'aria-label': L('360° CRM', 'CRM 360°', 'CRM 360°') },
                 ]}
               />
             </div>
@@ -1100,6 +1102,20 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     ) : null}
                   </section>
                 </>
+              )}
+
+              {activeTab === 'crm360' && (
+                <section style={{ '--k': 0 } as React.CSSProperties}>
+                  <Customer360Panel
+                    sourceVertical="membership_session"
+                    entityType="member"
+                    entityId={activeMember.id}
+                    partyKind="person"
+                    displayName={activeMember.fullName}
+                    phone={activeMember.phoneNumber}
+                    email={activeMember.email}
+                  />
+                </section>
               )}
             </div>
 

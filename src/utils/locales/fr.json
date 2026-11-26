@@ -2823,5 +2823,17 @@
   "phase2_unified_payments_ledger": "Journal Unifié des Règlements & Effets",
   "phase2_instrument_deposit": "Remettre",
   "phase2_instrument_clear": "Encaisser",
-  "phase2_instrument_bounce": "Impayé"
+  "phase2_instrument_bounce": "Impayé",
+  "phase2_crm_360_tab": "CRM 360°",
+  "phase2_crm_merge_title": "Fusionner deux fiches tiers",
+  "phase2_crm_opt_out": "Refuser toute communication",
+  "phase2_crm_shared_phone": "Ligne familiale partagée",
+  "phase2_crm_delivery_log": "Journal d’envoi",
+  "phase2_reminder_tab": "Rappels & Alertes",
+  "phase2_reminder_title": "Moteur de Rappels & Notifications",
+  "phase2_reminder_desc": "Rappels idempotents multi-secteurs avec heures calmes (Africa/Algiers) et respect opt-out CRM.",
+  "phase2_reminder_run_scan": "Lancer l’analyse",
+  "phase2_reminder_flush_deferred": "Traiter différés",
+  "phase2_reminder_quiet_hours": "Heures calmes",
+  "phase2_reminder_rules_title": "Règles de déclenchement"
 }

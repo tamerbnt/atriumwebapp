@@ -2823,5 +2823,17 @@
   "phase2_unified_payments_ledger": "سجل المدفوعات والشيكات الموحد",
   "phase2_instrument_deposit": "إيداع",
   "phase2_instrument_clear": "تحصيل",
-  "phase2_instrument_bounce": "مرفوض"
+  "phase2_instrument_bounce": "مرفوض",
+  "phase2_crm_360_tab": "CRM 360°",
+  "phase2_crm_merge_title": "دمج ملفين مكررين",
+  "phase2_crm_opt_out": "إيقاف جميع الرسائل",
+  "phase2_crm_shared_phone": "رقم عائلي مشترك",
+  "phase2_crm_delivery_log": "سجل الإرسال",
+  "phase2_reminder_tab": "التذكيرات والتنبيهات",
+  "phase2_reminder_title": "محرك التذكيرات والإشعارات",
+  "phase2_reminder_desc": "تذكيرات تلقائية بدون تكرار عبر القطاعات مع ساعات الهدوء واحترام حظر الإرسال.",
+  "phase2_reminder_run_scan": "تشغيل الفحص",
+  "phase2_reminder_flush_deferred": "إرسال المؤجلة",
+  "phase2_reminder_quiet_hours": "ساعات الهدوء",
+  "phase2_reminder_rules_title": "قواعد التشغيل التلقائي"
 }

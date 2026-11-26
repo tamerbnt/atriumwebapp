@@ -157,7 +157,40 @@ describe('Phase 2 Step 2 (6.3): Shared SCF Accounting Layer (Loi 07-11)', () => 
     state = readStoreSnapshot();
 
     // 2. Purchase Order receipt -> AC + ST
-    const existingPo: PurchaseDocument | undefined = state.purchaseDocs.find((p) => p.type === 'po');
+    let existingPo: PurchaseDocument | undefined = state.purchaseDocs.find((p) => p.type === 'po');
+    if (!existingPo) {
+      atriumActions.createPurchaseDoc({
+        docNumber: 'BC-2026-9001',
+        type: 'po',
+        supplierId: state.b2bSuppliers[0]?.id || 'sup_scf_1',
+        supplierName: state.b2bSuppliers[0]?.supplierName || 'SARL Fournisseur Test',
+        depotId: state.warehouses[0]?.id || 'dep_01',
+        depotName: state.warehouses[0]?.name || 'Dépôt Central',
+        orderDate: '2026-11-21',
+        items: [
+          {
+            id: 'po_line_1',
+            productId: state.products[0]?.id || 'prod_po_1',
+            description: state.products[0]?.name || 'Lot Marchandise Test',
+            orderedQty: 10,
+            receivedQty: 0,
+            unitCostHt: 5000,
+            tvaPercent: 19,
+            unit: 'u',
+            totalHt: 50000,
+          },
+        ],
+        totalHt: 50000,
+        totalTva: 9500,
+        totalTtc: 59500,
+        currency: 'DZD',
+        status: 'Ordered',
+        tenantId: state.account.id,
+        facilityId: state.currentBranchId,
+      });
+      state = readStoreSnapshot();
+      existingPo = state.purchaseDocs.find((p) => p.type === 'po');
+    }
     expect(existingPo).toBeDefined();
     const br = atriumActions.receivePurchaseDoc(existingPo!.id);
     expect(br).toBeTruthy();

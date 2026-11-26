@@ -177,6 +177,62 @@ test('SCF Engine: handles payments, cheque clearance, bounce reversal, purchase 
   assert.equal(validateScfJournalLines(payrollDraft.lines).isValid, true);
   assert.ok(payrollDraft.lines.some((l) => l.accountCode === '425000' && l.creditCentimes === 1300000));
 
+  const payrollDraftWithAllowances = buildPostingForPayrollRun(
+    {
+      ...payrollRun,
+      id: 'run_allowances',
+      totalGrossCotisable: 100000,
+      totalCnasSalarial: 9000,
+      totalCnasPatronal: 26000,
+      totalIrg: 12000,
+      totalNet: 91200, // 100000 - 9000 - 12000 + 17200 (Panier+Transport) - 5000 (avance)
+    },
+    {
+      slips: [
+        {
+          id: 'slip_1',
+          payrollRunId: 'run_allowances',
+          staffId: 'stf_1',
+          matricule: 'MAT-001',
+          staffFullName: 'Karim Test',
+          role: 'coach',
+          periodMonth: 11,
+          periodYear: 2026,
+          periodLabel: 'Novembre 2026',
+          baseSalary: 100000,
+          actualBaseSalary: 100000,
+          workedDays: 22,
+          standardDays: 22,
+          coachingCommission: 0,
+          primesCotisables: [],
+          salaireBrutCotisable: 100000,
+          cnasSalarial: 9000,
+          cnasPatronal: 26000,
+          salaireBrutImposable: 91000,
+          irgTax: 12000,
+          primesNonImposables: [
+            { label: 'Indemnité de Panier', amount: 13200 },
+            { label: 'Indemnité de Transport', amount: 4000 },
+          ],
+          acomptesDeduits: 5000,
+          advanceCarryover: 0,
+          autresRetenues: 0,
+          netAPayer: 91200,
+          paymentMethod: 'cash',
+          isPaid: false,
+          receiptNumber: 'FP-001',
+        },
+      ],
+    }
+  );
+  assert.equal(validateScfJournalLines(payrollDraftWithAllowances.lines).isValid, true);
+  assert.ok(
+    payrollDraftWithAllowances.lines.some((l) => l.accountCode === '631000' && l.debitCentimes === 11720000)
+  );
+  assert.ok(
+    payrollDraftWithAllowances.lines.some((l) => l.accountCode === '425000' && l.creditCentimes === 500000)
+  );
+
   const purchase: PurchaseDocument = {
     id: 'po_1',
     tenantId: 'acc_test',

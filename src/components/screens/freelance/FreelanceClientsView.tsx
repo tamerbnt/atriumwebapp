@@ -37,6 +37,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { Customer360Panel } from '../../common/crm/Customer360Panel';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1090,6 +1091,7 @@ export const FreelanceClientsView: React.FC = () => {
           { id: 'profile', label: isAr ? 'الملف' : isFr ? 'Profil' : 'Profile' },
           { id: 'projects', label: isAr ? 'المشاريع' : isFr ? 'Projets' : 'Projects' },
           { id: 'unbilled', label: isAr ? 'الفوترة' : isFr ? 'À facturer' : 'Unbilled' },
+          { id: 'crm360', label: 'CRM 360°' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
@@ -1106,6 +1108,21 @@ export const FreelanceClientsView: React.FC = () => {
           const clientLogs = timeLogs
             .filter((tl) => tl.clientId === client.id && !tl.isInvoiced)
             .slice(0, 6);
+
+          if (tab === 'crm360') {
+            return (
+              <Customer360Panel
+                sourceVertical="freelance_solo"
+                entityType="freelance_client"
+                entityId={client.id}
+                partyKind={client.company ? 'company' : 'person'}
+                displayName={client.company ? `${client.name} (${client.company})` : client.name}
+                phone={client.phone}
+                email={client.email}
+                nif={(client as any).nif}
+              />
+            );
+          }
 
           if (tab === 'projects') {
             return (

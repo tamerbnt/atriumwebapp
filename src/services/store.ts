@@ -135,6 +135,23 @@ import {
   ScfPostingEventType,
   ScfPostingFailure,
   SCFJournalEntry,
+  CrmPartyKind,
+  CrmChannel,
+  CrmTaskChannel,
+  CrmTaskStatus,
+  CrmLinkEntityType,
+  CrmParty,
+  CrmPartyLink,
+  CrmPartyNote,
+  CrmFollowUpTask,
+  CrmMessageTemplate,
+  CrmCommunicationLog,
+  ReminderEventType,
+  ReminderChannel,
+  ReminderDeliveryStatus,
+  ReminderQuietHoursConfig,
+  ReminderRule,
+  ReminderDeliveryLog,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -353,6 +370,8 @@ import {
   requireTenantAccountId,
   TenantContextMissingError,
   scfAccountingService,
+  crmService,
+  reminderService,
   auditService,
   type StatutoryRateSet,
 } from '../lib/supabase/index';
@@ -392,6 +411,26 @@ import {
   type ScfPostingDraft,
   type ScfLineDraftInput,
 } from '../utils/scfAccountingEngine';
+import {
+  normalizeAlgerianPhoneForCrm,
+  normalizeEmail,
+  normalizeNif,
+  detectPartyDuplicates,
+  planPartyMerge,
+  getDefaultCrmMessageTemplates,
+  renderCrmTemplate,
+  evaluateCommunicationDispatch,
+  type PartyDuplicateCandidate,
+} from '../utils/crmPartyEngine';
+import {
+  REMINDER_EVENT_CATALOG,
+  getDefaultReminderQuietHours,
+  getDefaultReminderRules,
+  isWithinQuietHours,
+  scanStateForReminderCandidates,
+  planReminderDispatches,
+  type ReminderScanInput,
+} from '../utils/reminderEngine';
 import {
   evaluateMemberCheckIn,
   CheckInEvaluationResult,
@@ -617,6 +656,17 @@ interface AppState {
   scfPeriods: ScfAccountingPeriod[];
   journalEntries: ScfJournalEntry[];
   scfPostingFailures: ScfPostingFailure[];
+  // Phase 2 Step 3 (6.4 Unified CRM & Communication)
+  crmParties: CrmParty[];
+  crmPartyLinks: CrmPartyLink[];
+  crmPartyNotes: CrmPartyNote[];
+  crmFollowUpTasks: CrmFollowUpTask[];
+  crmMessageTemplates: CrmMessageTemplate[];
+  crmCommunicationLogs: CrmCommunicationLog[];
+  // Phase 2 Step 4 (6.5 Reminder & Notification Engine)
+  reminderQuietHoursConfigs: ReminderQuietHoursConfig[];
+  reminderRules: ReminderRule[];
+  reminderDeliveryLogs: ReminderDeliveryLog[];
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -810,6 +860,15 @@ const DEFAULT_STATE: AppState = {
   scfPeriods: [],
   journalEntries: [],
   scfPostingFailures: [],
+  crmParties: [],
+  crmPartyLinks: [],
+  crmPartyNotes: [],
+  crmFollowUpTasks: [],
+  crmMessageTemplates: [],
+  crmCommunicationLogs: [],
+  reminderQuietHoursConfigs: [],
+  reminderRules: [],
+  reminderDeliveryLogs: [],
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -1062,6 +1121,19 @@ let globalState: AppState = backfillTraceability((() => {
           scfPeriods: Array.isArray(parsed.scfPeriods) ? parsed.scfPeriods : [],
           journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
           scfPostingFailures: Array.isArray(parsed.scfPostingFailures) ? parsed.scfPostingFailures : [],
+          crmParties: Array.isArray(parsed.crmParties) ? parsed.crmParties : [],
+          crmPartyLinks: Array.isArray(parsed.crmPartyLinks) ? parsed.crmPartyLinks : [],
+          crmPartyNotes: Array.isArray(parsed.crmPartyNotes) ? parsed.crmPartyNotes : [],
+          crmFollowUpTasks: Array.isArray(parsed.crmFollowUpTasks) ? parsed.crmFollowUpTasks : [],
+          crmMessageTemplates: Array.isArray(parsed.crmMessageTemplates) ? parsed.crmMessageTemplates : [],
+          crmCommunicationLogs: Array.isArray(parsed.crmCommunicationLogs) ? parsed.crmCommunicationLogs : [],
+          reminderQuietHoursConfigs: Array.isArray(parsed.reminderQuietHoursConfigs)
+            ? parsed.reminderQuietHoursConfigs
+            : [],
+          reminderRules: Array.isArray(parsed.reminderRules) ? parsed.reminderRules : [],
+          reminderDeliveryLogs: Array.isArray(parsed.reminderDeliveryLogs)
+            ? parsed.reminderDeliveryLogs
+            : [],
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -1752,6 +1824,168 @@ export const selectCurrentScfPostingFailuresFromState = createBranchSelector<Scf
   (s) => s.scfPostingFailures,
   (f, b) => f.branchId === b
 );
+
+let cachedCrmPartiesSrc: CrmParty[] | undefined;
+let cachedCrmPartiesBiz = '';
+let cachedCrmPartiesRes: CrmParty[] = [];
+export function selectCurrentCrmPartiesFromState(state: AppState): CrmParty[] {
+  const list = state.crmParties || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedCrmPartiesSrc && bizId === cachedCrmPartiesBiz) return cachedCrmPartiesRes;
+  cachedCrmPartiesSrc = list;
+  cachedCrmPartiesBiz = bizId;
+  cachedCrmPartiesRes = list.filter((p) => p.businessId === bizId && !p.deletedAt);
+  return cachedCrmPartiesRes;
+}
+
+let cachedCrmLinksSrc: CrmPartyLink[] | undefined;
+let cachedCrmLinksBiz = '';
+let cachedCrmLinksRes: CrmPartyLink[] = [];
+export function selectCurrentCrmPartyLinksFromState(state: AppState): CrmPartyLink[] {
+  const list = state.crmPartyLinks || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedCrmLinksSrc && bizId === cachedCrmLinksBiz) return cachedCrmLinksRes;
+  cachedCrmLinksSrc = list;
+  cachedCrmLinksBiz = bizId;
+  cachedCrmLinksRes = list.filter((l) => l.businessId === bizId && !l.deletedAt);
+  return cachedCrmLinksRes;
+}
+
+let cachedCrmNotesSrc: CrmPartyNote[] | undefined;
+let cachedCrmNotesBiz = '';
+let cachedCrmNotesRes: CrmPartyNote[] = [];
+export function selectCurrentCrmPartyNotesFromState(state: AppState): CrmPartyNote[] {
+  const list = state.crmPartyNotes || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedCrmNotesSrc && bizId === cachedCrmNotesBiz) return cachedCrmNotesRes;
+  cachedCrmNotesSrc = list;
+  cachedCrmNotesBiz = bizId;
+  cachedCrmNotesRes = list.filter((n) => n.businessId === bizId && !n.deletedAt);
+  return cachedCrmNotesRes;
+}
+
+let cachedCrmTasksSrc: CrmFollowUpTask[] | undefined;
+let cachedCrmTasksBiz = '';
+let cachedCrmTasksRes: CrmFollowUpTask[] = [];
+export function selectCurrentCrmFollowUpTasksFromState(state: AppState): CrmFollowUpTask[] {
+  const list = state.crmFollowUpTasks || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedCrmTasksSrc && bizId === cachedCrmTasksBiz) return cachedCrmTasksRes;
+  cachedCrmTasksSrc = list;
+  cachedCrmTasksBiz = bizId;
+  cachedCrmTasksRes = list.filter((t) => t.businessId === bizId && !t.deletedAt);
+  return cachedCrmTasksRes;
+}
+
+let cachedCrmTemplatesSrc: CrmMessageTemplate[] | undefined;
+let cachedCrmTemplatesBiz = '';
+let cachedCrmTemplatesAcc = '';
+let cachedCrmTemplatesRes: CrmMessageTemplate[] = [];
+export function selectCurrentCrmMessageTemplatesFromState(state: AppState): CrmMessageTemplate[] {
+  const list = state.crmMessageTemplates || [];
+  const bizId = state.currentBusinessId || '';
+  const accId = state.account?.id || '';
+  if (
+    list === cachedCrmTemplatesSrc &&
+    bizId === cachedCrmTemplatesBiz &&
+    accId === cachedCrmTemplatesAcc
+  ) {
+    return cachedCrmTemplatesRes;
+  }
+  cachedCrmTemplatesSrc = list;
+  cachedCrmTemplatesBiz = bizId;
+  cachedCrmTemplatesAcc = accId;
+  const matched = list.filter((tpl) => tpl.businessId === bizId && !tpl.deletedAt);
+  cachedCrmTemplatesRes =
+    matched.length > 0 ? matched : bizId ? getDefaultCrmMessageTemplates(accId, bizId) : [];
+  return cachedCrmTemplatesRes;
+}
+
+let cachedCrmCommsSrc: CrmCommunicationLog[] | undefined;
+let cachedCrmCommsBiz = '';
+let cachedCrmCommsRes: CrmCommunicationLog[] = [];
+export function selectCurrentCrmCommunicationLogsFromState(state: AppState): CrmCommunicationLog[] {
+  const list = state.crmCommunicationLogs || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedCrmCommsSrc && bizId === cachedCrmCommsBiz) return cachedCrmCommsRes;
+  cachedCrmCommsSrc = list;
+  cachedCrmCommsBiz = bizId;
+  cachedCrmCommsRes = list.filter((c) => c.businessId === bizId && !c.deletedAt);
+  return cachedCrmCommsRes;
+}
+
+let cachedRemQhSrc: ReminderQuietHoursConfig[] | undefined;
+let cachedRemQhBiz = '';
+let cachedRemQhAcc = '';
+let cachedRemQhRes: ReminderQuietHoursConfig | undefined;
+export function selectCurrentReminderQuietHoursFromState(
+  state: AppState
+): ReminderQuietHoursConfig {
+  const list = state.reminderQuietHoursConfigs || [];
+  const bizId = state.currentBusinessId || '';
+  const accId = state.account?.id || '';
+  if (
+    cachedRemQhRes &&
+    list === cachedRemQhSrc &&
+    bizId === cachedRemQhBiz &&
+    accId === cachedRemQhAcc
+  ) {
+    return cachedRemQhRes;
+  }
+  cachedRemQhSrc = list;
+  cachedRemQhBiz = bizId;
+  cachedRemQhAcc = accId;
+  const matched = list.find((q) => q.businessId === bizId && !q.deletedAt);
+  cachedRemQhRes = matched || getDefaultReminderQuietHours(accId, bizId);
+  return cachedRemQhRes;
+}
+
+let cachedRemRulesSrc: ReminderRule[] | undefined;
+let cachedRemRulesBiz = '';
+let cachedRemRulesAcc = '';
+let cachedRemRulesBr = '';
+let cachedRemRulesRes: ReminderRule[] = [];
+export function selectCurrentReminderRulesFromState(state: AppState): ReminderRule[] {
+  const list = state.reminderRules || [];
+  const bizId = state.currentBusinessId || '';
+  const accId = state.account?.id || '';
+  const brId = state.currentBranchId || '';
+  if (
+    list === cachedRemRulesSrc &&
+    bizId === cachedRemRulesBiz &&
+    accId === cachedRemRulesAcc &&
+    brId === cachedRemRulesBr
+  ) {
+    return cachedRemRulesRes;
+  }
+  cachedRemRulesSrc = list;
+  cachedRemRulesBiz = bizId;
+  cachedRemRulesAcc = accId;
+  cachedRemRulesBr = brId;
+  const matched = list.filter((r) => r.businessId === bizId && !r.deletedAt);
+  cachedRemRulesRes =
+    matched.length > 0
+      ? matched
+      : bizId
+      ? getDefaultReminderRules(accId, bizId, brId, state.crmMessageTemplates || [])
+      : [];
+  return cachedRemRulesRes;
+}
+
+let cachedRemLogsSrc: ReminderDeliveryLog[] | undefined;
+let cachedRemLogsBiz = '';
+let cachedRemLogsRes: ReminderDeliveryLog[] = [];
+export function selectCurrentReminderDeliveryLogsFromState(
+  state: AppState
+): ReminderDeliveryLog[] {
+  const list = state.reminderDeliveryLogs || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedRemLogsSrc && bizId === cachedRemLogsBiz) return cachedRemLogsRes;
+  cachedRemLogsSrc = list;
+  cachedRemLogsBiz = bizId;
+  cachedRemLogsRes = list.filter((l) => l.businessId === bizId && !l.deletedAt);
+  return cachedRemLogsRes;
+}
 
 let cachedNotifSrc: AppNotification[] | undefined;
 let cachedNotifCount = 0;
@@ -3336,6 +3570,15 @@ function pruneDeletedRecords(
     trading_stock_vouchers: 'stockVouchers',
     unified_documents: 'unifiedDocuments',
     unified_payments: 'unifiedPayments',
+    crm_parties: 'crmParties',
+    crm_party_links: 'crmPartyLinks',
+    crm_party_notes: 'crmPartyNotes',
+    crm_follow_up_tasks: 'crmFollowUpTasks',
+    crm_message_templates: 'crmMessageTemplates',
+    crm_communication_logs: 'crmCommunicationLogs',
+    reminder_quiet_hours_configs: 'reminderQuietHoursConfigs',
+    reminder_rules: 'reminderRules',
+    reminder_delivery_logs: 'reminderDeliveryLogs',
     category_formules: 'categoryFormules',
   };
 
@@ -3615,6 +3858,134 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           const others = (globalState.scfPostingFailures || []).filter((f) => f.branchId !== branchId);
           if (failures.length > 0) {
             updates.scfPostingFailures = [...failures, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('crm_parties')) {
+      tasks.push(async () => {
+        const parties = await crmService.fetchParties(businessId, updatedAfter);
+        if (parties.length > 0 || !updatedAfter) {
+          const others = (globalState.crmParties || []).filter((p) => p.businessId !== businessId);
+          const cur = (globalState.crmParties || []).filter((p) => p.businessId === businessId);
+          if (updatedAfter && parties.length > 0) {
+            updates.crmParties = [...mergeById(cur, parties), ...others];
+          } else if (parties.length > 0) {
+            updates.crmParties = [...parties, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('crm_party_links')) {
+      tasks.push(async () => {
+        const links = await crmService.fetchPartyLinks(businessId, updatedAfter);
+        if (links.length > 0 || !updatedAfter) {
+          const others = (globalState.crmPartyLinks || []).filter((l) => l.businessId !== businessId);
+          const cur = (globalState.crmPartyLinks || []).filter((l) => l.businessId === businessId);
+          if (updatedAfter && links.length > 0) {
+            updates.crmPartyLinks = [...mergeById(cur, links), ...others];
+          } else if (links.length > 0) {
+            updates.crmPartyLinks = [...links, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('crm_party_notes')) {
+      tasks.push(async () => {
+        const notes = await crmService.fetchPartyNotes(businessId, updatedAfter);
+        if (notes.length > 0 || !updatedAfter) {
+          const others = (globalState.crmPartyNotes || []).filter((n) => n.businessId !== businessId);
+          const cur = (globalState.crmPartyNotes || []).filter((n) => n.businessId === businessId);
+          if (updatedAfter && notes.length > 0) {
+            updates.crmPartyNotes = [...mergeById(cur, notes), ...others];
+          } else if (notes.length > 0) {
+            updates.crmPartyNotes = [...notes, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('crm_follow_up_tasks')) {
+      tasks.push(async () => {
+        const fTasks = await crmService.fetchFollowUpTasks(businessId, updatedAfter);
+        if (fTasks.length > 0 || !updatedAfter) {
+          const others = (globalState.crmFollowUpTasks || []).filter((t) => t.businessId !== businessId);
+          const cur = (globalState.crmFollowUpTasks || []).filter((t) => t.businessId === businessId);
+          if (updatedAfter && fTasks.length > 0) {
+            updates.crmFollowUpTasks = [...mergeById(cur, fTasks), ...others];
+          } else if (fTasks.length > 0) {
+            updates.crmFollowUpTasks = [...fTasks, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('crm_message_templates')) {
+      tasks.push(async () => {
+        const templates = await crmService.fetchMessageTemplates(businessId);
+        if (templates.length > 0) {
+          const others = (globalState.crmMessageTemplates || []).filter(
+            (t) => t.businessId !== businessId
+          );
+          updates.crmMessageTemplates = [...templates, ...others];
+        }
+      });
+    }
+    if (shouldSyncTable('crm_communication_logs')) {
+      tasks.push(async () => {
+        const logs = await crmService.fetchCommunicationLogs(businessId, updatedAfter);
+        if (logs.length > 0 || !updatedAfter) {
+          const others = (globalState.crmCommunicationLogs || []).filter(
+            (c) => c.businessId !== businessId
+          );
+          const cur = (globalState.crmCommunicationLogs || []).filter(
+            (c) => c.businessId === businessId
+          );
+          if (updatedAfter && logs.length > 0) {
+            updates.crmCommunicationLogs = [...mergeById(cur, logs), ...others];
+          } else if (logs.length > 0) {
+            updates.crmCommunicationLogs = [...logs, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('reminder_quiet_hours_configs')) {
+      tasks.push(async () => {
+        const qhs = await reminderService.fetchQuietHours(businessId);
+        if (qhs.length > 0) {
+          const others = (globalState.reminderQuietHoursConfigs || []).filter(
+            (q) => q.businessId !== businessId
+          );
+          updates.reminderQuietHoursConfigs = [...qhs, ...others];
+        }
+      });
+    }
+    if (shouldSyncTable('reminder_rules')) {
+      tasks.push(async () => {
+        const rules = await reminderService.fetchRules(businessId, updatedAfter);
+        if (rules.length > 0 || !updatedAfter) {
+          const others = (globalState.reminderRules || []).filter((r) => r.businessId !== businessId);
+          const cur = (globalState.reminderRules || []).filter((r) => r.businessId === businessId);
+          if (updatedAfter && rules.length > 0) {
+            updates.reminderRules = [...mergeById(cur, rules), ...others];
+          } else if (rules.length > 0) {
+            updates.reminderRules = [...rules, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('reminder_delivery_logs')) {
+      tasks.push(async () => {
+        const logs = await reminderService.fetchDeliveryLogs(businessId, updatedAfter);
+        if (logs.length > 0 || !updatedAfter) {
+          const others = (globalState.reminderDeliveryLogs || []).filter(
+            (l) => l.businessId !== businessId
+          );
+          const cur = (globalState.reminderDeliveryLogs || []).filter(
+            (l) => l.businessId === businessId
+          );
+          if (updatedAfter && logs.length > 0) {
+            updates.reminderDeliveryLogs = [...mergeById(cur, logs), ...others];
+          } else if (logs.length > 0) {
+            updates.reminderDeliveryLogs = [...logs, ...others];
           }
         }
       });
@@ -7820,7 +8191,10 @@ function createAtriumActions() {
       try {
         const employerCnasRatePercent =
           Math.round((globalState.effectiveStatutoryRate?.cnasPatronalRate ?? 0.26) * 10000) / 100;
-        const payrollScfDraft = buildPostingForPayrollRun(run, { employerCnasRatePercent });
+        const payrollScfDraft = buildPostingForPayrollRun(run, {
+          employerCnasRatePercent,
+          slips: runSlips,
+        });
         postScfDraftOrQueueFailure(payrollScfDraft, {
           accountId: run.accountId || globalState.account.id,
           businessId: run.businessId || globalState.currentBusinessId,
@@ -16739,6 +17113,19 @@ function createAtriumActions() {
       scfPeriods: Array.isArray(parsed.scfPeriods) ? parsed.scfPeriods : [],
       journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
       scfPostingFailures: Array.isArray(parsed.scfPostingFailures) ? parsed.scfPostingFailures : [],
+      crmParties: Array.isArray(parsed.crmParties) ? parsed.crmParties : [],
+      crmPartyLinks: Array.isArray(parsed.crmPartyLinks) ? parsed.crmPartyLinks : [],
+      crmPartyNotes: Array.isArray(parsed.crmPartyNotes) ? parsed.crmPartyNotes : [],
+      crmFollowUpTasks: Array.isArray(parsed.crmFollowUpTasks) ? parsed.crmFollowUpTasks : [],
+      crmMessageTemplates: Array.isArray(parsed.crmMessageTemplates) ? parsed.crmMessageTemplates : [],
+      crmCommunicationLogs: Array.isArray(parsed.crmCommunicationLogs) ? parsed.crmCommunicationLogs : [],
+      reminderQuietHoursConfigs: Array.isArray(parsed.reminderQuietHoursConfigs)
+        ? parsed.reminderQuietHoursConfigs
+        : [],
+      reminderRules: Array.isArray(parsed.reminderRules) ? parsed.reminderRules : [],
+      reminderDeliveryLogs: Array.isArray(parsed.reminderDeliveryLogs)
+        ? parsed.reminderDeliveryLogs
+        : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -19670,6 +20057,1378 @@ function createAtriumActions() {
     return acct;
   };
 
+  // =========================================================================
+  // PHASE 2 STEP 3 (6.4): UNIFIED CRM & COMMUNICATION
+  // =========================================================================
+  const ensureCrmTemplatesSeededForBusiness = (accountId: string, businessId: string) => {
+    const existing = (globalState.crmMessageTemplates || []).filter(
+      (tpl) => tpl.businessId === businessId && !tpl.deletedAt
+    );
+    if (existing.length > 0) return;
+    const defaults = getDefaultCrmMessageTemplates(accountId, businessId);
+    globalState = {
+      ...globalState,
+      crmMessageTemplates: [...defaults, ...(globalState.crmMessageTemplates || [])],
+    };
+  };
+
+  const resolveActivePartyRecord = (partyId: string): CrmParty | null => {
+    let cur = (globalState.crmParties || []).find((p) => p.id === partyId);
+    let hops = 0;
+    while (cur && cur.mergedIntoPartyId && hops < 5) {
+      const next = (globalState.crmParties || []).find((p) => p.id === cur!.mergedIntoPartyId);
+      if (!next) break;
+      cur = next;
+      hops++;
+    }
+    return cur && !cur.deletedAt ? cur : null;
+  };
+
+  const ensurePartyForEntity = (input: {
+    businessId?: string;
+    branchId?: string;
+    sourceVertical: string;
+    entityType: CrmLinkEntityType;
+    entityId: string;
+    partyKind?: CrmPartyKind;
+    displayName: string;
+    phone?: string;
+    email?: string;
+    nif?: string;
+    rc?: string;
+    nis?: string;
+    ai?: string;
+    address?: string;
+    wilayaCode?: string;
+    preferredLanguage?: 'en' | 'fr' | 'ar';
+  }): {
+    party: CrmParty;
+    link: CrmPartyLink;
+    duplicates: PartyDuplicateCandidate[];
+  } => {
+    const ctx = resolveUnifiedContext();
+    const bizId = input.businessId || ctx.businessId;
+    const brId = input.branchId || ctx.branchId;
+    ensureCrmTemplatesSeededForBusiness(ctx.accountId, bizId);
+
+    const existingLink = (globalState.crmPartyLinks || []).find(
+      (l) =>
+        l.businessId === bizId &&
+        l.entityType === input.entityType &&
+        l.entityId === input.entityId &&
+        !l.deletedAt
+    );
+    if (existingLink) {
+      const linkedParty = resolveActivePartyRecord(existingLink.partyId);
+      if (linkedParty) {
+        const duplicates = detectPartyDuplicates(
+          {
+            id: linkedParty.id,
+            businessId: bizId,
+            displayName: linkedParty.displayName,
+            phone: linkedParty.phoneRaw,
+            email: linkedParty.email,
+            nif: linkedParty.nif,
+            sharedPhoneGroup: linkedParty.sharedPhoneGroup,
+          },
+          globalState.crmParties || []
+        );
+        return { party: linkedParty, link: existingLink, duplicates };
+      }
+    }
+
+    const normPhone = normalizeAlgerianPhoneForCrm(input.phone);
+    const normEmail = normalizeEmail(input.email) || undefined;
+    const normNif = normalizeNif(input.nif) || undefined;
+    const nowIso = new Date().toISOString();
+
+    const newParty: CrmParty = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: bizId,
+      branchId: brId,
+      partyKind: input.partyKind || (normNif || input.rc ? 'company' : 'person'),
+      displayName: (input.displayName || '').trim() || 'Client',
+      phoneRaw: input.phone?.trim() || undefined,
+      phoneE164: normPhone.e164 || undefined,
+      phoneLocal: normPhone.local10 || undefined,
+      phoneValid: normPhone.valid,
+      sharedPhoneGroup: false,
+      email: normEmail,
+      nif: normNif,
+      rc: input.rc?.trim() || undefined,
+      nis: input.nis?.trim() || undefined,
+      ai: input.ai?.trim() || undefined,
+      address: input.address?.trim() || undefined,
+      wilayaCode: input.wilayaCode?.trim() || undefined,
+      preferredLanguage:
+        input.preferredLanguage || (globalState.language === 'ar' || globalState.language === 'en' ? globalState.language : 'fr'),
+      consentSms: true,
+      consentWhatsapp: true,
+      consentEmail: true,
+      optOutAll: false,
+      tags: [],
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const newLink: CrmPartyLink = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: bizId,
+      branchId: brId,
+      partyId: newParty.id,
+      sourceVertical: input.sourceVertical,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      entityLabel: newParty.displayName,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const duplicates = detectPartyDuplicates(
+      {
+        id: newParty.id,
+        businessId: bizId,
+        displayName: newParty.displayName,
+        phone: newParty.phoneRaw,
+        email: newParty.email,
+        nif: newParty.nif,
+      },
+      globalState.crmParties || []
+    );
+
+    globalState = {
+      ...globalState,
+      crmParties: [newParty, ...(globalState.crmParties || [])],
+      crmPartyLinks: [newLink, ...(globalState.crmPartyLinks || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.upsertParty(newParty, globalState.currentUser?.id).catch(() => {});
+      crmService.upsertPartyLink(newLink, globalState.currentUser?.id).catch(() => {});
+    }
+
+    return { party: newParty, link: newLink, duplicates };
+  };
+
+  const upsertCrmParty = (input: Partial<CrmParty> & { id?: string; displayName: string }): CrmParty => {
+    const ctx = resolveUnifiedContext();
+    const nowIso = new Date().toISOString();
+    const existing = input.id
+      ? (globalState.crmParties || []).find((p) => p.id === input.id)
+      : undefined;
+    const rawPhone = input.phoneRaw !== undefined ? input.phoneRaw : existing?.phoneRaw;
+    const normPhone = normalizeAlgerianPhoneForCrm(rawPhone);
+    const optOutAll = input.optOutAll !== undefined ? input.optOutAll : existing?.optOutAll ?? false;
+
+    const nextParty: CrmParty = existing
+      ? {
+          ...existing,
+          ...input,
+          displayName: input.displayName.trim() || existing.displayName,
+          phoneRaw: rawPhone?.trim() || undefined,
+          phoneE164: normPhone.e164 || undefined,
+          phoneLocal: normPhone.local10 || undefined,
+          phoneValid: normPhone.valid,
+          email:
+            input.email !== undefined
+              ? normalizeEmail(input.email) || undefined
+              : existing.email,
+          nif: input.nif !== undefined ? normalizeNif(input.nif) || undefined : existing.nif,
+          optOutAll,
+          optOutAt: optOutAll ? existing.optOutAt || nowIso : undefined,
+          version: (existing.version || 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: input.id || generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: input.businessId || ctx.businessId,
+          branchId: input.branchId || ctx.branchId,
+          partyKind: input.partyKind || 'person',
+          displayName: input.displayName.trim(),
+          phoneRaw: rawPhone?.trim() || undefined,
+          phoneE164: normPhone.e164 || undefined,
+          phoneLocal: normPhone.local10 || undefined,
+          phoneValid: normPhone.valid,
+          sharedPhoneGroup: Boolean(input.sharedPhoneGroup),
+          email: normalizeEmail(input.email) || undefined,
+          nif: normalizeNif(input.nif) || undefined,
+          rc: input.rc?.trim() || undefined,
+          nis: input.nis?.trim() || undefined,
+          ai: input.ai?.trim() || undefined,
+          address: input.address?.trim() || undefined,
+          wilayaCode: input.wilayaCode?.trim() || undefined,
+          preferredLanguage: input.preferredLanguage || 'fr',
+          consentSms: input.consentSms !== false,
+          consentWhatsapp: input.consentWhatsapp !== false,
+          consentEmail: input.consentEmail !== false,
+          optOutAll,
+          optOutReason: input.optOutReason,
+          optOutAt: optOutAll ? nowIso : undefined,
+          notes: input.notes,
+          tags: input.tags || [],
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      crmParties: existing
+        ? (globalState.crmParties || []).map((p) => (p.id === existing.id ? nextParty : p))
+        : [nextParty, ...(globalState.crmParties || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.upsertParty(nextParty, globalState.currentUser?.id).catch(() => {});
+    }
+
+    return nextParty;
+  };
+
+  const linkEntityToParty = (input: {
+    partyId: string;
+    sourceVertical: string;
+    entityType: CrmLinkEntityType;
+    entityId: string;
+    entityLabel?: string;
+    branchId?: string;
+  }): CrmPartyLink | null => {
+    const party = resolveActivePartyRecord(input.partyId);
+    if (!party) return null;
+    const nowIso = new Date().toISOString();
+    const existing = (globalState.crmPartyLinks || []).find(
+      (l) =>
+        l.businessId === party.businessId &&
+        l.entityType === input.entityType &&
+        l.entityId === input.entityId &&
+        !l.deletedAt
+    );
+
+    const nextLink: CrmPartyLink = existing
+      ? {
+          ...existing,
+          partyId: party.id,
+          sourceVertical: input.sourceVertical,
+          entityLabel: input.entityLabel || existing.entityLabel,
+          updatedAt: nowIso,
+        }
+      : {
+          id: generateClientUuid(),
+          accountId: party.accountId,
+          businessId: party.businessId,
+          branchId: input.branchId || party.branchId,
+          partyId: party.id,
+          sourceVertical: input.sourceVertical,
+          entityType: input.entityType,
+          entityId: input.entityId,
+          entityLabel: input.entityLabel || party.displayName,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      crmPartyLinks: existing
+        ? (globalState.crmPartyLinks || []).map((l) => (l.id === existing.id ? nextLink : l))
+        : [nextLink, ...(globalState.crmPartyLinks || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.upsertPartyLink(nextLink, globalState.currentUser?.id).catch(() => {});
+    }
+
+    return nextLink;
+  };
+
+  const mergeCrmParties = (
+    sourcePartyId: string,
+    targetPartyId: string,
+    reason = 'Duplicate merge'
+  ): { ok: boolean; errorMessage?: string } => {
+    if (!sourcePartyId || !targetPartyId || sourcePartyId === targetPartyId) {
+      return { ok: false, errorMessage: 'Invalid source or target party.' };
+    }
+    const source = (globalState.crmParties || []).find(
+      (p) => p.id === sourcePartyId && !p.deletedAt
+    );
+    const target = (globalState.crmParties || []).find(
+      (p) => p.id === targetPartyId && !p.deletedAt
+    );
+    if (!source || !target || source.businessId !== target.businessId) {
+      return { ok: false, errorMessage: 'Parties must belong to the same business.' };
+    }
+
+    const nowIso = new Date().toISOString();
+    const plan = planPartyMerge(
+      source,
+      target,
+      {
+        links: globalState.crmPartyLinks || [],
+        notes: globalState.crmPartyNotes || [],
+        tasks: globalState.crmFollowUpTasks || [],
+        comms: globalState.crmCommunicationLogs || [],
+      },
+      globalState.currentUser?.id,
+      nowIso
+    );
+
+    globalState = {
+      ...globalState,
+      crmParties: (globalState.crmParties || []).map((p) => {
+        if (p.id === target.id) return plan.mergedTarget;
+        if (p.id === source.id) return plan.sourceParty;
+        return p;
+      }),
+      crmPartyLinks: (globalState.crmPartyLinks || []).map((l) =>
+        l.partyId === source.id && !l.deletedAt ? { ...l, partyId: target.id, updatedAt: nowIso } : l
+      ),
+      crmPartyNotes: (globalState.crmPartyNotes || []).map((n) =>
+        n.partyId === source.id && !n.deletedAt ? { ...n, partyId: target.id, updatedAt: nowIso } : n
+      ),
+      crmFollowUpTasks: (globalState.crmFollowUpTasks || []).map((t) =>
+        t.partyId === source.id && !t.deletedAt ? { ...t, partyId: target.id, updatedAt: nowIso } : t
+      ),
+      crmCommunicationLogs: (globalState.crmCommunicationLogs || []).map((c) =>
+        c.partyId === source.id ? { ...c, partyId: target.id, updatedAt: nowIso } : c
+      ),
+      unifiedDocuments: (globalState.unifiedDocuments || []).map((d) =>
+        d.partyId === source.id ? { ...d, partyId: target.id, partyName: target.displayName } : d
+      ),
+      unifiedPayments: (globalState.unifiedPayments || []).map((p) =>
+        p.partyId === source.id ? { ...p, partyId: target.id, partyName: target.displayName } : p
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.mergeParties(source.id, target.id, reason).catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('CRM Profiles Merged', 'Fiches Tiers Fusionnées', 'تم دمج الملفات'),
+      message: `${source.displayName} → ${target.displayName} (${plan.linksMovedCount} ${ul('links', 'liens', 'روابط')})`,
+    });
+
+    return { ok: true };
+  };
+
+  const addCrmPartyNote = (input: {
+    partyId: string;
+    noteType?: CrmPartyNote['noteType'];
+    body: string;
+    sourceVertical?: string;
+  }): CrmPartyNote | null => {
+    const party = resolveActivePartyRecord(input.partyId);
+    const cleanBody = (input.body || '').trim();
+    if (!party || !cleanBody) return null;
+    const nowIso = new Date().toISOString();
+    const note: CrmPartyNote = {
+      id: generateClientUuid(),
+      accountId: party.accountId,
+      businessId: party.businessId,
+      branchId: party.branchId,
+      partyId: party.id,
+      sourceVertical: input.sourceVertical,
+      authorStaffId: globalState.currentUser?.id,
+      authorName: globalState.currentUser?.fullName || 'Staff',
+      noteType: input.noteType || 'note',
+      body: cleanBody,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      crmPartyNotes: [note, ...(globalState.crmPartyNotes || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.addPartyNote(note, globalState.currentUser?.id).catch(() => {});
+    }
+    return note;
+  };
+
+  const upsertCrmFollowUpTask = (input: {
+    id?: string;
+    partyId: string;
+    title: string;
+    description?: string;
+    channel: CrmTaskChannel;
+    dueAt: string;
+    status?: CrmTaskStatus;
+    assignedStaffId?: string;
+    assignedStaffName?: string;
+  }): CrmFollowUpTask | null => {
+    const party = resolveActivePartyRecord(input.partyId);
+    const cleanTitle = (input.title || '').trim();
+    if (!party || !cleanTitle) return null;
+    const nowIso = new Date().toISOString();
+    const existing = input.id
+      ? (globalState.crmFollowUpTasks || []).find((t) => t.id === input.id)
+      : undefined;
+
+    const status = input.status || existing?.status || 'open';
+    const nextTask: CrmFollowUpTask = existing
+      ? {
+          ...existing,
+          title: cleanTitle,
+          description: input.description ?? existing.description,
+          channel: input.channel,
+          dueAt: input.dueAt,
+          status,
+          completedAt: status === 'done' ? existing.completedAt || nowIso : undefined,
+          assignedStaffId: input.assignedStaffId ?? existing.assignedStaffId,
+          assignedStaffName: input.assignedStaffName ?? existing.assignedStaffName,
+          version: (existing.version || 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: input.id || generateClientUuid(),
+          accountId: party.accountId,
+          businessId: party.businessId,
+          branchId: party.branchId,
+          partyId: party.id,
+          assignedStaffId: input.assignedStaffId || globalState.currentUser?.id,
+          assignedStaffName:
+            input.assignedStaffName || globalState.currentUser?.fullName || 'Staff',
+          title: cleanTitle,
+          description: input.description?.trim() || undefined,
+          channel: input.channel,
+          dueAt: input.dueAt,
+          status,
+          completedAt: status === 'done' ? nowIso : undefined,
+          createdByStaffId: globalState.currentUser?.id,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      crmFollowUpTasks: existing
+        ? (globalState.crmFollowUpTasks || []).map((t) => (t.id === existing.id ? nextTask : t))
+        : [nextTask, ...(globalState.crmFollowUpTasks || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.upsertFollowUpTask(nextTask, globalState.currentUser?.id).catch(() => {});
+    }
+
+    return nextTask;
+  };
+
+  const completeCrmFollowUpTask = (taskId: string, status: CrmTaskStatus = 'done'): boolean => {
+    const task = (globalState.crmFollowUpTasks || []).find((t) => t.id === taskId && !t.deletedAt);
+    if (!task) return false;
+    const nowIso = new Date().toISOString();
+    const nextTask: CrmFollowUpTask = {
+      ...task,
+      status,
+      completedAt: status === 'done' ? nowIso : undefined,
+      version: (task.version || 1) + 1,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      crmFollowUpTasks: (globalState.crmFollowUpTasks || []).map((t) =>
+        t.id === task.id ? nextTask : t
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      crmService.upsertFollowUpTask(nextTask, globalState.currentUser?.id).catch(() => {});
+    }
+    return true;
+  };
+
+  const upsertCrmMessageTemplate = (input: {
+    id?: string;
+    code: string;
+    channel: CrmChannel;
+    name: string;
+    subjectFr?: string;
+    subjectAr?: string;
+    subjectEn?: string;
+    bodyFr: string;
+    bodyAr: string;
+    bodyEn: string;
+    variables?: string[];
+  }): CrmMessageTemplate => {
+    const ctx = resolveUnifiedContext();
+    ensureCrmTemplatesSeededForBusiness(ctx.accountId, ctx.businessId);
+    const nowIso = new Date().toISOString();
+    const existing = input.id
+      ? (globalState.crmMessageTemplates || []).find((tpl) => tpl.id === input.id)
+      : undefined;
+
+    const nextTpl: CrmMessageTemplate = existing
+      ? {
+          ...existing,
+          code: input.code.trim().toUpperCase(),
+          channel: input.channel,
+          name: input.name.trim(),
+          subjectFr: input.subjectFr,
+          subjectAr: input.subjectAr,
+          subjectEn: input.subjectEn,
+          bodyFr: input.bodyFr,
+          bodyAr: input.bodyAr,
+          bodyEn: input.bodyEn,
+          variables: input.variables || existing.variables,
+          version: (existing.version || 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: input.id || generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          branchId: ctx.branchId,
+          code: input.code.trim().toUpperCase(),
+          channel: input.channel,
+          name: input.name.trim(),
+          subjectFr: input.subjectFr,
+          subjectAr: input.subjectAr,
+          subjectEn: input.subjectEn,
+          bodyFr: input.bodyFr,
+          bodyAr: input.bodyAr,
+          bodyEn: input.bodyEn,
+          variables: input.variables || [],
+          isSystem: false,
+          isActive: true,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      crmMessageTemplates: existing
+        ? (globalState.crmMessageTemplates || []).map((t) => (t.id === existing.id ? nextTpl : t))
+        : [nextTpl, ...(globalState.crmMessageTemplates || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      crmService.upsertMessageTemplate(nextTpl, globalState.currentUser?.id).catch(() => {});
+    }
+    return nextTpl;
+  };
+
+  const sendCrmCommunication = (input: {
+    partyId: string;
+    templateId?: string;
+    channel: CrmChannel;
+    language: 'en' | 'fr' | 'ar';
+    variables?: Record<string, string | number | null | undefined>;
+    customSubject?: string;
+    customBody?: string;
+    allowMissingVariables?: boolean;
+    providerConfigured?: boolean;
+    simulateProviderFailure?: boolean;
+    providerName?: string;
+  }): {
+    ok: boolean;
+    log?: CrmCommunicationLog;
+    missingVariables: string[];
+    errorCode?: string;
+    errorMessage?: string;
+  } => {
+    const party = resolveActivePartyRecord(input.partyId);
+    if (!party) {
+      return {
+        ok: false,
+        missingVariables: [],
+        errorCode: 'CRM_PARTY_NOT_FOUND',
+        errorMessage: 'CRM party not found.',
+      };
+    }
+    ensureCrmTemplatesSeededForBusiness(party.accountId, party.businessId);
+    const tpl = input.templateId
+      ? (globalState.crmMessageTemplates || []).find((t) => t.id === input.templateId)
+      : undefined;
+
+    let renderedSubject = input.customSubject || '';
+    let renderedBody = input.customBody || '';
+    let missingVariables: string[] = [];
+
+    if (tpl && !input.customBody) {
+      const rendered = renderCrmTemplate(tpl, input.language, input.variables || {});
+      renderedSubject = rendered.subject;
+      renderedBody = rendered.body;
+      missingVariables = rendered.missingVariables;
+    } else if (renderedBody) {
+      const synthetic = renderCrmTemplate(
+        {
+          subjectFr: renderedSubject,
+          subjectAr: renderedSubject,
+          subjectEn: renderedSubject,
+          bodyFr: renderedBody,
+          bodyAr: renderedBody,
+          bodyEn: renderedBody,
+        },
+        input.language,
+        input.variables || {}
+      );
+      renderedSubject = synthetic.subject;
+      renderedBody = synthetic.body;
+      missingVariables = synthetic.missingVariables;
+    }
+
+    const evalRes = evaluateCommunicationDispatch({
+      party,
+      channel: input.channel,
+      renderedBody,
+      missingVariables,
+      allowMissingVariables: input.allowMissingVariables,
+      providerConfigured: input.providerConfigured,
+      simulateProviderFailure: input.simulateProviderFailure,
+      providerName: input.providerName,
+    });
+
+    const nowIso = new Date().toISOString();
+    const log: CrmCommunicationLog = {
+      id: generateClientUuid(),
+      accountId: party.accountId,
+      businessId: party.businessId,
+      branchId: party.branchId,
+      partyId: party.id,
+      templateId: tpl?.id,
+      channel: input.channel,
+      recipientAddress: evalRes.recipientAddress,
+      language: input.language,
+      subject: renderedSubject || undefined,
+      renderedBody,
+      missingVariables,
+      status: evalRes.status,
+      providerName: evalRes.providerName,
+      errorCode: evalRes.errorCode,
+      errorMessage: evalRes.errorMessage,
+      attempts: 1,
+      lastAttemptAt: nowIso,
+      sentAt: evalRes.status === 'sent' ? nowIso : undefined,
+      sentByStaffId: globalState.currentUser?.id,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      crmCommunicationLogs: [log, ...(globalState.crmCommunicationLogs || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.recordCommunicationAttempt(log).catch(() => {});
+    }
+
+    showToast({
+      type:
+        log.status === 'sent'
+          ? 'success'
+          : log.status === 'blocked_opt_out'
+          ? 'warning'
+          : 'error',
+      title:
+        log.status === 'sent'
+          ? ul('Message Sent', 'Message Envoyé', 'تم إرسال الرسالة')
+          : log.status === 'blocked_opt_out'
+          ? ul('Blocked by Opt-Out', 'Bloqué par Opt-Out', 'محظور (رفض التواصل)')
+          : ul('Delivery Failed', 'Échec d’envoi', 'فشل الإرسال'),
+      message: log.errorMessage || `${log.channel.toUpperCase()} → ${log.recipientAddress}`,
+    });
+
+    return {
+      ok: log.status === 'sent',
+      log,
+      missingVariables,
+      errorCode: log.errorCode,
+      errorMessage: log.errorMessage,
+    };
+  };
+
+  const retryCrmCommunication = (
+    logId: string,
+    options?: {
+      providerConfigured?: boolean;
+      simulateProviderFailure?: boolean;
+      allowMissingVariables?: boolean;
+    }
+  ): CrmCommunicationLog | null => {
+    const prev = (globalState.crmCommunicationLogs || []).find((c) => c.id === logId);
+    if (!prev) return null;
+    const party = resolveActivePartyRecord(prev.partyId);
+    if (!party) return null;
+
+    const evalRes = evaluateCommunicationDispatch({
+      party,
+      channel: prev.channel,
+      renderedBody: prev.renderedBody,
+      missingVariables: prev.missingVariables || [],
+      allowMissingVariables: options?.allowMissingVariables ?? true,
+      providerConfigured: options?.providerConfigured,
+      simulateProviderFailure: options?.simulateProviderFailure,
+      providerName: prev.providerName,
+    });
+
+    const nowIso = new Date().toISOString();
+    const updated: CrmCommunicationLog = {
+      ...prev,
+      recipientAddress: evalRes.recipientAddress || prev.recipientAddress,
+      status: evalRes.status,
+      providerName: evalRes.providerName || prev.providerName,
+      errorCode: evalRes.errorCode,
+      errorMessage: evalRes.errorMessage,
+      attempts: (prev.attempts || 1) + 1,
+      lastAttemptAt: nowIso,
+      sentAt: evalRes.status === 'sent' ? nowIso : prev.sentAt,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      crmCommunicationLogs: (globalState.crmCommunicationLogs || []).map((c) =>
+        c.id === prev.id ? updated : c
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      crmService.recordCommunicationAttempt(updated).catch(() => {});
+    }
+
+    showToast({
+      type:
+        updated.status === 'sent'
+          ? 'success'
+          : updated.status === 'blocked_opt_out'
+          ? 'warning'
+          : 'error',
+      title:
+        updated.status === 'sent'
+          ? ul('Retry Succeeded', 'Relance réussie', 'نجحت إعادة الإرسال')
+          : ul('Retry Recorded', 'Nouvel essai journalisé', 'تم تسجيل محاولة إعادة الإرسال'),
+      message: updated.errorMessage || `${updated.channel.toUpperCase()} · #${updated.attempts}`,
+    });
+
+    return updated;
+  };
+
+  // =========================================================================
+  // PHASE 2 STEP 4 (6.5): REMINDER & NOTIFICATION ENGINE
+  // =========================================================================
+  const ensureRemindersSeededForBusiness = (
+    accountId: string,
+    businessId: string,
+    branchId?: string
+  ) => {
+    const hasQh = (globalState.reminderQuietHoursConfigs || []).some(
+      (q) => q.businessId === businessId && !q.deletedAt
+    );
+    const existingRules = (globalState.reminderRules || []).filter(
+      (r) => r.businessId === businessId && !r.deletedAt
+    );
+    const existingEventSet = new Set(existingRules.map((r) => r.eventType));
+    const templates = (globalState.crmMessageTemplates || []).filter(
+      (t) => t.businessId === businessId && !t.deletedAt
+    );
+    const defaultRules = getDefaultReminderRules(accountId, businessId, branchId, templates);
+    const missingRules = defaultRules.filter((dr) => !existingEventSet.has(dr.eventType));
+
+    if (!hasQh || missingRules.length > 0) {
+      globalState = {
+        ...globalState,
+        reminderQuietHoursConfigs: hasQh
+          ? globalState.reminderQuietHoursConfigs
+          : [
+              getDefaultReminderQuietHours(accountId, businessId),
+              ...(globalState.reminderQuietHoursConfigs || []),
+            ],
+        reminderRules:
+          missingRules.length > 0
+            ? [...missingRules, ...(globalState.reminderRules || [])]
+            : globalState.reminderRules,
+      };
+    }
+  };
+
+  const saveReminderQuietHours = (input: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+    timezone?: string;
+    allowInAppDuringQuiet?: boolean;
+  }): ReminderQuietHoursConfig => {
+    const ctx = resolveUnifiedContext();
+    ensureRemindersSeededForBusiness(ctx.accountId, ctx.businessId, ctx.branchId);
+    const nowIso = new Date().toISOString();
+    const existing = (globalState.reminderQuietHoursConfigs || []).find(
+      (q) => q.businessId === ctx.businessId && !q.deletedAt
+    );
+    const nextQh: ReminderQuietHoursConfig = existing
+      ? {
+          ...existing,
+          enabled: input.enabled,
+          startTime: input.startTime || existing.startTime,
+          endTime: input.endTime || existing.endTime,
+          timezone: input.timezone || existing.timezone || 'Africa/Algiers',
+          allowInAppDuringQuiet:
+            input.allowInAppDuringQuiet ?? existing.allowInAppDuringQuiet,
+          version: (existing.version || 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          ...getDefaultReminderQuietHours(ctx.accountId, ctx.businessId, nowIso),
+          enabled: input.enabled,
+          startTime: input.startTime || '21:00',
+          endTime: input.endTime || '08:00',
+          timezone: input.timezone || 'Africa/Algiers',
+          allowInAppDuringQuiet: input.allowInAppDuringQuiet ?? true,
+        };
+
+    globalState = {
+      ...globalState,
+      reminderQuietHoursConfigs: existing
+        ? (globalState.reminderQuietHoursConfigs || []).map((q) =>
+            q.id === existing.id ? nextQh : q
+          )
+        : [nextQh, ...(globalState.reminderQuietHoursConfigs || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      reminderService.upsertReminderQuietHours(nextQh, globalState.currentUser?.id).catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('Quiet Hours Saved', 'Heures calmes enregistrées', 'تم حفظ ساعات الهدوء'),
+      message: nextQh.enabled
+        ? `${nextQh.startTime} → ${nextQh.endTime} (${nextQh.timezone})`
+        : ul('Quiet hours disabled', 'Heures calmes désactivées', 'تم تعطيل ساعات الهدوء'),
+    });
+    return nextQh;
+  };
+
+  const upsertReminderRule = (input: {
+    eventType: ReminderEventType;
+    name?: string;
+    isEnabled?: boolean;
+    leadDays?: number;
+    channels?: ReminderChannel[];
+    templateId?: string;
+    respectQuietHours?: boolean;
+    cooldownHours?: number;
+  }): ReminderRule => {
+    const ctx = resolveUnifiedContext();
+    ensureCrmTemplatesSeededForBusiness(ctx.accountId, ctx.businessId);
+    ensureRemindersSeededForBusiness(ctx.accountId, ctx.businessId, ctx.branchId);
+    const nowIso = new Date().toISOString();
+    const existing = (globalState.reminderRules || []).find(
+      (r) => r.businessId === ctx.businessId && r.eventType === input.eventType && !r.deletedAt
+    );
+    const meta = REMINDER_EVENT_CATALOG.find((c) => c.eventType === input.eventType);
+    const nextChannels =
+      input.channels && input.channels.length > 0
+        ? input.channels
+        : existing?.channels || meta?.defaultChannels || ['in_app'];
+
+    const nextRule: ReminderRule = existing
+      ? {
+          ...existing,
+          name: input.name !== undefined ? input.name : existing.name,
+          isEnabled: input.isEnabled !== undefined ? input.isEnabled : existing.isEnabled,
+          leadDays:
+            input.leadDays !== undefined ? Math.max(0, Math.round(input.leadDays)) : existing.leadDays,
+          channels: nextChannels,
+          templateId:
+            input.templateId !== undefined ? input.templateId || undefined : existing.templateId,
+          respectQuietHours:
+            input.respectQuietHours !== undefined
+              ? input.respectQuietHours
+              : existing.respectQuietHours,
+          cooldownHours:
+            input.cooldownHours !== undefined
+              ? Math.max(1, Math.round(input.cooldownHours))
+              : existing.cooldownHours,
+          version: (existing.version || 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: `remrule_${ctx.businessId}_${input.eventType}`,
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          branchId: ctx.branchId,
+          eventType: input.eventType,
+          name: input.name || meta?.labelFr || input.eventType,
+          isEnabled: input.isEnabled ?? true,
+          leadDays: input.leadDays ?? meta?.defaultLeadDays ?? 3,
+          channels: nextChannels,
+          templateId: input.templateId || undefined,
+          respectQuietHours: input.respectQuietHours ?? true,
+          cooldownHours: input.cooldownHours ?? 24,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      reminderRules: existing
+        ? (globalState.reminderRules || []).map((r) => (r.id === existing.id ? nextRule : r))
+        : [nextRule, ...(globalState.reminderRules || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      reminderService.upsertReminderRule(nextRule, globalState.currentUser?.id).catch(() => {});
+    }
+    return nextRule;
+  };
+
+  const toggleReminderRule = (eventType: ReminderEventType, isEnabled: boolean): ReminderRule => {
+    return upsertReminderRule({ eventType, isEnabled });
+  };
+
+  const resetReminderSeedForBusiness = (): ReminderRule[] => {
+    const ctx = resolveUnifiedContext();
+    ensureCrmTemplatesSeededForBusiness(ctx.accountId, ctx.businessId);
+    const templates = (globalState.crmMessageTemplates || []).filter(
+      (t) => t.businessId === ctx.businessId && !t.deletedAt
+    );
+    const defaults = getDefaultReminderRules(
+      ctx.accountId,
+      ctx.businessId,
+      ctx.branchId,
+      templates
+    );
+    const defaultQh = getDefaultReminderQuietHours(ctx.accountId, ctx.businessId);
+    globalState = {
+      ...globalState,
+      reminderQuietHoursConfigs: [
+        defaultQh,
+        ...(globalState.reminderQuietHoursConfigs || []).filter(
+          (q) => q.businessId !== ctx.businessId
+        ),
+      ],
+      reminderRules: [
+        ...defaults,
+        ...(globalState.reminderRules || []).filter((r) => r.businessId !== ctx.businessId),
+      ],
+    };
+    notify();
+    return defaults;
+  };
+
+  const runReminderEngineScan = (options?: {
+    nowIso?: string;
+    externalSources?: Partial<ReminderScanInput>;
+    showSummaryToast?: boolean;
+  }): {
+    createdCount: number;
+    sentCount: number;
+    deferredCount: number;
+    blockedCount: number;
+    logs: ReminderDeliveryLog[];
+  } => {
+    const ctx = resolveUnifiedContext();
+    ensureCrmTemplatesSeededForBusiness(ctx.accountId, ctx.businessId);
+    ensureRemindersSeededForBusiness(ctx.accountId, ctx.businessId, ctx.branchId);
+    const nowIso = options?.nowIso || new Date().toISOString();
+
+    const quietHours = selectCurrentReminderQuietHoursFromState(globalState);
+    const rules = selectCurrentReminderRulesFromState(globalState);
+    const existingLogs = selectCurrentReminderDeliveryLogsFromState(globalState);
+    const parties = (globalState.crmParties || []).filter(
+      (p) => p.businessId === ctx.businessId && !p.deletedAt
+    );
+    const partyLinks = (globalState.crmPartyLinks || []).filter(
+      (l) => l.businessId === ctx.businessId && !l.deletedAt
+    );
+    const templates = (globalState.crmMessageTemplates || []).filter(
+      (t) => t.businessId === ctx.businessId && !t.deletedAt
+    );
+
+    const bizBranchIds = new Set(
+      (globalState.branches || [])
+        .filter((br) => br.businessId === ctx.businessId)
+        .map((br) => br.id)
+    );
+    const inBizBranch = (branchId?: string, facilityId?: string, businessId?: string): boolean => {
+      if (businessId) return businessId === ctx.businessId;
+      const b = branchId || facilityId;
+      return b ? bizBranchIds.has(b) : false;
+    };
+
+    const scanInput: ReminderScanInput = {
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      members: (globalState.members || []).filter((m) =>
+        inBizBranch(m.branchId, m.facilityId, m.businessId)
+      ),
+      unifiedDocuments: (globalState.unifiedDocuments || []).filter(
+        (d) => d.businessId === ctx.businessId
+      ),
+      unifiedPayments: (globalState.unifiedPayments || []).filter(
+        (p) => p.businessId === ctx.businessId
+      ),
+      commercialDocs: (globalState.commercialDocs || []).filter((c) =>
+        inBizBranch(c.branchId, undefined, c.businessId)
+      ),
+      eduEnrollments: (globalState.eduEnrollments || []).filter((e) =>
+        inBizBranch(e.branchId, e.facilityId, e.businessId)
+      ),
+      rentalBookings: (globalState.rentalBookings || []).filter((b) =>
+        inBizBranch(b.branchId, b.facilityId, b.businessId)
+      ),
+      appointments: (globalState.appointments || []).filter((a) =>
+        inBizBranch(a.branchId, a.facilityId, a.businessId)
+      ),
+      products: (globalState.products || []).filter((p) =>
+        inBizBranch(p.branchId, p.facilityId, p.businessId)
+      ),
+      ...(options?.externalSources || {}),
+    };
+
+    const candidates = scanStateForReminderCandidates(scanInput, rules, nowIso);
+    const planned = planReminderDispatches({
+      candidates,
+      rules,
+      existingLogs,
+      quietHours,
+      parties,
+      partyLinks,
+      templates,
+      language: globalState.language || 'fr',
+      nowIso,
+    });
+
+    if (planned.length === 0) {
+      if (options?.showSummaryToast !== false) {
+        showToast({
+          type: 'info',
+          title: ul('Reminder Scan Complete', 'Analyse rappels terminée', 'اكتمل فحص التذكيرات'),
+          message: ul(
+            'No new reminders to dispatch (up to date / idempotent).',
+            'Aucun nouveau rappel à émettre (déjà à jour).',
+            'لا توجد تذكيرات جديدة للإرسال.'
+          ),
+        });
+      }
+      return {
+        createdCount: 0,
+        sentCount: 0,
+        deferredCount: 0,
+        blockedCount: 0,
+        logs: [],
+      };
+    }
+
+    const newLogs: ReminderDeliveryLog[] = [];
+    const newCommLogs: CrmCommunicationLog[] = [];
+    let sentCount = 0;
+    let deferredCount = 0;
+    let blockedCount = 0;
+
+    for (const d of planned) {
+      let linkedCommLogId: string | undefined;
+
+      if (d.status === 'sent' && d.channel === 'in_app') {
+        const notifId = `rem_${d.idempotencyKey}`;
+        const alreadyHasNotif = (globalState.notifications || []).some((n) => n.id === notifId);
+        if (!alreadyHasNotif) {
+          addNotification({
+            id: notifId,
+            title: d.title,
+            message: d.message,
+            type:
+              d.candidate.eventType === 'dar_lockout' ||
+              d.candidate.eventType === 'deadline_cpca' ||
+              d.candidate.eventType === 'invoice_overdue'
+                ? 'warning'
+                : 'info',
+            category: 'activity',
+            targetScreen: (d.candidate.targetScreen as ActiveScreen) || 'dashboard',
+          });
+        }
+      }
+
+      if (d.channel !== 'in_app' && d.party && (d.status === 'sent' || d.status === 'blocked_opt_out')) {
+        const commLog: CrmCommunicationLog = {
+          id: generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          branchId: ctx.branchId,
+          partyId: d.party.id,
+          templateId: d.rule.templateId,
+          channel: d.channel,
+          recipientAddress:
+            d.channel === 'email'
+              ? d.party.email || ''
+              : d.party.phoneE164 || d.party.phoneRaw || '',
+          language: d.party.preferredLanguage || globalState.language || 'fr',
+          subject: d.title,
+          renderedBody: d.message,
+          missingVariables: [],
+          status: d.status === 'sent' ? 'sent' : 'blocked_opt_out',
+          providerName: 'atrium_reminder_engine',
+          errorCode: d.errorCode,
+          errorMessage: d.errorMessage,
+          attempts: 1,
+          lastAttemptAt: nowIso,
+          sentAt: d.status === 'sent' ? nowIso : undefined,
+          sentByStaffId: globalState.currentUser?.id,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        linkedCommLogId = commLog.id;
+        newCommLogs.push(commLog);
+        if (isSupabaseConfigured()) {
+          crmService.recordCommunicationAttempt(commLog).catch(() => {});
+        }
+      }
+
+      const log: ReminderDeliveryLog = {
+        id: generateClientUuid(),
+        accountId: ctx.accountId,
+        businessId: ctx.businessId,
+        branchId: ctx.branchId,
+        ruleId: d.rule.id,
+        eventType: d.candidate.eventType,
+        entityType: d.candidate.entityType,
+        entityId: d.candidate.entityId,
+        entityLabel: d.candidate.entityLabel,
+        partyId: d.party?.id,
+        channel: d.channel,
+        idempotencyKey: d.idempotencyKey,
+        status: d.status,
+        scheduledFor: d.scheduledFor,
+        deliveredAt: d.status === 'sent' ? nowIso : undefined,
+        title: d.title,
+        message: d.message,
+        crmCommLogId: linkedCommLogId,
+        errorCode: d.errorCode,
+        errorMessage: d.errorMessage,
+        attempts: 1,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+      newLogs.push(log);
+
+      if (d.status === 'sent') sentCount += 1;
+      else if (d.status === 'deferred_quiet_hours') deferredCount += 1;
+      else if (d.status === 'blocked_opt_out') blockedCount += 1;
+
+      if (isSupabaseConfigured()) {
+        reminderService.dispatchReminderIdempotent(log).catch(() => {});
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      reminderDeliveryLogs: [...newLogs, ...(globalState.reminderDeliveryLogs || [])],
+      crmCommunicationLogs:
+        newCommLogs.length > 0
+          ? [...newCommLogs, ...(globalState.crmCommunicationLogs || [])]
+          : globalState.crmCommunicationLogs,
+    };
+    notify();
+
+    if (options?.showSummaryToast !== false) {
+      showToast({
+        type: blockedCount > 0 && sentCount === 0 ? 'warning' : 'success',
+        title: ul('Reminder Scan Dispatched', 'Rappels générés', 'تم تنفيذ التذكيرات'),
+        message: ul(
+          `${sentCount} sent · ${deferredCount} deferred (quiet hours) · ${blockedCount} blocked (opt-out)`,
+          `${sentCount} envoyé(s) · ${deferredCount} différé(s) · ${blockedCount} bloqué(s) opt-out`,
+          `${sentCount} مرسل · ${deferredCount} مؤجل · ${blockedCount} محظور`
+        ),
+      });
+    }
+
+    return {
+      createdCount: newLogs.length,
+      sentCount,
+      deferredCount,
+      blockedCount,
+      logs: newLogs,
+    };
+  };
+
+  const flushDeferredReminders = (options?: {
+    nowIso?: string;
+  }): {
+    flushedCount: number;
+    blockedCount: number;
+    stillDeferred: number;
+    logs: ReminderDeliveryLog[];
+  } => {
+    const ctx = resolveUnifiedContext();
+    const nowIso = options?.nowIso || new Date().toISOString();
+    const quietHours = selectCurrentReminderQuietHoursFromState(globalState);
+    const deferred = (globalState.reminderDeliveryLogs || []).filter(
+      (l) =>
+        l.businessId === ctx.businessId &&
+        !l.deletedAt &&
+        l.status === 'deferred_quiet_hours'
+    );
+
+    if (deferred.length === 0) {
+      return { flushedCount: 0, blockedCount: 0, stillDeferred: 0, logs: [] };
+    }
+
+    if (isWithinQuietHours(nowIso, quietHours)) {
+      showToast({
+        type: 'warning',
+        title: ul('Quiet Hours Active', 'Heures calmes actives', 'ساعات الهدوء نشطة'),
+        message: ul(
+          `${deferred.length} reminder(s) remain deferred until ${quietHours.endTime}.`,
+          `${deferred.length} rappel(s) restent différés jusqu'à ${quietHours.endTime}.`,
+          `${deferred.length} تذكير(ات) مؤجلة حتى ${quietHours.endTime}.`
+        ),
+      });
+      return {
+        flushedCount: 0,
+        blockedCount: 0,
+        stillDeferred: deferred.length,
+        logs: [],
+      };
+    }
+
+    const updatedMap = new Map<string, ReminderDeliveryLog>();
+    const newCommLogs: CrmCommunicationLog[] = [];
+    let flushedCount = 0;
+    let blockedCount = 0;
+
+    for (const log of deferred) {
+      const party = log.partyId
+        ? (globalState.crmParties || []).find((p) => p.id === log.partyId && !p.deletedAt)
+        : undefined;
+      const isChannelOptedOut =
+        Boolean(party) &&
+        log.channel !== 'in_app' &&
+        (party!.optOutAll ||
+          (log.channel === 'sms' && !party!.consentSms) ||
+          (log.channel === 'whatsapp' && !party!.consentWhatsapp) ||
+          (log.channel === 'email' && !party!.consentEmail));
+
+      const nextStatus: ReminderDeliveryStatus = isChannelOptedOut ? 'blocked_opt_out' : 'sent';
+      let linkedCommLogId = log.crmCommLogId;
+
+      if (nextStatus === 'sent' && log.channel === 'in_app') {
+        const notifId = `rem_${log.idempotencyKey}`;
+        if (!(globalState.notifications || []).some((n) => n.id === notifId)) {
+          addNotification({
+            id: notifId,
+            title: log.title,
+            message: log.message,
+            type: 'info',
+            category: 'activity',
+            targetScreen: 'dashboard',
+          });
+        }
+      }
+
+      if (log.channel !== 'in_app' && party) {
+        const commLog: CrmCommunicationLog = {
+          id: generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          branchId: ctx.branchId,
+          partyId: party.id,
+          channel: log.channel,
+          recipientAddress:
+            log.channel === 'email'
+              ? party.email || ''
+              : party.phoneE164 || party.phoneRaw || '',
+          language: party.preferredLanguage || globalState.language || 'fr',
+          subject: log.title,
+          renderedBody: log.message,
+          missingVariables: [],
+          status: nextStatus === 'sent' ? 'sent' : 'blocked_opt_out',
+          providerName: 'atrium_reminder_engine',
+          errorCode: isChannelOptedOut
+            ? party.optOutAll
+              ? 'CRM_OPT_OUT_ALL'
+              : 'CRM_CHANNEL_OPT_OUT'
+            : undefined,
+          errorMessage: isChannelOptedOut ? 'Opted out before quiet hours flush.' : undefined,
+          attempts: 1,
+          lastAttemptAt: nowIso,
+          sentAt: nextStatus === 'sent' ? nowIso : undefined,
+          sentByStaffId: globalState.currentUser?.id,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        linkedCommLogId = commLog.id;
+        newCommLogs.push(commLog);
+        if (isSupabaseConfigured()) {
+          crmService.recordCommunicationAttempt(commLog).catch(() => {});
+        }
+      }
+
+      const nextLog: ReminderDeliveryLog = {
+        ...log,
+        status: nextStatus,
+        deliveredAt: nextStatus === 'sent' ? nowIso : log.deliveredAt,
+        crmCommLogId: linkedCommLogId,
+        errorCode: isChannelOptedOut
+          ? party?.optOutAll
+            ? 'CRM_OPT_OUT_ALL'
+            : 'CRM_CHANNEL_OPT_OUT'
+          : undefined,
+        errorMessage: isChannelOptedOut ? 'Opted out before quiet hours flush.' : undefined,
+        attempts: (log.attempts || 1) + 1,
+        updatedAt: nowIso,
+      };
+      updatedMap.set(log.id, nextLog);
+      if (nextStatus === 'sent') flushedCount += 1;
+      else blockedCount += 1;
+
+      if (isSupabaseConfigured()) {
+        reminderService
+          .retryDeferredOrFailedReminder(nextLog, globalState.currentUser?.id)
+          .catch(() => {});
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      reminderDeliveryLogs: (globalState.reminderDeliveryLogs || []).map(
+        (l) => updatedMap.get(l.id) || l
+      ),
+      crmCommunicationLogs:
+        newCommLogs.length > 0
+          ? [...newCommLogs, ...(globalState.crmCommunicationLogs || [])]
+          : globalState.crmCommunicationLogs,
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: ul('Deferred Reminders Flushed', 'Rappels différés traités', 'تم إرسال التذكيرات المؤجلة'),
+      message: ul(
+        `${flushedCount} sent · ${blockedCount} blocked (opt-out)`,
+        `${flushedCount} envoyé(s) · ${blockedCount} bloqué(s)`,
+        `${flushedCount} مرسل · ${blockedCount} محظور`
+      ),
+    });
+
+    return {
+      flushedCount,
+      blockedCount,
+      stillDeferred: 0,
+      logs: Array.from(updatedMap.values()),
+    };
+  };
+
   return {
     setScreen,
     setTheme,
@@ -19955,6 +21714,22 @@ function createAtriumActions() {
     setAccountingPeriodStatus,
     toggleReconcileJournalLine,
     upsertScfAccount,
+    ensurePartyForEntity,
+    upsertCrmParty,
+    linkEntityToParty,
+    mergeCrmParties,
+    addCrmPartyNote,
+    upsertCrmFollowUpTask,
+    completeCrmFollowUpTask,
+    upsertCrmMessageTemplate,
+    sendCrmCommunication,
+    retryCrmCommunication,
+    saveReminderQuietHours,
+    upsertReminderRule,
+    toggleReminderRule,
+    resetReminderSeedForBusiness,
+    runReminderEngineScan,
+    flushDeferredReminders,
   };
 }
 
@@ -20048,6 +21823,15 @@ export function useAtriumStore() {
   const currentScfPeriods = selectCurrentScfPeriodsFromState(state);
   const currentJournalEntries = selectCurrentJournalEntriesFromState(state);
   const currentScfPostingFailures = selectCurrentScfPostingFailuresFromState(state);
+  const currentCrmParties = selectCurrentCrmPartiesFromState(state);
+  const currentCrmPartyLinks = selectCurrentCrmPartyLinksFromState(state);
+  const currentCrmPartyNotes = selectCurrentCrmPartyNotesFromState(state);
+  const currentCrmFollowUpTasks = selectCurrentCrmFollowUpTasksFromState(state);
+  const currentCrmMessageTemplates = selectCurrentCrmMessageTemplatesFromState(state);
+  const currentCrmCommunicationLogs = selectCurrentCrmCommunicationLogsFromState(state);
+  const currentReminderQuietHours = selectCurrentReminderQuietHoursFromState(state);
+  const currentReminderRules = selectCurrentReminderRulesFromState(state);
+  const currentReminderDeliveryLogs = selectCurrentReminderDeliveryLogsFromState(state);
   const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
   const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
   const selectedMember = selectSelectedMemberFromState(state);
@@ -20183,6 +21967,15 @@ export function useAtriumStore() {
     journalEntries: currentJournalEntries,
     allJournalEntries: state.journalEntries || [],
     scfPostingFailures: currentScfPostingFailures,
+    crmParties: currentCrmParties,
+    crmPartyLinks: currentCrmPartyLinks,
+    crmPartyNotes: currentCrmPartyNotes,
+    crmFollowUpTasks: currentCrmFollowUpTasks,
+    crmMessageTemplates: currentCrmMessageTemplates,
+    crmCommunicationLogs: currentCrmCommunicationLogs,
+    reminderQuietHours: currentReminderQuietHours,
+    reminderRules: currentReminderRules,
+    reminderDeliveryLogs: currentReminderDeliveryLogs,
     // Operational Role State
     activeGarageRole: state.activeGarageRole || 'gerant',
     activeRealEstateRole: state.activeRealEstateRole || 'direction',

@@ -33,6 +33,7 @@ import {
   Layers,
   Receipt,
   Scale,
+  Bell,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -67,6 +68,7 @@ import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
 import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab';
 import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
+import { ReminderEngineWorkspace } from '../common/reminders/ReminderEngineWorkspace';
 import { PayrollMigrationDryRunPanel } from '../common/staff/PayrollMigrationDryRunPanel';
 import { getEffectivePermissionContext } from '../../utils/routePermissions';
 import { normalizeBusinessCategory } from '../../utils/staffRules';
@@ -508,6 +510,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             icon: <Scale size={15} strokeWidth={1.5} />,
           },
           {
+            id: 'reminders',
+            label: t('phase2_reminder_tab', language),
+            icon: <Bell size={15} strokeWidth={1.5} />,
+          },
+          {
             id: 'branches_devices',
             label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
             icon: <Monitor size={15} strokeWidth={1.5} />,
@@ -579,6 +586,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       {effectiveTab === 'formules' && <SettingsFormulesTab />}
 
       {effectiveTab === 'reference_rates' && <SettingsReferenceRatesTab />}
+
+      {effectiveTab === 'reminders' && <ReminderEngineWorkspace />}
 
       {effectiveTab === 'preferences' && (
         <>

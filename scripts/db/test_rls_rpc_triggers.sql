@@ -778,5 +778,132 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- SECTION 12: Phase 2 Step 3 (6.4) — Unified CRM Party Merge & Opt-Out Guard
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_acc_b uuid := 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_party_src uuid := gen_random_uuid();
+  v_party_tgt uuid := gen_random_uuid();
+  v_res jsonb;
+  v_count int;
+  v_target public.crm_parties%ROWTYPE;
+BEGIN
+  INSERT INTO public.crm_parties (
+    id, account_id, business_id, branch_id, party_kind, display_name,
+    phone_raw, phone_e164, opt_out_all, consent_sms
+  ) VALUES
+    (v_party_src, v_acc_a, v_biz_a, v_br_a, 'person', 'Amira Dup', '0661223344', '+213661223344', true, false),
+    (v_party_tgt, v_acc_a, v_biz_a, v_br_a, 'person', 'Amira Cherif', '0661223344', '+213661223344', false, true);
+
+  INSERT INTO public.crm_party_links (
+    account_id, business_id, branch_id, party_id, source_vertical, entity_type, entity_id
+  ) VALUES
+    (v_acc_a, v_biz_a, v_br_a, v_party_src, 'membership_session', 'member', 'mem_crm_1');
+
+  -- Tenant B cannot read Tenant A CRM parties
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.crm_parties WHERE id = v_party_tgt;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A crm_parties row';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A merges v_party_src into v_party_tgt (preserves opt_out_all & migrates link)
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.merge_crm_parties(v_party_src, v_party_tgt, 'Same member profile');
+  IF COALESCE((v_res ->> 'links_moved')::int, 0) <> 1 THEN
+    RAISE EXCEPTION 'Expected 1 CRM link moved during merge, got %', v_res;
+  END IF;
+
+  SELECT * INTO v_target FROM public.crm_parties WHERE id = v_party_tgt;
+  IF NOT v_target.opt_out_all OR v_target.consent_sms THEN
+    RAISE EXCEPTION 'Expected merged CRM target to preserve opt_out_all=true and consent_sms=false';
+  END IF;
+
+  -- Communication attempt against opted-out party MUST force blocked_opt_out
+  v_res := public.record_crm_communication_attempt(
+    gen_random_uuid(), v_biz_a, v_br_a, v_party_tgt, NULL, 'whatsapp',
+    '+213661223344', 'fr', 'Test', 'Body', '[]'::jsonb, 'sent', 'wa_gateway', NULL, NULL
+  );
+  IF (v_res ->> 'status') <> 'blocked_opt_out' THEN
+    RAISE EXCEPTION 'Expected blocked_opt_out on opted-out party, got %', v_res;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
+-- ============================================================================
+-- SECTION 13: Phase 2 Step 4 (6.5) — Reminder Engine Idempotency & Opt-Out
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_rule_id uuid := gen_random_uuid();
+  v_res1 jsonb;
+  v_res2 jsonb;
+  v_count int;
+BEGIN
+  INSERT INTO public.reminder_quiet_hours_configs (
+    account_id, business_id, enabled, start_time, end_time, timezone, allow_in_app_during_quiet
+  ) VALUES (
+    v_acc_a, v_biz_a, false, '21:00', '08:00', 'Africa/Algiers', true
+  )
+  ON CONFLICT (business_id) WHERE deleted_at IS NULL DO NOTHING;
+
+  INSERT INTO public.reminder_rules (
+    id, account_id, business_id, branch_id, event_type, name, is_enabled, lead_days, channels
+  ) VALUES (
+    v_rule_id, v_acc_a, v_biz_a, v_br_a, 'membership_expiring', 'Abonnement expirant', true, 7, '["in_app","whatsapp"]'::jsonb
+  );
+
+  -- Tenant B cannot read Tenant A reminder rules
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.reminder_rules WHERE id = v_rule_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A reminder_rules';
+  END IF;
+  RESET ROLE;
+
+  -- First dispatch sends; second dispatch with same idempotency_key is skipped
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res1 := public.dispatch_reminder_idempotent(
+    gen_random_uuid(), v_biz_a, v_br_a, v_rule_id, 'membership_expiring',
+    'member', 'mem_1', 'Amira Cherif', NULL, 'in_app',
+    'rule_1:membership_expiring:mem_1:2026-12-06:in_app',
+    'Abonnement expirant', 'Renouvellement proche', 'sent', NULL, NULL, NULL, NULL
+  );
+  IF (v_res1 ->> 'skipped')::boolean IS TRUE OR (v_res1 ->> 'status') <> 'sent' THEN
+    RAISE EXCEPTION 'Expected initial dispatch_reminder_idempotent to send, got %', v_res1;
+  END IF;
+
+  v_res2 := public.dispatch_reminder_idempotent(
+    gen_random_uuid(), v_biz_a, v_br_a, v_rule_id, 'membership_expiring',
+    'member', 'mem_1', 'Amira Cherif', NULL, 'in_app',
+    'rule_1:membership_expiring:mem_1:2026-12-06:in_app',
+    'Abonnement expirant', 'Renouvellement proche', 'sent', NULL, NULL, NULL, NULL
+  );
+  IF (v_res2 ->> 'skipped')::boolean IS NOT TRUE OR (v_res2 ->> 'status') <> 'skipped_duplicate' THEN
+    RAISE EXCEPTION 'Expected duplicate dispatch_reminder_idempotent to skip, got %', v_res2;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
 

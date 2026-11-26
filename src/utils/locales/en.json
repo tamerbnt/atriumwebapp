@@ -2823,5 +2823,17 @@
   "phase2_unified_payments_ledger": "Unified Payments & Instruments Ledger",
   "phase2_instrument_deposit": "Deposit",
   "phase2_instrument_clear": "Clear",
-  "phase2_instrument_bounce": "Bounce"
+  "phase2_instrument_bounce": "Bounce",
+  "phase2_crm_360_tab": "360° CRM",
+  "phase2_crm_merge_title": "Merge Duplicate Contacts",
+  "phase2_crm_opt_out": "Opt-out all communications",
+  "phase2_crm_shared_phone": "Shared family phone",
+  "phase2_crm_delivery_log": "Delivery Log",
+  "phase2_reminder_tab": "Reminders & Alerts",
+  "phase2_reminder_title": "Reminder & Notification Engine",
+  "phase2_reminder_desc": "Idempotent cross-vertical reminders with Africa/Algiers quiet hours and CRM opt-out enforcement.",
+  "phase2_reminder_run_scan": "Run Scan",
+  "phase2_reminder_flush_deferred": "Flush Deferred",
+  "phase2_reminder_quiet_hours": "Quiet Hours",
+  "phase2_reminder_rules_title": "Automated Trigger Rules"
 }
