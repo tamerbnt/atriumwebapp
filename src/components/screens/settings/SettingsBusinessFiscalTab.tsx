@@ -79,6 +79,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
     currentBusinessConfig.applyTimbreFiscal ?? true
   );
   const [fiscal, setFiscal] = useState<FiscalProfile>({ ...currentBusinessConfig.fiscalProfile });
+  const [invoiceFooter, setInvoiceFooter] = useState<string>(currentBusinessConfig.invoiceFooter || '');
   const [catSettings, setCatSettings] = useState<CategorySpecificSettings>({
     ...currentBusinessConfig.categorySettings,
   });
@@ -100,6 +101,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
     setDefaultTvaRate(currentBusinessConfig.defaultTvaRate ?? 19);
     setApplyTimbreFiscal(currentBusinessConfig.applyTimbreFiscal ?? true);
     setFiscal({ ...currentBusinessConfig.fiscalProfile });
+    setInvoiceFooter(currentBusinessConfig.invoiceFooter || '');
     setCatSettings({ ...currentBusinessConfig.categorySettings });
     setPosReceipt({ ...receiptConfig });
     setErrors({});
@@ -159,6 +161,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
       defaultTvaRate,
       applyTimbreFiscal,
       fiscalProfile: fiscal,
+      invoiceFooter: invoiceFooter.trim() || undefined,
       categorySettings: catSettings,
     });
     if (category === 'pos_inventory') {
@@ -474,6 +477,20 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                     value={fiscal.rib || ''}
                     onChange={(val) => setFiscal((p) => ({ ...p, rib: val }))}
                     placeholder="004 00123 4100987654 22"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <LabelInput
+                    label={L('Invoice Footer / Legal Mention', 'Pied de facture / Mention légale', 'تذييل الفاتورة / البيان القانوني')}
+                    disabled={!canEdit}
+                    value={invoiceFooter}
+                    onChange={setInvoiceFooter}
+                    placeholder={L(
+                      'Ex: Bank settlement within 15 days · Late payment penalties apply.',
+                      'Ex : Règlement par virement sous 15 jours · Merci de votre confiance.',
+                      'مثال: السداد عبر التحويل خلال 15 يوماً · شكراً لثقتكم.'
+                    )}
                   />
                 </div>
               </div>

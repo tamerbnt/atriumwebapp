@@ -478,9 +478,29 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   4. Owner confirmation of CMUP / WIP valuation adjustment rule for `3.12` Manufacturing Scrap & NCR (`cmup_adjustment_held = true`).
   5. Extended production `acc_01` SQL row-count query executed in live DB before removing legacy backfill compatibility.
 - **Deferred to Phases 2–5**:
-  - Phase 2: Document/invoice & collection flows (`3.1`, `3.2`, `6.1` sequential salon receipts, CMUP ledger posting).
+  - Phase 2: Remainder (`6.3`–`6.10`: Shared SCF Accounting, Unified CRM `party`, Reminder Engine, Shared WMS, CSV/Excel Import, Configurable RBAC + Full RLS, Approvals/Attachments/API, BI KPI Registry).
   - Phase 3: Cross-device live active-timer sync for Freelance (`7.7`), SMS/WhatsApp server dispatch integrations deferred behind `"Not available yet"`.
   - Phases 4–5: Performance budgets & full Playwright end-to-end verification suite.
+
+---
+
+## Phase 2 Step 1 — Unified Document & Invoicing Engine + Payments Ledger (`6.1` & `6.2`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270001_phase2_invoicing_payments.sql` + `supabase/rollbacks/202611270001_phase2_invoicing_payments.down.sql`.
+  - Extended `sequence_counters` & `allocate_sequence_number` (`quote`/`DEV`, `order`/`BC`, `delivery_note`/`BL`, `invoice`/`FAC`, `credit_note`/`AV`, `receipt`/`REC`, `proforma`/`PRO`, `payment`/`REG`) using deferred final gap-free numbering (`draft_number` offline -> server sequential number on issue; `device_sequence_blocks` remains disallowed).
+  - Created `unified_documents`, `unified_payments`, and `unified_payment_allocations` with tenant/branch RLS, `fn_protect_immutable_unified_documents` trigger locking issued/paid/voided financial cores, `issue_unified_document`, `record_unified_payment_with_allocations` (idempotent + multi-invoice allocation + unallocated credit tracking), and `transition_cheque_traite_status` (automatic invoice balance reopening on bounce).
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 10) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts`.
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/invoicingEngine.ts` + `src/utils/invoicingEngine.test.ts`: Integer-centimes multi-rate TVA (`0/9/19`), discounts, Timbre Fiscal (`commercial_cash`, `art_317`, `exempt`), retenue de garantie, FX equivalent, FR/AR totals in words, fiscal header snapshot without hardcoded demo constants, credit-note draft builder, and closed-period date guard.
+  - `src/lib/supabase/services/invoicingService.ts`, `src/lib/supabase/offlineQueue.ts`, and `src/services/store.ts`: Wired `createUnifiedDocument`, `updateUnifiedDraft`, `deleteUnifiedDraft`, `issueUnifiedDraft`, `createCreditNoteForDocument`, `recordUnifiedPayment`, and `transitionChequeStatus`, integrated into `TradingSalesView`, `TradingFinanceView`, `PosOrdersView`, `MembershipFinanceView`, and `MemberSlideOverInspector`.
+  - `src/components/common/invoicing/` (`UnifiedInvoiceComposerModal`, `UnifiedInvoicePrintModal`, `UnifiedPaymentModal`, `UnifiedPaymentsLedgerPanel`): Fixed `LiveSwitch` `onCheckedChange` wiring, `LabelSelect` button `relative z-[1]` stacking above `.lbi-bg` so selected option values and chevrons render visibly, currency-aware print formatting (`DZD` / `EUR` / `USD` + DZD FX counter-value), document notes & `Cachet & Signature` block, and editable `invoiceFooter` template setting in `SettingsBusinessFiscalTab.tsx`.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`npm run lint`) & `npm run build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **126 / 126 passed** (6 suites).
+  - `npm run test:atrium` (`vitest run`): **36 / 36 files, 291 / 291 tests passed**.
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Members -> Amira Cherif -> Sales -> New` (`LabelSelect` dropdowns & values rendered cleanly), `Issue & Number` (`FAC-2026-00001`), A4 print view with notes and `Stamp & Signature`, `Finance -> Collect Payment` (cheque `#CHQ-2026-88`), and `Deposit -> Bounce` reopening invoice balance with `0` console/page errors.
+- **Remaining Phase 2 Scope (`6.3`–`6.10`)**: Shared SCF accounting layer (`6.3`), Unified CRM `party` (`6.4`), Reminder engine (`6.5`), Shared WMS (`6.6`), CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 
 
 

@@ -497,8 +497,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     };
   }, []);
 
-  if (typeof document === 'undefined') return null;
-
   const memberName = activeMember?.fullName || (activeMember as any)?.name || L('Member', 'Adhérent', 'عضو');
   const memberPhone = activeMember?.phoneNumber || (activeMember as any)?.phone || '';
   const memberEmail = activeMember?.email || '';
@@ -543,7 +541,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     setTimeout(() => setCopiedField(null), 1800);
   };
 
-  return createPortal(
+  const portalContent = (
     <>
       {/* Full-Screen Scrim (.scrim) */}
       <div
@@ -1185,14 +1183,20 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               sourceVertical: 'membership_session',
               partyId: activeMember.id,
               partyName: activeMember.fullName,
-              partyPhone: activeMember.phone,
+              partyPhone: activeMember.phoneNumber || '',
               items: [
                 {
                   description: planName !== '—' ? planName : L('Membership fee', 'Cotisation adhérent', 'اشتراك العضوية'),
                   isService: true,
                   quantity: 1,
                   unit: 'mois',
-                  unitPriceHt: Number(activeMember.membershipFee || activeMember.balance || 4500),
+                  unitPriceHt: Number(
+                    branchState.plans.find(
+                      (p) => p.id === activeMember.membershipPlanId || p.name === activeMember.membershipPlanName
+                    )?.price ||
+                      activeMember.balance ||
+                      4500
+                  ),
                   tvaPercent: 19,
                   discountPercent: 0,
                 },
@@ -1209,8 +1213,12 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
           />
         </>
       )}
-    </>,
-    document.body
+    </>
+  );
+
+  return createPortal(
+    portalContent,
+    typeof document !== 'undefined' ? document.body : (null as unknown as Element)
   );
 });
 

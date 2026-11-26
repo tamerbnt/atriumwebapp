@@ -4042,6 +4042,11 @@ export type SettingsTabId =
   | 'cloud_backup';
 
 export interface FiscalProfile {
+  companyLegalName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  ribCcp?: string;
   nif?: string; // Numéro d'Identification Fiscale (15 digits)
   nis?: string; // Numéro d'Identification Statistique
   rc?: string; // Registre du Commerce
@@ -4164,6 +4169,9 @@ export interface BusinessCategoryConfig {
   onboardingContext: OnboardingContext;
   categorySettings: CategorySpecificSettings;
   setupState: HomeSetupState;
+  accountingPeriodClosedMonths?: string[];
+  invoiceFooter?: string;
+  systemLanguage?: SupportedLanguage;
   version?: number;
   updatedAt?: string;
 }
@@ -4433,6 +4441,135 @@ export interface UnifiedPayment {
   createdAt: string;
   updatedAt: string;
 }
+
+// ==========================================
+// PHASE 2 SECTION 6.3: SHARED ACCOUNTING LAYER (SCF LOI 07-11)
+// ==========================================
+export type ScfJournalCode = 'VE' | 'AC' | 'BQ' | 'CA' | 'PA' | 'ST' | 'OD';
+
+export type ScfAccountClass = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export type ScfAccountType = 'asset' | 'liability' | 'equity' | 'expense' | 'revenue';
+
+export type ScfPostingEventType =
+  | 'sale_invoice'
+  | 'pos_sale'
+  | 'purchase_receipt'
+  | 'payment'
+  | 'instrument_clear'
+  | 'instrument_bounce'
+  | 'payroll_run'
+  | 'stock_movement'
+  | 'legal_scf'
+  | 'reversal'
+  | 'manual';
+
+export interface ScfAccount {
+  id: string;
+  accountId: string;
+  businessId: string;
+  code: string;
+  labelFr: string;
+  labelAr: string;
+  labelEn: string;
+  scfClass: ScfAccountClass;
+  normalBalance: 'debit' | 'credit';
+  accountType: ScfAccountType;
+  isReconcilable: boolean;
+  isSystem: boolean;
+  isActive: boolean;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ScfAccountingPeriod {
+  id: string;
+  accountId: string;
+  businessId: string;
+  periodKey: string; // YYYY-MM
+  fiscalYear: number;
+  periodMonth: number;
+  status: 'open' | 'closed';
+  closedAt?: string;
+  closedByStaffId?: string;
+  reopenedAt?: string;
+  reopenedByStaffId?: string;
+  reopenReason?: string;
+  version?: number;
+  updatedAt?: string;
+}
+
+export interface ScfJournalLine {
+  id: string;
+  lineNo: number;
+  accountCode: string;
+  accountLabel: string;
+  partyId?: string;
+  partyName?: string;
+  debitCentimes: number;
+  creditCentimes: number;
+  originalCurrency: UnifiedCurrency;
+  originalAmountCentimes: number;
+  fxRate: number;
+  reconciled: boolean;
+  reconciledAt?: string;
+  reconciliationRef?: string;
+  statementDate?: string;
+}
+
+export interface ScfJournalEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  entryNumber: string;
+  journalCode: ScfJournalCode;
+  entryDate: string; // YYYY-MM-DD
+  periodKey: string; // YYYY-MM
+  fiscalYear: number;
+  pieceRef: string;
+  libelle: string;
+  sourceVertical: string;
+  sourceEventType: ScfPostingEventType;
+  sourceDocId?: string;
+  idempotencyKey?: string;
+  currency: UnifiedCurrency;
+  fxRate: number;
+  totalDebitCentimes: number;
+  totalCreditCentimes: number;
+  lines: ScfJournalLine[];
+  status: 'posted' | 'reversed';
+  reversedEntryId?: string;
+  reversalReason?: string;
+  postedByStaffId?: string;
+  postedAt: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScfPostingFailure {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  sourceVertical: string;
+  sourceEventType: ScfPostingEventType;
+  sourceDocId?: string;
+  sourceRef: string;
+  entryDate: string;
+  payload: Record<string, any>;
+  errorCode: string;
+  errorMessage: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+  attempts: number;
+  lastAttemptAt: string;
+  resolvedEntryId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 
 

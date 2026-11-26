@@ -259,7 +259,7 @@ export function buildUnifiedFiscalHeader(
     nis: fp?.nis?.trim() || undefined,
     rc: fp?.rc?.trim() || undefined,
     ai: fp?.ai?.trim() || undefined,
-    ribCcp: fp?.ribCcp?.trim() || undefined,
+    ribCcp: fp?.ribCcp?.trim() || fp?.rib?.trim() || fp?.ccp?.trim() || undefined,
     logoUrl: business?.logoUrl?.trim() || undefined,
     footerNote: config?.invoiceFooter?.trim() || undefined,
     templateLanguage: config?.systemLanguage || 'fr',

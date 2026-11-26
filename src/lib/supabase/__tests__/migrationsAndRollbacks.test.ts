@@ -213,4 +213,35 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.unified_documents');
     expect(downSql).toContain('CREATE OR REPLACE FUNCTION public.allocate_sequence_number(');
   });
+
+  it('verifies Phase 2 Step 2 (6.3) shared SCF accounting migration and rollback parity', () => {
+    const scfPath = path.join(MIGRATIONS_DIR, '202611270002_phase2_shared_accounting_scf.sql');
+    const scfDownPath = path.join(ROLLBACKS_DIR, '202611270002_phase2_shared_accounting_scf.down.sql');
+    const sql = fs.readFileSync(scfPath, 'utf8');
+    const downSql = fs.readFileSync(scfDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.scf_chart_of_accounts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.scf_fiscal_years');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.scf_accounting_periods');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.journal_entries');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.journal_lines');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.scf_posting_failures');
+    expect(sql).toContain('chk_journal_entry_balanced');
+    expect(sql).toContain('trg_00_journal_entries_period_open');
+    expect(sql).toContain('trg_00_journal_entries_immutable');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.post_scf_journal_entry(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.reverse_scf_journal_entry(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.set_scf_period_status(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.reconcile_scf_journal_lines(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.set_scf_period_status(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.reverse_scf_journal_entry(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.post_scf_journal_entry(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_posting_failures');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.journal_lines');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.journal_entries');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_accounting_periods');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_fiscal_years');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.scf_chart_of_accounts');
+  });
 });

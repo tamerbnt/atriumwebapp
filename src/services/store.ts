@@ -125,6 +125,16 @@ import {
   UnifiedPayment,
   UnifiedPaymentMethod,
   ChequeInstrumentStatus,
+  ScfAccount,
+  ScfAccountClass,
+  ScfAccountType,
+  ScfAccountingPeriod,
+  ScfJournalCode,
+  ScfJournalEntry,
+  ScfJournalLine,
+  ScfPostingEventType,
+  ScfPostingFailure,
+  SCFJournalEntry,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -342,6 +352,8 @@ import {
   isDemoModeEnabled,
   requireTenantAccountId,
   TenantContextMissingError,
+  scfAccountingService,
+  auditService,
   type StatutoryRateSet,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
@@ -363,6 +375,23 @@ import {
   normalizeUnifiedPaymentMethod,
   type UnifiedLineInput,
 } from '../utils/invoicingEngine';
+import {
+  getDefaultScfChartOfAccounts,
+  validateScfJournalLines,
+  isScfPeriodClosed,
+  toPeriodKey,
+  buildPostingForUnifiedDocument,
+  buildPostingForUnifiedPayment,
+  buildPostingForInstrumentTransition,
+  buildPostingForPayrollRun,
+  buildPostingForPurchaseReceipt,
+  buildPostingForStockVoucher,
+  buildPostingForPosSale,
+  buildPostingFromLegalScfEntry,
+  buildReversalDraft,
+  type ScfPostingDraft,
+  type ScfLineDraftInput,
+} from '../utils/scfAccountingEngine';
 import {
   evaluateMemberCheckIn,
   CheckInEvaluationResult,
@@ -581,9 +610,13 @@ interface AppState {
   commercialDocs: CommercialDocument[];
   purchaseDocs: PurchaseDocument[];
   stockVouchers: StockMovementVoucher[];
-  // Phase 2 Shared Horizontal Foundations (6.1 & 6.2)
+  // Phase 2 Shared Horizontal Foundations (6.1, 6.2 & 6.3)
   unifiedDocuments: UnifiedDocument[];
   unifiedPayments: UnifiedPayment[];
+  scfAccounts: ScfAccount[];
+  scfPeriods: ScfAccountingPeriod[];
+  journalEntries: ScfJournalEntry[];
+  scfPostingFailures: ScfPostingFailure[];
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -773,6 +806,10 @@ const DEFAULT_STATE: AppState = {
   stockVouchers: INITIAL_STOCK_VOUCHERS,
   unifiedDocuments: [],
   unifiedPayments: [],
+  scfAccounts: [],
+  scfPeriods: [],
+  journalEntries: [],
+  scfPostingFailures: [],
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -1021,6 +1058,10 @@ let globalState: AppState = backfillTraceability((() => {
           stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
           unifiedDocuments: Array.isArray(parsed.unifiedDocuments) ? parsed.unifiedDocuments : [],
           unifiedPayments: Array.isArray(parsed.unifiedPayments) ? parsed.unifiedPayments : [],
+          scfAccounts: Array.isArray(parsed.scfAccounts) ? parsed.scfAccounts : [],
+          scfPeriods: Array.isArray(parsed.scfPeriods) ? parsed.scfPeriods : [],
+          journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
+          scfPostingFailures: Array.isArray(parsed.scfPostingFailures) ? parsed.scfPostingFailures : [],
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -1665,6 +1706,51 @@ export const selectCurrentUnifiedDocumentsFromState = createBranchSelector<Unifi
 export const selectCurrentUnifiedPaymentsFromState = createBranchSelector<UnifiedPayment>(
   (s) => s.unifiedPayments,
   (p, b) => p.branchId === b
+);
+let cachedScfAccountsSrc: ScfAccount[] | undefined;
+let cachedScfAccountsBiz = '';
+let cachedScfAccountsAcc = '';
+let cachedScfAccountsResult: ScfAccount[] = [];
+export function selectCurrentScfAccountsFromState(state: AppState): ScfAccount[] {
+  const list = state.scfAccounts || [];
+  const bizId = state.currentBusinessId || '';
+  const accId = state.account?.id || '';
+  if (
+    list === cachedScfAccountsSrc &&
+    bizId === cachedScfAccountsBiz &&
+    accId === cachedScfAccountsAcc
+  ) {
+    return cachedScfAccountsResult;
+  }
+  cachedScfAccountsSrc = list;
+  cachedScfAccountsBiz = bizId;
+  cachedScfAccountsAcc = accId;
+  const matched = list.filter((a) => a.businessId === bizId);
+  cachedScfAccountsResult =
+    matched.length > 0 ? matched : bizId ? getDefaultScfChartOfAccounts(accId, bizId) : [];
+  return cachedScfAccountsResult;
+}
+let cachedScfPeriodsSrc: ScfAccountingPeriod[] | undefined;
+let cachedScfPeriodsBiz = '';
+let cachedScfPeriodsResult: ScfAccountingPeriod[] = [];
+export function selectCurrentScfPeriodsFromState(state: AppState): ScfAccountingPeriod[] {
+  const list = state.scfPeriods || [];
+  const bizId = state.currentBusinessId || '';
+  if (list === cachedScfPeriodsSrc && bizId === cachedScfPeriodsBiz) {
+    return cachedScfPeriodsResult;
+  }
+  cachedScfPeriodsSrc = list;
+  cachedScfPeriodsBiz = bizId;
+  cachedScfPeriodsResult = list.filter((p) => p.businessId === bizId);
+  return cachedScfPeriodsResult;
+}
+export const selectCurrentJournalEntriesFromState = createBranchSelector<ScfJournalEntry>(
+  (s) => s.journalEntries,
+  (e, b) => e.branchId === b
+);
+export const selectCurrentScfPostingFailuresFromState = createBranchSelector<ScfPostingFailure>(
+  (s) => s.scfPostingFailures,
+  (f, b) => f.branchId === b
 );
 
 let cachedNotifSrc: AppNotification[] | undefined;
@@ -3296,6 +3382,7 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
     return;
   }
 
+  const businessId = globalState.currentBusinessId;
   const branchId = globalState.currentBranchId;
   const activeCategory = getActiveCategoryForBranch(branchId);
 
@@ -3485,6 +3572,49 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
             updates.unifiedPayments = [...mergeById(cur, pays), ...others];
           } else if (pays.length > 0) {
             updates.unifiedPayments = [...pays, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('scf_chart_of_accounts')) {
+      tasks.push(async () => {
+        const accts = await scfAccountingService.fetchAccounts(businessId);
+        if (accts.length > 0) {
+          const others = (globalState.scfAccounts || []).filter((a) => a.businessId !== businessId);
+          updates.scfAccounts = [...accts, ...others];
+        }
+      });
+    }
+    if (shouldSyncTable('scf_accounting_periods')) {
+      tasks.push(async () => {
+        const periods = await scfAccountingService.fetchPeriods(businessId);
+        if (periods.length > 0) {
+          const others = (globalState.scfPeriods || []).filter((p) => p.businessId !== businessId);
+          updates.scfPeriods = [...periods, ...others];
+        }
+      });
+    }
+    if (shouldSyncTable('journal_entries', 'journal_lines')) {
+      tasks.push(async () => {
+        const entries = await scfAccountingService.fetchJournalEntries(branchId, updatedAfter);
+        if (entries.length > 0 || !updatedAfter) {
+          const others = (globalState.journalEntries || []).filter((e) => e.branchId !== branchId);
+          const cur = (globalState.journalEntries || []).filter((e) => e.branchId === branchId);
+          if (updatedAfter && entries.length > 0) {
+            updates.journalEntries = [...mergeById(cur, entries), ...others];
+          } else if (entries.length > 0) {
+            updates.journalEntries = [...entries, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('scf_posting_failures')) {
+      tasks.push(async () => {
+        const failures = await scfAccountingService.fetchPostingFailures(branchId);
+        if (failures.length > 0 || !updatedAfter) {
+          const others = (globalState.scfPostingFailures || []).filter((f) => f.branchId !== branchId);
+          if (failures.length > 0) {
+            updates.scfPostingFailures = [...failures, ...others];
           }
         }
       });
@@ -5913,6 +6043,18 @@ function createAtriumActions() {
       });
     }
 
+    try {
+      const posScfDraft = buildPostingForPosSale(sale);
+      postScfDraftOrQueueFailure(posScfDraft, {
+        accountId: sale.accountId || globalState.account.id,
+        businessId: sale.businessId || globalState.currentBusinessId,
+        branchId: sale.branchId || globalState.currentBranchId,
+        silentSuccessToast: true,
+      });
+    } catch {
+      // Operational POS checkout stays resilient
+    }
+
     const after = captureStoreSlices(['products', 'sales', 'stockMovements']);
     const activeCat = getActiveCategoryForBranch(globalState.currentBranchId);
     const touchedIds = new Set(items.map((i) => i.product.id));
@@ -7672,6 +7814,22 @@ function createAtriumActions() {
           title: run.title,
         })
         .catch(() => {});
+    }
+
+    if (run.status === 'draft') {
+      try {
+        const employerCnasRatePercent =
+          Math.round((globalState.effectiveStatutoryRate?.cnasPatronalRate ?? 0.26) * 10000) / 100;
+        const payrollScfDraft = buildPostingForPayrollRun(run, { employerCnasRatePercent });
+        postScfDraftOrQueueFailure(payrollScfDraft, {
+          accountId: run.accountId || globalState.account.id,
+          businessId: run.businessId || globalState.currentBusinessId,
+          branchId: run.branchId || globalState.currentBranchId,
+          silentSuccessToast: true,
+        });
+      } catch {
+        // Payroll approval never crashes on SCF failure
+      }
     }
 
     showToast({
@@ -16023,6 +16181,27 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
+    try {
+      const brScfDraft = buildPostingForPurchaseReceipt(newBr);
+      postScfDraftOrQueueFailure(brScfDraft, {
+        accountId: newBr.accountId || globalState.account.id,
+        businessId: newBr.businessId || globalState.currentBusinessId,
+        branchId: newBr.branchId || globalState.currentBranchId,
+        silentSuccessToast: true,
+      });
+      const stockScfDraft = buildPostingForStockVoucher(newVoucher);
+      if (stockScfDraft) {
+        postScfDraftOrQueueFailure(stockScfDraft, {
+          accountId: newVoucher.accountId || globalState.account.id,
+          businessId: newVoucher.businessId || globalState.currentBusinessId,
+          branchId: newVoucher.branchId || globalState.currentBranchId,
+          silentSuccessToast: true,
+        });
+      }
+    } catch {
+      // Purchase receipt stays non-blocking
+    }
+
     const after = captureStoreSlices(['purchaseDocs', 'stockVouchers', 'products']);
     registerUndoEntry({
       vertical: 'trading_commercial',
@@ -16110,6 +16289,20 @@ function createAtriumActions() {
         ],
         4
       ).catch(() => {});
+    }
+
+    try {
+      const svScfDraft = buildPostingForStockVoucher(newVoucher);
+      if (svScfDraft) {
+        postScfDraftOrQueueFailure(svScfDraft, {
+          accountId: newVoucher.accountId || globalState.account.id,
+          businessId: newVoucher.businessId || globalState.currentBusinessId,
+          branchId: newVoucher.branchId || globalState.currentBranchId,
+          silentSuccessToast: true,
+        });
+      }
+    } catch {
+      // Stock voucher creation stays non-blocking
     }
 
     const after = captureStoreSlices(['stockVouchers', 'products']);
@@ -16542,6 +16735,10 @@ function createAtriumActions() {
       categoryFormules: Array.isArray(parsed.categoryFormules)
         ? parsed.categoryFormules
         : INITIAL_CATEGORY_FORMULES,
+      scfAccounts: Array.isArray(parsed.scfAccounts) ? parsed.scfAccounts : [],
+      scfPeriods: Array.isArray(parsed.scfPeriods) ? parsed.scfPeriods : [],
+      journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
+      scfPostingFailures: Array.isArray(parsed.scfPostingFailures) ? parsed.scfPostingFailures : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -17481,7 +17678,15 @@ function createAtriumActions() {
     patch: Partial<
       Pick<
         BusinessCategoryConfig,
-        'currency' | 'defaultTvaRate' | 'applyTimbreFiscal' | 'fiscalProfile' | 'categorySettings' | 'setupState'
+        | 'currency'
+        | 'defaultTvaRate'
+        | 'applyTimbreFiscal'
+        | 'fiscalProfile'
+        | 'categorySettings'
+        | 'setupState'
+        | 'invoiceFooter'
+        | 'accountingPeriodClosedMonths'
+        | 'systemLanguage'
       >
     >
   ) => {
@@ -18145,7 +18350,7 @@ function createAtriumActions() {
 
     const after = captureStoreSlices(['unifiedDocuments']);
     registerUndoEntry({
-      vertical: ctx.sourceVertical,
+      vertical: normalizeBusinessCategory(ctx.sourceVertical) as BusinessCategory,
       operationType: 'create',
       summary: ul(
         `Created draft ${newDoc.draftNumber} (${newDoc.partyName})`,
@@ -18291,7 +18496,7 @@ function createAtriumActions() {
 
     const after = captureStoreSlices(['unifiedDocuments']);
     registerUndoEntry({
-      vertical: prev.sourceVertical,
+      vertical: normalizeBusinessCategory(prev.sourceVertical) as BusinessCategory,
       operationType: 'edit',
       summary: ul(
         `Updated draft ${prev.draftNumber}`,
@@ -18342,7 +18547,7 @@ function createAtriumActions() {
     }
     const after = captureStoreSlices(['unifiedDocuments']);
     registerUndoEntry({
-      vertical: target.sourceVertical,
+      vertical: normalizeBusinessCategory(target.sourceVertical) as BusinessCategory,
       operationType: 'delete',
       summary: ul(
         `Deleted draft ${target.draftNumber}`,
@@ -18420,6 +18625,20 @@ function createAtriumActions() {
           }
         })
         .catch(() => {});
+    }
+
+    try {
+      const docScfDraft = buildPostingForUnifiedDocument(issuedDoc);
+      if (docScfDraft) {
+        postScfDraftOrQueueFailure(docScfDraft, {
+          accountId: issuedDoc.accountId,
+          businessId: issuedDoc.businessId,
+          branchId: issuedDoc.branchId,
+          silentSuccessToast: true,
+        });
+      }
+    } catch {
+      // Issuance succeeds; any failure goes to scfPostingFailures
     }
 
     showToast({
@@ -18633,8 +18852,7 @@ function createAtriumActions() {
           m.id === input.partyId
             ? {
                 ...m,
-                balanceDue: Math.max(0, Number(m.balanceDue ?? m.balance ?? 0) - settledAmountDzd),
-                balance: Math.max(0, Number(m.balanceDue ?? m.balance ?? 0) - settledAmountDzd),
+                balance: Math.max(0, Number(m.balance ?? 0) - settledAmountDzd),
               }
             : m
         )
@@ -18677,6 +18895,18 @@ function createAtriumActions() {
         .catch(() => {});
     }
 
+    try {
+      const payScfDraft = buildPostingForUnifiedPayment(paymentRecord);
+      postScfDraftOrQueueFailure(payScfDraft, {
+        accountId: paymentRecord.accountId,
+        businessId: paymentRecord.businessId,
+        branchId: paymentRecord.branchId,
+        silentSuccessToast: true,
+      });
+    } catch {
+      // Operational payment recording remains resilient
+    }
+
     showToast({
       type: isInstrument ? 'info' : 'success',
       title: ul('Payment Recorded', 'Règlement Enregistré', 'تم تسجيل الدفع'),
@@ -18717,8 +18947,7 @@ function createAtriumActions() {
           m.id === pay.partyId
             ? {
                 ...m,
-                balanceDue: Number(m.balanceDue ?? m.balance ?? 0) + restoreDzd,
-                balance: Number(m.balanceDue ?? m.balance ?? 0) + restoreDzd,
+                balance: Number(m.balance ?? 0) + restoreDzd,
               }
             : m
         );
@@ -18740,6 +18969,20 @@ function createAtriumActions() {
         (nextStatus === 'deposited' || nextStatus === 'cleared' || nextStatus === 'bounced')
       ) {
         invoicingService.transitionChequeTraiteStatus(paymentId, nextStatus, reason).catch(() => {});
+      }
+
+      if (nextStatus === 'cleared' || nextStatus === 'bounced') {
+        try {
+          const instrScfDraft = buildPostingForInstrumentTransition(pay, nextStatus, reason);
+          postScfDraftOrQueueFailure(instrScfDraft, {
+            accountId: pay.accountId,
+            businessId: pay.businessId,
+            branchId: pay.branchId,
+            silentSuccessToast: true,
+          });
+        } catch {
+          // Instrument transition remains resilient
+        }
       }
 
       showToast({
@@ -18768,6 +19011,663 @@ function createAtriumActions() {
       });
       return false;
     }
+  };
+
+  // =========================================================================
+  // Phase 2 Step 2 (6.3): Shared Double-Entry SCF Accounting Engine Actions
+  // =========================================================================
+
+  const ensureScfAccountsSeededForBusiness = (accountId: string, businessId: string) => {
+    const existing = (globalState.scfAccounts || []).filter((a) => a.businessId === businessId);
+    if (existing.length > 0) return;
+    const seeded = getDefaultScfChartOfAccounts(accountId, businessId);
+    globalState = {
+      ...globalState,
+      scfAccounts: [...seeded, ...(globalState.scfAccounts || [])],
+    };
+  };
+
+  function postScfDraftOrQueueFailure(
+    draft: ScfPostingDraft,
+    options?: {
+      accountId?: string;
+      businessId?: string;
+      branchId?: string;
+      retryFailureId?: string;
+      silentSuccessToast?: boolean;
+      skipRemotePost?: boolean;
+    }
+  ): {
+    ok: boolean;
+    entry?: ScfJournalEntry;
+    failure?: ScfPostingFailure;
+    errorCode?: string;
+    errorMessage?: string;
+  } {
+    const ctx = resolveUnifiedContext(draft.sourceVertical);
+    const accountId = options?.accountId || ctx.accountId;
+    const businessId = options?.businessId || ctx.businessId;
+    const branchId = options?.branchId || ctx.branchId;
+
+    ensureScfAccountsSeededForBusiness(accountId, businessId);
+
+    if (!options?.retryFailureId && draft.idempotencyKey) {
+      const duplicate = (globalState.journalEntries || []).find(
+        (e) =>
+          e.businessId === businessId &&
+          e.idempotencyKey === draft.idempotencyKey &&
+          e.status !== 'reversed'
+      );
+      if (duplicate) {
+        return { ok: true, entry: duplicate };
+      }
+    }
+
+    const entryDate = draft.entryDate || new Date().toISOString().slice(0, 10);
+    const periodKey = toPeriodKey(entryDate);
+    const fiscalYear = Number(periodKey.slice(0, 4)) || new Date().getFullYear();
+
+    const businessPeriods = (globalState.scfPeriods || []).filter(
+      (p) => p.businessId === businessId
+    );
+    const legacyClosedMonths =
+      globalState.businessConfigs?.[businessId]?.accountingPeriodClosedMonths || [];
+    const periodClosed = isScfPeriodClosed(entryDate, businessPeriods, legacyClosedMonths);
+    const validation = validateScfJournalLines(draft.lines);
+
+    if (periodClosed || !validation.isValid) {
+      const errorCode = periodClosed
+        ? 'SCF_PERIOD_CLOSED'
+        : validation.errorCode || 'SCF_ENTRY_UNBALANCED';
+      const errorMessage = periodClosed
+        ? ul(
+            `Accounting period ${periodKey} is closed`,
+            `La période comptable ${periodKey} est clôturée`,
+            `الفترة المحاسبية ${periodKey} مغلقة`
+          )
+        : validation.errorMessage || 'Unbalanced or invalid SCF entry.';
+
+      const nowIso = new Date().toISOString();
+      const existingFailure = options?.retryFailureId
+        ? (globalState.scfPostingFailures || []).find((f) => f.id === options.retryFailureId)
+        : (globalState.scfPostingFailures || []).find(
+            (f) =>
+              f.businessId === businessId &&
+              f.status === 'pending' &&
+              (f.payload as any)?.idempotencyKey === draft.idempotencyKey
+          );
+
+      const failureRecord: ScfPostingFailure = existingFailure
+        ? {
+            ...existingFailure,
+            entryDate,
+            payload: draft as unknown as Record<string, any>,
+            errorCode,
+            errorMessage,
+            attempts: (existingFailure.attempts || 1) + 1,
+            lastAttemptAt: nowIso,
+            updatedAt: nowIso,
+          }
+        : {
+            id: generateClientUuid(),
+            accountId,
+            businessId,
+            branchId,
+            sourceVertical: draft.sourceVertical,
+            sourceEventType: draft.sourceEventType,
+            sourceDocId: draft.sourceDocId,
+            sourceRef: draft.pieceRef,
+            entryDate,
+            payload: draft as unknown as Record<string, any>,
+            errorCode,
+            errorMessage,
+            status: 'pending',
+            attempts: 1,
+            lastAttemptAt: nowIso,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+          };
+
+      const hasExisting = Boolean(existingFailure);
+      globalState = {
+        ...globalState,
+        scfPostingFailures: hasExisting
+          ? (globalState.scfPostingFailures || []).map((f) =>
+              f.id === failureRecord.id ? failureRecord : f
+            )
+          : [failureRecord, ...(globalState.scfPostingFailures || [])],
+      };
+      notify();
+
+      if (isSupabaseConfigured()) {
+        scfAccountingService
+          .upsertPostingFailure(failureRecord, globalState.currentUser?.id)
+          .catch(() => {});
+      }
+
+      showToast({
+        type: 'warning',
+        title: ul(
+          'Posting queued in Unposted Report',
+          'Écriture en attente (File SCF)',
+          'قيد معلق في قائمة الانتظار'
+        ),
+        message: `${draft.pieceRef} · ${errorMessage}`,
+      });
+
+      return { ok: false, errorCode, errorMessage, failure: failureRecord };
+    }
+
+    const existingCountForYear = (globalState.journalEntries || []).filter(
+      (e) => e.businessId === businessId && e.fiscalYear === fiscalYear
+    ).length;
+    const entryNumber = `EC-${fiscalYear}-${String(existingCountForYear + 1).padStart(5, '0')}`;
+    const entryId = generateClientUuid();
+    const nowIso = new Date().toISOString();
+
+    const lines: ScfJournalLine[] = draft.lines.map((l, idx) => ({
+      id: generateClientUuid(),
+      lineNo: idx + 1,
+      accountCode: l.accountCode,
+      accountLabel: l.accountLabel,
+      partyId: l.partyId,
+      partyName: l.partyName,
+      debitCentimes: Math.round(Number(l.debitCentimes || 0)),
+      creditCentimes: Math.round(Number(l.creditCentimes || 0)),
+      originalCurrency: l.originalCurrency || draft.currency || 'DZD',
+      originalAmountCentimes:
+        l.originalAmountCentimes ??
+        Math.round(Number(l.debitCentimes || l.creditCentimes || 0)),
+      fxRate: l.fxRate ?? draft.fxRate ?? 1,
+      reconciled: false,
+    }));
+
+    const entry: ScfJournalEntry = {
+      id: entryId,
+      accountId,
+      businessId,
+      branchId,
+      entryNumber,
+      journalCode: draft.journalCode,
+      entryDate,
+      periodKey,
+      fiscalYear,
+      pieceRef: draft.pieceRef,
+      libelle: draft.libelle,
+      sourceVertical: draft.sourceVertical,
+      sourceEventType: draft.sourceEventType,
+      sourceDocId: draft.sourceDocId,
+      idempotencyKey: draft.idempotencyKey,
+      currency: draft.currency || 'DZD',
+      fxRate: draft.fxRate || 1,
+      totalDebitCentimes: validation.totalDebitCentimes,
+      totalCreditCentimes: validation.totalCreditCentimes,
+      lines,
+      status: 'posted',
+      postedByStaffId: globalState.currentUser?.id,
+      postedAt: nowIso,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const resolvedFailures: ScfPostingFailure[] = [];
+    const nextFailures = (globalState.scfPostingFailures || []).map((f) => {
+      const isTarget =
+        (options?.retryFailureId && f.id === options.retryFailureId) ||
+        (f.status === 'pending' &&
+          f.businessId === businessId &&
+          (f.payload as any)?.idempotencyKey === draft.idempotencyKey);
+      if (!isTarget) return f;
+      const updatedFailure: ScfPostingFailure = {
+        ...f,
+        status: 'resolved',
+        resolvedEntryId: entry.id,
+        updatedAt: nowIso,
+      };
+      resolvedFailures.push(updatedFailure);
+      return updatedFailure;
+    });
+
+    globalState = {
+      ...globalState,
+      journalEntries: [entry, ...(globalState.journalEntries || [])],
+      scfPostingFailures: nextFailures,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      if (!options?.skipRemotePost) {
+        scfAccountingService
+          .postJournalEntry(entry)
+          .then((res) => {
+            if (res.success && res.entryNumber && res.entryNumber !== entry.entryNumber) {
+              globalState = {
+                ...globalState,
+                journalEntries: (globalState.journalEntries || []).map((e) =>
+                  e.id === entry.id ? { ...e, entryNumber: res.entryNumber! } : e
+                ),
+              };
+              notify();
+            }
+          })
+          .catch(() => {});
+      }
+      for (const rf of resolvedFailures) {
+        scfAccountingService
+          .upsertPostingFailure(rf, globalState.currentUser?.id)
+          .catch(() => {});
+      }
+    }
+
+    if (!options?.silentSuccessToast) {
+      showToast({
+        type: 'success',
+        title: ul('SCF Entry Posted', 'Écriture SCF Comptabilisée', 'تم تسجيل القيد المحاسبي'),
+        message: `${entry.entryNumber} · ${entry.journalCode}`,
+      });
+    }
+
+    return { ok: true, entry };
+  }
+
+  const postManualJournalEntry = (input: {
+    journalCode: ScfJournalCode;
+    entryDate: string;
+    pieceRef: string;
+    libelle: string;
+    currency?: UnifiedCurrency;
+    fxRate?: number;
+    lines: ScfLineDraftInput[];
+    sourceVertical?: string;
+    sourceEventType?: ScfPostingEventType;
+    sourceDocId?: string;
+    idempotencyKey?: string;
+    silentSuccessToast?: boolean;
+  }) => {
+    const idempotencyKey =
+      input.idempotencyKey || `manual:${generateClientUuid()}`;
+    const draft: ScfPostingDraft = {
+      journalCode: input.journalCode,
+      entryDate: input.entryDate || new Date().toISOString().slice(0, 10),
+      pieceRef: input.pieceRef.trim() || 'OD-MAN',
+      libelle: input.libelle.trim() || 'Écriture comptable SCF',
+      sourceVertical:
+        input.sourceVertical || getActiveCategoryForBranch(globalState.currentBranchId),
+      sourceEventType: input.sourceEventType || 'manual',
+      sourceDocId: input.sourceDocId,
+      idempotencyKey,
+      currency: input.currency || 'DZD',
+      fxRate: input.fxRate ?? 1,
+      lines: input.lines,
+    };
+    return postScfDraftOrQueueFailure(draft, {
+      silentSuccessToast: input.silentSuccessToast,
+    });
+  };
+
+  const postLegalScfEntryToLedger = (entry: SCFJournalEntry) => {
+    const draft = buildPostingFromLegalScfEntry(entry);
+    return postScfDraftOrQueueFailure(draft, {
+      accountId: entry.accountId || globalState.account.id,
+      businessId: entry.businessId || globalState.currentBusinessId,
+      branchId: entry.branchId || globalState.currentBranchId,
+      silentSuccessToast: true,
+    });
+  };
+
+  const reverseJournalEntry = (
+    entryId: string,
+    reversalDate?: string,
+    reason?: string
+  ): {
+    ok: boolean;
+    reversalEntry?: ScfJournalEntry;
+    errorCode?: string;
+    errorMessage?: string;
+  } => {
+    const original = (globalState.journalEntries || []).find((e) => e.id === entryId);
+    if (!original) {
+      return {
+        ok: false,
+        errorCode: 'SCF_ENTRY_NOT_FOUND',
+        errorMessage: 'Entry not found.',
+      };
+    }
+    if (original.status === 'reversed') {
+      const msg = ul(
+        'Entry is already reversed.',
+        'Cette écriture a déjà été contre-passée.',
+        'تم عكس هذا القيد مسبقاً.'
+      );
+      showToast({
+        type: 'warning',
+        title: ul('Already Reversed', 'Déjà Contre-passée', 'قيد معكوس مسبقاً'),
+        message: msg,
+      });
+      return { ok: false, errorCode: 'SCF_ENTRY_ALREADY_REVERSED', errorMessage: msg };
+    }
+
+    const effectiveDate = reversalDate || new Date().toISOString().slice(0, 10);
+    const reversalDraft = buildReversalDraft(original, effectiveDate, reason);
+    const res = postScfDraftOrQueueFailure(reversalDraft, {
+      accountId: original.accountId,
+      businessId: original.businessId,
+      branchId: original.branchId,
+      silentSuccessToast: true,
+      skipRemotePost: true,
+    });
+
+    if (!res.ok || !res.entry) {
+      return {
+        ok: false,
+        errorCode: res.errorCode,
+        errorMessage: res.errorMessage,
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    globalState = {
+      ...globalState,
+      journalEntries: (globalState.journalEntries || []).map((e) =>
+        e.id === original.id
+          ? {
+              ...e,
+              status: 'reversed' as const,
+              reversedEntryId: res.entry!.id,
+              reversalReason: reason?.trim() || undefined,
+              updatedAt: nowIso,
+            }
+          : e
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      scfAccountingService
+        .reverseJournalEntry(original.id, effectiveDate, reason)
+        .catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('Reversal Posted', 'Contre-passation Validée', 'تم تسجيل قيد العكس'),
+      message: `${res.entry.entryNumber} ↔ ${original.entryNumber}`,
+    });
+
+    return { ok: true, reversalEntry: res.entry };
+  };
+
+  const retryScfPostingFailure = (failureId: string) => {
+    const failure = (globalState.scfPostingFailures || []).find((f) => f.id === failureId);
+    if (!failure || failure.status === 'resolved') {
+      return { ok: false, errorCode: 'NOT_FOUND' };
+    }
+    const payload = failure.payload as ScfPostingDraft | undefined;
+    if (!payload || !Array.isArray(payload.lines)) {
+      return { ok: false, errorCode: 'INVALID_PAYLOAD' };
+    }
+    return postScfDraftOrQueueFailure(payload, {
+      accountId: failure.accountId,
+      businessId: failure.businessId,
+      branchId: failure.branchId,
+      retryFailureId: failure.id,
+    });
+  };
+
+  const dismissScfPostingFailure = (failureId: string): boolean => {
+    const target = (globalState.scfPostingFailures || []).find((f) => f.id === failureId);
+    if (!target) return false;
+    const updated: ScfPostingFailure = {
+      ...target,
+      status: 'dismissed',
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      scfPostingFailures: (globalState.scfPostingFailures || []).map((f) =>
+        f.id === failureId ? updated : f
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      scfAccountingService
+        .upsertPostingFailure(updated, globalState.currentUser?.id)
+        .catch(() => {});
+    }
+    return true;
+  };
+
+  const setAccountingPeriodStatus = (
+    periodKey: string,
+    status: 'open' | 'closed',
+    reason?: string
+  ): { ok: boolean; errorCode?: string; errorMessage?: string } => {
+    const user = globalState.currentUser;
+    const allowed =
+      isExecutiveRole(user?.role, user?.roleRank) || user?.role === 'expert_comptable';
+    if (!allowed) {
+      const errMsg = ul(
+        'Executive or Certified Accountant role required to close or reopen accounting periods.',
+        'Rôle Dirigeant ou Expert-Comptable requis pour clôturer ou réouvrir une période.',
+        'يتطلب دور المدير أو الخبير المحاسب لفتح أو غلق الفترات.'
+      );
+      showToast({
+        type: 'error',
+        title: ul('Permission Denied', 'Accès Refusé', 'صلاحية غير كافية'),
+        message: errMsg,
+      });
+      if (isSupabaseConfigured()) {
+        auditService
+          .logAccessDeniedEvent({
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+            actorStaffId: user?.id,
+            attemptedScreen: 'scf_accounting_periods',
+            category: getActiveCategoryForBranch(globalState.currentBranchId),
+            effectiveRole: user?.role || 'unknown',
+            rawRole: user?.role,
+            reason: `SCF_PERIOD_${status.toUpperCase()}_DENIED`,
+            occurredAt: new Date().toISOString(),
+          })
+          .catch(() => {});
+      }
+      return { ok: false, errorCode: 'SCF_PERIOD_PERMISSION_DENIED', errorMessage: errMsg };
+    }
+
+    const cleanKey = (periodKey || '').trim().slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(cleanKey)) {
+      return {
+        ok: false,
+        errorCode: 'INVALID_PERIOD_KEY',
+        errorMessage: 'Format attendu YYYY-MM.',
+      };
+    }
+
+    const biz = selectCurrentBusinessFromState(globalState);
+    const currentConfig = selectCurrentBusinessConfigFromState(globalState);
+    const nowIso = new Date().toISOString();
+    const fiscalYear = Number(cleanKey.slice(0, 4));
+    const periodMonth = Number(cleanKey.slice(5, 7));
+
+    const existingPeriod = (globalState.scfPeriods || []).find(
+      (p) => p.businessId === biz.id && p.periodKey === cleanKey
+    );
+
+    const nextPeriod: ScfAccountingPeriod = {
+      id: existingPeriod?.id || generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: biz.id,
+      periodKey: cleanKey,
+      fiscalYear,
+      periodMonth,
+      status,
+      closedAt: status === 'closed' ? nowIso : existingPeriod?.closedAt,
+      closedByStaffId: status === 'closed' ? user?.id : existingPeriod?.closedByStaffId,
+      reopenedAt: status === 'open' ? nowIso : existingPeriod?.reopenedAt,
+      reopenedByStaffId: status === 'open' ? user?.id : existingPeriod?.reopenedByStaffId,
+      reopenReason:
+        status === 'open'
+          ? reason?.trim() || 'Réouverture exceptionnelle'
+          : existingPeriod?.reopenReason,
+      version: (existingPeriod?.version || 0) + 1,
+      updatedAt: nowIso,
+    };
+
+    const nextClosedMonths =
+      status === 'closed'
+        ? Array.from(new Set([...(currentConfig.accountingPeriodClosedMonths || []), cleanKey])).sort()
+        : (currentConfig.accountingPeriodClosedMonths || []).filter((m) => m !== cleanKey);
+
+    const nextConfig: BusinessCategoryConfig = {
+      ...currentConfig,
+      accountingPeriodClosedMonths: nextClosedMonths,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      scfPeriods: existingPeriod
+        ? (globalState.scfPeriods || []).map((p) => (p.id === existingPeriod.id ? nextPeriod : p))
+        : [nextPeriod, ...(globalState.scfPeriods || [])],
+      businessConfigs: {
+        ...(globalState.businessConfigs || {}),
+        [biz.id]: nextConfig,
+      },
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      scfAccountingService.setPeriodStatus(biz.id, cleanKey, status, reason).catch(() => {});
+      configService.upsertBusinessConfig(nextConfig).catch(() => {});
+    }
+
+    showToast({
+      type: status === 'closed' ? 'info' : 'success',
+      title:
+        status === 'closed'
+          ? ul('Period Closed', 'Période Clôturée', 'تم غلق الفترة')
+          : ul('Period Reopened', 'Période Réouverte', 'تمت إعادة فتح الفترة'),
+      message: `${cleanKey}${reason ? ` · ${reason}` : ''}`,
+    });
+
+    return { ok: true };
+  };
+
+  const toggleReconcileJournalLine = (
+    entryId: string,
+    lineId: string,
+    reconciled: boolean,
+    reconciliationRef?: string,
+    statementDate?: string
+  ): boolean => {
+    const entry = (globalState.journalEntries || []).find((e) => e.id === entryId);
+    if (!entry) return false;
+    const nowIso = new Date().toISOString();
+    const stmtDate = statementDate || nowIso.slice(0, 10);
+
+    globalState = {
+      ...globalState,
+      journalEntries: (globalState.journalEntries || []).map((e) =>
+        e.id !== entryId
+          ? e
+          : {
+              ...e,
+              lines: e.lines.map((l) =>
+                l.id !== lineId
+                  ? l
+                  : {
+                      ...l,
+                      reconciled,
+                      reconciledAt: reconciled ? nowIso : undefined,
+                      reconciliationRef: reconciled ? reconciliationRef?.trim() || undefined : undefined,
+                      statementDate: reconciled ? stmtDate : undefined,
+                    }
+              ),
+              updatedAt: nowIso,
+            }
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      scfAccountingService
+        .reconcileLines([lineId], reconciled, reconciliationRef, stmtDate)
+        .catch(() => {});
+    }
+    return true;
+  };
+
+  const upsertScfAccount = (input: {
+    code: string;
+    labelFr: string;
+    labelAr?: string;
+    labelEn?: string;
+    scfClass: ScfAccountClass;
+    normalBalance: 'debit' | 'credit';
+    accountType: ScfAccountType;
+    isReconcilable?: boolean;
+  }): ScfAccount | null => {
+    const cleanCode = input.code.trim();
+    if (!cleanCode || !input.labelFr.trim()) return null;
+    const ctx = resolveUnifiedContext();
+    ensureScfAccountsSeededForBusiness(ctx.accountId, ctx.businessId);
+    const nowIso = new Date().toISOString();
+    const existing = (globalState.scfAccounts || []).find(
+      (a) => a.businessId === ctx.businessId && a.code === cleanCode
+    );
+    const acct: ScfAccount = existing
+      ? {
+          ...existing,
+          labelFr: input.labelFr.trim(),
+          labelAr: input.labelAr?.trim() || existing.labelAr,
+          labelEn: input.labelEn?.trim() || existing.labelEn,
+          scfClass: input.scfClass,
+          normalBalance: input.normalBalance,
+          accountType: input.accountType,
+          isReconcilable: input.isReconcilable ?? existing.isReconcilable,
+          updatedAt: nowIso,
+        }
+      : {
+          id: generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          code: cleanCode,
+          labelFr: input.labelFr.trim(),
+          labelAr: input.labelAr?.trim() || input.labelFr.trim(),
+          labelEn: input.labelEn?.trim() || input.labelFr.trim(),
+          scfClass: input.scfClass,
+          normalBalance: input.normalBalance,
+          accountType: input.accountType,
+          isReconcilable: Boolean(input.isReconcilable),
+          isSystem: false,
+          isActive: true,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    globalState = {
+      ...globalState,
+      scfAccounts: existing
+        ? (globalState.scfAccounts || []).map((a) => (a.id === existing.id ? acct : a))
+        : [...(globalState.scfAccounts || []), acct].sort((a, b) =>
+            a.code.localeCompare(b.code)
+          ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      scfAccountingService.upsertAccount(acct, globalState.currentUser?.id).catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('SCF Account Saved', 'Compte SCF Enregistré', 'تم حفظ الحساب'),
+      message: `${acct.code} · ${acct.labelFr}`,
+    });
+    return acct;
   };
 
   return {
@@ -19047,6 +19947,14 @@ function createAtriumActions() {
     incrementUnifiedPrintCount,
     recordUnifiedPayment,
     transitionChequeStatus,
+    postManualJournalEntry,
+    postLegalScfEntryToLedger,
+    reverseJournalEntry,
+    retryScfPostingFailure,
+    dismissScfPostingFailure,
+    setAccountingPeriodStatus,
+    toggleReconcileJournalLine,
+    upsertScfAccount,
   };
 }
 
@@ -19136,6 +20044,10 @@ export function useAtriumStore() {
   const currentStockVouchers = selectCurrentStockVouchersFromState(state);
   const currentUnifiedDocuments = selectCurrentUnifiedDocumentsFromState(state);
   const currentUnifiedPayments = selectCurrentUnifiedPaymentsFromState(state);
+  const currentScfAccounts = selectCurrentScfAccountsFromState(state);
+  const currentScfPeriods = selectCurrentScfPeriodsFromState(state);
+  const currentJournalEntries = selectCurrentJournalEntriesFromState(state);
+  const currentScfPostingFailures = selectCurrentScfPostingFailuresFromState(state);
   const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
   const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
   const selectedMember = selectSelectedMemberFromState(state);
@@ -19266,6 +20178,11 @@ export function useAtriumStore() {
     allUnifiedDocuments: state.unifiedDocuments || [],
     unifiedPayments: currentUnifiedPayments,
     allUnifiedPayments: state.unifiedPayments || [],
+    scfAccounts: currentScfAccounts,
+    scfPeriods: currentScfPeriods,
+    journalEntries: currentJournalEntries,
+    allJournalEntries: state.journalEntries || [],
+    scfPostingFailures: currentScfPostingFailures,
     // Operational Role State
     activeGarageRole: state.activeGarageRole || 'gerant',
     activeRealEstateRole: state.activeRealEstateRole || 'direction',

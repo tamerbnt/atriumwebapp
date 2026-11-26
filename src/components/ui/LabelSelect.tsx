@@ -298,7 +298,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
         {label && (
           <label
-            className="lbi-label pointer-events-none"
+            className="lbi-label pointer-events-none z-[2]"
             htmlFor={id}
             ref={lab}
             dir={isRtl ? 'rtl' : 'ltr'}
@@ -323,7 +323,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           onClick={() => {
             if (!disabled) setIsOpen((prev) => !prev);
           }}
-          className="w-full h-full flex items-center justify-between text-start focus:outline-none cursor-pointer bg-transparent transition-opacity"
+          className="relative z-[1] w-full h-full flex items-center justify-between text-start focus:outline-none cursor-pointer bg-transparent transition-opacity"
           style={{
             paddingInlineStart: prefix ? 38 : initialPaths.lx,
             paddingInlineEnd: Math.max(10, r),

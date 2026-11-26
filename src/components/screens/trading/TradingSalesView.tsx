@@ -1034,7 +1034,7 @@ export const TradingSalesView: React.FC = () => {
                     <AtriumButton
                       variant="secondary"
                       size="xs"
-                      onClick={() => createCreditNoteForDocument(ud.id, 'Retour / Avoir commercial', true)}
+                      onClick={() => createCreditNoteForDocument(ud.id, 'Retour / Avoir commercial', undefined, true)}
                     >
                       {isAr ? 'إشعار دائن' : isEn ? 'Credit Note' : 'Avoir'}
                     </AtriumButton>

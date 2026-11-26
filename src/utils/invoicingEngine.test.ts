@@ -65,6 +65,7 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
 
     const draft: UnifiedDocument = {
       id: 'udoc_1',
+      accountId: 'acc_test',
       businessId: 'biz_1',
       branchId: 'br_1',
       sourceVertical: 'trading_commercial',
@@ -76,8 +77,10 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       partyName: 'Client Alpha',
       docDate: '2026-11-26',
       paymentMethod: 'bank_transfer',
+      paymentTerms: 'Comptant',
       currency: 'DZD',
       fxRate: 1,
+      fxRateDate: '2026-11-26',
       timbreBasis: 'exempt',
       items: calc.items,
       tvaBreakdown: calc.tvaBreakdown,
@@ -93,6 +96,8 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       paidCentimes: 0,
       balanceDueCentimes: calc.netToPayCentimes,
       fiscalHeaderSnapshot: header,
+      totalsInWordsFr: calc.totalsInWordsFr,
+      totalsInWordsAr: calc.totalsInWordsAr,
       includeStampSignature: true,
       printedCount: 0,
       createdAt: '2026-11-26T10:00:00Z',
@@ -134,6 +139,7 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
 
     const doc1: UnifiedDocument = {
       id: 'doc_1',
+      accountId: 'acc_test',
       businessId: 'b1',
       branchId: 'br1',
       sourceVertical: 'trading_commercial',
@@ -144,8 +150,11 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       status: 'Paid',
       partyName: 'Client A',
       docDate: '2026-11-26',
+      paymentMethod: 'cheque',
+      paymentTerms: 'Comptant',
       currency: 'DZD',
       fxRate: 1,
+      fxRateDate: '2026-11-26',
       timbreBasis: 'exempt',
       items: [],
       tvaBreakdown: [],
@@ -161,6 +170,8 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       paidCentimes: 1000000,
       balanceDueCentimes: 0,
       fiscalHeaderSnapshot: { companyName: 'Atlas' },
+      totalsInWordsFr: 'Dix mille dinars',
+      totalsInWordsAr: 'عشرة آلاف دينار',
       includeStampSignature: true,
       printedCount: 0,
       createdAt: '2026-11-26T10:00:00Z',
@@ -169,12 +180,16 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
 
     const payment: UnifiedPayment = {
       id: 'pay_1',
+      accountId: 'acc_test',
       businessId: 'b1',
       branchId: 'br1',
+      sourceVertical: 'trading_commercial',
       paymentNumber: 'REG-2026-00001',
       partyName: 'Client A',
       method: 'cheque',
+      direction: 'inflow',
       amountCentimes: 1000000,
+      unallocatedCreditCentimes: 0,
       currency: 'DZD',
       fxRate: 1,
       paymentDate: '2026-11-26',
@@ -182,7 +197,16 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       instrumentNumber: 'CHQ-998877',
       instrumentBank: 'BEA',
       instrumentStatus: 'received',
-      allocations: [{ documentId: 'doc_1', documentNumber: 'FAC-2026-00001', allocatedCentimes: 1000000 }],
+      allocations: [
+        {
+          id: 'alloc_1',
+          paymentId: 'pay_1',
+          documentId: 'doc_1',
+          documentNumber: 'FAC-2026-00001',
+          allocatedCentimes: 1000000,
+          createdAt: '2026-11-26T10:00:00Z',
+        },
+      ],
       createdAt: '2026-11-26T10:00:00Z',
       updatedAt: '2026-11-26T10:00:00Z',
     };
@@ -205,13 +229,15 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
 
     const legacyDoc: CommercialDocument = {
       id: 'cdoc_1',
+      tenantId: 'acc_test',
       facilityId: 'br1',
       type: 'facture',
       docNumber: 'FAC-2026-00099',
       date: '2026-11-26',
       clientId: 'cl_1',
       clientName: 'BTP Nord',
-      items: [{ id: 'i1', description: 'Ciment', quantity: 10, unit: 'sac', unitPriceHt: 700, tvaPercent: 19, totalHt: 7000 }],
+      depotId: 'dep_1',
+      items: [{ id: 'i1', description: 'Ciment', isService: false, quantity: 10, unit: 'sac', unitPriceHt: 700, tvaPercent: 19, totalHt: 7000, totalTtc: 8330 }],
       totalHtRaw: 7000,
       generalDiscountPercent: 0,
       totalHtFinal: 7000,
@@ -222,9 +248,12 @@ describe('Phase 2 (6.1 + 6.2): Unified Invoicing & Payments Engine', () => {
       guaranteeRetentionAmount: 0,
       netToPay: 8330,
       paymentMethod: 'Virement',
+      paymentTerms: 'Comptant',
+      currency: 'DZD',
       status: 'Validated',
       includeStampSignature: true,
       createdAt: '2026-11-26T09:00:00Z',
+      updatedAt: '2026-11-26T09:00:00Z',
     };
     const converted = convertCommercialDocToUnified(legacyDoc, { companyName: 'Atlas' });
     assert.equal(converted.totalHtFinalCentimes, 700000);

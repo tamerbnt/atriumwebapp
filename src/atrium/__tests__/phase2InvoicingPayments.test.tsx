@@ -25,6 +25,7 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
   it('renders UnifiedInvoicePrintModal with live tenant fiscal header without demo constants', () => {
     const doc: UnifiedDocument = {
       id: 'udoc_test_1',
+      accountId: 'acc_test',
       businessId: 'biz_1',
       branchId: 'br_1',
       sourceVertical: 'trading_commercial',
@@ -36,13 +37,17 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
       partyName: 'Clinique El Manar',
       partyNif: '002016000011223',
       docDate: '2026-11-26',
+      paymentMethod: 'bank_transfer',
+      paymentTerms: 'Comptant',
       currency: 'DZD',
       fxRate: 1,
+      fxRateDate: '2026-11-26',
       timbreBasis: 'exempt',
       items: [
         {
           id: 'l1',
           description: 'Maintenance annuelle serveur',
+          isService: true,
           quantity: 1,
           unit: 'an',
           unitPriceHt: 50000,
@@ -71,6 +76,7 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
         rc: '16/00-998877B19',
       },
       totalsInWordsFr: 'Cinquante-neuf mille cinq cents dinars',
+      totalsInWordsAr: 'تسعة وخمسون ألفاً وخمسمائة دينار جزائري',
       includeStampSignature: true,
       printedCount: 0,
       createdAt: '2026-11-26T10:00:00Z',
@@ -84,19 +90,38 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
     expect(html).toContain('FAC-2026-00042');
     expect(html).toContain('SARL Numidia Tech');
     expect(html).toContain('001916099887766');
+    expect(html).toContain('Stamp &amp; Signature');
     expect(html).not.toContain('MAGHREB');
     expect(html).not.toContain('002116019842189');
+
+    setLanguageAction('ar');
+    const fxDoc: UnifiedDocument = {
+      ...doc,
+      currency: 'EUR',
+      fxRate: 145,
+      notesTop: 'Contrat export Q4',
+    };
+    const arHtml = renderToStaticMarkup(
+      <UnifiedInvoicePrintModal isOpen onClose={() => {}} document={fxDoc} />
+    );
+    expect(arHtml).toContain('dir="rtl"');
+    expect(arHtml).toContain('EUR');
+    expect(arHtml).toContain('DZD (x145)');
+    expect(arHtml).toContain('Contrat export Q4');
+    expect(arHtml).toContain('الختم والتوقيع');
   });
 
   it('CommercialDocPrintModal avoids hardcoded demo fiscal identifiers when business profile is unset', () => {
     const legacyDoc: CommercialDocument = {
       id: 'cd_1',
+      tenantId: 'acc_test',
       facilityId: 'br_1',
       type: 'facture',
       docNumber: 'FAC-2026-00010',
       date: '2026-11-26',
       clientId: 'cl_1',
       clientName: 'EURL Horizon',
+      depotId: 'dep_1',
       items: [],
       totalHtRaw: 10000,
       generalDiscountPercent: 0,
@@ -108,9 +133,12 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
       guaranteeRetentionAmount: 0,
       netToPay: 11900,
       paymentMethod: 'Virement',
+      paymentTerms: 'Comptant',
+      currency: 'DZD',
       status: 'Validated',
       includeStampSignature: false,
       createdAt: '2026-11-26T10:00:00Z',
+      updatedAt: '2026-11-26T10:00:00Z',
     };
 
     const html = renderToStaticMarkup(
@@ -126,12 +154,16 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
     const payments: UnifiedPayment[] = [
       {
         id: 'pay_chq_1',
+        accountId: 'acc_test',
         businessId: 'biz_1',
         branchId: 'br_1',
+        sourceVertical: 'trading_commercial',
         paymentNumber: 'REG-2026-00005',
         partyName: 'EURL Horizon',
         method: 'cheque',
+        direction: 'inflow',
         amountCentimes: 1200000,
+        unallocatedCreditCentimes: 1200000,
         currency: 'DZD',
         fxRate: 1,
         paymentDate: '2026-11-26',
@@ -158,15 +190,20 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
     setLanguageAction('fr');
     const member: Member = {
       id: 'mem_1',
+      tenantId: 'acc_test',
       facilityId: 'br_1',
       fullName: 'Karim Mansouri',
-      phone: '0550112233',
+      email: 'karim@example.dz',
+      phoneNumber: '0550112233',
       status: 'Active',
-      membershipPlanName: 'Gold Mensuel',
-      membershipFee: 5000,
-      balance: 2500,
-      joinDate: '2026-10-01',
+      startDate: '2026-10-01',
       expirationDate: '2026-12-31',
+      membershipPlanName: 'Gold Mensuel',
+      remainingSessions: 12,
+      gender: 'Male',
+      balance: 2500,
+      createdAt: '2026-10-01T10:00:00Z',
+      updatedAt: '2026-10-01T10:00:00Z',
     };
 
     const html = renderToStaticMarkup(
@@ -189,6 +226,8 @@ describe('Phase 2 Step 2.1 Workflows: Unified Invoicing & Payments UI Adoption',
 
     expect(html).toContain('Encaisser le solde');
     expect(html).toContain('Nouvelle');
-    expect(html).not.toContain('cursor-not-allowed');
+    const billingPanelHtml = html.slice(html.indexOf('role="tabpanel"'));
+    expect(billingPanelHtml).not.toContain('cursor-not-allowed');
+    expect(billingPanelHtml).not.toContain('Pas encore disponible');
   });
 });

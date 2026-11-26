@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   selectCurrentUnifiedPaymentsFromState,
   selectCurrentUnifiedDocumentsFromState,
+  selectCurrentScfPostingFailuresFromState,
   showToast,
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
@@ -30,6 +31,7 @@ import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal'
 import { UnifiedInvoiceComposerModal } from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 import { UnifiedPaymentsLedgerPanel } from '../../common/invoicing/UnifiedPaymentsLedgerPanel';
+import { ScfAccountingWorkspace } from '../../common/accounting/ScfAccountingWorkspace';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
@@ -77,6 +79,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
     currentBranch,
     unifiedPayments,
     unifiedDocuments,
+    scfPostingFailures,
     language,
     isSyncing,
     networkMode,
@@ -89,6 +92,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       currentBranch: selectCurrentBranchFromState(s),
       unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
       unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      scfPostingFailures: selectCurrentScfPostingFailuresFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -99,6 +103,11 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
   );
 
   const { retryCloudSync, updateMember } = useAtriumActions();
+  const [financeMode, setFinanceMode] = useState<'transactions' | 'scf'>('transactions');
+  const pendingScfFailuresCount = useMemo(
+    () => scfPostingFailures.filter((f) => f.status === 'pending').length,
+    [scfPostingFailures]
+  );
   const { t } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -146,7 +155,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
   const transactions: MembershipTransaction[] = useMemo(() => {
     if (hasPersistedLedger) {
       return membershipUnifiedPayments.map((pay) => {
-        const bInfo = branchesById.get(pay.facilityId) || currentBranch;
+        const bInfo = branchesById.get(pay.branchId) || currentBranch;
         const mappedMethod: 'Cash' | 'Card' | 'BaridiMob' =
           pay.method === 'baridimob'
             ? 'BaridiMob'
@@ -161,8 +170,8 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
           amount: centimesToDzd(pay.amountCentimes),
           paymentMethod: mappedMethod,
           date: pay.paymentDate,
-          status: pay.status === 'Bounced' || pay.status === 'Pending' ? 'Pending' : 'Settled',
-          branchId: pay.facilityId,
+          status: pay.status === 'bounced' || pay.status === 'pending_clearance' ? 'Pending' : 'Settled',
+          branchId: pay.branchId,
           branchName: bInfo?.name || currentBranch?.name || 'Main Branch',
         };
       });
@@ -672,7 +681,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
                 setPaymentTarget({
                   partyId: pending?.id,
                   partyName: pending?.fullName || 'Adhérent',
-                  amountDzd: Number(pending?.balance || pending?.membershipFee || 4500),
+                  amountDzd: Number(pending?.balance || 4500),
                 });
                 setPaymentModalOpen(true);
               }}
@@ -697,6 +706,43 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
           onClick: () => {},
         }}
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          data-testid="membership-finance-transactions-tab"
+          onClick={() => setFinanceMode('transactions')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold transition-colors cursor-pointer ${
+            financeMode === 'transactions'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          {isAr ? 'الاشتراكات والمدفوعات' : isEn ? 'Collections & Ledger' : 'Cotisations & Règlements'}
+        </button>
+        <button
+          type="button"
+          data-testid="membership-finance-scf-tab"
+          onClick={() => setFinanceMode('scf')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+            financeMode === 'scf'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          <span>{isAr ? 'المحاسبة العامة SCF (07-11)' : isEn ? 'SCF Accounting (Loi 07-11)' : 'Comptabilité SCF (Loi 07-11)'}</span>
+          {pendingScfFailuresCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[11px] tabular-nums">
+              {pendingScfFailuresCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {financeMode === 'scf' ? (
+        <ScfAccountingWorkspace sourceVerticalFilter="membership_session" />
+      ) : (
+        <>
 
       {!hasPersistedLedger && (
         <div
@@ -1049,6 +1095,8 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       />
       {hasPersistedLedger && (
         <UnifiedPaymentsLedgerPanel payments={membershipUnifiedPayments} />
+      )}
+        </>
       )}
 
       <UnifiedPaymentModal

@@ -506,7 +506,7 @@ export const UnifiedInvoiceComposerModal: React.FC<UnifiedInvoiceComposerModalPr
               <span className="t-small font-medium">
                 {isAr ? 'إدراج الختم والتوقيع عند الطباعة' : isEn ? 'Include stamp & signature' : 'Inclure cachet & signature'}
               </span>
-              <LiveSwitch checked={includeStampSignature} onChange={setIncludeStampSignature} />
+              <LiveSwitch checked={includeStampSignature} onCheckedChange={setIncludeStampSignature} />
             </div>
           </div>
 

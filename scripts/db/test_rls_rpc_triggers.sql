@@ -697,5 +697,86 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ----------------------------------------------------------------------------
+-- SECTION 11: Phase 2 Step 2 (6.3) Shared SCF Accounting Layer (Loi 07-11)
+-- ----------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_biz_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_br_a  uuid := '11111111-1111-1111-1111-111111111111';
+  v_user_a uuid := '99999999-9999-9999-9999-999999999991';
+  v_entry_id uuid := gen_random_uuid();
+  v_res jsonb;
+  v_entry public.journal_entries%ROWTYPE;
+BEGIN
+  EXECUTE format('SET LOCAL request.jwt.claim.sub = %L', v_user_a::text);
+  SET LOCAL ROLE authenticated;
+
+  -- Seed default SCF chart of accounts
+  PERFORM public.seed_scf_chart_of_accounts(v_biz_a);
+
+  -- Unbalanced posting MUST fail (SQLSTATE 22023)
+  BEGIN
+    PERFORM public.post_scf_journal_entry(
+      gen_random_uuid(), v_biz_a, v_br_a, 'VE', '2026-11-26', 'FAC-BAD', 'Unbalanced test',
+      'trading_commercial', 'manual', NULL, 'scf-bad-1', 'DZD', 1.0,
+      jsonb_build_array(
+        jsonb_build_object('account_code', '411000', 'account_label', 'Clients', 'debit_centimes', 119000, 'credit_centimes', 0),
+        jsonb_build_object('account_code', '700000', 'account_label', 'Ventes', 'debit_centimes', 0, 'credit_centimes', 100000)
+      )
+    );
+    RAISE EXCEPTION 'Unbalanced SCF entry unexpectedly succeeded';
+  EXCEPTION WHEN SQLSTATE '22023' THEN
+    NULL;
+  END;
+
+  -- Close period 2026-10 and confirm backdated insert into 2026-10 is blocked
+  PERFORM public.set_scf_period_status(v_biz_a, '2026-10', 'closed', 'Cloture octobre test');
+  BEGIN
+    PERFORM public.post_scf_journal_entry(
+      gen_random_uuid(), v_biz_a, v_br_a, 'OD', '2026-10-15', 'BACKDATE', 'Backdated closed test',
+      'trading_commercial', 'manual', NULL, 'scf-closed-1', 'DZD', 1.0,
+      jsonb_build_array(
+        jsonb_build_object('account_code', '411000', 'account_label', 'Clients', 'debit_centimes', 50000, 'credit_centimes', 0),
+        jsonb_build_object('account_code', '706000', 'account_label', 'Services', 'debit_centimes', 0, 'credit_centimes', 50000)
+      )
+    );
+    RAISE EXCEPTION 'Closed period SCF insert unexpectedly succeeded';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Balanced posting in open period succeeds with EC-2026-XXXXX
+  v_res := public.post_scf_journal_entry(
+    v_entry_id, v_biz_a, v_br_a, 'VE', '2026-11-26', 'FAC-2026-00001', 'Vente B2B',
+    'trading_commercial', 'sale_invoice', 'doc-1', 'scf-ok-1', 'DZD', 1.0,
+    jsonb_build_array(
+      jsonb_build_object('account_code', '411000', 'account_label', 'Clients', 'debit_centimes', 11900000, 'credit_centimes', 0),
+      jsonb_build_object('account_code', '700000', 'account_label', 'Ventes marchandises', 'debit_centimes', 0, 'credit_centimes', 10000000),
+      jsonb_build_object('account_code', '445700', 'account_label', 'TVA collectee', 'debit_centimes', 0, 'credit_centimes', 1900000)
+    )
+  );
+  IF NOT ((v_res ->> 'entry_number') LIKE 'EC-2026-%') THEN
+    RAISE EXCEPTION 'Expected EC-2026- sequence number, got %', v_res;
+  END IF;
+
+  -- Direct UPDATE on posted entry MUST fail
+  BEGIN
+    UPDATE public.journal_entries SET libelle = 'Tampered' WHERE id = v_entry_id;
+    RAISE EXCEPTION 'Direct UPDATE on journal_entries unexpectedly succeeded';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Reversal RPC succeeds cleanly and marks original reversed
+  v_res := public.reverse_scf_journal_entry(v_entry_id, '2026-11-26', 'Erreur imputation');
+  SELECT * INTO v_entry FROM public.journal_entries WHERE id = v_entry_id;
+  IF v_entry.status <> 'reversed' OR v_entry.reversed_entry_id IS NULL THEN
+    RAISE EXCEPTION 'Expected original entry reversed with reversed_entry_id, got status=%', v_entry.status;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 

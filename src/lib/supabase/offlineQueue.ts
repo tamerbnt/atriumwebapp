@@ -138,6 +138,12 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   unified_documents: 35,
   unified_payments: 41,
   unified_payment_allocations: 42,
+  scf_chart_of_accounts: 15,
+  scf_fiscal_years: 16,
+  scf_accounting_periods: 17,
+  journal_entries: 44,
+  journal_lines: 45,
+  scf_posting_failures: 47,
   immutable_audit_logs: 50,
 };
 
@@ -476,6 +482,10 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'issue_unified_document') return 356;
     if (item.fn === 'record_unified_payment_with_allocations') return 430;
     if (item.fn === 'transition_cheque_traite_status') return 440;
+    if (item.fn === 'post_scf_journal_entry') return 450;
+    if (item.fn === 'reverse_scf_journal_entry') return 460;
+    if (item.fn === 'set_scf_period_status') return 175;
+    if (item.fn === 'reconcile_scf_journal_lines') return 470;
     if (item.fn === 'approve_payroll_run') return 480;
   }
   return (item.table ? TABLE_REPLAY_PRIORITY[item.table] ?? 35 : 48) * 10 + getKindPriority(item.kind);

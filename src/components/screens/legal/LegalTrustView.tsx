@@ -21,11 +21,13 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  selectCurrentScfPostingFailuresFromState,
   showToast,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { useLegalData } from './legalData';
+import { ScfAccountingWorkspace } from '../../common/accounting/ScfAccountingWorkspace';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -89,6 +91,7 @@ export const LegalTrustView: React.FC<any> = () => {
     currentBranch,
     currentUser,
     branches,
+    scfPostingFailures,
     isSyncing,
     networkMode,
   } = useAtriumSelector(
@@ -100,12 +103,18 @@ export const LegalTrustView: React.FC<any> = () => {
       currentBranch: selectCurrentBranchFromState(s),
       currentUser: s.currentUser,
       branches: s.branches,
+      scfPostingFailures: selectCurrentScfPostingFailuresFromState(s),
       isSyncing: s.isSyncing,
       networkMode: s.networkMode,
     }),
     shallowEqualObjects
   );
-  const { retryCloudSync } = useAtriumActions();
+  const { retryCloudSync, postLegalScfEntryToLedger } = useAtriumActions();
+  const [legalScfViewMode, setLegalScfViewMode] = useState<'shared_scf' | 'cabinet_journal'>('shared_scf');
+  const pendingScfFailuresCount = useMemo(
+    () => scfPostingFailures.filter((f) => f.status === 'pending').length,
+    [scfPostingFailures]
+  );
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -392,6 +401,7 @@ export const LegalTrustView: React.FC<any> = () => {
       status: 'validated',
     };
     addSCFEntry(newEntry);
+    postLegalScfEntryToLedger(newEntry);
     setSelectedSCFEntry(newEntry);
     setIsSCFModalOpen(false);
     setScfLibelle('');
@@ -1638,6 +1648,43 @@ export const LegalTrustView: React.FC<any> = () => {
           }}
         />
 
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            data-testid="legal-scf-shared-tab"
+            onClick={() => setLegalScfViewMode('shared_scf')}
+            className={`px-3.5 py-2 rounded-xl t-small font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+              legalScfViewMode === 'shared_scf'
+                ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+                : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+            }`}
+          >
+            <span>{isAr ? 'المحاسبة الموحدة SCF (07-11)' : isEn ? 'Shared SCF Engine (Loi 07-11)' : 'Moteur Partagé SCF (Balance, Grand Livre, G50)'}</span>
+            {pendingScfFailuresCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[11px] tabular-nums">
+                {pendingScfFailuresCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            data-testid="legal-scf-cabinet-tab"
+            onClick={() => setLegalScfViewMode('cabinet_journal')}
+            className={`px-3.5 py-2 rounded-xl t-small font-semibold transition-colors cursor-pointer ${
+              legalScfViewMode === 'cabinet_journal'
+                ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+                : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+            }`}
+          >
+            {isAr ? 'قيود ملفات المكتب' : isEn ? 'Quick Practice Entries' : 'Journal Rapide Cabinet'}
+          </button>
+        </div>
+
+        {legalScfViewMode === 'shared_scf' ? (
+          <ScfAccountingWorkspace sourceVerticalFilter="legal_accounting" compactHeader />
+        ) : (
+          <>
+
         <ScreenKpiBanner
           heading={
             isAr
@@ -1762,6 +1809,8 @@ export const LegalTrustView: React.FC<any> = () => {
             onResetFilters={resetAllFilters}
           />
         </ScreenPod>
+          </>
+        )}
 
         <KineticFilterModal
           isOpen={isFilterModalOpen}

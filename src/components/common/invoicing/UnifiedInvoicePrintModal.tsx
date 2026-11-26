@@ -48,6 +48,15 @@ export const UnifiedInvoicePrintModal: React.FC<UnifiedInvoicePrintModalProps> =
   const hdr = doc?.fiscalHeaderSnapshot;
   const displayNumber = doc?.docNumber || doc?.draftNumber || '—';
 
+  const formatDocAmount = (amountCentimes: number) => {
+    const val = centimesToDzd(amountCentimes);
+    if (!doc || doc.currency === 'DZD') return formatMoney(val);
+    return `${val.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${doc.currency}`;
+  };
+
+  const dzdCounterValueCentimes =
+    doc && doc.currency !== 'DZD' ? Math.round(doc.netToPayCentimes * (doc.fxRate || 1)) : doc?.netToPayCentimes || 0;
+
   return (
     <KineticModalShell
       isOpen={isOpen && Boolean(rawDoc)}
@@ -131,29 +140,35 @@ export const UnifiedInvoicePrintModal: React.FC<UnifiedInvoicePrintModalProps> =
                   {doc.items.map((it) => (
                     <div key={it.id} className="flex justify-between gap-2">
                       <span className="truncate">{it.quantity}x {it.description}</span>
-                      <span className="font-semibold shrink-0">{formatMoney(centimesToDzd(it.totalTtcCentimes))}</span>
+                      <span className="font-semibold shrink-0">{formatDocAmount(it.totalTtcCentimes)}</span>
                     </div>
                   ))}
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between">
                     <span>Total HT</span>
-                    <span>{formatMoney(centimesToDzd(doc.totalHtFinalCentimes))}</span>
+                    <span>{formatDocAmount(doc.totalHtFinalCentimes)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>TVA</span>
-                    <span>{formatMoney(centimesToDzd(doc.totalTvaCentimes))}</span>
+                    <span>{formatDocAmount(doc.totalTvaCentimes)}</span>
                   </div>
                   {doc.timbreFiscalCentimes > 0 && (
                     <div className="flex justify-between">
                       <span>Timbre</span>
-                      <span>{formatMoney(centimesToDzd(doc.timbreFiscalCentimes))}</span>
+                      <span>{formatDocAmount(doc.timbreFiscalCentimes)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-semibold t-label pt-1 border-t border-black/20">
                     <span>NET A PAYER</span>
-                    <span>{formatMoney(centimesToDzd(doc.netToPayCentimes))}</span>
+                    <span>{formatDocAmount(doc.netToPayCentimes)}</span>
                   </div>
+                  {doc.currency !== 'DZD' && (
+                    <div className="flex justify-between text-black/70">
+                      <span>Contre-valeur DZD (x{doc.fxRate})</span>
+                      <span>{formatMoney(centimesToDzd(dzdCounterValueCentimes))}</span>
+                    </div>
+                  )}
                 </div>
                 {hdr?.footerNote && (
                   <div className="pt-2 border-t border-dashed border-black/30 text-center text-black/65">
@@ -237,14 +252,25 @@ export const UnifiedInvoicePrintModal: React.FC<UnifiedInvoicePrintModalProps> =
                           <td className="py-2 px-3 text-black/60">{idx + 1}</td>
                           <td className="py-2 px-3 font-medium">{it.description}</td>
                           <td className="py-2 px-3 text-right">{it.quantity} {it.unit}</td>
-                          <td className="py-2 px-3 text-right">{formatMoney(it.unitPriceHt)}</td>
+                          <td className="py-2 px-3 text-right">
+                            {doc.currency === 'DZD'
+                              ? formatMoney(it.unitPriceHt)
+                              : `${Number(it.unitPriceHt).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${doc.currency}`}
+                          </td>
                           <td className="py-2 px-3 text-right">{it.tvaPercent}%</td>
-                          <td className="py-2 px-3 text-right font-semibold">{formatMoney(centimesToDzd(it.totalHtCentimes))}</td>
+                          <td className="py-2 px-3 text-right font-semibold">{formatDocAmount(it.totalHtCentimes)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+
+                {doc.notesTop && (
+                  <div className="border border-black/15 rounded-xl px-4 py-2.5 bg-stone-50/50 text-black/80">
+                    <strong>{isAr ? 'الموضوع / ملاحظات:' : isEn ? 'Subject / Notes:' : 'Objet / Notes :'}</strong>{' '}
+                    <span>{doc.notesTop}</span>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap justify-between items-start gap-4">
                   <div className="flex-1 min-w-[240px] space-y-2 border border-black/15 rounded-xl p-4 bg-stone-50/70">
@@ -260,8 +286,8 @@ export const UnifiedInvoicePrintModal: React.FC<UnifiedInvoicePrintModalProps> =
                       <div className="pt-2 border-t border-black/10 tabular-nums space-y-0.5">
                         {doc.tvaBreakdown.map((b) => (
                           <div key={b.ratePercent} className="flex justify-between text-black/75">
-                            <span>Base TVA {b.ratePercent}% : {formatMoney(centimesToDzd(b.baseHtCentimes))}</span>
-                            <span>TVA : {formatMoney(centimesToDzd(b.tvaCentimes))}</span>
+                            <span>Base TVA {b.ratePercent}% : {formatDocAmount(b.baseHtCentimes)}</span>
+                            <span>TVA : {formatDocAmount(b.tvaCentimes)}</span>
                           </div>
                         ))}
                       </div>
@@ -271,30 +297,47 @@ export const UnifiedInvoicePrintModal: React.FC<UnifiedInvoicePrintModalProps> =
                   <div className="w-72 border border-black/40 rounded-xl overflow-hidden tabular-nums">
                     <div className="flex justify-between px-3 py-2 border-b border-black/10">
                       <span>Total Net HT</span>
-                      <span className="font-semibold">{formatMoney(centimesToDzd(doc.totalHtFinalCentimes))}</span>
+                      <span className="font-semibold">{formatDocAmount(doc.totalHtFinalCentimes)}</span>
                     </div>
                     <div className="flex justify-between px-3 py-2 border-b border-black/10">
                       <span>Total TVA</span>
-                      <span className="font-semibold">{formatMoney(centimesToDzd(doc.totalTvaCentimes))}</span>
+                      <span className="font-semibold">{formatDocAmount(doc.totalTvaCentimes)}</span>
                     </div>
                     {doc.timbreFiscalCentimes > 0 && (
                       <div className="flex justify-between px-3 py-2 border-b border-black/10">
                         <span>Timbre fiscal</span>
-                        <span className="font-semibold">{formatMoney(centimesToDzd(doc.timbreFiscalCentimes))}</span>
+                        <span className="font-semibold">{formatDocAmount(doc.timbreFiscalCentimes)}</span>
                       </div>
                     )}
                     {doc.guaranteeRetentionCentimes > 0 && (
                       <div className="flex justify-between px-3 py-2 border-b border-black/10">
                         <span>Retenue ({doc.guaranteeRetentionPercent}%)</span>
-                        <span className="font-semibold">-{formatMoney(centimesToDzd(doc.guaranteeRetentionCentimes))}</span>
+                        <span className="font-semibold">-{formatDocAmount(doc.guaranteeRetentionCentimes)}</span>
                       </div>
                     )}
                     <div className="flex justify-between px-3 py-2.5 bg-stone-900 text-white font-semibold t-label">
                       <span>Net à Payer</span>
-                      <span>{formatMoney(centimesToDzd(doc.netToPayCentimes))}</span>
+                      <span>{formatDocAmount(doc.netToPayCentimes)}</span>
                     </div>
+                    {doc.currency !== 'DZD' && (
+                      <div className="flex justify-between px-3 py-1.5 bg-stone-100 text-black/80 border-t border-black/15">
+                        <span>DZD (x{doc.fxRate})</span>
+                        <span className="font-semibold">{formatMoney(centimesToDzd(dzdCounterValueCentimes))}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {doc.includeStampSignature && (
+                  <div className="flex justify-end pt-2">
+                    <div className="w-60 h-24 border border-dashed border-black/30 rounded-xl p-3 flex flex-col justify-between text-center text-black/65">
+                      <span className="font-semibold text-black/80">
+                        {isAr ? 'الختم والتوقيع' : isEn ? 'Stamp & Signature' : 'Cachet & Signature'}
+                      </span>
+                      <span className="text-[11px]">{hdr?.companyName || '—'}</span>
+                    </div>
+                  </div>
+                )}
 
                 {hdr?.footerNote && (
                   <p className="text-center text-black/60 pt-2 border-t border-black/10">{hdr.footerNote}</p>

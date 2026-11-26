@@ -13,6 +13,7 @@ import {
   selectCurrentB2bClientsFromState,
   selectCurrentBranchFromState,
   selectCurrentUnifiedPaymentsFromState,
+  selectCurrentScfPostingFailuresFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
@@ -24,6 +25,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
 import { UnifiedPaymentsLedgerPanel } from '../../common/invoicing/UnifiedPaymentsLedgerPanel';
+import { ScfAccountingWorkspace } from '../../common/accounting/ScfAccountingWorkspace';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -63,12 +65,13 @@ export const TradingFinanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { commercialDocs, b2bClients, b2bSuppliers, unifiedPayments, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+  const { commercialDocs, b2bClients, b2bSuppliers, unifiedPayments, scfPostingFailures, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
     (s) => ({
       commercialDocs: selectCurrentCommercialDocsFromState(s),
       b2bClients: selectCurrentB2bClientsFromState(s),
       b2bSuppliers: s.b2bSuppliers || [],
       unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
+      scfPostingFailures: selectCurrentScfPostingFailuresFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -79,6 +82,11 @@ export const TradingFinanceView: React.FC = () => {
     shallowEqualObjects
   );
   const { updateCommercialDoc, updateB2bClient, retryCloudSync } = useAtriumActions();
+  const [financeMode, setFinanceMode] = useState<'receivables' | 'scf'>('receivables');
+  const pendingScfFailuresCount = useMemo(
+    () => scfPostingFailures.filter((f) => f.status === 'pending').length,
+    [scfPostingFailures]
+  );
 
   const [settlementDoc, setSettlementDoc] = useState<CommercialDocument | null>(null);
   const [unifiedPaymentOpen, setUnifiedPaymentOpen] = useState(false);
@@ -464,6 +472,43 @@ export const TradingFinanceView: React.FC = () => {
         }}
       />
 
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          data-testid="trading-finance-receivables-tab"
+          onClick={() => setFinanceMode('receivables')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold transition-colors cursor-pointer ${
+            financeMode === 'receivables'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          {isAr ? 'الذمم والتحصيلات B2B' : isEn ? 'Receivables & Cash' : 'Créances & Règlements B2B'}
+        </button>
+        <button
+          type="button"
+          data-testid="trading-finance-scf-tab"
+          onClick={() => setFinanceMode('scf')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+            financeMode === 'scf'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          <span>{isAr ? 'المحاسبة العامة SCF (07-11)' : isEn ? 'SCF Accounting (Loi 07-11)' : 'Comptabilité SCF (Loi 07-11)'}</span>
+          {pendingScfFailuresCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded bg-amber-500 text-white text-[11px] tabular-nums">
+              {pendingScfFailuresCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {financeMode === 'scf' ? (
+        <ScfAccountingWorkspace sourceVerticalFilter="trading_commercial" />
+      ) : (
+        <>
+
       <ScreenKpiBanner
         heading={isAr ? 'مؤشرات التحصيل المالي' : isEn ? 'Receivables & Cash Metrics' : 'Indicateurs Trésorerie B2B'}
         language={language}
@@ -738,6 +783,8 @@ export const TradingFinanceView: React.FC = () => {
 
       {unifiedPayments.length > 0 && (
         <UnifiedPaymentsLedgerPanel payments={unifiedPayments} />
+      )}
+        </>
       )}
 
       <KineticFilterModal
