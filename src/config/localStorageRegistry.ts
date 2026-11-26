@@ -130,6 +130,12 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
     notes: 'Legacy payroll slips cache for Step 7a dry-run / 7b backfill',
   },
   {
+    key: 'atrium_payroll_migration_v1_done',
+    scope: 'legacy_migration',
+    preserveOnCacheReset: true,
+    notes: 'Step 7b one-time payroll/attendance DB backfill completion marker',
+  },
+  {
     key: 'atrium_logistics_tariffs_v1',
     scope: 'legacy_migration',
     preserveOnCacheReset: false,

@@ -135,6 +135,9 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   staff_attendance_logs: 40,
   staff_salary_advances: 40,
   staff_payroll_slips: 46,
+  unified_documents: 35,
+  unified_payments: 41,
+  unified_payment_allocations: 42,
   immutable_audit_logs: 50,
 };
 
@@ -468,6 +471,16 @@ function getKindPriority(kind: OfflineMutationKind): number {
   }
 }
 
+function getItemReplayPriority(item: OfflineMutationItem): number {
+  if (item.kind === 'rpc') {
+    if (item.fn === 'issue_unified_document') return 356;
+    if (item.fn === 'record_unified_payment_with_allocations') return 430;
+    if (item.fn === 'transition_cheque_traite_status') return 440;
+    if (item.fn === 'approve_payroll_run') return 480;
+  }
+  return (item.table ? TABLE_REPLAY_PRIORITY[item.table] ?? 35 : 48) * 10 + getKindPriority(item.kind);
+}
+
 export function sortQueueForReplay(queue: OfflineMutationItem[]): OfflineMutationItem[] {
   const byId = new Map(queue.map((q) => [q.id, q]));
   const getDepth = (item: OfflineMutationItem, seen = new Set<string>()): number => {
@@ -481,8 +494,8 @@ export function sortQueueForReplay(queue: OfflineMutationItem[]): OfflineMutatio
     const depthDiff = getDepth(a) - getDepth(b);
     if (depthDiff !== 0) return depthDiff;
 
-    const prioA = (a.table ? TABLE_REPLAY_PRIORITY[a.table] ?? 35 : 48) * 10 + getKindPriority(a.kind);
-    const prioB = (b.table ? TABLE_REPLAY_PRIORITY[b.table] ?? 35 : 48) * 10 + getKindPriority(b.kind);
+    const prioA = getItemReplayPriority(a);
+    const prioB = getItemReplayPriority(b);
     if (prioA !== prioB) return prioA - prioB;
 
     return a.enqueuedAt.localeCompare(b.enqueuedAt);

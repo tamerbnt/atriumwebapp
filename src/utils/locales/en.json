@@ -2814,5 +2814,14 @@
   "step5_confirm_coach_action": "Confirm Coach",
   "step5_duplicate_week_title": "Duplicate Schedule Week",
   "step5_re_inspection_locked_badge": "Validated & Locked",
-  "step5_mfg_scrap_ncr_title": "Record Scrap & NCR"
+  "step5_mfg_scrap_ncr_title": "Record Scrap & NCR",
+  "phase2_unified_invoicing_title": "Unified Invoicing",
+  "phase2_unified_doc_new": "New Unified Document",
+  "phase2_unified_doc_issue": "Issue Official Document",
+  "phase2_unified_credit_note": "Issue Credit Note",
+  "phase2_unified_payment_record": "Record Payment",
+  "phase2_unified_payments_ledger": "Unified Payments & Instruments Ledger",
+  "phase2_instrument_deposit": "Deposit",
+  "phase2_instrument_clear": "Clear",
+  "phase2_instrument_bounce": "Bounce"
 }

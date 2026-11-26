@@ -14,16 +14,20 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentCommercialDocsFromState,
+  selectCurrentUnifiedDocumentsFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { CommercialDocument, CommercialDocType } from '../../../types';
+import { CommercialDocument, CommercialDocType, UnifiedDocument } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
 import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
+import { UnifiedInvoiceComposerModal, type UnifiedInvoiceComposerPrefill } from '../../common/invoicing/UnifiedInvoiceComposerModal';
+import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -65,9 +69,10 @@ export const TradingSalesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { commercialDocs, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { commercialDocs, unifiedDocuments, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       commercialDocs: selectCurrentCommercialDocsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -77,7 +82,13 @@ export const TradingSalesView: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { deleteCommercialDoc, convertCommercialDoc, retryCloudSync } = useAtriumActions();
+  const {
+    deleteCommercialDoc,
+    convertCommercialDoc,
+    retryCloudSync,
+    issueUnifiedDocument,
+    createCreditNoteForDocument,
+  } = useAtriumActions();
 
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedDocIds, setPinnedDocIds] = useState<Set<string>>(() => new Set<string>());
@@ -94,6 +105,10 @@ export const TradingSalesView: React.FC = () => {
   const [composerType, setComposerType] = useState<CommercialDocType>('devis');
   const [editingDoc, setEditingDoc] = useState<CommercialDocument | null>(null);
   const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
+  const [unifiedComposerOpen, setUnifiedComposerOpen] = useState(false);
+  const [unifiedEditingDraft, setUnifiedEditingDraft] = useState<UnifiedDocument | null>(null);
+  const [unifiedPrefill, setUnifiedPrefill] = useState<UnifiedInvoiceComposerPrefill | null>(null);
+  const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
 
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('overview');
@@ -540,7 +555,19 @@ export const TradingSalesView: React.FC = () => {
           onClick: () => handleCreateNew('facture'),
         }}
         secondaryActions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              onClick={() => {
+                setUnifiedEditingDraft(null);
+                setUnifiedPrefill({ docType: 'facture', sourceVertical: 'trading_commercial' });
+                setUnifiedComposerOpen(true);
+              }}
+              icon={<FileText size={14} />}
+            >
+              <span>{isAr ? 'فاتورة موحدة' : isEn ? 'Unified Document' : 'Pièce Unifiée'}</span>
+            </AtriumButton>
             <AtriumButton
               variant="secondary"
               size="md"
@@ -966,6 +993,67 @@ export const TradingSalesView: React.FC = () => {
         }}
       />
 
+      {unifiedDocuments.length > 0 && (
+        <ScreenPod>
+          <div className="flex items-center justify-between mb-3">
+            <span className="t-label font-semibold text-black dark:text-white">
+              {isAr ? 'سجل الفوترة الموحد' : isEn ? 'Unified Invoicing Register' : 'Registre Facturation Unifiée'}
+            </span>
+            <span className="t-cap tabular-nums text-black/60 dark:text-white/60">
+              {unifiedDocuments.length}
+            </span>
+          </div>
+          <div className="divide-y divide-[var(--atr-divider)]">
+            {unifiedDocuments.slice(0, 10).map((ud) => (
+              <div key={ud.id} className="py-2.5 flex flex-wrap items-center justify-between gap-3 t-cap">
+                <div className="min-w-0">
+                  <div className="font-semibold text-black dark:text-white flex items-center gap-2">
+                    <span className="tabular-nums">{ud.docNumber || ud.draftNumber}</span>
+                    <span>·</span>
+                    <span className="truncate">{ud.partyName}</span>
+                    <span className="text-black/55 dark:text-white/55 uppercase">{ud.docType}</span>
+                  </div>
+                  <div className="text-black/60 dark:text-white/60 tabular-nums">
+                    {ud.docDate} · {ud.status} · {ud.currency}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="tabular-nums font-semibold t-label">
+                    {formatMoney(centimesToDzd(ud.totalTtcCentimes))}
+                  </span>
+                  {ud.status === 'Draft' && (
+                    <AtriumButton
+                      variant="primary"
+                      size="xs"
+                      onClick={() => issueUnifiedDocument(ud.id)}
+                    >
+                      {isAr ? 'إصدار' : isEn ? 'Issue' : 'Émettre'}
+                    </AtriumButton>
+                  )}
+                  {ud.status === 'Issued' && ud.docType === 'facture' && (
+                    <AtriumButton
+                      variant="secondary"
+                      size="xs"
+                      onClick={() => createCreditNoteForDocument(ud.id, 'Retour / Avoir commercial', true)}
+                    >
+                      {isAr ? 'إشعار دائن' : isEn ? 'Credit Note' : 'Avoir'}
+                    </AtriumButton>
+                  )}
+                  <AtriumButton
+                    variant="ghost"
+                    size="xs"
+                    icon={<Printer size={13} />}
+                    onClick={() => setPrintUnifiedDoc(ud)}
+                  >
+                    {isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
+                  </AtriumButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScreenPod>
+      )}
+
       <CommercialDocComposerModal
         isOpen={composerOpen}
         onClose={() => setComposerOpen(false)}
@@ -973,6 +1061,18 @@ export const TradingSalesView: React.FC = () => {
         editingDoc={editingDoc}
       />
       <CommercialDocPrintModal isOpen={!!printDoc} onClose={() => setPrintDoc(null)} document={printDoc} />
+      <UnifiedInvoiceComposerModal
+        isOpen={unifiedComposerOpen}
+        onClose={() => setUnifiedComposerOpen(false)}
+        editingDraft={unifiedEditingDraft}
+        prefill={unifiedPrefill}
+        onSaved={(doc) => setPrintUnifiedDoc(doc)}
+      />
+      <UnifiedInvoicePrintModal
+        isOpen={Boolean(printUnifiedDoc)}
+        onClose={() => setPrintUnifiedDoc(null)}
+        document={printUnifiedDoc}
+      />
     </div>
   );
 };

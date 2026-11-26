@@ -725,3 +725,262 @@ export function exportPayrollDryRunCsv(report: PayrollDryRunReport): string {
 
   return rows.join('\n');
 }
+
+export const PAYROLL_MIGRATION_DONE_KEY = 'atrium_payroll_migration_v1_done' as const;
+
+export interface PayrollMigrationCompletionMarker {
+  completedAt: string;
+  businessId: string;
+  branchId: string;
+  attendanceInserted: number;
+  advancesInserted: number;
+  runsInserted: number;
+  slipsInserted: number;
+  skippedCollisions: Array<{ runId: string; reason: string }>;
+  retainedBackupKeys: readonly string[];
+}
+
+export type AnyStorageReader = (key: string) => string | null;
+export type StorageWriter = (key: string, value: string) => void;
+
+function defaultAnyStorageReader(key: string): string | null {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function defaultStorageWriter(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+export function readPayrollMigrationCompletion(
+  reader: AnyStorageReader = defaultAnyStorageReader
+): PayrollMigrationCompletionMarker | null {
+  const raw = reader(PAYROLL_MIGRATION_DONE_KEY);
+  const parsed = safeParseJson<PayrollMigrationCompletionMarker>(raw);
+  return parsed && typeof parsed.completedAt === 'string' ? parsed : null;
+}
+
+export function isPayrollMigrationCompleted(
+  reader: AnyStorageReader = defaultAnyStorageReader
+): boolean {
+  return readPayrollMigrationCompletion(reader) !== null;
+}
+
+export function resolveNextAdjustmentSeq(
+  runs: StaffPayrollRunRecord[],
+  businessId: string | undefined,
+  branchId: string | undefined,
+  periodYear: number,
+  periodMonth: number
+): number {
+  let maxSeq = 0;
+  for (const r of runs) {
+    const bizMatch = !businessId || !r.businessId || r.businessId === businessId;
+    const brMatch = !branchId || !r.branchId || r.branchId === branchId;
+    if (bizMatch && brMatch && r.periodYear === periodYear && r.periodMonth === periodMonth) {
+      const seq = Number(r.adjustmentSeq ?? 0);
+      if (seq > maxSeq) maxSeq = seq;
+    }
+  }
+  return maxSeq + 1;
+}
+
+export interface LegacyPayrollBackfillPayload {
+  report: PayrollDryRunReport;
+  attendanceLogs: StaffAttendanceLogRecord[];
+  salaryAdvances: StaffSalaryAdvance[];
+  payrollRuns: StaffPayrollRunRecord[];
+  payrollSlips: StaffPayrollSlipRecord[];
+}
+
+export function collectLegacyPayrollBackfillPayload(
+  remoteState: PayrollDryRunRemoteState,
+  storageReader: StorageReader = defaultStorageReader
+): LegacyPayrollBackfillPayload {
+  const report = analyzePayrollMigrationDryRun(remoteState, storageReader);
+  const { businessId, branchId } = remoteState;
+
+  const attBundle = collectScopedLegacyRecords<StaffAttendanceLogRecord>(
+    'atrium_staff_attendance_logs_v1',
+    'staffAttendanceLogs',
+    storageReader,
+    businessId,
+    branchId
+  );
+  const advBundle = collectScopedLegacyRecords<StaffSalaryAdvance>(
+    'atrium_staff_salary_advances_v1',
+    'staffSalaryAdvances',
+    storageReader,
+    businessId,
+    branchId
+  );
+  const runBundle = collectScopedLegacyRecords<StaffPayrollRunRecord>(
+    'atrium_staff_payroll_runs_v1',
+    'staffPayrollRuns',
+    storageReader,
+    businessId,
+    branchId
+  );
+  const slipBundle = collectScopedLegacyRecords<StaffPayrollSlipRecord>(
+    'atrium_staff_payroll_slips_v1',
+    'staffPayrollSlips',
+    storageReader,
+    businessId,
+    branchId
+  );
+
+  const remoteRunIds = new Set(remoteState.payrollRuns.map((r) => deterministicLegacyUuid(r.id)));
+  const collidingLegacyRunIds = new Set(
+    report.periodCollisions.flatMap((c) =>
+      c.sources.filter((s) => s.source === 'legacy_cache').map((s) => s.runId)
+    )
+  );
+
+  const attendanceLogs: StaffAttendanceLogRecord[] = attBundle.records.map(({ item }) => ({
+    ...item,
+    id: deterministicLegacyUuid(item.id),
+    businessId: item.businessId || businessId,
+    branchId: item.branchId || branchId,
+    staffId: deterministicLegacyUuid(item.staffId),
+    source: item.source || item.method || 'kiosk',
+  }));
+
+  const salaryAdvances: StaffSalaryAdvance[] = advBundle.records.map(({ item }) => ({
+    ...item,
+    id: deterministicLegacyUuid(item.id),
+    businessId: item.businessId || businessId,
+    branchId: item.branchId || branchId,
+    staffId: deterministicLegacyUuid(item.staffId),
+  }));
+
+  const payrollRuns: StaffPayrollRunRecord[] = [];
+  for (const { item } of runBundle.records) {
+    const mappedId = deterministicLegacyUuid(item.id);
+    // Skip runs that collide with a different existing remote run for the same period tuple
+    if (collidingLegacyRunIds.has(item.id) && !remoteRunIds.has(mappedId)) {
+      continue;
+    }
+    payrollRuns.push({
+      ...item,
+      id: mappedId,
+      businessId: item.businessId || businessId,
+      branchId: item.branchId || branchId,
+      rateSetId: null,
+      rateBasis: 'legacy',
+      runType: item.runType || 'regular',
+      adjustmentSeq: item.adjustmentSeq ?? 0,
+    });
+  }
+
+  const eligibleRunIdSet = new Set([
+    ...remoteRunIds,
+    ...payrollRuns.map((r) => r.id),
+  ]);
+
+  const payrollSlips: StaffPayrollSlipRecord[] = slipBundle.records
+    .map(({ item }) => ({
+      ...item,
+      id: deterministicLegacyUuid(item.id),
+      payrollRunId: deterministicLegacyUuid(item.payrollRunId),
+      staffId: deterministicLegacyUuid(item.staffId),
+      rateSetId: null,
+      rateBasis: 'legacy' as const,
+    }))
+    .filter((slip) => eligibleRunIdSet.has(slip.payrollRunId));
+
+  return {
+    report,
+    attendanceLogs,
+    salaryAdvances,
+    payrollRuns,
+    payrollSlips,
+  };
+}
+
+export interface ExecutePayrollBackfillResult {
+  alreadyCompleted: boolean;
+  marker: PayrollMigrationCompletionMarker;
+  errors: string[];
+}
+
+/**
+ * Step 7b Insert-Only One-Time Backfill Executor:
+ * - Preserves all LEGACY_PAYROLL_STORAGE_KEYS as read-only backup for 1 release.
+ * - Uses ON CONFLICT (id) DO NOTHING / ignores period duplicates without overwriting DB rows.
+ * - Marks `atrium_payroll_migration_v1_done` once finished cleanly.
+ */
+export async function executePayrollMigrationBackfill(params: {
+  remoteState: PayrollDryRunRemoteState;
+  persistInsertOnly: (payload: LegacyPayrollBackfillPayload) => Promise<{
+    attendanceInserted: number;
+    advancesInserted: number;
+    runsInserted: number;
+    slipsInserted: number;
+    skippedCollisions: Array<{ runId: string; reason: string }>;
+    errors: string[];
+  }>;
+  storageReader?: AnyStorageReader;
+  storageWriter?: StorageWriter;
+  force?: boolean;
+}): Promise<ExecutePayrollBackfillResult> {
+  const reader = params.storageReader ?? defaultAnyStorageReader;
+  const writer = params.storageWriter ?? defaultStorageWriter;
+
+  const existing = readPayrollMigrationCompletion(reader);
+  if (existing && !params.force) {
+    return {
+      alreadyCompleted: true,
+      marker: existing,
+      errors: [],
+    };
+  }
+
+  const payload = collectLegacyPayrollBackfillPayload(
+    params.remoteState,
+    reader as StorageReader
+  );
+
+  const persistRes = await params.persistInsertOnly(payload);
+
+  const preSkipped = payload.report.periodCollisions.flatMap((col) =>
+    col.sources
+      .filter((s) => s.source === 'legacy_cache')
+      .map((s) => ({
+        runId: s.runId,
+        reason: `Dry-run period collision (${col.periodMonth}/${col.periodYear} ${col.runType}#${col.adjustmentSeq})`,
+      }))
+  );
+
+  const marker: PayrollMigrationCompletionMarker = {
+    completedAt: new Date().toISOString(),
+    businessId: params.remoteState.businessId,
+    branchId: params.remoteState.branchId,
+    attendanceInserted: persistRes.attendanceInserted,
+    advancesInserted: persistRes.advancesInserted,
+    runsInserted: persistRes.runsInserted,
+    slipsInserted: persistRes.slipsInserted,
+    skippedCollisions: [...preSkipped, ...persistRes.skippedCollisions],
+    retainedBackupKeys: [...LEGACY_PAYROLL_STORAGE_KEYS],
+  };
+
+  if (persistRes.errors.length === 0) {
+    writer(PAYROLL_MIGRATION_DONE_KEY, JSON.stringify(marker));
+  }
+
+  return {
+    alreadyCompleted: false,
+    marker,
+    errors: persistRes.errors,
+  };
+}
+

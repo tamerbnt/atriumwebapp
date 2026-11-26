@@ -16,9 +16,11 @@ import {
   Trash2,
   Plus,
   ShieldCheck,
+  Printer,
 } from 'lucide-react';
-import { Member } from '../../../types/index';
+import { Member, UnifiedDocument } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
 import { Sp, TUNES, subscribeFrame, wake } from './motion/adherentsMotion';
 import { clamp, computePanelMetrics } from './motion/adherentsMath';
 import {
@@ -28,6 +30,7 @@ import {
   selectCurrentMemberCheckInsFromState,
   selectCurrentSalesFromState,
   selectCurrentPlansFromState,
+  selectCurrentUnifiedDocumentsFromState,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import {
@@ -40,6 +43,9 @@ import { buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic/bran
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Button } from '@/atrium/core';
+import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
+import { UnifiedInvoiceComposerModal } from '../../common/invoicing/UnifiedInvoiceComposerModal';
+import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
@@ -79,6 +85,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
   const [notesText, setNotesText] = useState(() => member?.notes || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [composerModalOpen, setComposerModalOpen] = useState(false);
+  const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
   const { openShopForMember } = useAtriumActions();
 
   const branchState = useAtriumSelector(
@@ -89,6 +98,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       memberCheckIns: selectCurrentMemberCheckInsFromState(s),
       sales: selectCurrentSalesFromState(s),
       plans: selectCurrentPlansFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
     }),
     shallowEqualObjects
   );
@@ -139,6 +149,16 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         (nameLower.length > 0 && sale.memberName?.trim().toLowerCase() === nameLower)
     );
   }, [activeMember, branchState.sales]);
+
+  const memberUnifiedDocs = useMemo(() => {
+    if (!activeMember) return [];
+    const nameLower = (activeMember.fullName || '').trim().toLowerCase();
+    return branchState.unifiedDocuments.filter(
+      (doc) =>
+        doc.partyId === activeMember.id ||
+        (nameLower.length > 0 && doc.partyName?.trim().toLowerCase() === nameLower)
+    );
+  }, [activeMember, branchState.unifiedDocuments]);
 
   // DOM refs for direct rAF style writes (zero per-frame React state updates)
   const scrimRef = useRef<HTMLDivElement | null>(null);
@@ -963,10 +983,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           type="button"
                           tone="accent"
                           size={40}
-                          className="mt-2 w-full opacity-55 cursor-not-allowed"
-                          disabled
-                          title={t('feature_not_available_phase2', esLocale)}
-                          onClick={() => {}}
+                          className="mt-2 w-full"
+                          onClick={() => setPaymentModalOpen(true)}
                         >
                           {L('Collect balance', 'Encaisser le solde', 'تحصيل الرصيد')}
                         </Button>
@@ -977,21 +995,62 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="!m-0">{L('Invoices', 'Factures', 'الفواتير')}</h3>
-                      {memberInvoiceHistory.length > 0 && (
-                        <Button
-                          type="button"
-                          tone="accent"
-                          size={32}
-                          leading={<Plus className="w-3.5 h-3.5" />}
-                          disabled
-                          className="opacity-55 cursor-not-allowed"
-                          title={t('feature_not_available_phase2', esLocale)}
-                          onClick={() => {}}
-                        >
-                          {L('New', 'Nouvelle', 'جديدة')}
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        tone="accent"
+                        size={32}
+                        leading={<Plus className="w-3.5 h-3.5" />}
+                        onClick={() => setComposerModalOpen(true)}
+                      >
+                        {L('New', 'Nouvelle', 'جديدة')}
+                      </Button>
                     </div>
+                    {memberUnifiedDocs.length > 0 && (
+                      <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0 mb-2">
+                        {memberUnifiedDocs.slice(0, 8).map((doc) => {
+                          const totalDzd = centimesToDzd(doc.totalTtcCentimes);
+                          const dueDzd = centimesToDzd(doc.balanceDueCentimes);
+                          const paid = dueDzd <= 0 && doc.status !== 'Voided' && doc.status !== 'Canceled';
+                          return (
+                            <div
+                              key={doc.id}
+                              className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-divider)] t-body gap-2"
+                            >
+                              <span className="min-w-0">
+                                <span className="font-medium block truncate">
+                                  {doc.docNumber || doc.draftNumber} · {doc.docType.toUpperCase()}
+                                </span>
+                                <small className="tabular-nums t-cap text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">
+                                  {doc.docDate}
+                                </small>
+                              </span>
+                              <span className="flex items-center gap-2 shrink-0">
+                                <b className="tabular-nums t-cap">
+                                  {Math.round(totalDzd).toLocaleString('en-US')} DZD
+                                </b>
+                                <span
+                                  className={`px-2 py-[2px] rounded-full t-small font-medium ${
+                                    paid
+                                      ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
+                                      : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+                                  }`}
+                                >
+                                  {paid ? L('Paid', 'Payée', 'مدفوعة') : L('Due', 'À régler', 'مستحقة')}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setPrintUnifiedDoc(doc)}
+                                  className="p-1.5 rounded-lg text-black/60 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                  aria-label={L('Print', 'Imprimer', 'طباعة')}
+                                >
+                                  <Printer className="w-3.5 h-3.5" />
+                                </button>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {memberInvoiceHistory.length > 0 ? (
                       <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                         {memberInvoiceHistory.slice(0, 8).map((inv) => {
@@ -1029,19 +1088,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           );
                         })}
                       </div>
-                    ) : (
+                    ) : memberUnifiedDocs.length === 0 ? (
                       <KineticEmptyStateMotion motionKey={`member-billing-empty-${activeMember.id}-${esLocale}`}>
                         <EmptyState
                           {...resolveCompactInvoicesEmptyState({
                             onAction: () => {
-                              onClose();
-                              openShopForMember(activeMember.id);
+                              setComposerModalOpen(true);
                             },
                             locale: esLocale,
                           })}
                         />
                       </KineticEmptyStateMotion>
-                    )}
+                    ) : null}
                   </section>
                 </>
               )}
@@ -1106,6 +1164,51 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
           </>
         )}
       </aside>
+      {activeMember && (
+        <>
+          <UnifiedPaymentModal
+            isOpen={paymentModalOpen}
+            onClose={() => setPaymentModalOpen(false)}
+            sourceVertical="membership_session"
+            partyId={activeMember.id}
+            partyName={activeMember.fullName}
+            defaultAmountDzd={Number(activeMember.balance || 0)}
+            onRecorded={() => {
+              showToast(L('Payment recorded', 'Règlement enregistré', 'تم تسجيل الدفعة'));
+            }}
+          />
+          <UnifiedInvoiceComposerModal
+            isOpen={composerModalOpen}
+            onClose={() => setComposerModalOpen(false)}
+            prefill={{
+              docType: 'facture',
+              sourceVertical: 'membership_session',
+              partyId: activeMember.id,
+              partyName: activeMember.fullName,
+              partyPhone: activeMember.phone,
+              items: [
+                {
+                  description: planName !== '—' ? planName : L('Membership fee', 'Cotisation adhérent', 'اشتراك العضوية'),
+                  isService: true,
+                  quantity: 1,
+                  unit: 'mois',
+                  unitPriceHt: Number(activeMember.membershipFee || activeMember.balance || 4500),
+                  tvaPercent: 19,
+                  discountPercent: 0,
+                },
+              ],
+            }}
+            onSaved={(doc) => {
+              setPrintUnifiedDoc(doc);
+            }}
+          />
+          <UnifiedInvoicePrintModal
+            isOpen={Boolean(printUnifiedDoc)}
+            onClose={() => setPrintUnifiedDoc(null)}
+            document={printUnifiedDoc}
+          />
+        </>
+      )}
     </>,
     document.body
   );

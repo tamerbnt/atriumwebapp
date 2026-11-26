@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
  * Phase 1 CI Guards (Section 12.5)
- * Default (Steps 1-7): Ratchet mode against scripts/ci/phase1-guards-baseline.json
- *   - Fails (exit 1) if ANY metric regresses above baseline.
- * Strict (--strict at Step 8): Fails (exit 1) if totalViolations > 0.
+ * Default (Step 8 Strict): Fails (exit 1) if totalViolations > 0.
+ * Ratchet (--ratchet legacy mode): Fails (exit 1) only if ANY metric regresses above baseline.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 
-const STRICT = process.argv.includes('--strict');
+const STRICT = !process.argv.includes('--ratchet');
 const SRC_ROOT = path.resolve(process.cwd(), 'src');
 const BASELINE_PATH = path.resolve(process.cwd(), 'scripts/ci/phase1-guards-baseline.json');
 

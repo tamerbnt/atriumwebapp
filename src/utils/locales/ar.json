@@ -2814,5 +2814,14 @@
   "step5_confirm_coach_action": "تأكيد المدرب",
   "step5_duplicate_week_title": "تكرار جدول الأسبوع",
   "step5_re_inspection_locked_badge": "مصادق ومقفل",
-  "step5_mfg_scrap_ncr_title": "تسجيل إتلاف وتقرير عدم مطابقة"
+  "step5_mfg_scrap_ncr_title": "تسجيل إتلاف وتقرير عدم مطابقة",
+  "phase2_unified_invoicing_title": "الفوترة الموحدة",
+  "phase2_unified_doc_new": "مستند موحد جديد",
+  "phase2_unified_doc_issue": "إصدار مستند رسمي",
+  "phase2_unified_credit_note": "إصدار إشعار دائن",
+  "phase2_unified_payment_record": "تسجيل دفعة",
+  "phase2_unified_payments_ledger": "سجل المدفوعات والشيكات الموحد",
+  "phase2_instrument_deposit": "إيداع",
+  "phase2_instrument_clear": "تحصيل",
+  "phase2_instrument_bounce": "مرفوض"
 }

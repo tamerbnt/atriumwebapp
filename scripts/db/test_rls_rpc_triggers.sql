@@ -432,7 +432,270 @@ BEGIN
     RAISE EXCEPTION 'Expected stock_quantity = 10 after undo refund';
   END IF;
 
+  -- 9. Verify Step 7b (append-only attendance, payroll period unique + adjustment seq, approve_payroll_run RPC, immutability, statutory verify-only lock)
+  v_staff_a := 'dddddddd-0000-4000-8000-000000000001';
+
+  RESET ROLE;
+  INSERT INTO public.staff (
+    id, account_id, business_id, branch_id, full_name, role, salary, is_active
+  ) VALUES (
+    v_staff_a, v_user_a, v_biz_a, v_br_a, 'Staff Step7b', 'Coach', 80000, true
+  )
+  ON CONFLICT (id) DO NOTHING;
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+
+  -- 9.1 Append-only staff_attendance_logs blocks UPDATE & DELETE
+  INSERT INTO public.staff_attendance_logs (
+    id, account_id, business_id, branch_id, staff_id, staff_name, staff_role, log_date, type, method, source
+  ) VALUES (
+    v_chk_id, v_user_a, v_biz_a, v_br_a, v_staff_a, 'Staff Step7b', 'Coach', CURRENT_DATE, 'in', 'manual', 'manual'
+  );
+
+  BEGIN
+    UPDATE public.staff_attendance_logs SET type = 'out' WHERE id = v_chk_id;
+    RAISE EXCEPTION 'staff_attendance_logs unexpectedly allowed UPDATE';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  BEGIN
+    DELETE FROM public.staff_attendance_logs WHERE id = v_chk_id;
+    RAISE EXCEPTION 'staff_attendance_logs unexpectedly allowed DELETE';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- 9.2 Salary advance cannot be marked deducted directly outside approve_payroll_run()
+  INSERT INTO public.staff_salary_advances (
+    id, account_id, business_id, branch_id, staff_id, staff_name, amount_dzd, payment_method, voucher_number, status
+  ) VALUES (
+    v_mv_id, v_user_a, v_biz_a, v_br_a, v_staff_a, 'Staff Step7b', 10000, 'cash', 'VCH-STEP7B-01', 'pending'
+  );
+
+  BEGIN
+    UPDATE public.staff_salary_advances SET status = 'deducted' WHERE id = v_mv_id;
+    RAISE EXCEPTION 'staff_salary_advances unexpectedly allowed direct client deducted update';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- 9.3 Payroll run unique period index + adjustment_seq check + statutory rate reference
+  SELECT * INTO v_rate FROM public.get_effective_statutory_rates('2026-06-01');
+
+  INSERT INTO public.staff_payroll_runs (
+    id, account_id, business_id, branch_id, category, period_month, period_year, title, status,
+    total_gross_cotisable, total_cnas_salarial, total_cnas_patronal, total_irg, total_net, slips_count,
+    rate_set_id, rate_basis, rate_snapshot, run_type, adjustment_seq
+  ) VALUES (
+    v_z_a, v_user_a, v_biz_a, v_br_a, 'membership_session', 11, 2026, 'Paie Novembre 2026', 'draft',
+    80000, 7200, 20800, 12000, 50800, 1,
+    v_rate.id, 'versioned', jsonb_build_object('versionCode', v_rate.version_code), 'regular', 0
+  );
+
+  -- Duplicate regular run in same period must fail partial unique index
+  BEGIN
+    INSERT INTO public.staff_payroll_runs (
+      account_id, business_id, branch_id, category, period_month, period_year, title, status,
+      run_type, adjustment_seq
+    ) VALUES (
+      v_user_a, v_biz_a, v_br_a, 'membership_session', 11, 2026, 'Duplicate Regular', 'draft',
+      'regular', 0
+    );
+    RAISE EXCEPTION 'Duplicate regular staff_payroll_runs unexpectedly allowed';
+  EXCEPTION WHEN unique_violation THEN
+    NULL;
+  END;
+
+  -- Regular run with adjustment_seq > 0 must fail check constraint
+  BEGIN
+    INSERT INTO public.staff_payroll_runs (
+      account_id, business_id, branch_id, category, period_month, period_year, title, status,
+      run_type, adjustment_seq
+    ) VALUES (
+      v_user_a, v_biz_a, v_br_a, 'membership_session', 12, 2026, 'Invalid Regular Seq', 'draft',
+      'regular', 1
+    );
+    RAISE EXCEPTION 'Regular run with adjustment_seq = 1 unexpectedly allowed';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+
+  INSERT INTO public.staff_payroll_slips (
+    id, account_id, business_id, branch_id, staff_id, payroll_run_id, matricule, staff_full_name, role,
+    period_month, period_year, period_label, base_salary, actual_base_salary,
+    salaire_brut_cotisable, cnas_salarial, cnas_patronal, salaire_brut_imposable, irg_tax,
+    acomptes_deduits, net_a_payer, payment_method, receipt_number,
+    rate_set_id, rate_basis, rate_snapshot
+  ) VALUES (
+    v_sale_a, v_user_a, v_biz_a, v_br_a, v_staff_a, v_z_a, 'MAT-7B-01', 'Staff Step7b', 'Coach',
+    11, 2026, 'Novembre 2026', 80000, 80000,
+    80000, 7200, 20800, 72800, 12000,
+    10000, 50800, 'cash', 'FP-2026-11-001',
+    v_rate.id, 'versioned', jsonb_build_object('versionCode', v_rate.version_code)
+  );
+
+  -- Cross-tenant approve_payroll_run call must fail
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  BEGIN
+    PERFORM public.approve_payroll_run(v_z_a, false, ARRAY[v_mv_id], NULL);
+    RAISE EXCEPTION 'Tenant B unexpectedly approved Tenant A payroll run';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Tenant A approves payroll run atomically (draft -> approved, pending -> deducted)
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  v_seq_1 := public.approve_payroll_run(v_z_a, false, ARRAY[v_mv_id], NULL);
+  IF COALESCE((v_seq_1->>'success')::boolean, false) IS NOT TRUE
+     OR v_seq_1->>'status' <> 'approved' THEN
+    RAISE EXCEPTION 'approve_payroll_run failed: %', v_seq_1;
+  END IF;
+
+  IF (SELECT status FROM public.staff_salary_advances WHERE id = v_mv_id) <> 'deducted' THEN
+    RAISE EXCEPTION 'Expected salary advance % to be deducted after approve_payroll_run', v_mv_id;
+  END IF;
+
+  -- Approved run blocks monetary mutation and soft delete
+  BEGIN
+    UPDATE public.staff_payroll_runs SET total_net = 999999 WHERE id = v_z_a;
+    RAISE EXCEPTION 'Approved payroll run unexpectedly allowed total_net edit';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  BEGIN
+    UPDATE public.staff_payroll_slips SET net_a_payer = 999999 WHERE id = v_sale_a;
+    RAISE EXCEPTION 'Approved payroll slip unexpectedly allowed net_a_payer edit';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Deducted advance cannot be deleted or reverted
+  BEGIN
+    UPDATE public.staff_salary_advances SET status = 'pending' WHERE id = v_mv_id;
+    RAISE EXCEPTION 'Deducted salary advance unexpectedly reverted to pending';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Verify statutory_rates verify-only lock now triggers because staff_payroll_runs references v_rate.id
+  PERFORM set_config('request.jwt.claim.sub', v_admin::text, true);
+  BEGIN
+    UPDATE public.statutory_rates SET cnas_salarial_rate = 0.12 WHERE id = v_rate.id;
+    RAISE EXCEPTION 'Referenced statutory_rates row unexpectedly allowed numeric edit';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  RESET ROLE;
+END $$;
+
+-- 10. Phase 2 (Sections 6.1 & 6.2): Unified Invoicing, Deferred Numbering,
+--     Issued Immutability, Payment Allocations & Cheque Bounce Reopening
+DO $$
+DECLARE
+  v_user_a   uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_user_b   uuid := 'bbbbbbbb-0000-4000-8000-000000000002';
+  v_biz_a    uuid := '11111111-0000-4000-8000-000000000001';
+  v_br_a     uuid := '33333333-0000-4000-8000-000000000001';
+  v_doc_id   uuid := '12121212-0000-4000-8000-000000000001';
+  v_pay_id   uuid := '34343434-0000-4000-8000-000000000001';
+  v_res      jsonb;
+  v_doc_row  public.unified_documents%ROWTYPE;
+  v_pay_row  public.unified_payments%ROWTYPE;
+BEGIN
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
+
+  INSERT INTO public.unified_documents (
+    id, account_id, business_id, branch_id, source_vertical, doc_type, draft_number,
+    fiscal_year, status, party_id, party_name, doc_date, payment_method, currency, fx_rate,
+    total_ht_raw_centimes, total_ht_final_centimes, total_tva_centimes, timbre_fiscal_centimes,
+    total_ttc_centimes, net_to_pay_centimes, paid_centimes, balance_due_centimes, items
+  ) VALUES (
+    v_doc_id, v_user_a, v_biz_a, v_br_a, 'trading_commercial', 'facture', 'DRAFT-2026-TEST1',
+    2026, 'Draft', 'cli_1', 'SARL Atlas', '2026-11-26', 'cheque', 'DZD', 1.0,
+    10000000, 10000000, 1900000, 0,
+    11900000, 11900000, 0, 11900000, '[{"id":"i1","description":"Article","quantity":1,"unitPriceHt":100000,"tvaPercent":19}]'::jsonb
+  );
+
+  -- Cross-tenant issue attempt must fail
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  BEGIN
+    PERFORM public.issue_unified_document(v_doc_id, 2026::smallint);
+    RAISE EXCEPTION 'Tenant B unexpectedly issued Tenant A unified document';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Tenant A issues draft -> deferred final gap-free number allocated
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  v_res := public.issue_unified_document(v_doc_id, 2026::smallint);
+  IF v_res->>'doc_number' <> 'FAC-2026-00001' OR v_res->>'status' <> 'Issued' THEN
+    RAISE EXCEPTION 'Unexpected issue_unified_document result: %', v_res;
+  END IF;
+
+  -- Issued document blocks line/total/number tampering & delete
+  BEGIN
+    UPDATE public.unified_documents SET net_to_pay_centimes = 100 WHERE id = v_doc_id;
+    RAISE EXCEPTION 'Issued unified_documents unexpectedly allowed financial mutation';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  BEGIN
+    DELETE FROM public.unified_documents WHERE id = v_doc_id;
+    RAISE EXCEPTION 'Issued unified_documents unexpectedly allowed DELETE';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- Record cheque payment with idempotency key
+  v_res := public.record_unified_payment_with_allocations(
+    v_pay_id, v_biz_a, v_br_a, 'trading_commercial', 'cli_1', 'SARL Atlas',
+    'cheque', 'inflow', 11900000, 'DZD', 1.0, '2026-11-26', 'idem-cheque-001',
+    jsonb_build_array(jsonb_build_object('document_id', v_doc_id, 'allocated_centimes', 11900000)),
+    NULL, 'CHQ-88412', 'BNA', '2026-12-10', 'Cheque test'
+  );
+  IF (v_res->>'idempotent')::boolean IS TRUE OR v_res->>'status' <> 'pending_clearance' THEN
+    RAISE EXCEPTION 'Unexpected initial cheque payment result: %', v_res;
+  END IF;
+
+  SELECT * INTO v_doc_row FROM public.unified_documents WHERE id = v_doc_id;
+  IF v_doc_row.status <> 'Paid' OR v_doc_row.balance_due_centimes <> 0 THEN
+    RAISE EXCEPTION 'Expected Paid document after allocation, got status=% bal=%', v_doc_row.status, v_doc_row.balance_due_centimes;
+  END IF;
+
+  -- Replay same idempotency_key must NOT double-pay
+  v_res := public.record_unified_payment_with_allocations(
+    gen_random_uuid(), v_biz_a, v_br_a, 'trading_commercial', 'cli_1', 'SARL Atlas',
+    'cheque', 'inflow', 11900000, 'DZD', 1.0, '2026-11-26', 'idem-cheque-001',
+    jsonb_build_array(jsonb_build_object('document_id', v_doc_id, 'allocated_centimes', 11900000)),
+    NULL, 'CHQ-88412', 'BNA', '2026-12-10', 'Cheque duplicate'
+  );
+  IF (v_res->>'idempotent')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected idempotent replay for duplicate key, got %', v_res;
+  END IF;
+
+  -- Transition cheque: received -> deposited -> bounced -> invoice balance reopens!
+  PERFORM public.transition_cheque_traite_status(v_pay_id, 'deposited', NULL);
+  v_res := public.transition_cheque_traite_status(v_pay_id, 'bounced', 'Provision insuffisante');
+  IF (v_res->>'reopened_documents_count')::int <> 1 THEN
+    RAISE EXCEPTION 'Expected 1 reopened document on cheque bounce, got %', v_res;
+  END IF;
+
+  SELECT * INTO v_doc_row FROM public.unified_documents WHERE id = v_doc_id;
+  SELECT * INTO v_pay_row FROM public.unified_payments WHERE id = v_pay_id;
+  IF v_doc_row.status <> 'Issued' OR v_doc_row.balance_due_centimes <> 11900000 OR v_pay_row.status <> 'bounced' THEN
+    RAISE EXCEPTION 'Expected invoice reopened after bounce (status=%, bal=%, payStatus=%)',
+      v_doc_row.status, v_doc_row.balance_due_centimes, v_pay_row.status;
+  END IF;
+
   RESET ROLE;
 END $$;
 
 ROLLBACK;
+

@@ -385,6 +385,104 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - **Live Browser Verification (`playwright-cli` on `http://localhost:3000`, `1440×900`)**: Verified workspace launch, `Schedule` session creation (`Morning Workout`), `Enroll Member in Session` dropdown (`Amira Cherif`), enrollment confirmation (`1 / 20`, `Roster` check-in update), and **`0` console errors / `0` console warnings**.
   - **`5.11` Orphans**: **Zero** files deleted (awaiting explicit approval).
 
+---
+
+## Step 6 — Section 1 Kiosk & POS Atomic Persistence (`1.1`–`1.6`)
+
+- **Database Schema & Rollback**: `supabase/migrations/202611260001_step6_section1_persistence.sql` + `supabase/rollbacks/202611260001_step6_section1_persistence.down.sql`.
+- **Shared Helpers**: `src/utils/step6Persistence.ts` + `src/utils/step6Persistence.test.ts`.
+- **Completed Items**:
+  1. **`1.1` Gym Check-In Unification & Walk-In Sequence**: Merged `addMemberCheckIn` into `checkInMember` in `src/services/store.ts`; enforced 5-minute duplicate check-in block (`evaluateMemberCheckIn`, `gym_record_check_in` RPC) with owner PIN override reason (`override_by_staff_id`, `override_reason`), remote-reversing undo, and sequential `walk_in_ticket` number allocation.
+  2. **`1.2` Education Attendance Source of Truth**: Server dedupe + partial unique index `uq_edu_attendance_session_student_active` on `edu_attendance (business_id, session_id, student_id) WHERE deleted_at IS NULL`, `change_history` audit trail (`appendEduAttendanceChange`), lock/unlock with reason, and elimination of `eduQuickAttendance` split state.
+  3. **`1.3` Salon Chair Stations Persistence**: Persisted `salon_chair_stations` with `started_at` ISO timestamp, `elapsedMinutes` calculation (`buildPersistedChairStation`, `computeElapsedMinutesFromIso`), and undo support.
+  4. **`1.4` POS Cash Drawer & Option B Z-Reports**: Persisted `pos_cash_sessions`, `pos_cash_movements`, and `pos_z_reports` using exact `bigint` centimes (`computeDrawerExpectedCentimes`, `computeVarianceCentimes`, `requiresVarianceManagerPin` at `-500.00 DZD` / `-50,000` centimes), offline provisional Z-numbers (`PROV-*`), reconnect drift comparison (`evaluateProvisionalZReportDrift` -> `'drift_flagged'`), and `printed_count`.
+  5. **`1.5` Atomic POS Partial/Full Refund + Stock Restoration**: Added `pos_refund_with_stock` and symmetric `pos_undo_refund_with_stock` RPCs alongside client clamping helpers (`computeRefundableQuantities`, `clampPartialRefundItems`) preventing over-refunding.
+  6. **`1.6` Timer / Store Sync Boundary**: `stopTimer` synced to remote service; live freelance active-timer cross-device sync remains explicitly scoped to **Phase 3 backlog (`7.7`)**.
+- **Tests**: `src/utils/step6Persistence.test.ts`, `src/lib/supabase/__tests__/step6AndStep7a.test.ts` (6/6 Vitest), and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts`.
+
+---
+
+## Step 7a & Gate 4 — Read-Only Payroll Migration Dry Run
+
+- **Read-Only Inspector (`src/utils/payrollMigrationDryRun.ts`)**: `analyzePayrollMigrationDryRun()` scans `LEGACY_PAYROLL_STORAGE_KEYS` (`atrium_staff_attendance_logs_v1`, `atrium_staff_salary_advances_v1`, `atrium_staff_payroll_runs_v1`, `atrium_staff_payroll_slips_v1`, `atrium_erp_desktop_v2`) with **zero** DB writes (`isReadOnlyDryRun: true`, `dbWritesExecuted: 0`, `gateStatus: 'AWAITING_GATE_4_APPROVAL'`), producing:
+  - Deterministic UUID mapping (`deterministicLegacyUuid` matching `toValidUuid`),
+  - Field-drift diffs against current remote store state,
+  - Period collision diagnostics (`periodCollisions`),
+  - Missing CCP/RIB coordinate warnings (`missingAccountWarnings`).
+- **UI Diagnostics (`src/components/common/staff/PayrollMigrationDryRunPanel.tsx`)**: Exposes JSON/CSV export and summary cards gated behind Gate 4 approval (`data-testid="step7a-payroll-dry-run-panel"`).
+- **Tests**: `src/utils/payrollMigrationDryRun.test.ts` (`tsx --test`) + `step6AndStep7a.test.ts` (Vitest).
+
+---
+
+## Step 7b — Workforce ERP DB Source of Truth (`staff_attendance_logs`, `staff_salary_advances`, `staff_payroll_runs`, `staff_payroll_slips`)
+
+- **Scope Boundary**: Covers Workforce ERP (`StaffPayrollSubView`, `PayslipPrintModal`, `PayrollMigrationDryRunPanel`, `store.ts`, `staffService.ts`). Excludes `project_milestone` RH/Compta payroll (`pm_payroll_batches`, `pm_ccp_slips`). Default Algerian IRG/CNAS statutory constants in `algerianPayroll.ts` remain untouched pending human accountant sign-off.
+- **Database Migration, Rollback & SQL Harness**:
+  - `supabase/migrations/202611260002_step7b_payroll_attendance_sot.sql` + `supabase/rollbacks/202611260002_step7b_payroll_attendance_sot.down.sql`:
+    - `staff_attendance_logs`: Added `source`, `entered_by`, `entered_by_name` + append-only trigger blocking `UPDATE`/`DELETE` (`SQLSTATE '42501'`).
+    - `staff_payroll_runs` & `staff_payroll_slips`: Added `rate_set_id`, `rate_basis` (`'legacy' | 'versioned'`), `rate_snapshot` (`jsonb`), `run_type` (`'regular' | 'adjustment'`), `adjustment_seq`, `approved_by`, period check constraint (`chk_staff_payroll_runs_adjustment_seq`), partial unique index `idx_staff_payroll_runs_period_unique`, and immutability triggers locking `'approved'`/`'paid'` runs, slips, and `'deducted'`/`'waived'` advances (allowing only `'approved' -> 'paid'` and `is_paid: false -> true`).
+    - Transactional `approve_payroll_run(...)` RPC (`SECURITY DEFINER`) transitioning `'draft'` runs to `'approved'`/`'paid'` and atomically settling pending salary advances (`'deducted'` / `'waived'`).
+  - `scripts/db/test_rls_rpc_triggers.sql` (Section 9) + `.github/workflows/ci-db-hardening.yml`: Added SQL contract assertions for append-only attendance logs, run/slip immutability, adjustment period uniqueness, `approve_payroll_run` RPC, and `statutory_rates` verify-only lock.
+- **Service, Offline Replay, Payroll Engine & Store Wiring**:
+  - `src/lib/supabase/offlineQueue.ts`: Assigned `approve_payroll_run` RPC replay priority **`480`** (strictly ordered after `staff_salary_advances` `401` and `staff_payroll_slips` `461`).
+  - `src/lib/supabase/services/staffService.ts` & `src/lib/supabase/mappers.ts`: Added `approvePayrollRun`, `waiveSalaryAdvance`, `markPayrollSlipPaid`, `insertOnlyBackfillPayroll`, and full mapping of statutory snapshots & run adjustment fields.
+  - `src/utils/algerianPayroll.ts`: Added `buildStatutoryRateSnapshot`, `StatutoryRateSet` optional override path, SNMG missing/below checks, and `advanceCarryover` calculation when pending advances exceed net pay.
+  - `src/utils/payrollMigrationDryRun.ts` & `src/config/localStorageRegistry.ts`: Added `resolveNextAdjustmentSeq`, `collectLegacyPayrollBackfillPayload`, and idempotent `executePayrollMigrationBackfill` gated by `atrium_payroll_migration_v1_done`, preserving `LEGACY_PAYROLL_STORAGE_KEYS` for 1 release as read-only backup.
+  - `src/services/store.ts`: Wired `effectiveStatutoryRate`, append-only attendance logging, duplicate regular run lock (`generateStaffPayrollRun`), sequential adjustment runs (`isAdjustment`), `approveStaffPayrollRun` (`{ markPaid }`), `waiveStaffSalaryAdvance`, `markStaffPayrollSlipPaid`, and `executePayrollMigrationBackfill`.
+- **Workforce UI**:
+  - `src/components/common/staff/useStaffFoundation.ts` & `src/components/screens/membership/MembershipStaffView.tsx`: Propagated `effectiveStatutoryRate`, `fiscalProfile`, `businessName`, `onApprovePayroll`, `onWaiveAdvance`, and backfill handlers.
+  - `src/components/common/staff/StaffPayrollSubView.tsx`: Multi-run period selector, `'draft'` -> `'Approve (Lock)'` & `'Close & Pay'`, `'approved'` -> `'Approved (Locked)'` pill & `'Mark All Paid'`, `'Adjustment Run'` replacement for locked runs, `"Rates not verified"` / `"Legacy basis"` / SNMG badges, `'Waive'` advance action, and `advanceCarryover` slip detail row.
+  - `src/components/common/staff/PayslipPrintModal.tsx`: Eliminated all hardcoded demo NIF (`002416098124589`), RC (`16/00-88124`), and NSS (`89 04 16 0000 00`) fallbacks (`'—'` when unset), added `dir={isAr ? 'rtl' : 'ltr'}`, verification/basis badges, and `advanceCarryover` row.
+  - `src/components/common/staff/PayrollMigrationDryRunPanel.tsx`: Added Step 7b insert-only backfill trigger (`data-testid="step7b-execute-backfill-btn"`) and completion banner alongside Step 7a read-only diagnostics.
+- **Tests**: `src/utils/algerianPayroll.test.ts`, `src/utils/step7bPayroll.test.ts` (4/4 `tsx --test`), `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (Step 6 + Step 7b SQL & `.down.sql` parity), and `src/atrium/__tests__/step7bPayrollWorkflow.test.tsx` (4/4 Vitest).
+
+---
+
+## Step 8 — Phase 1 Exit Report (Gate 5)
+
+### 1. CI Guards Strict Mode Promotion
+- Switched `scripts/ci/phase1-guards.mjs` to strict blocking by default (`const STRICT = !process.argv.includes('--ratchet');`) so `npm run ci:guards` exits non-zero whenever any violation exists (`--ratchet` kept optional only).
+- **Strict Scan Output (`npm run ci:guards`)**: **`[STRICT PASS]` — `0` total findings**:
+  - Guard 1 (`showToast`-only handlers): **`0`**
+  - Guard 2 (Forbidden demo/tenant fallback literals): **`0`**
+  - Guard 3 (Unregistered `localStorage` keys): **`0`**
+  - Guard 4 (`FR / EN / AR` i18n key asymmetry): **`0`**
+
+### 2. Section 13 Phase 1 Production Readiness Checklist
+
+| # | Gate / Requirement | Status | Verification Proof |
+|---|---|---|---|
+| 1 | Tenant isolation, fail-closed roles & zero `acc_01` fallbacks | **PASS** | `routePermissions.test.ts`, `tenantContext.test.ts`, `ci:guards` Guard 2 (`0`) |
+| 2 | Server-side access-denied audit RPC + anti-forgery + rate limits | **PASS** | `auditService.test.ts`, `202611240003_phase1_security_audit_rpc.sql`, Section 6 SQL |
+| 3 | Atomic money (centimes), sequential numbering & POS Z/refund RPCs | **PASS** | `money.test.ts`, `referenceAndSequence.test.ts`, `step6Persistence.test.ts`, `step6AndStep7a.test.ts` |
+| 4 | Toast-only stubs remediated or honestly deferred (`disabled`) | **PASS** | `step5Actions.test.ts`, `step5Workflows.test.tsx`, `ci:guards` Guard 1 (`0`) |
+| 5 | Workforce ERP DB source of truth, append-only attendance, immutable payroll | **PASS** | `202611260002_step7b_payroll_attendance_sot.sql`, `step7bPayroll.test.ts`, `step7bPayrollWorkflow.test.tsx` |
+| 6 | Registered `localStorage` usage & FR/EN/AR i18n parity | **PASS** | `ci:guards` Guard 3 (`0`) & Guard 4 (`0`), `localStorageRegistry.ts` |
+| 7 | Pairwise forward `.sql` & `.down.sql` migrations validated | **PASS** | `migrationsAndRollbacks.test.ts` (8/8), `.github/workflows/ci-db-hardening.yml` |
+| 8 | TypeScript, production bundle, test suites & dev server health | **PASS** | Observed counts listed below |
+
+### 3. Final Observed Verification Metrics (Post-Final Code Edit)
+- **`npx tsc --noEmit` (`npm run lint`)**: **0 errors**.
+- **`npm run build` / `compile_applet` + `lint_applet`**: **0 errors**.
+- **`npm test` (`tsx --test`)**: **121 / 121 passed** across all suites (incl. `algerianPayroll.test.ts`, `step5Actions.test.ts`, `step6Persistence.test.ts`, `payrollMigrationDryRun.test.ts`, `step7bPayroll.test.ts`).
+- **`npm run test:atrium` (`vitest run`)**: **35 / 35 files, 286 / 286 tests passed**.
+- **`npm run ci:guards` (strict default)**: **`[STRICT PASS]`** — **`0`** total violations.
+- **SQL Harness (`scripts/db/test_rls_rpc_triggers.sql`, Sections 1–9)**: Statically verified by Vitest (`migrationsAndRollbacks.test.ts`); **not executed locally** in this sandbox because `psql`/`docker` are unavailable, and runs automatically against PostgreSQL 16 in `.github/workflows/ci-db-hardening.yml`.
+- **Dev Server (`http://localhost:3000`)**: HTTP **`200`** verified cleanly.
+
+### 4. Pending Human Sign-Offs & Phase 2–5 Deferrals (Explicitly Preserved)
+- **Human Sign-Off Required Before Statutory Lock / Cleanup**:
+  1. Chartered Algerian accountant review & verification of default IRG/CNAS transitional formula (`algerianPayroll.ts`) and Art. 317 fiscal stamp brackets before inserting `'verified'` rows into `statutory_rates`.
+  2. Catalog check of **58 vs. 69 Algerian wilayas** across address/jurisdiction dropdowns.
+  3. Owner confirmation of `5.11` orphan deletion list (`ToastContainer.tsx` and remaining candidate files listed above — **0** deleted in Phase 1).
+  4. Owner confirmation of CMUP / WIP valuation adjustment rule for `3.12` Manufacturing Scrap & NCR (`cmup_adjustment_held = true`).
+  5. Extended production `acc_01` SQL row-count query executed in live DB before removing legacy backfill compatibility.
+- **Deferred to Phases 2–5**:
+  - Phase 2: Document/invoice & collection flows (`3.1`, `3.2`, `6.1` sequential salon receipts, CMUP ledger posting).
+  - Phase 3: Cross-device live active-timer sync for Freelance (`7.7`), SMS/WhatsApp server dispatch integrations deferred behind `"Not available yet"`.
+  - Phases 4–5: Performance budgets & full Playwright end-to-end verification suite.
+
+
 
 
 

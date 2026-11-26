@@ -17,6 +17,7 @@ import {
   selectCurrentParkedOrdersFromState,
   selectCurrentSalesFromState,
   selectCurrentStockMovementsFromState,
+  selectCurrentUnifiedDocumentsFromState,
   shallowEqualObjects,
   showToast,
   useAtriumActions,
@@ -24,7 +25,10 @@ import {
   useDashboardShellState,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { Sale, ParkedOrder } from '../../../types/index';
+import { Sale, ParkedOrder, UnifiedDocument } from '../../../types/index';
+import { UnifiedInvoiceComposerModal, type UnifiedInvoiceComposerPrefill } from '../../common/invoicing/UnifiedInvoiceComposerModal';
+import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
+import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
 import { computeRefundableQuantities, type RefundLineRequest } from '../../../utils/step6Persistence';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -95,6 +99,7 @@ export const PosOrdersView: React.FC = () => {
     sales,
     parkedOrders,
     stockMovements,
+    unifiedDocuments,
     currentBranch,
     branches,
     receiptConfig,
@@ -104,6 +109,7 @@ export const PosOrdersView: React.FC = () => {
       sales: selectCurrentSalesFromState(s),
       parkedOrders: selectCurrentParkedOrdersFromState(s),
       stockMovements: selectCurrentStockMovementsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       receiptConfig: s.receiptConfig,
@@ -140,10 +146,42 @@ export const PosOrdersView: React.FC = () => {
 
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const [selectedSaleForRefund, setSelectedSaleForRefund] = useState<Sale | null>(null);
+  const [unifiedInvoicePrefill, setUnifiedInvoicePrefill] = useState<UnifiedInvoiceComposerPrefill | null>(null);
+  const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
+  const [unifiedPaymentSale, setUnifiedPaymentSale] = useState<Sale | null>(null);
   const [refundReason, setRefundReason] = useState('Demande Client / Avoir');
   const [refundQuantities, setRefundQuantities] = useState<Record<string, number>>({});
   const retainedSaleForReceipt = useRetainedModalValue(selectedSaleForReceipt);
   const retainedSaleForRefund = useRetainedModalValue(selectedSaleForRefund);
+
+  const openUnifiedInvoiceForSale = useCallback(
+    (sale: Sale) => {
+      const existing = unifiedDocuments.find((d) => d.sourceEntityType === 'sale' && d.sourceEntityId === sale.id);
+      if (existing) {
+        setPrintUnifiedDoc(existing);
+        return;
+      }
+      setUnifiedInvoicePrefill({
+        docType: 'facture',
+        sourceVertical: 'pos_inventory',
+        sourceEntityType: 'sale',
+        sourceEntityId: sale.id,
+        partyId: sale.memberId,
+        partyName: sale.memberName || t('shop_receipt_walkin'),
+        partyPhone: sale.customerPhone,
+        items: (sale.items || []).map((it) => ({
+          productId: it.productId,
+          description: it.productName,
+          quantity: it.quantity,
+          unit: 'u',
+          unitPriceHt: it.unitPrice,
+          tvaPercent: 19,
+          discountPercent: 0,
+        })),
+      });
+    },
+    [unifiedDocuments, t]
+  );
 
   const refundableLines = useMemo(
     () => (selectedSaleForRefund ? computeRefundableQuantities(selectedSaleForRefund, stockMovements) : []),
@@ -1336,11 +1374,22 @@ export const PosOrdersView: React.FC = () => {
                     ]}
                   />
                 </InspectorSection>
-                <InspectorSection index={1}>
+                <InspectorSection index={1} className="space-y-2">
                   <InspectorWideButton
                     label={isAr ? 'معاينة وطباعة وصل 80 مم' : 'Imprimer Ticket Thermique 80mm'}
                     icon={<Printer size={15} />}
                     onClick={() => setSelectedSaleForReceipt(sale)}
+                  />
+                  <InspectorWideButton
+                    label={isAr ? 'إصدار فاتورة رسمية' : isEn ? 'Issue Official Invoice' : 'Émettre Facture Officielle'}
+                    icon={<Receipt size={15} />}
+                    tone="accent"
+                    onClick={() => openUnifiedInvoiceForSale(sale)}
+                  />
+                  <InspectorWideButton
+                    label={isAr ? 'تسجيل دفعة / آجل' : isEn ? 'Record Split / Deferred Payment' : 'Règlement Différé / Mixte'}
+                    icon={<CreditCard size={15} />}
+                    onClick={() => setUnifiedPaymentSale(sale)}
                   />
                 </InspectorSection>
               </div>
@@ -1743,6 +1792,38 @@ export const PosOrdersView: React.FC = () => {
         subtitle={`${batchPrintState?.pages.length || 0} ${isAr ? 'وصل' : isEn ? 'receipts' : 'tickets'}`}
         pages={batchPrintState?.pages || []}
         warningBanner={batchPrintState?.warning}
+      />
+
+      <UnifiedInvoiceComposerModal
+        isOpen={Boolean(unifiedInvoicePrefill)}
+        onClose={() => setUnifiedInvoicePrefill(null)}
+        prefill={unifiedInvoicePrefill}
+        onSaved={(doc) => {
+          setUnifiedInvoicePrefill(null);
+          setPrintUnifiedDoc(doc);
+        }}
+      />
+
+      <UnifiedInvoicePrintModal
+        isOpen={Boolean(printUnifiedDoc)}
+        onClose={() => setPrintUnifiedDoc(null)}
+        document={printUnifiedDoc}
+      />
+
+      <UnifiedPaymentModal
+        isOpen={Boolean(unifiedPaymentSale)}
+        onClose={() => setUnifiedPaymentSale(null)}
+        sourceVertical="pos_inventory"
+        partyId={unifiedPaymentSale?.memberId}
+        partyName={unifiedPaymentSale?.memberName || t('shop_receipt_walkin')}
+        defaultAmountDzd={unifiedPaymentSale?.totalAmount || 0}
+        onRecorded={(pay) => {
+          showToast({
+            type: 'success',
+            title: isAr ? 'تم تسجيل الدفعة' : isEn ? 'Payment Recorded' : 'Règlement Enregistré',
+            message: `${pay.paymentNumber} · ${pay.partyName}`,
+          });
+        }}
       />
     </div>
   );

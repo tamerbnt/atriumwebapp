@@ -12,6 +12,7 @@ import {
   selectCurrentCommercialDocsFromState,
   selectCurrentB2bClientsFromState,
   selectCurrentBranchFromState,
+  selectCurrentUnifiedPaymentsFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
@@ -21,6 +22,8 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
+import { UnifiedPaymentsLedgerPanel } from '../../common/invoicing/UnifiedPaymentsLedgerPanel';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -60,11 +63,12 @@ export const TradingFinanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { commercialDocs, b2bClients, b2bSuppliers, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+  const { commercialDocs, b2bClients, b2bSuppliers, unifiedPayments, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
     (s) => ({
       commercialDocs: selectCurrentCommercialDocsFromState(s),
       b2bClients: selectCurrentB2bClientsFromState(s),
       b2bSuppliers: s.b2bSuppliers || [],
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -77,6 +81,13 @@ export const TradingFinanceView: React.FC = () => {
   const { updateCommercialDoc, updateB2bClient, retryCloudSync } = useAtriumActions();
 
   const [settlementDoc, setSettlementDoc] = useState<CommercialDocument | null>(null);
+  const [unifiedPaymentOpen, setUnifiedPaymentOpen] = useState(false);
+  const [unifiedPaymentTarget, setUnifiedPaymentTarget] = useState<{
+    partyId?: string;
+    partyName: string;
+    amountDzd: number;
+    commercialDocId?: string;
+  } | null>(null);
   const [settleMethod, setSettleMethod] = useState('Virement bancaire');
   const [settleRef, setSettleRef] = useState('');
   const [settleDate, setSettleDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -439,6 +450,18 @@ export const TradingFinanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={t('trading_finance_title', 'Finances')}
+        primaryAction={{
+          label: isAr ? 'تحصيل دفعة موحدة' : isEn ? 'Record Payment' : 'Encaisser Règlement',
+          icon: <CheckCircle size={15} />,
+          onClick: () => {
+            setUnifiedPaymentTarget({
+              partyName: filteredInvoices[0]?.clientName || 'Client B2B',
+              partyId: filteredInvoices[0]?.clientId,
+              amountDzd: filteredInvoices[0]?.netToPay || 0,
+            });
+            setUnifiedPaymentOpen(true);
+          },
+        }}
       />
 
       <ScreenKpiBanner
@@ -713,6 +736,10 @@ export const TradingFinanceView: React.FC = () => {
         />
       </ScreenPod>
 
+      {unifiedPayments.length > 0 && (
+        <UnifiedPaymentsLedgerPanel payments={unifiedPayments} />
+      )}
+
       <KineticFilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
@@ -921,6 +948,22 @@ export const TradingFinanceView: React.FC = () => {
           </div>
         )}
       </KineticModalShell>
+
+      <UnifiedPaymentModal
+        isOpen={unifiedPaymentOpen}
+        onClose={() => setUnifiedPaymentOpen(false)}
+        sourceVertical="trading_commercial"
+        partyId={unifiedPaymentTarget?.partyId}
+        partyName={unifiedPaymentTarget?.partyName || 'Client B2B'}
+        defaultAmountDzd={unifiedPaymentTarget?.amountDzd || 0}
+        onRecorded={(payment) => {
+          showToast({
+            type: 'success',
+            title: isAr ? 'تم تسجيل الدفعة' : isEn ? 'Payment Recorded' : 'Règlement Enregistré',
+            message: `${payment.paymentNumber} · ${payment.partyName}`,
+          });
+        }}
+      />
     </div>
   );
 };

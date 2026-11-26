@@ -502,12 +502,16 @@ export const MembershipStaffView: React.FC<any> = () => {
             payrollRuns={foundation.staffPayrollRuns}
             payrollSlips={foundation.staffPayrollSlips}
             salaryAdvances={foundation.staffSalaryAdvances}
-            onGeneratePayroll={(month, year) =>
-              foundation.generateStaffPayrollRun(month, year, 'membership_session')
-            }
+            onGeneratePayroll={(month, year, opts) => {
+              foundation.generateStaffPayrollRun(month, year, 'membership_session', opts);
+            }}
             onApprovePayroll={foundation.approveStaffPayrollRun}
             onMarkSlipPaid={foundation.markStaffPayrollSlipPaid}
             onCreateAdvance={foundation.createStaffSalaryAdvance}
+            onWaiveAdvance={foundation.waiveStaffSalaryAdvance}
+            effectiveStatutoryRate={foundation.effectiveStatutoryRate}
+            businessName={foundation.currentBusiness?.name}
+            fiscalProfile={foundation.currentBusinessConfig?.fiscalProfile}
             language={language}
           />
         </ScreenPod>

@@ -16,12 +16,20 @@ import {
   shallowEqualObjects,
   selectCurrentMembersFromState,
   selectCurrentBranchFromState,
+  selectCurrentUnifiedPaymentsFromState,
+  selectCurrentUnifiedDocumentsFromState,
   showToast,
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
+import type { UnifiedDocument } from '../../../types/index';
 import { t } from '../../../utils/i18n';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
+import { UnifiedInvoiceComposerModal } from '../../common/invoicing/UnifiedInvoiceComposerModal';
+import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
+import { UnifiedPaymentsLedgerPanel } from '../../common/invoicing/UnifiedPaymentsLedgerPanel';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
@@ -67,6 +75,8 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
     members,
     branches,
     currentBranch,
+    unifiedPayments,
+    unifiedDocuments,
     language,
     isSyncing,
     networkMode,
@@ -77,6 +87,8 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       members: selectCurrentMembersFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -107,10 +119,54 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
   const [sortBy, setSortBy] = useState('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentTarget, setPaymentTarget] = useState<{
+    partyId?: string;
+    partyName: string;
+    amountDzd: number;
+  } | null>(null);
+  const [invoiceComposerOpen, setInvoiceComposerOpen] = useState(false);
+  const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
+
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
+  const membershipUnifiedPayments = useMemo(
+    () =>
+      unifiedPayments.filter(
+        (p) =>
+          p.sourceVertical === 'membership_session' ||
+          members.some((m) => m.id === p.partyId)
+      ),
+    [unifiedPayments, members]
+  );
+
+  const hasPersistedLedger = membershipUnifiedPayments.length > 0;
+
   const transactions: MembershipTransaction[] = useMemo(() => {
+    if (hasPersistedLedger) {
+      return membershipUnifiedPayments.map((pay) => {
+        const bInfo = branchesById.get(pay.facilityId) || currentBranch;
+        const mappedMethod: 'Cash' | 'Card' | 'BaridiMob' =
+          pay.method === 'baridimob'
+            ? 'BaridiMob'
+            : pay.method === 'cib'
+            ? 'Card'
+            : 'Cash';
+        return {
+          id: pay.paymentNumber || pay.id,
+          memberId: pay.partyId || '',
+          memberName: pay.partyName,
+          plan: pay.notes || (isAr ? 'اشتراك' : isEn ? 'Membership' : 'Cotisation'),
+          amount: centimesToDzd(pay.amountCentimes),
+          paymentMethod: mappedMethod,
+          date: pay.paymentDate,
+          status: pay.status === 'Bounced' || pay.status === 'Pending' ? 'Pending' : 'Settled',
+          branchId: pay.facilityId,
+          branchName: bInfo?.name || currentBranch?.name || 'Main Branch',
+        };
+      });
+    }
     return members.map((m: any, idx) => {
       const bInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
       const pendingDue = Number(m.balanceDue ?? m.balance ?? 0);
@@ -130,7 +186,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         branchName: bInfo.name,
       };
     });
-  }, [members, branchesById, currentBranch, language, isAr, isEn]);
+  }, [hasPersistedLedger, membershipUnifiedPayments, members, branchesById, currentBranch, language, isAr, isEn]);
 
   const financialMetrics = useMemo(() => {
     let totalCollected = 0;
@@ -254,9 +310,14 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
 
   const handleSettleTx = useCallback(
     (tx: MembershipTransaction) => {
-      updateMember?.(tx.memberId, { balance: 0 } as any);
+      setPaymentTarget({
+        partyId: tx.memberId,
+        partyName: tx.memberName,
+        amountDzd: tx.amount,
+      });
+      setPaymentModalOpen(true);
     },
-    [updateMember]
+    []
   );
 
   const getFanActions = useCallback(
@@ -600,6 +661,34 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
       <ScreenHeaderBar
         icon={<DollarSign size={22} />}
         title={isAr ? 'المالية' : isEn ? 'Finance' : 'Finances'}
+        secondaryActions={
+          <div className="flex items-center gap-2">
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              icon={<CreditCard size={14} />}
+              onClick={() => {
+                const pending = members.find((m) => Number(m.balance || 0) > 0) || members[0];
+                setPaymentTarget({
+                  partyId: pending?.id,
+                  partyName: pending?.fullName || 'Adhérent',
+                  amountDzd: Number(pending?.balance || pending?.membershipFee || 4500),
+                });
+                setPaymentModalOpen(true);
+              }}
+            >
+              <span>{isAr ? 'تحصيل دفعة' : isEn ? 'Collect Payment' : 'Encaisser'}</span>
+            </AtriumButton>
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              icon={<Receipt size={14} />}
+              onClick={() => setInvoiceComposerOpen(true)}
+            >
+              <span>{isAr ? 'فاتورة جديدة' : isEn ? 'New Invoice' : 'Nouvelle Facture'}</span>
+            </AtriumButton>
+          </div>
+        }
         primaryAction={{
           label: isAr ? 'تذكير بالمتأخرات' : isEn ? 'Send Reminders' : 'Relancer impayés',
           icon: <Send size={15} />,
@@ -609,21 +698,23 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         }}
       />
 
-      <div
-        data-testid="membership-finance-estimated-banner"
-        className="rounded-2xl border border-amber-500/30 bg-amber-50/90 dark:bg-amber-950/30 px-4 py-3 flex flex-wrap items-center justify-between gap-3"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <Clock size={16} className="text-amber-700 dark:text-amber-300 shrink-0" />
-          <p className="t-small text-amber-950 dark:text-amber-100">
-            <span className="font-semibold me-2">{estimatedBadgeLabel}:</span>
-            <span>{estimatedBannerText}</span>
-          </p>
+      {!hasPersistedLedger && (
+        <div
+          data-testid="membership-finance-estimated-banner"
+          className="rounded-2xl border border-amber-500/30 bg-amber-50/90 dark:bg-amber-950/30 px-4 py-3 flex flex-wrap items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Clock size={16} className="text-amber-700 dark:text-amber-300 shrink-0" />
+            <p className="t-small text-amber-950 dark:text-amber-100">
+              <span className="font-semibold me-2">{estimatedBadgeLabel}:</span>
+              <span>{estimatedBannerText}</span>
+            </p>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-800 dark:text-amber-200 t-cap font-semibold shrink-0">
+            {estimatedBadgeLabel}
+          </span>
         </div>
-        <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-800 dark:text-amber-200 t-cap font-semibold shrink-0">
-          {estimatedBadgeLabel}
-        </span>
-      </div>
+      )}
 
       <ScreenKpiBanner
         heading={isAr ? 'ملخص الخزينة والتدفقات' : isEn ? 'Treasury Overview' : 'Trésorerie & Encaissements'}
@@ -955,6 +1046,43 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
             </>
           );
         }}
+      />
+      {hasPersistedLedger && (
+        <UnifiedPaymentsLedgerPanel payments={membershipUnifiedPayments} />
+      )}
+
+      <UnifiedPaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        sourceVertical="membership_session"
+        partyId={paymentTarget?.partyId}
+        partyName={paymentTarget?.partyName || 'Adhérent'}
+        defaultAmountDzd={paymentTarget?.amountDzd || 0}
+        onRecorded={(payment) => {
+          showToast?.({
+            type: 'success',
+            title: isAr ? 'تم التحصيل' : isEn ? 'Payment Recorded' : 'Règlement Enregistré',
+            message: `${payment.paymentNumber} · ${payment.partyName}`,
+          });
+        }}
+      />
+
+      <UnifiedInvoiceComposerModal
+        isOpen={invoiceComposerOpen}
+        onClose={() => setInvoiceComposerOpen(false)}
+        prefill={{
+          docType: 'facture',
+          sourceVertical: 'membership_session',
+          partyId: members[0]?.id,
+          partyName: members[0]?.fullName || '',
+        }}
+        onSaved={(doc) => setPrintUnifiedDoc(doc)}
+      />
+
+      <UnifiedInvoicePrintModal
+        isOpen={Boolean(printUnifiedDoc)}
+        onClose={() => setPrintUnifiedDoc(null)}
+        document={printUnifiedDoc}
       />
     </div>
   );

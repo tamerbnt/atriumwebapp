@@ -19,11 +19,14 @@ import {
   selectCurrentStaffFromState,
   showToast,
 } from '../../../services/store';
+import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import {
   analyzePayrollMigrationDryRun,
   exportPayrollDryRunCsv,
   exportPayrollDryRunJson,
+  readPayrollMigrationCompletion,
   type PayrollDryRunReport,
+  type PayrollMigrationCompletionMarker,
 } from '../../../utils/payrollMigrationDryRun';
 import { Button } from '@/atrium/core';
 
@@ -40,8 +43,9 @@ export const PayrollMigrationDryRunPanel: React.FC<PayrollMigrationDryRunPanelPr
 }) => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { canViewSensitivePayroll } = useAtriumActions();
+  const { canViewSensitivePayroll, executePayrollMigrationBackfill } = useAtriumActions();
   const isAuthorized = canViewSensitivePayroll();
+  const supabaseReady = isSupabaseConfigured();
 
   const {
     currentBusinessId,
@@ -66,6 +70,12 @@ export const PayrollMigrationDryRunPanel: React.FC<PayrollMigrationDryRunPanelPr
 
   const [refreshNonce, setRefreshNonce] = useState(0);
   const [activeTab, setActiveTab] = useState<DiagnosticTab>('mappings');
+  const [isBackfilling, setIsBackfilling] = useState(false);
+
+  const completionMarker: PayrollMigrationCompletionMarker | null = useMemo(() => {
+    void refreshNonce;
+    return readPayrollMigrationCompletion();
+  }, [refreshNonce]);
 
   const report: PayrollDryRunReport | null = useMemo(() => {
     if (!isAuthorized) return null;
@@ -107,6 +117,17 @@ export const PayrollMigrationDryRunPanel: React.FC<PayrollMigrationDryRunPanelPr
         : '0 écriture exécutée en base de données (lecture seule).',
     });
   }, [isAr, isEn]);
+
+  const handleRunBackfill = useCallback(async () => {
+    if (isBackfilling) return;
+    setIsBackfilling(true);
+    try {
+      await executePayrollMigrationBackfill(false);
+      setRefreshNonce((n) => n + 1);
+    } finally {
+      setIsBackfilling(false);
+    }
+  }, [executePayrollMigrationBackfill, isBackfilling]);
 
   const triggerDownload = useCallback((content: string, filename: string, mimeType: string) => {
     try {
@@ -181,18 +202,18 @@ export const PayrollMigrationDryRunPanel: React.FC<PayrollMigrationDryRunPanelPr
             <FileSearch size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <h3 className="t-card font-semibold text-black dark:text-white">
               {isAr
-                ? 'معاينة ترحيل بيانات الرواتب (الخطوة 7أ — قراءة فقط)'
+                ? 'فحص وترحيل بيانات الرواتب السحابي (7أ / 7ب)'
                 : isEn
-                ? 'Payroll Migration Dry-Run Inspector (Step 7a)'
-                : 'Inspecteur de Migration Paie à Vide (Étape 7a)'}
+                ? 'Payroll Migration Inspector & Backfill (Step 7a / 7b)'
+                : 'Inspecteur & Reprise Paie Cloud (Étapes 7a / 7b)'}
             </h3>
           </div>
           <p className="t-cap text-black/65 dark:text-white/65">
             {isAr
-              ? 'فحص تحضيري لبيانات localStorage مقابل السجلات السحابية دون تنفيذ أي كتابة في قاعدة البيانات.'
+              ? 'فحص بيانات localStorage وتنفيذ ترحيل إدراج فقط (بدون حذف النسخة المحلية الاحتياطية).'
               : isEn
-              ? 'Read-only diagnostic comparing legacy localStorage payroll records against store/remote records before backfill.'
-              : 'Diagnostic en lecture seule comparant les caches localStorage de paie aux enregistrements cloud avant reprise.'}
+              ? 'Read-only diagnostic and one-time insert-only DB backfill (legacy localStorage keys preserved as read-only backup).'
+              : 'Diagnostic en lecture seule et reprise unique par insertion uniquement (caches localStorage conservés en sauvegarde).'}
           </p>
         </div>
 
@@ -217,29 +238,68 @@ export const PayrollMigrationDryRunPanel: React.FC<PayrollMigrationDryRunPanelPr
           </Button>
           <Button
             type="button"
-            tone="accent"
+            tone="soft"
             size={36}
             leading={<Download size={14} />}
             onClick={handleExportJson}
           >
             JSON
           </Button>
+          <Button
+            type="button"
+            data-testid="step7b-execute-backfill-btn"
+            tone="accent"
+            size={36}
+            leading={<Database size={14} />}
+            disabled={!supabaseReady || isBackfilling || Boolean(completionMarker)}
+            onClick={() => void handleRunBackfill()}
+          >
+            {completionMarker
+              ? isAr ? 'اكتمل الترحيل' : isEn ? 'Backfill Completed' : 'Reprise Effectuée'
+              : isBackfilling
+              ? isAr ? 'جاري الترحيل...' : isEn ? 'Backfilling...' : 'Reprise en cours...'
+              : isAr ? 'ترحيل إدراج فقط' : isEn ? 'Run Insert-Only DB Backfill' : 'Exécuter Reprise Base'}
+          </Button>
         </div>
       </div>
 
-      {/* Explicit Gate 4 Hold + Statutory Basis Notice */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="rounded-xl border border-amber-300/70 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/30 p-3.5 flex items-start gap-2.5">
-          <ShieldAlert size={16} className="text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
-          <div className="space-y-0.5 min-w-0">
-            <div className="t-small font-semibold text-amber-900 dark:text-amber-200">
-              Awaiting Gate 4 approval before Step 7b write backfill
-            </div>
-            <div className="t-cap text-amber-800/85 dark:text-amber-300/85 tabular-nums">
-              {report.dbWritesExecuted} DB writes executed · Read-only dry run
+      {/* Backfill Completion / Execution Status + Statutory Basis Notice */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="step7b-backfill-section">
+        {completionMarker ? (
+          <div className="rounded-xl border border-emerald-300/70 dark:border-emerald-800/70 bg-emerald-50/75 dark:bg-emerald-950/30 p-3.5 flex items-start gap-2.5">
+            <CheckCircle2 size={16} className="text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5 min-w-0">
+              <div className="t-small font-semibold text-emerald-900 dark:text-emerald-200">
+                Step 7b backfill completed ({completionMarker.completedAt.slice(0, 10)})
+              </div>
+              <div className="t-cap text-emerald-800/85 dark:text-emerald-300/85 tabular-nums">
+                Inserted: {completionMarker.runsInserted} runs · {completionMarker.slipsInserted} slips · {completionMarker.advancesInserted} advances · {completionMarker.attendanceInserted} punches · {completionMarker.skippedCollisions.length} collisions skipped · Legacy localStorage backup preserved
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl border border-amber-300/70 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/30 p-3.5 flex items-start gap-2.5">
+            <ShieldAlert size={16} className="text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5 min-w-0">
+              <div className="t-small font-semibold text-amber-900 dark:text-amber-200">
+                {supabaseReady
+                  ? isAr
+                    ? 'جاهز لتنفيذ الترحيل لمرة واحدة (إدراج فقط)'
+                    : isEn
+                    ? 'Ready for one-time insert-only DB backfill (Step 7b)'
+                    : 'Prêt pour reprise unique en base (Étape 7b — insertion seule)'
+                  : isAr
+                  ? 'السحابة غير مفعلة — فحص محلي للقراءة فقط'
+                  : isEn
+                  ? 'Cloud sync not configured — local read-only inspection'
+                  : 'Sync cloud inactive — inspection locale en lecture seule'}
+              </div>
+              <div className="t-cap text-amber-800/85 dark:text-amber-300/85 tabular-nums">
+                {report.dbWritesExecuted} dry-run writes · Existing DB rows never overwritten · localStorage preserved for 1 release
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-[#FAF6F1] dark:bg-[#191716] p-3.5 flex items-start gap-2.5">
           <AlertTriangle size={16} className="text-black/65 dark:text-white/70 shrink-0 mt-0.5" />

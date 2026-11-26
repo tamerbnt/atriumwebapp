@@ -4,6 +4,8 @@ import {
   shallowEqualObjects,
   useAtriumActions,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
   retryCloudSyncAction,
   showToast,
 } from '../../../services/store';
@@ -40,6 +42,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
       staffSalaryAdvances: s.staffSalaryAdvances,
       staffPayrollRuns: s.staffPayrollRuns,
       staffPayrollSlips: s.staffPayrollSlips,
+      effectiveStatutoryRate: s.effectiveStatutoryRate,
       language: s.language,
       activePmRole: s.activePmRole,
       activeGarageRole: s.activeGarageRole,
@@ -60,6 +63,8 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   );
 
   const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
+  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
+  const currentBusinessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
 
   const {
     punchStaffAttendance,
@@ -74,6 +79,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     approveStaffPayrollRun,
     markStaffPayrollSlipPaid,
     logStaffAttendanceManual,
+    executePayrollMigrationBackfill,
   } = useAtriumActions();
 
   const {
@@ -87,6 +93,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     staffSalaryAdvances,
     staffPayrollRuns,
     staffPayrollSlips,
+    effectiveStatutoryRate,
     language,
     activePmRole,
     activeGarageRole,
@@ -606,6 +613,10 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     approveStaffPayrollRun,
     markStaffPayrollSlipPaid,
     logStaffAttendanceManual,
+    executePayrollMigrationBackfill,
+    effectiveStatutoryRate,
+    currentBusiness,
+    currentBusinessConfig,
     updateStaffMember,
     isSyncing,
     networkMode,

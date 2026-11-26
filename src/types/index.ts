@@ -299,6 +299,7 @@ export interface StaffMember {
   ccpNumber?: string;
   ccpKey?: string;
   bankRib?: string;
+  nss?: string;
   recruitmentType?: RecruitmentLegalType;
   contractType?: string;
   pinCode?: string;
@@ -3894,6 +3895,9 @@ export interface StaffAttendanceLogRecord {
   date: string; // YYYY-MM-DD
   type: 'in' | 'out';
   method: 'rfid' | 'pin' | 'kiosk' | 'manual';
+  source?: 'rfid' | 'pin' | 'kiosk' | 'manual';
+  enteredBy?: string;
+  enteredByName?: string;
   terminalId?: string;
   notes?: string;
   lateMinutes?: number;
@@ -3938,6 +3942,25 @@ export interface StaffSalaryAdvance {
   version?: number;
 }
 
+export interface StatutoryRateSnapshot {
+  versionId: string;
+  versionCode: string;
+  effectiveFrom: string | null;
+  verificationStatus: 'unverified' | 'verified' | 'superseded';
+  cnasSalarialRate: number | null;
+  cnasPatronalRate: number | null;
+  irgBrackets: Array<{ min_dzd: number; max_dzd: number | null; rate: number }> | null;
+  irgAbatementRate: number | null;
+  irgAbatementMinDzd: number | null;
+  irgAbatementMaxDzd: number | null;
+  irgExemptionThresholdDzd: number | null;
+  irgTransitionalMaxDzd: number | null;
+  irgTransitionalConfig: Record<string, unknown> | null;
+  snmgDzd: number | null;
+  overtimeMultiplier50: number | null;
+  overtimeMultiplier100: number | null;
+}
+
 export interface StaffPayrollSlipRecord {
   id: string;
   payrollRunId: string;
@@ -3961,6 +3984,7 @@ export interface StaffPayrollSlipRecord {
   irgTax: number;
   primesNonImposables: Array<{ label: string; amount: number }>;
   acomptesDeduits: number;
+  advanceCarryover?: number;
   autresRetenues: number;
   netAPayer: number;
   paymentMethod: 'cash' | 'ccp' | 'bank_transfer';
@@ -3971,6 +3995,9 @@ export interface StaffPayrollSlipRecord {
   isPaid: boolean;
   paidDate?: string;
   receiptNumber: string;
+  rateSetId?: string | null;
+  rateBasis?: 'legacy' | 'versioned';
+  rateSnapshot?: StatutoryRateSnapshot | null;
   version?: number;
 }
 
@@ -3979,10 +4006,16 @@ export interface StaffPayrollRunRecord {
   accountId?: string;
   businessId?: string;
   branchId?: string;
+  category?: string;
   periodMonth: number;
   periodYear: number;
   title: string;
   status: 'draft' | 'approved' | 'paid';
+  runType?: 'regular' | 'adjustment';
+  adjustmentSeq?: number;
+  rateSetId?: string | null;
+  rateBasis?: 'legacy' | 'versioned';
+  rateSnapshot?: StatutoryRateSnapshot | null;
   totalGrossCotisable: number;
   totalCnasSalarial: number;
   totalCnasPatronal: number;
@@ -3991,6 +4024,7 @@ export interface StaffPayrollRunRecord {
   slipsCount: number;
   createdAt: string;
   approvedAt?: string;
+  approvedBy?: string | null;
   version?: number;
 }
 
@@ -4215,5 +4249,190 @@ export interface HomeSetupProgress {
   isDismissed: boolean;
   steps: HomeSetupStep[];
 }
+
+// ============================================================
+// PHASE 2 (6.1 & 6.2): UNIFIED INVOICING ENGINE & PAYMENTS LEDGER
+// ============================================================
+
+export type UnifiedDocType =
+  | 'devis'
+  | 'commande'
+  | 'bl'
+  | 'facture'
+  | 'avoir'
+  | 'retour'
+  | 'receipt'
+  | 'proforma';
+
+export type UnifiedDocStatus =
+  | 'Draft'
+  | 'Issued'
+  | 'PartiallyPaid'
+  | 'Paid'
+  | 'Delivered'
+  | 'Voided'
+  | 'Canceled';
+
+export type UnifiedCurrency = 'DZD' | 'EUR' | 'USD';
+
+export type TimbreCalculationBasis = 'commercial_cash' | 'art_317' | 'exempt';
+
+export type UnifiedPaymentMethod =
+  | 'cash'
+  | 'ccp'
+  | 'bank_transfer'
+  | 'cib'
+  | 'baridimob'
+  | 'cheque'
+  | 'traite'
+  | 'member_balance'
+  | 'credit';
+
+export type ChequeInstrumentStatus = 'received' | 'deposited' | 'cleared' | 'bounced';
+
+export interface UnifiedTvaBreakdownEntry {
+  ratePercent: number;
+  baseHtCentimes: number;
+  tvaCentimes: number;
+}
+
+export interface UnifiedFiscalHeaderSnapshot {
+  companyName: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  nif?: string;
+  nis?: string;
+  rc?: string;
+  ai?: string;
+  ribCcp?: string;
+  logoUrl?: string;
+  footerNote?: string;
+  templateLanguage?: 'fr' | 'ar' | 'en';
+}
+
+export interface UnifiedDocumentLine {
+  id: string;
+  productId?: string;
+  description: string;
+  isService: boolean;
+  quantity: number;
+  unit: string;
+  unitPriceHt: number;
+  tvaPercent: number;
+  discountPercent?: number;
+  totalHtCentimes: number;
+  totalTvaCentimes: number;
+  totalTtcCentimes: number;
+}
+
+export interface UnifiedDocument {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  sourceVertical: string;
+  docType: UnifiedDocType;
+  draftNumber: string;
+  docNumber: string | null;
+  fiscalYear: number;
+  status: UnifiedDocStatus;
+  partyId?: string;
+  partyName: string;
+  partyNif?: string;
+  partyNis?: string;
+  partyRc?: string;
+  partyAi?: string;
+  partyAddress?: string;
+  partyPhone?: string;
+  depotId?: string;
+  depotName?: string;
+  docDate: string;
+  dueDate?: string;
+  validityDays?: number;
+  paymentMethod: UnifiedPaymentMethod | string;
+  paymentTerms: string;
+  currency: UnifiedCurrency;
+  fxRate: number;
+  fxRateDate: string;
+  timbreBasis: TimbreCalculationBasis;
+  rateSetId?: string | null;
+  items: UnifiedDocumentLine[];
+  tvaBreakdown: UnifiedTvaBreakdownEntry[];
+  totalHtRawCentimes: number;
+  generalDiscountPercent: number;
+  totalHtFinalCentimes: number;
+  totalTvaCentimes: number;
+  timbreFiscalCentimes: number;
+  totalTtcCentimes: number;
+  guaranteeRetentionPercent: number;
+  guaranteeRetentionCentimes: number;
+  netToPayCentimes: number;
+  paidCentimes: number;
+  balanceDueCentimes: number;
+  fiscalHeaderSnapshot: UnifiedFiscalHeaderSnapshot;
+  totalsInWordsFr: string;
+  totalsInWordsAr: string;
+  includeStampSignature: boolean;
+  notesTop?: string;
+  notesBottom?: string;
+  linkedDocId?: string;
+  linkedDocNumber?: string;
+  creditNoteForDocId?: string;
+  sourceEntityType?: string;
+  sourceEntityId?: string;
+  issuedAt?: string;
+  issuedByStaffId?: string;
+  voidedAt?: string;
+  voidedReason?: string;
+  printedCount: number;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UnifiedPaymentAllocation {
+  id: string;
+  paymentId: string;
+  documentId: string;
+  documentNumber?: string;
+  allocatedCentimes: number;
+  createdAt: string;
+}
+
+export interface UnifiedPayment {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  sourceVertical: string;
+  partyId?: string;
+  partyName: string;
+  paymentNumber: string;
+  method: UnifiedPaymentMethod;
+  direction: 'inflow' | 'outflow';
+  amountCentimes: number;
+  unallocatedCreditCentimes: number;
+  currency: UnifiedCurrency;
+  fxRate: number;
+  paymentDate: string;
+  recordedByStaffId?: string;
+  cashSessionId?: string;
+  idempotencyKey?: string;
+  status: 'posted' | 'pending_clearance' | 'bounced' | 'reversed';
+  instrumentStatus?: ChequeInstrumentStatus;
+  instrumentNumber?: string;
+  instrumentBank?: string;
+  instrumentDueDate?: string;
+  bouncedReason?: string;
+  reversedPaymentId?: string;
+  reversalReason?: string;
+  notes?: string;
+  allocations: UnifiedPaymentAllocation[];
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 

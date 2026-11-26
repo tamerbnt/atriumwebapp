@@ -149,4 +149,68 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_re_inspections_immutable_lock');
     expect(downSql).toContain('DROP TABLE IF EXISTS public.gym_class_enrollments');
   });
+
+  it('verifies Step 6 Section 1 atomic persistence migration (gym check-in, edu dedupe, salon, POS cash & refund RPC) and rollback parity', () => {
+    const step6Path = path.join(MIGRATIONS_DIR, '202611260001_step6_section1_persistence.sql');
+    const step6DownPath = path.join(ROLLBACKS_DIR, '202611260001_step6_section1_persistence.down.sql');
+    const sql = fs.readFileSync(step6Path, 'utf8');
+    const downSql = fs.readFileSync(step6DownPath, 'utf8');
+
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.gym_record_check_in(');
+    expect(sql).toContain('CREATE UNIQUE INDEX IF NOT EXISTS uq_edu_attendance_session_student_active');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_cash_sessions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_z_reports');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pos_refund_with_stock(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pos_refund_with_stock(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_z_reports');
+  });
+
+  it('verifies Step 7b payroll/attendance SoT migration defines append-only logs, period unique index, immutability triggers, transactional RPC & rollback parity', () => {
+    const step7bPath = path.join(MIGRATIONS_DIR, '202611260002_step7b_payroll_attendance_sot.sql');
+    const step7bDownPath = path.join(ROLLBACKS_DIR, '202611260002_step7b_payroll_attendance_sot.down.sql');
+    const sql = fs.readFileSync(step7bPath, 'utf8');
+    const downSql = fs.readFileSync(step7bDownPath, 'utf8');
+
+    expect(sql).toContain('trg_00_staff_attendance_logs_append_only');
+    expect(sql).toContain('STAFF_ATTENDANCE_APPEND_ONLY');
+    expect(sql).toContain('chk_staff_payroll_runs_adjustment_seq');
+    expect(sql).toContain('idx_staff_payroll_runs_period_unique');
+    expect(sql).toContain('WHERE deleted_at IS NULL');
+    expect(sql).toContain('trg_00_staff_payroll_runs_immutable');
+    expect(sql).toContain('trg_00_staff_payroll_slips_immutable');
+    expect(sql).toContain('trg_00_staff_salary_advances_immutable');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.approve_payroll_run(');
+    expect(sql).toContain('app.payroll_approval_tx');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.approve_payroll_run(');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_00_staff_attendance_logs_append_only');
+    expect(downSql).toContain('DROP INDEX IF EXISTS public.idx_staff_payroll_runs_period_unique');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_00_staff_payroll_runs_immutable');
+  });
+
+  it('verifies Phase 2 Step 1 (6.1 & 6.2) unified invoicing & payments migration and rollback parity', () => {
+    const p2Path = path.join(MIGRATIONS_DIR, '202611270001_phase2_invoicing_payments.sql');
+    const p2DownPath = path.join(ROLLBACKS_DIR, '202611270001_phase2_invoicing_payments.down.sql');
+    const sql = fs.readFileSync(p2Path, 'utf8');
+    const downSql = fs.readFileSync(p2DownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.unified_documents');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.unified_payments');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.unified_payment_allocations');
+    expect(sql).toContain('uq_unified_documents_number_active');
+    expect(sql).toContain('uq_unified_payments_idempotency');
+    expect(sql).toContain('trg_00_unified_documents_immutable');
+    expect(sql).toContain('UNIFIED_DOC_IMMUTABLE');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.issue_unified_document(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.record_unified_payment_with_allocations(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.transition_cheque_traite_status(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.transition_cheque_traite_status(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.record_unified_payment_with_allocations(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.issue_unified_document(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.unified_payment_allocations');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.unified_payments');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.unified_documents');
+    expect(downSql).toContain('CREATE OR REPLACE FUNCTION public.allocate_sequence_number(');
+  });
 });

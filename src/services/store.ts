@@ -117,6 +117,14 @@ import {
   PosCashSession,
   PosCashMovement,
   PosZReport,
+  UnifiedDocument,
+  UnifiedDocType,
+  UnifiedDocStatus,
+  UnifiedCurrency,
+  TimbreCalculationBasis,
+  UnifiedPayment,
+  UnifiedPaymentMethod,
+  ChequeInstrumentStatus,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -214,6 +222,10 @@ import {
 import { resolveSemanticRoute } from '../utils/routePermissions';
 import { calculateAlgerianGrossToNet } from '../utils/algerianPayroll';
 import {
+  resolveNextAdjustmentSeq,
+  executePayrollMigrationBackfill,
+} from '../utils/payrollMigrationDryRun';
+import {
   isExecutiveRole,
   createDefaultBusinessConfig,
   createStarterFormulesForCategory,
@@ -242,6 +254,8 @@ import {
   licenseService,
   memberService,
   staffService,
+  referenceDataService,
+  getLocalCodeBaselineStatutoryRate,
   realtimeService,
   freelanceService,
   appointmentService,
@@ -252,6 +266,7 @@ import {
   tradingService,
   configService,
   sequenceService,
+  invoicingService,
   syncCoordinator,
   subscribeConcurrencyConflicts,
   emitConcurrencyResolution,
@@ -321,11 +336,13 @@ import {
   mapStockVoucherFromDb,
   runWithConcurrency,
   getActiveDeviceId,
+  isUuid,
   toValidUuid,
   normalizeUuidOrNull,
   isDemoModeEnabled,
   requireTenantAccountId,
   TenantContextMissingError,
+  type StatutoryRateSet,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
 import {
@@ -334,6 +351,18 @@ import {
   prepareDepositReceiptPrint,
 } from '../utils/step5Actions';
 import { dzdToCentimes, centimesToDzd } from '../utils/money';
+import {
+  calculateUnifiedDocumentTotals,
+  buildUnifiedFiscalHeader,
+  formatDraftDocNumber,
+  formatServerFiscalNumber,
+  buildCreditNoteDraftFromInvoice,
+  allocatePaymentAcrossDocuments,
+  applyChequeStatusTransition,
+  isDateInClosedPeriod,
+  normalizeUnifiedPaymentMethod,
+  type UnifiedLineInput,
+} from '../utils/invoicingEngine';
 import {
   evaluateMemberCheckIn,
   CheckInEvaluationResult,
@@ -447,6 +476,7 @@ interface AppState {
   staffSalaryAdvances: StaffSalaryAdvance[];
   staffPayrollRuns: StaffPayrollRunRecord[];
   staffPayrollSlips: StaffPayrollSlipRecord[];
+  effectiveStatutoryRate: StatutoryRateSet;
   schedule: ScheduleEvent[];
   classEnrollments: GymClassEnrollment[];
   devices: Device[];
@@ -551,6 +581,9 @@ interface AppState {
   commercialDocs: CommercialDocument[];
   purchaseDocs: PurchaseDocument[];
   stockVouchers: StockMovementVoucher[];
+  // Phase 2 Shared Horizontal Foundations (6.1 & 6.2)
+  unifiedDocuments: UnifiedDocument[];
+  unifiedPayments: UnifiedPayment[];
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -642,6 +675,7 @@ const DEFAULT_STATE: AppState = {
   staffSalaryAdvances: INITIAL_STAFF_SALARY_ADVANCES,
   staffPayrollRuns: INITIAL_STAFF_PAYROLL_RUNS,
   staffPayrollSlips: INITIAL_STAFF_PAYROLL_SLIPS,
+  effectiveStatutoryRate: getLocalCodeBaselineStatutoryRate(),
   schedule: INITIAL_SCHEDULE,
   classEnrollments: [],
   devices: INITIAL_DEVICES,
@@ -737,6 +771,8 @@ const DEFAULT_STATE: AppState = {
   commercialDocs: INITIAL_COMMERCIAL_DOCS,
   purchaseDocs: INITIAL_PURCHASE_DOCS,
   stockVouchers: INITIAL_STOCK_VOUCHERS,
+  unifiedDocuments: [],
+  unifiedPayments: [],
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -983,6 +1019,8 @@ let globalState: AppState = backfillTraceability((() => {
           commercialDocs: Array.isArray(parsed.commercialDocs) ? parsed.commercialDocs : INITIAL_COMMERCIAL_DOCS,
           purchaseDocs: Array.isArray(parsed.purchaseDocs) ? parsed.purchaseDocs : INITIAL_PURCHASE_DOCS,
           stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
+          unifiedDocuments: Array.isArray(parsed.unifiedDocuments) ? parsed.unifiedDocuments : [],
+          unifiedPayments: Array.isArray(parsed.unifiedPayments) ? parsed.unifiedPayments : [],
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -1619,6 +1657,14 @@ export const selectCurrentPurchaseDocsFromState = createBranchSelector<PurchaseD
 export const selectCurrentStockVouchersFromState = createBranchSelector<StockMovementVoucher>(
   (s) => s.stockVouchers,
   (v, b) => v.facilityId === b || v.branchId === b
+);
+export const selectCurrentUnifiedDocumentsFromState = createBranchSelector<UnifiedDocument>(
+  (s) => s.unifiedDocuments,
+  (d, b) => d.branchId === b
+);
+export const selectCurrentUnifiedPaymentsFromState = createBranchSelector<UnifiedPayment>(
+  (s) => s.unifiedPayments,
+  (p, b) => p.branchId === b
 );
 
 let cachedNotifSrc: AppNotification[] | undefined;
@@ -3202,6 +3248,8 @@ function pruneDeletedRecords(
     trading_commercial_docs: 'commercialDocs',
     trading_purchase_docs: 'purchaseDocs',
     trading_stock_vouchers: 'stockVouchers',
+    unified_documents: 'unifiedDocuments',
+    unified_payments: 'unifiedPayments',
     category_formules: 'categoryFormules',
   };
 
@@ -3307,10 +3355,27 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
         }
       });
     }
+    if (shouldSyncTable('statutory_rates')) {
+      tasks.push(async () => {
+        const rate = await referenceDataService.fetchEffectiveStatutoryRate();
+        if (rate) {
+          updates.effectiveStatutoryRate = rate;
+        }
+      });
+    }
     if (shouldSyncTable('staff_attendance_logs')) {
       tasks.push(async () => {
         const logs = await staffService.fetchAttendanceLogs(branchId, updatedAfter);
-        if (logs.length > 0) {
+        if (updatedAfter) {
+          if (logs.length > 0) {
+            updates.staffAttendanceLogs = mergeById(globalState.staffAttendanceLogs || [], logs);
+          }
+        } else if (isUuid(accountId)) {
+          const others = (globalState.staffAttendanceLogs || []).filter(
+            (r) => r.branchId && r.branchId !== branchId
+          );
+          updates.staffAttendanceLogs = [...logs, ...others];
+        } else if (logs.length > 0) {
           updates.staffAttendanceLogs = mergeById(globalState.staffAttendanceLogs || [], logs);
         }
       });
@@ -3318,7 +3383,16 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
     if (shouldSyncTable('staff_salary_advances')) {
       tasks.push(async () => {
         const advances = await staffService.fetchSalaryAdvances(branchId, updatedAfter);
-        if (advances.length > 0) {
+        if (updatedAfter) {
+          if (advances.length > 0) {
+            updates.staffSalaryAdvances = mergeById(globalState.staffSalaryAdvances || [], advances);
+          }
+        } else if (isUuid(accountId)) {
+          const others = (globalState.staffSalaryAdvances || []).filter(
+            (r) => r.branchId && r.branchId !== branchId
+          );
+          updates.staffSalaryAdvances = [...advances, ...others];
+        } else if (advances.length > 0) {
           updates.staffSalaryAdvances = mergeById(globalState.staffSalaryAdvances || [], advances);
         }
       });
@@ -3326,7 +3400,16 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
     if (shouldSyncTable('staff_payroll_runs')) {
       tasks.push(async () => {
         const runs = await staffService.fetchPayrollRuns(branchId, updatedAfter);
-        if (runs.length > 0) {
+        if (updatedAfter) {
+          if (runs.length > 0) {
+            updates.staffPayrollRuns = mergeById(globalState.staffPayrollRuns || [], runs);
+          }
+        } else if (isUuid(accountId)) {
+          const others = (globalState.staffPayrollRuns || []).filter(
+            (r) => r.branchId && r.branchId !== branchId
+          );
+          updates.staffPayrollRuns = [...runs, ...others];
+        } else if (runs.length > 0) {
           updates.staffPayrollRuns = mergeById(globalState.staffPayrollRuns || [], runs);
         }
       });
@@ -3334,7 +3417,21 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
     if (shouldSyncTable('staff_payroll_slips')) {
       tasks.push(async () => {
         const slips = await staffService.fetchPayrollSlips(branchId, updatedAfter);
-        if (slips.length > 0) {
+        if (updatedAfter) {
+          if (slips.length > 0) {
+            updates.staffPayrollSlips = mergeById(globalState.staffPayrollSlips || [], slips);
+          }
+        } else if (isUuid(accountId)) {
+          const otherBranchRunIds = new Set(
+            (globalState.staffPayrollRuns || [])
+              .filter((r) => r.branchId && r.branchId !== branchId)
+              .map((r) => r.id)
+          );
+          const others = (globalState.staffPayrollSlips || []).filter((s) =>
+            otherBranchRunIds.has(s.payrollRunId)
+          );
+          updates.staffPayrollSlips = [...slips, ...others];
+        } else if (slips.length > 0) {
           updates.staffPayrollSlips = mergeById(globalState.staffPayrollSlips || [], slips);
         }
       });
@@ -3361,6 +3458,34 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           updates.categoryFormules = updatedAfter
             ? mergeById(globalState.categoryFormules || [], formules)
             : formules;
+        }
+      });
+    }
+    if (shouldSyncTable('unified_documents')) {
+      tasks.push(async () => {
+        const docs = await invoicingService.fetchUnifiedDocuments(branchId, updatedAfter);
+        if (docs.length > 0 || !updatedAfter) {
+          const others = (globalState.unifiedDocuments || []).filter((d) => d.branchId !== branchId);
+          const cur = (globalState.unifiedDocuments || []).filter((d) => d.branchId === branchId);
+          if (updatedAfter && docs.length > 0) {
+            updates.unifiedDocuments = [...mergeById(cur, docs), ...others];
+          } else if (docs.length > 0) {
+            updates.unifiedDocuments = [...docs, ...others];
+          }
+        }
+      });
+    }
+    if (shouldSyncTable('unified_payments', 'unified_payment_allocations')) {
+      tasks.push(async () => {
+        const pays = await invoicingService.fetchUnifiedPayments(branchId, updatedAfter);
+        if (pays.length > 0 || !updatedAfter) {
+          const others = (globalState.unifiedPayments || []).filter((p) => p.branchId !== branchId);
+          const cur = (globalState.unifiedPayments || []).filter((p) => p.branchId === branchId);
+          if (updatedAfter && pays.length > 0) {
+            updates.unifiedPayments = [...mergeById(cur, pays), ...others];
+          } else if (pays.length > 0) {
+            updates.unifiedPayments = [...pays, ...others];
+          }
         }
       });
     }
@@ -7072,7 +7197,6 @@ function createAtriumActions() {
       return { success: false, message: 'Membre inactif' };
     }
 
-    const before = captureStoreSlices(['staff', 'staffAttendanceLogs']);
     const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const nowIso = new Date().toISOString();
     const todayStr = nowIso.slice(0, 10);
@@ -7087,7 +7211,7 @@ function createAtriumActions() {
         : 'kiosk';
 
     const newLogEntry: StaffAttendanceLogRecord = {
-      id: `att_log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      id: generateClientUuid(),
       accountId: target.accountId || globalState.account.id,
       businessId: target.businessId || globalState.currentBusinessId,
       branchId: target.branchId || target.facilityId || globalState.currentBranchId,
@@ -7098,6 +7222,9 @@ function createAtriumActions() {
       date: todayStr,
       type: isClockingIn ? 'in' : 'out',
       method: logMethod,
+      source: logMethod,
+      enteredBy: globalState.currentUser?.id,
+      enteredByName: globalState.currentUser?.fullName,
       terminalId: 'KIOSK_DESK_MAIN',
       notes: isClockingIn ? 'Pointage d\'arrivée enregistré' : 'Pointage de sortie enregistré',
     };
@@ -7122,33 +7249,6 @@ function createAtriumActions() {
       staffService.upsertAttendanceLog(newLogEntry).catch(() => {});
     }
 
-    const after = captureStoreSlices(['staff', 'staffAttendanceLogs']);
-    registerUndoEntry({
-      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
-      operationType: 'create',
-      summary: ul(
-        `${isClockingIn ? 'Clock-in' : 'Clock-out'}: ${target.fullName} (${nowTime})`,
-        `${isClockingIn ? 'Pointage arrivée' : 'Pointage sortie'} : ${target.fullName} (${nowTime})`,
-        `${isClockingIn ? 'تسجيل دخول' : 'تسجيل خروج'}: ${target.fullName} (${nowTime})`
-      ),
-      entityLabel: target.fullName,
-      toastType: 'success',
-      undo: () => {
-        restoreStoreSlices(before);
-        if (isSupabaseConfigured()) {
-          syncCoordinator.softDeleteRow('staff_attendance_logs', newLogEntry.id, globalState.currentUser?.id).catch(() => {});
-        }
-      },
-      redo: () => {
-        restoreStoreSlices(after);
-        if (isSupabaseConfigured()) {
-          syncCoordinator.restoreRow('staff_attendance_logs', newLogEntry.id, globalState.currentUser?.id)
-            .then(() => staffService.upsertAttendanceLog(newLogEntry))
-            .catch(() => {});
-        }
-      },
-    });
-
     return {
       success: true,
       staff: target,
@@ -7166,7 +7266,7 @@ function createAtriumActions() {
   }) => {
     const before = captureStoreSlices(['staffSalaryAdvances']);
     const newAdvance: StaffSalaryAdvance = {
-      id: `adv_${Date.now()}`,
+      id: generateClientUuid(),
       accountId: globalState.account.id,
       businessId: globalState.currentBusinessId,
       branchId: globalState.currentBranchId,
@@ -7219,7 +7319,19 @@ function createAtriumActions() {
   const waiveStaffSalaryAdvance = (advanceId: string) => {
     const prevTarget = (globalState.staffSalaryAdvances || []).find((a) => a.id === advanceId);
     if (!prevTarget) return;
-    const before = captureStoreSlices(['staffSalaryAdvances']);
+    if (prevTarget.status === 'deducted' || prevTarget.status === 'waived') {
+      showToast({
+        type: 'warning',
+        title: ul('Advance locked', 'Acompte verrouillé', 'التسبيق مقفل'),
+        message: ul(
+          'Deducted or waived salary advances are immutable.',
+          'Les acomptes déduits ou remis sont immuables.',
+          'التسبيقات المخصومة أو الملغاة غير قابلة للتعديل.'
+        ),
+      });
+      return;
+    }
+
     const updatedAdvances = (globalState.staffSalaryAdvances || []).map((a) =>
       a.id === advanceId ? { ...a, status: 'waived' as const } : a
     );
@@ -7228,55 +7340,90 @@ function createAtriumActions() {
       staffSalaryAdvances: updatedAdvances,
     };
     notify();
-    const target = updatedAdvances.find((a) => a.id === advanceId);
-    if (target && isSupabaseConfigured()) {
-      staffService.upsertSalaryAdvance(target).catch(() => {});
+
+    if (isSupabaseConfigured()) {
+      staffService.waiveSalaryAdvance(prevTarget).catch(() => {});
     }
-    const after = captureStoreSlices(['staffSalaryAdvances']);
-    registerUndoEntry({
-      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
-      operationType: 'status',
-      summary: ul(
-        `Waived salary advance: ${prevTarget.staffName}`,
-        `Acompte annulé/remis : ${prevTarget.staffName}`,
-        `إلغاء تسبيق الراتب: ${prevTarget.staffName}`
-      ),
-      entityLabel: prevTarget.staffName,
-      toastType: 'info',
-      undo: () => {
-        restoreStoreSlices(before);
-        if (isSupabaseConfigured()) {
-          staffService.upsertSalaryAdvance(prevTarget).catch(() => {});
-        }
-      },
-      redo: () => {
-        restoreStoreSlices(after);
-        if (target && isSupabaseConfigured()) {
-          staffService.upsertSalaryAdvance(target).catch(() => {});
-        }
-      },
+
+    showToast({
+      type: 'info',
+      title: ul('Salary advance waived', 'Acompte remis / annulé', 'تم إلغاء التسبيق'),
+      message: `${prevTarget.staffName} · ${prevTarget.voucherNumber}`,
     });
   };
 
-  const generateStaffPayrollRun = (month: number, year: number, category = 'membership_session') => {
+  const generateStaffPayrollRun = (
+    month: number,
+    year: number,
+    category = 'membership_session',
+    options?: { isAdjustment?: boolean }
+  ) => {
+    const businessId = globalState.currentBusinessId;
+    const branchId = globalState.currentBranchId;
+    const periodRuns = (globalState.staffPayrollRuns || []).filter((r) => {
+      const bizOk = !businessId || !r.businessId || r.businessId === businessId;
+      const brOk = !branchId || !r.branchId || r.branchId === branchId;
+      return bizOk && brOk && r.periodYear === year && r.periodMonth === month;
+    });
+    const existingRegularRun = periodRuns.find((r) => (r.runType || 'regular') === 'regular');
+
+    if (existingRegularRun && existingRegularRun.status !== 'draft' && !options?.isAdjustment) {
+      showToast({
+        type: 'warning',
+        title: ul(
+          'Payroll period locked',
+          'Période déjà clôturée',
+          'فترة الرواتب معتمدة'
+        ),
+        message: ul(
+          'The regular payroll run is approved/paid. Generate an Adjustment Run instead.',
+          'La paie régulière est validée/payée. Créez un cycle d\'ajustement à la place.',
+          'كشف الرواتب الأساسي معتمد أو مدفوع. أنشئ كشف تسوية بدلاً من ذلك.'
+        ),
+      });
+      return null;
+    }
+
+    const activeRateSet = globalState.effectiveStatutoryRate ?? getLocalCodeBaselineStatutoryRate();
+    const isAdjustment = Boolean(options?.isAdjustment);
+    const runType: 'regular' | 'adjustment' = isAdjustment ? 'adjustment' : 'regular';
+    const adjustmentSeq = isAdjustment
+      ? resolveNextAdjustmentSeq(globalState.staffPayrollRuns || [], businessId, branchId, year, month)
+      : 0;
+
     const before = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips']);
     const dateObj = new Date(year, month - 1, 1);
     const periodMonthName = dateObj.toLocaleString('fr-FR', { month: 'long' });
     const capitalizedPeriod = periodMonthName.charAt(0).toUpperCase() + periodMonthName.slice(1) + ' ' + year;
-    const runId = `payrun_${year}_${String(month).padStart(2, '0')}`;
+    const runId = !isAdjustment && existingRegularRun
+      ? existingRegularRun.id
+      : generateClientUuid();
 
-    const staffPool = (globalState.staff || []).filter((s) => s.status !== 'terminated');
+    const staffPool = (globalState.staff || []).filter((s) => {
+      if (s.status === 'terminated') return false;
+      if (branchId && s.branchId && s.branchId !== branchId) return false;
+      return true;
+    });
 
     let totalGross = 0;
     let totalCnasSal = 0;
     let totalCnasPat = 0;
     let totalIrg = 0;
     let totalNet = 0;
+    let totalCarryover = 0;
+
+    const existingSlipsForRun = new Map(
+      (globalState.staffPayrollSlips || [])
+        .filter((s) => s.payrollRunId === runId)
+        .map((s) => [s.staffId, s])
+    );
 
     const slips: StaffPayrollSlipRecord[] = staffPool.map((member, idx) => {
-      const pendingAdvances = (globalState.staffSalaryAdvances || []).filter(
-        (a) => a.staffId === member.id && a.status === 'pending'
-      );
+      const pendingAdvances = isAdjustment
+        ? []
+        : (globalState.staffSalaryAdvances || []).filter(
+            (a) => a.staffId === member.id && a.status === 'pending'
+          );
       const advancesSum = pendingAdvances.reduce((sum, a) => sum + a.amountDzd, 0);
 
       const coachingCommission = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
@@ -7288,6 +7435,7 @@ function createAtriumActions() {
         standardDays: 22,
         primesCotisables,
         advancesDeducted: advancesSum,
+        statutoryRateSet: activeRateSet,
       });
 
       totalGross += calc.salaireBrutCotisable;
@@ -7295,17 +7443,20 @@ function createAtriumActions() {
       totalCnasPat += calc.cnasPatronal;
       totalIrg += calc.irgTax;
       totalNet += calc.netAPayer;
+      totalCarryover += calc.advanceCarryover;
+
+      const existingSlip = existingSlipsForRun.get(member.id);
 
       return {
-        id: `slip_${year}_${month}_${member.id}`,
+        id: existingSlip?.id || generateClientUuid(),
         payrollRunId: runId,
         staffId: member.id,
-        matricule: `MAT-GYM-${String(idx + 1).padStart(3, '0')}`,
+        matricule: existingSlip?.matricule || `MAT-GYM-${String(idx + 1).padStart(3, '0')}`,
         staffFullName: member.fullName,
         role: member.role,
         periodMonth: month,
         periodYear: year,
-        periodLabel: capitalizedPeriod,
+        periodLabel: isAdjustment ? `${capitalizedPeriod} (Aj. #${adjustmentSeq})` : capitalizedPeriod,
         baseSalary: calc.baseSalary,
         actualBaseSalary: calc.actualBaseSalary,
         workedDays: calc.workedDays,
@@ -7319,34 +7470,48 @@ function createAtriumActions() {
         irgTax: calc.irgTax,
         primesNonImposables: calc.primesNonImposables,
         acomptesDeduits: calc.acomptesDeduits,
+        advanceCarryover: calc.advanceCarryover,
         autresRetenues: calc.autresRetenues,
         netAPayer: calc.netAPayer,
         paymentMethod: member.paymentMethod || 'cash',
         ccpNumber: member.ccpNumber,
         ccpKey: member.ccpKey,
         bankRib: member.bankRib,
-        nss: '89 04 16 0000 00',
+        nss: member.nss || existingSlip?.nss,
         isPaid: false,
-        receiptNumber: `FP-${year}-${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`,
+        receiptNumber: existingSlip?.receiptNumber || `FP-${year}-${String(month).padStart(2, '0')}-${isAdjustment ? `A${adjustmentSeq}-` : ''}${String(idx + 1).padStart(3, '0')}`,
+        rateSetId: calc.rateSetId,
+        rateBasis: calc.rateBasis,
+        rateSnapshot: calc.rateSnapshot,
+        version: existingSlip?.version,
       };
     });
 
     const newRun: StaffPayrollRunRecord = {
       id: runId,
       accountId: globalState.account.id,
-      businessId: globalState.currentBusinessId,
-      branchId: globalState.currentBranchId,
+      businessId,
+      branchId,
+      category,
       periodMonth: month,
       periodYear: year,
-      title: `Paie ${capitalizedPeriod}`,
+      title: isAdjustment
+        ? `Paie ${capitalizedPeriod} (Ajustement #${adjustmentSeq})`
+        : `Paie ${capitalizedPeriod}`,
       status: 'draft',
+      runType,
+      adjustmentSeq,
+      rateSetId: slips[0]?.rateSetId ?? (isUuid(activeRateSet.id) ? activeRateSet.id : null),
+      rateBasis: slips[0]?.rateBasis ?? (isUuid(activeRateSet.id) && !activeRateSet.isLegacyBaseline ? 'versioned' : 'legacy'),
+      rateSnapshot: slips[0]?.rateSnapshot ?? null,
       totalGrossCotisable: totalGross,
       totalCnasSalarial: totalCnasSal,
       totalCnasPatronal: totalCnasPat,
       totalIrg: totalIrg,
       totalNet: totalNet,
       slipsCount: slips.length,
-      createdAt: new Date().toISOString(),
+      createdAt: existingRegularRun && !isAdjustment ? existingRegularRun.createdAt : new Date().toISOString(),
+      version: existingRegularRun && !isAdjustment ? existingRegularRun.version : undefined,
     };
 
     const existingRuns = (globalState.staffPayrollRuns || []).filter((r) => r.id !== runId);
@@ -7359,11 +7524,23 @@ function createAtriumActions() {
     };
     notify();
 
+    if (totalCarryover > 0) {
+      showToast({
+        type: 'info',
+        title: ul('Advance deduction capped', 'Déduction d\'acompte plafonnée', 'تم تحديد سقف خصم التسبيق'),
+        message: ul(
+          `${totalCarryover.toLocaleString()} DZD carried over because advances exceeded net pay.`,
+          `${totalCarryover.toLocaleString()} DZD reportés car l'acompte dépasse le net à payer.`,
+          `تم ترحيل ${totalCarryover.toLocaleString()} دج لأن التسبيقات تتجاوز صافي الأجر.`
+        ),
+      });
+    }
+
     if (isSupabaseConfigured()) {
       const ctx = {
         accountId: globalState.account.id,
-        businessId: globalState.currentBusinessId,
-        branchId: globalState.currentBranchId,
+        businessId,
+        branchId,
       };
       staffService
         .upsertPayrollRun(newRun, category)
@@ -7381,11 +7558,11 @@ function createAtriumActions() {
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'create',
       summary: ul(
-        `Generated payroll: ${capitalizedPeriod} (${slips.length} slips)`,
-        `Paie calculée : ${capitalizedPeriod} (${slips.length} bulletins)`,
-        `احتساب الرواتب: ${capitalizedPeriod} (${slips.length})`
+        `Generated payroll: ${newRun.title} (${slips.length} slips)`,
+        `Paie calculée : ${newRun.title} (${slips.length} bulletins)`,
+        `احتساب الرواتب: ${newRun.title} (${slips.length})`
       ),
-      entityLabel: capitalizedPeriod,
+      entityLabel: newRun.title,
       toastType: 'success',
       undo: () => {
         restoreStoreSlices(before);
@@ -7402,8 +7579,8 @@ function createAtriumActions() {
         if (isSupabaseConfigured()) {
           const ctx = {
             accountId: globalState.account.id,
-            businessId: globalState.currentBusinessId,
-            branchId: globalState.currentBranchId,
+            businessId,
+            branchId,
           };
           syncCoordinator.restoreRow('staff_payroll_runs', runId, globalState.currentUser?.id)
             .then(() => staffService.upsertPayrollRun(newRun, category))
@@ -7424,22 +7601,59 @@ function createAtriumActions() {
     return newRun;
   };
 
-  const approveStaffPayrollRun = (runId: string) => {
+  const approveStaffPayrollRun = (runId: string, options?: { markPaid?: boolean }) => {
     const run = (globalState.staffPayrollRuns || []).find((r) => r.id === runId);
     if (!run) return;
-    const before = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips', 'staffSalaryAdvances']);
+    if (run.status === 'paid') return;
 
-    const updatedAdvances = (globalState.staffSalaryAdvances || []).map((adv) =>
-      adv.status === 'pending'
-        ? { ...adv, status: 'deducted' as const, deductedInPeriod: `${run.periodYear}-${String(run.periodMonth).padStart(2, '0')}` }
-        : adv
+    const markPaid = Boolean(options?.markPaid);
+    if (run.status === 'approved' && !markPaid) return;
+
+    const periodKey = `${run.periodYear}-${String(run.periodMonth).padStart(2, '0')}`;
+    const nowIso = new Date().toISOString();
+    const todayIso = nowIso.slice(0, 10);
+    const runSlips = (globalState.staffPayrollSlips || []).filter((s) => s.payrollRunId === runId);
+    const staffWithDeductedAdvances = new Set(
+      runSlips.filter((s) => s.acomptesDeduits > 0).map((s) => s.staffId)
     );
+    const targetAdvanceIds =
+      run.status === 'draft'
+        ? (globalState.staffSalaryAdvances || [])
+            .filter(
+              (adv) =>
+                adv.status === 'pending' &&
+                staffWithDeductedAdvances.has(adv.staffId) &&
+                (!adv.branchId || !run.branchId || adv.branchId === run.branchId)
+            )
+            .map((adv) => adv.id)
+        : [];
+    const targetAdvanceSet = new Set(targetAdvanceIds);
+
+    const nextStatus: StaffPayrollRunRecord['status'] = markPaid ? 'paid' : 'approved';
+    const updatedAdvances =
+      run.status === 'draft'
+        ? (globalState.staffSalaryAdvances || []).map((adv) =>
+            targetAdvanceSet.has(adv.id)
+              ? { ...adv, status: 'deducted' as const, deductedInPeriod: periodKey }
+              : adv
+          )
+        : globalState.staffSalaryAdvances || [];
+
     const updatedRuns = (globalState.staffPayrollRuns || []).map((r) =>
-      r.id === runId ? { ...r, status: 'paid' as const, approvedAt: new Date().toISOString() } : r
+      r.id === runId
+        ? {
+            ...r,
+            status: nextStatus,
+            approvedAt: r.approvedAt || nowIso,
+            approvedBy: r.approvedBy || globalState.currentUser?.id || null,
+          }
+        : r
     );
-    const updatedSlips = (globalState.staffPayrollSlips || []).map((s) =>
-      s.payrollRunId === runId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
-    );
+    const updatedSlips = markPaid
+      ? (globalState.staffPayrollSlips || []).map((s) =>
+          s.payrollRunId === runId && !s.isPaid ? { ...s, isPaid: true, paidDate: todayIso } : s
+        )
+      : globalState.staffPayrollSlips || [];
 
     globalState = {
       ...globalState,
@@ -7450,83 +7664,31 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      const approvedRun = updatedRuns.find((r) => r.id === runId);
-      const ctx = {
-        accountId: globalState.account.id,
-        businessId: globalState.currentBusinessId,
-        branchId: globalState.currentBranchId,
-      };
-      if (approvedRun) {
-        staffService.upsertPayrollRun(approvedRun, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
-      }
-      runWithConcurrency(
-        [
-          ...updatedSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
-          ...updatedAdvances.filter((a) => a.status === 'deducted').map((a) => () => staffService.upsertSalaryAdvance(a)),
-        ],
-        4
-      ).catch(() => {});
+      staffService
+        .approvePayrollRun(runId, {
+          markPaid,
+          advanceIds: run.status === 'draft' ? targetAdvanceIds : undefined,
+          expectedVersion: run.version,
+          title: run.title,
+        })
+        .catch(() => {});
     }
 
-    const after = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips', 'staffSalaryAdvances']);
-    registerUndoEntry({
-      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
-      operationType: 'status',
-      summary: ul(
-        `Approved payroll: ${run.title}`,
-        `Paie clôturée : ${run.title}`,
-        `اعتماد كشف الرواتب: ${run.title}`
-      ),
-      entityLabel: run.title,
-      toastType: 'success',
-      undo: () => {
-        restoreStoreSlices(before);
-        if (isSupabaseConfigured()) {
-          const ctx = {
-            accountId: globalState.account.id,
-            businessId: globalState.currentBusinessId,
-            branchId: globalState.currentBranchId,
-          };
-          staffService.upsertPayrollRun(run, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
-          runWithConcurrency(
-            [
-              ...before.staffPayrollSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
-              ...before.staffSalaryAdvances.map((a) => () => staffService.upsertSalaryAdvance(a)),
-            ],
-            4
-          ).catch(() => {});
-        }
-      },
-      redo: () => {
-        restoreStoreSlices(after);
-        if (isSupabaseConfigured()) {
-          const approvedRun = updatedRuns.find((r) => r.id === runId);
-          const ctx = {
-            accountId: globalState.account.id,
-            businessId: globalState.currentBusinessId,
-            branchId: globalState.currentBranchId,
-          };
-          if (approvedRun) {
-            staffService.upsertPayrollRun(approvedRun, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
-          }
-          runWithConcurrency(
-            [
-              ...updatedSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
-              ...updatedAdvances.filter((a) => a.status === 'deducted').map((a) => () => staffService.upsertSalaryAdvance(a)),
-            ],
-            4
-          ).catch(() => {});
-        }
-      },
+    showToast({
+      type: 'success',
+      title: markPaid
+        ? ul('Payroll closed & paid', 'Paie clôturée & payée', 'تم اعتماد وصرف الرواتب')
+        : ul('Payroll run approved', 'Paie validée (immuable)', 'تم اعتماد كشف الرواتب'),
+      message: run.title,
     });
   };
 
   const markStaffPayrollSlipPaid = (slipId: string) => {
     const prevTarget = (globalState.staffPayrollSlips || []).find((s) => s.id === slipId);
-    if (!prevTarget) return;
-    const before = captureStoreSlices(['staffPayrollSlips']);
+    if (!prevTarget || prevTarget.isPaid) return;
+    const paidDate = new Date().toISOString().slice(0, 10);
     const updatedSlips = (globalState.staffPayrollSlips || []).map((s) =>
-      s.id === slipId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
+      s.id === slipId ? { ...s, isPaid: true, paidDate } : s
     );
     globalState = {
       ...globalState,
@@ -7534,47 +7696,14 @@ function createAtriumActions() {
     };
     notify();
 
-    const target = updatedSlips.find((s) => s.id === slipId);
-    if (target && isSupabaseConfigured()) {
-      staffService
-        .upsertPayrollSlip(target, {
-          accountId: globalState.account.id,
-          businessId: globalState.currentBusinessId,
-          branchId: globalState.currentBranchId,
-        })
-        .catch(() => {});
+    if (isSupabaseConfigured()) {
+      staffService.markPayrollSlipPaid(prevTarget, paidDate).catch(() => {});
     }
-    const after = captureStoreSlices(['staffPayrollSlips']);
-    registerUndoEntry({
-      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
-      operationType: 'status',
-      summary: ul(
-        `Paid slip: ${prevTarget.staffFullName}`,
-        `Bulletin payé : ${prevTarget.staffFullName}`,
-        `صرف قسيمة الراتب: ${prevTarget.staffFullName}`
-      ),
-      entityLabel: prevTarget.staffFullName,
-      toastType: 'success',
-      undo: () => {
-        restoreStoreSlices(before);
-        if (isSupabaseConfigured()) {
-          staffService.upsertPayrollSlip(prevTarget, {
-            accountId: globalState.account.id,
-            businessId: globalState.currentBusinessId,
-            branchId: globalState.currentBranchId,
-          }).catch(() => {});
-        }
-      },
-      redo: () => {
-        restoreStoreSlices(after);
-        if (target && isSupabaseConfigured()) {
-          staffService.upsertPayrollSlip(target, {
-            accountId: globalState.account.id,
-            businessId: globalState.currentBusinessId,
-            branchId: globalState.currentBranchId,
-          }).catch(() => {});
-        }
-      },
+
+    showToast({
+      type: 'success',
+      title: ul('Payslip marked paid', 'Bulletin marqué payé', 'تم صرف قسيمة الراتب'),
+      message: `${prevTarget.staffFullName} · ${prevTarget.periodLabel}`,
     });
   };
 
@@ -7587,10 +7716,9 @@ function createAtriumActions() {
   ) => {
     const target = (globalState.staff || []).find((s) => s.id === staffId);
     if (!target) return;
-    const before = captureStoreSlices(['staffAttendanceLogs']);
 
     const logEntry: StaffAttendanceLogRecord = {
-      id: `att_log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      id: generateClientUuid(),
       accountId: target.accountId || globalState.account.id,
       businessId: target.businessId || globalState.currentBusinessId,
       branchId: target.branchId || target.facilityId || globalState.currentBranchId,
@@ -7601,6 +7729,9 @@ function createAtriumActions() {
       date,
       type,
       method: 'manual',
+      source: 'manual',
+      enteredBy: globalState.currentUser?.id,
+      enteredByName: globalState.currentUser?.fullName,
       terminalId: 'PORTAIL_MANAGER',
       notes: notes || 'Pointage manuel manager',
     };
@@ -7615,32 +7746,86 @@ function createAtriumActions() {
       staffService.upsertAttendanceLog(logEntry).catch(() => {});
     }
 
-    const after = captureStoreSlices(['staffAttendanceLogs']);
-    registerUndoEntry({
-      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
-      operationType: 'create',
-      summary: ul(
-        `Manual attendance: ${target.fullName} (${time})`,
-        `Pointage manuel : ${target.fullName} (${time})`,
-        `تسجيل حضور يدوي: ${target.fullName} (${time})`
-      ),
-      entityLabel: target.fullName,
-      toastType: 'success',
-      undo: () => {
-        restoreStoreSlices(before);
-        if (isSupabaseConfigured()) {
-          syncCoordinator.softDeleteRow('staff_attendance_logs', logEntry.id, globalState.currentUser?.id).catch(() => {});
-        }
-      },
-      redo: () => {
-        restoreStoreSlices(after);
-        if (isSupabaseConfigured()) {
-          syncCoordinator.restoreRow('staff_attendance_logs', logEntry.id, globalState.currentUser?.id)
-            .then(() => staffService.upsertAttendanceLog(logEntry))
-            .catch(() => {});
-        }
-      },
+    showToast({
+      type: 'success',
+      title: ul('Manual attendance logged', 'Pointage manuel enregistré', 'تم تسجيل الحضور اليدوي'),
+      message: `${target.fullName} · ${time}`,
     });
+  };
+
+  const executePayrollMigrationBackfillAction = async (force = false) => {
+    if (!isSupabaseConfigured()) {
+      showToast({
+        type: 'warning',
+        title: ul('Cloud sync not configured', 'Synchronisation cloud non configurée', 'المزامنة السحابية غير مفعلة'),
+        message: ul(
+          'Connect Supabase before running database migration backfill.',
+          'Connectez Supabase avant d\'exécuter la reprise en base de données.',
+          'قم بالاتصال بقاعدة البيانات قبل تنفيذ الترحيل.'
+        ),
+      });
+      return null;
+    }
+
+    const activeBiz = (globalState.businesses || []).find((b) => b.id === globalState.currentBusinessId);
+    const category = activeBiz?.category || 'membership_session';
+
+    const result = await executePayrollMigrationBackfill({
+      force,
+      remoteState: {
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        staffList: globalState.staff || [],
+        attendanceLogs: globalState.staffAttendanceLogs || [],
+        salaryAdvances: globalState.staffSalaryAdvances || [],
+        payrollRuns: globalState.staffPayrollRuns || [],
+        payrollSlips: globalState.staffPayrollSlips || [],
+      },
+      persistInsertOnly: (payload) =>
+        staffService.insertOnlyBackfillPayroll({
+          ctx: {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+            category,
+          },
+          attendanceLogs: payload.attendanceLogs,
+          salaryAdvances: payload.salaryAdvances,
+          payrollRuns: payload.payrollRuns,
+          payrollSlips: payload.payrollSlips,
+        }),
+    });
+
+    if (result.errors.length > 0) {
+      showToast({
+        type: 'error',
+        title: ul('Backfill completed with warnings', 'Reprise terminée avec erreurs', 'اكتمل الترحيل مع أخطاء'),
+        message: result.errors[0],
+      });
+    } else if (result.alreadyCompleted) {
+      showToast({
+        type: 'info',
+        title: ul('Backfill already executed', 'Reprise déjà effectuée', 'تم الترحيل مسبقاً'),
+        message: result.marker.completedAt.slice(0, 10),
+      });
+    } else {
+      await syncWithSupabaseAction({
+        onlyTables: [
+          'staff_attendance_logs',
+          'staff_salary_advances',
+          'staff_payroll_runs',
+          'staff_payroll_slips',
+        ],
+      }).catch(() => {});
+
+      showToast({
+        type: 'success',
+        title: ul('Database backfill completed', 'Reprise en base terminée', 'اكتمل ترحيل البيانات'),
+        message: `${result.marker.runsInserted} runs · ${result.marker.slipsInserted} slips · ${result.marker.skippedCollisions.length} skipped`,
+      });
+    }
+
+    return result;
   };
 
   const parkOrder = (
@@ -17807,6 +17992,784 @@ function createAtriumActions() {
     return { success: true };
   };
 
+  // ============================================================
+  // Phase 2 Shared Horizontal Modules (6.1 & 6.2): Unified Invoicing & Payments
+  // ============================================================
+
+  const resolveUnifiedContext = (sourceVertical?: string) => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const business =
+      (globalState.businesses || []).find((b) => b.id === globalState.currentBusinessId) ||
+      globalState.businesses?.[0];
+    const branch =
+      (globalState.branches || []).find((br) => br.id === globalState.currentBranchId) ||
+      globalState.branches?.[0];
+    const cfg = globalState.businessConfigs?.[business?.id || globalState.currentBusinessId];
+    return {
+      accountId,
+      businessId: business?.id || globalState.currentBusinessId,
+      branchId: branch?.id || globalState.currentBranchId,
+      sourceVertical: sourceVertical || business?.category || 'trading_commercial',
+      header: buildUnifiedFiscalHeader(business, branch, cfg),
+    };
+  };
+
+  const createUnifiedDocument = (input: {
+    docType: UnifiedDocType;
+    sourceVertical?: string;
+    partyId?: string;
+    partyName: string;
+    partyNif?: string;
+    partyNis?: string;
+    partyRc?: string;
+    partyAi?: string;
+    partyAddress?: string;
+    partyPhone?: string;
+    depotId?: string;
+    depotName?: string;
+    docDate?: string;
+    dueDate?: string;
+    validityDays?: number;
+    paymentMethod?: UnifiedPaymentMethod | string;
+    paymentTerms?: string;
+    currency?: UnifiedCurrency;
+    fxRate?: number;
+    timbreBasis?: TimbreCalculationBasis;
+    isCashFiscalStampEnabled?: boolean;
+    generalDiscountPercent?: number;
+    guaranteeRetentionPercent?: number;
+    includeStampSignature?: boolean;
+    notesTop?: string;
+    notesBottom?: string;
+    linkedDocId?: string;
+    linkedDocNumber?: string;
+    sourceEntityType?: string;
+    sourceEntityId?: string;
+    items: UnifiedLineInput[];
+    issueImmediately?: boolean;
+  }): UnifiedDocument => {
+    const ctx = resolveUnifiedContext(input.sourceVertical);
+    const closedPeriods =
+      globalState.businessConfigs?.[ctx.businessId]?.accountingPeriodClosedMonths || [];
+    const docDate = input.docDate || new Date().toISOString().slice(0, 10);
+    if (isDateInClosedPeriod(docDate, closedPeriods)) {
+      throw new Error('PERIOD_CLOSED_LOCKED');
+    }
+
+    const before = captureStoreSlices(['unifiedDocuments']);
+    const id = generateClientUuid();
+    const nowIso = new Date().toISOString();
+    const calc = calculateUnifiedDocumentTotals({
+      items: input.items,
+      generalDiscountPercent: input.generalDiscountPercent,
+      guaranteeRetentionPercent: input.guaranteeRetentionPercent,
+      paymentMethod: input.paymentMethod,
+      timbreBasis: input.timbreBasis,
+      isCashFiscalStampEnabled: input.isCashFiscalStampEnabled,
+      currency: input.currency || 'DZD',
+      fxRate: input.fxRate ?? 1,
+      statutoryRate: globalState.effectiveStatutoryRate,
+    });
+
+    const newDoc: UnifiedDocument = {
+      id,
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      sourceVertical: ctx.sourceVertical,
+      docType: input.docType,
+      draftNumber: formatDraftDocNumber(input.docType, id),
+      docNumber: null,
+      fiscalYear: Number(docDate.slice(0, 4)) || new Date().getFullYear(),
+      status: 'Draft',
+      partyId: input.partyId,
+      partyName: input.partyName || 'Client',
+      partyNif: input.partyNif,
+      partyNis: input.partyNis,
+      partyRc: input.partyRc,
+      partyAi: input.partyAi,
+      partyAddress: input.partyAddress,
+      partyPhone: input.partyPhone,
+      depotId: input.depotId,
+      depotName: input.depotName,
+      docDate,
+      dueDate: input.dueDate,
+      validityDays: input.validityDays,
+      paymentMethod: input.paymentMethod || 'bank_transfer',
+      paymentTerms: input.paymentTerms || 'Comptant',
+      currency: input.currency || 'DZD',
+      fxRate: input.fxRate ?? 1,
+      fxRateDate: docDate,
+      timbreBasis:
+        input.timbreBasis ||
+        (input.isCashFiscalStampEnabled ? 'commercial_cash' : 'exempt'),
+      rateSetId: globalState.effectiveStatutoryRate?.id ?? null,
+      items: calc.items,
+      tvaBreakdown: calc.tvaBreakdown,
+      totalHtRawCentimes: calc.totalHtRawCentimes,
+      generalDiscountPercent: input.generalDiscountPercent || 0,
+      totalHtFinalCentimes: calc.totalHtFinalCentimes,
+      totalTvaCentimes: calc.totalTvaCentimes,
+      timbreFiscalCentimes: calc.timbreFiscalCentimes,
+      totalTtcCentimes: calc.totalTtcCentimes,
+      guaranteeRetentionPercent: input.guaranteeRetentionPercent || 0,
+      guaranteeRetentionCentimes: calc.guaranteeRetentionCentimes,
+      netToPayCentimes: calc.netToPayCentimes,
+      paidCentimes: 0,
+      balanceDueCentimes: calc.netToPayCentimes,
+      fiscalHeaderSnapshot: ctx.header,
+      totalsInWordsFr: calc.totalsInWordsFr,
+      totalsInWordsAr: calc.totalsInWordsAr,
+      includeStampSignature: input.includeStampSignature ?? true,
+      notesTop: input.notesTop,
+      notesBottom: input.notesBottom,
+      linkedDocId: input.linkedDocId,
+      linkedDocNumber: input.linkedDocNumber,
+      sourceEntityType: input.sourceEntityType,
+      sourceEntityId: input.sourceEntityId,
+      printedCount: 0,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      unifiedDocuments: [newDoc, ...(globalState.unifiedDocuments || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      invoicingService.upsertUnifiedDocument(newDoc, globalState.currentUser?.id).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['unifiedDocuments']);
+    registerUndoEntry({
+      vertical: ctx.sourceVertical,
+      operationType: 'create',
+      summary: ul(
+        `Created draft ${newDoc.draftNumber} (${newDoc.partyName})`,
+        `Brouillon créé : ${newDoc.draftNumber} (${newDoc.partyName})`,
+        `تم إنشاء مسودة: ${newDoc.draftNumber}`
+      ),
+      entityLabel: newDoc.draftNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          invoicingService.deleteUnifiedDraft(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('unified_documents', id, globalState.currentUser?.id)
+            .then(() => invoicingService.upsertUnifiedDocument(newDoc, globalState.currentUser?.id))
+            .catch(() => {});
+        }
+      },
+    });
+
+    if (input.issueImmediately) {
+      return issueUnifiedDocument(newDoc.id) || newDoc;
+    }
+    return newDoc;
+  };
+
+  const updateUnifiedDraft = (
+    id: string,
+    patch: Partial<{
+      partyId: string;
+      partyName: string;
+      partyNif: string;
+      partyNis: string;
+      partyRc: string;
+      partyAi: string;
+      partyAddress: string;
+      partyPhone: string;
+      depotId: string;
+      depotName: string;
+      docDate: string;
+      dueDate: string;
+      validityDays: number;
+      paymentMethod: UnifiedPaymentMethod | string;
+      paymentTerms: string;
+      currency: UnifiedCurrency;
+      fxRate: number;
+      timbreBasis: TimbreCalculationBasis;
+      isCashFiscalStampEnabled: boolean;
+      generalDiscountPercent: number;
+      guaranteeRetentionPercent: number;
+      includeStampSignature: boolean;
+      notesTop: string;
+      notesBottom: string;
+      items: UnifiedLineInput[];
+    }>
+  ): UnifiedDocument | null => {
+    const prev = (globalState.unifiedDocuments || []).find((d) => d.id === id);
+    if (!prev) return null;
+    if (prev.status !== 'Draft') {
+      showToast({
+        type: 'error',
+        title: ul('Document Locked', 'Document Verrouillé', 'المستند مقفل'),
+        message: ul(
+          'Issued documents are immutable. Create a credit note (avoir) instead.',
+          'Les pièces émises sont immuables. Veuillez créer une facture d’avoir.',
+          'المستندات الصادرة غير قابلة للتعديل. يرجى إصدار إشعار دائن.'
+        ),
+      });
+      return null;
+    }
+
+    const before = captureStoreSlices(['unifiedDocuments']);
+    const nextCurrency = patch.currency || prev.currency;
+    const nextFxRate = patch.fxRate ?? prev.fxRate;
+    const nextPaymentMethod = patch.paymentMethod ?? prev.paymentMethod;
+    const nextTimbreBasis = patch.timbreBasis ?? prev.timbreBasis;
+    const nextGenDiscount = patch.generalDiscountPercent ?? prev.generalDiscountPercent;
+    const nextRetention = patch.guaranteeRetentionPercent ?? prev.guaranteeRetentionPercent;
+    const nextItemsInput: UnifiedLineInput[] =
+      patch.items ||
+      prev.items.map((i) => ({
+        id: i.id,
+        productId: i.productId,
+        description: i.description,
+        isService: i.isService,
+        quantity: i.quantity,
+        unit: i.unit,
+        unitPriceHt: i.unitPriceHt,
+        tvaPercent: i.tvaPercent,
+        discountPercent: i.discountPercent,
+      }));
+
+    const calc = calculateUnifiedDocumentTotals({
+      items: nextItemsInput,
+      generalDiscountPercent: nextGenDiscount,
+      guaranteeRetentionPercent: nextRetention,
+      paymentMethod: nextPaymentMethod,
+      timbreBasis: nextTimbreBasis,
+      isCashFiscalStampEnabled: patch.isCashFiscalStampEnabled ?? nextTimbreBasis !== 'exempt',
+      currency: nextCurrency,
+      fxRate: nextFxRate,
+      statutoryRate: globalState.effectiveStatutoryRate,
+    });
+
+    const nextDoc: UnifiedDocument = {
+      ...prev,
+      ...patch,
+      currency: nextCurrency,
+      fxRate: nextFxRate,
+      paymentMethod: nextPaymentMethod,
+      timbreBasis: nextTimbreBasis,
+      generalDiscountPercent: nextGenDiscount,
+      guaranteeRetentionPercent: nextRetention,
+      items: calc.items,
+      tvaBreakdown: calc.tvaBreakdown,
+      totalHtRawCentimes: calc.totalHtRawCentimes,
+      totalHtFinalCentimes: calc.totalHtFinalCentimes,
+      totalTvaCentimes: calc.totalTvaCentimes,
+      timbreFiscalCentimes: calc.timbreFiscalCentimes,
+      totalTtcCentimes: calc.totalTtcCentimes,
+      guaranteeRetentionCentimes: calc.guaranteeRetentionCentimes,
+      netToPayCentimes: calc.netToPayCentimes,
+      balanceDueCentimes: Math.max(0, calc.netToPayCentimes - prev.paidCentimes),
+      totalsInWordsFr: calc.totalsInWordsFr,
+      totalsInWordsAr: calc.totalsInWordsAr,
+      updatedAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      unifiedDocuments: (globalState.unifiedDocuments || []).map((d) => (d.id === id ? nextDoc : d)),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      invoicingService.upsertUnifiedDocument(nextDoc, globalState.currentUser?.id).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['unifiedDocuments']);
+    registerUndoEntry({
+      vertical: prev.sourceVertical,
+      operationType: 'edit',
+      summary: ul(
+        `Updated draft ${prev.draftNumber}`,
+        `Brouillon modifié : ${prev.draftNumber}`,
+        `تعديل المسودة: ${prev.draftNumber}`
+      ),
+      entityLabel: prev.draftNumber,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          invoicingService.upsertUnifiedDocument(prev, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          invoicingService.upsertUnifiedDocument(nextDoc, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
+    return nextDoc;
+  };
+
+  const deleteUnifiedDraft = (id: string): boolean => {
+    const target = (globalState.unifiedDocuments || []).find((d) => d.id === id);
+    if (!target) return false;
+    if (target.status !== 'Draft') {
+      showToast({
+        type: 'error',
+        title: ul('Cannot Delete Issued Document', 'Suppression Bloquée', 'لا يمكن حذف مستند صادر'),
+        message: ul(
+          'Issued documents cannot be deleted. Issue a credit note (avoir) or void.',
+          'Une pièce émise ne peut être supprimée ; émettez un avoir.',
+          'لا يمكن حذف المستندات الصادرة؛ قم بإصدار إشعار دائن.'
+        ),
+      });
+      return false;
+    }
+    const before = captureStoreSlices(['unifiedDocuments']);
+    globalState = {
+      ...globalState,
+      unifiedDocuments: (globalState.unifiedDocuments || []).filter((d) => d.id !== id),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      invoicingService.deleteUnifiedDraft(id, globalState.currentUser?.id).catch(() => {});
+    }
+    const after = captureStoreSlices(['unifiedDocuments']);
+    registerUndoEntry({
+      vertical: target.sourceVertical,
+      operationType: 'delete',
+      summary: ul(
+        `Deleted draft ${target.draftNumber}`,
+        `Brouillon supprimé : ${target.draftNumber}`,
+        `حذف المسودة: ${target.draftNumber}`
+      ),
+      entityLabel: target.draftNumber,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('unified_documents', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          invoicingService.deleteUnifiedDraft(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
+    return true;
+  };
+
+  const issueUnifiedDocument = (id: string): UnifiedDocument | null => {
+    const doc = (globalState.unifiedDocuments || []).find((d) => d.id === id);
+    if (!doc) return null;
+    if (doc.status !== 'Draft') return doc;
+
+    const existingSeq = (globalState.unifiedDocuments || []).filter(
+      (d) =>
+        d.businessId === doc.businessId &&
+        d.docType === doc.docType &&
+        d.fiscalYear === doc.fiscalYear &&
+        d.docNumber
+    ).length;
+    const provisionalNumber = formatServerFiscalNumber(doc.docType, doc.fiscalYear, existingSeq + 1);
+    const nextStatus: UnifiedDocStatus = doc.docType === 'bl' ? 'Delivered' : 'Issued';
+    const nowIso = new Date().toISOString();
+
+    const issuedDoc: UnifiedDocument = {
+      ...doc,
+      docNumber: provisionalNumber,
+      status: nextStatus,
+      issuedAt: nowIso,
+      issuedByStaffId: globalState.currentUser?.id,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      unifiedDocuments: (globalState.unifiedDocuments || []).map((d) => (d.id === id ? issuedDoc : d)),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      invoicingService
+        .upsertUnifiedDocument(doc, globalState.currentUser?.id)
+        .then(() => invoicingService.issueUnifiedDocument(doc.id, doc.fiscalYear))
+        .then((res) => {
+          if (res.docNumber) {
+            globalState = {
+              ...globalState,
+              unifiedDocuments: (globalState.unifiedDocuments || []).map((d) =>
+                d.id === id
+                  ? {
+                      ...d,
+                      docNumber: res.docNumber || d.docNumber,
+                      status: res.status || d.status,
+                    }
+                  : d
+              ),
+            };
+            notify();
+          }
+        })
+        .catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('Document Issued', 'Document Émis', 'تم إصدار المستند'),
+      message: ul(
+        `Fiscal number assigned: ${issuedDoc.docNumber}`,
+        `Numéro officiel attribué : ${issuedDoc.docNumber}`,
+        `تم تعيين الرقم الرسمي: ${issuedDoc.docNumber}`
+      ),
+    });
+    return issuedDoc;
+  };
+
+  const createCreditNoteForDocument = (
+    invoiceId: string,
+    reason: string,
+    partialItems?: Array<{ lineId: string; quantity: number }>,
+    issueImmediately = false
+  ): UnifiedDocument | null => {
+    const source = (globalState.unifiedDocuments || []).find((d) => d.id === invoiceId);
+    if (!source) return null;
+    try {
+      const creditDraft = buildCreditNoteDraftFromInvoice(source, reason, partialItems);
+      creditDraft.id = generateClientUuid();
+      creditDraft.draftNumber = formatDraftDocNumber('avoir', creditDraft.id);
+      globalState = {
+        ...globalState,
+        unifiedDocuments: [creditDraft, ...(globalState.unifiedDocuments || [])],
+      };
+      notify();
+      if (isSupabaseConfigured()) {
+        invoicingService.upsertUnifiedDocument(creditDraft, globalState.currentUser?.id).catch(() => {});
+      }
+      if (issueImmediately) {
+        return issueUnifiedDocument(creditDraft.id) || creditDraft;
+      }
+      return creditDraft;
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: ul('Credit Note Error', 'Erreur Avoir', 'خطأ في الإشعار الدائن'),
+        message: err?.message || 'Cannot create credit note.',
+      });
+      return null;
+    }
+  };
+
+  const voidUnifiedDocument = (id: string, reason: string): boolean => {
+    const doc = (globalState.unifiedDocuments || []).find((d) => d.id === id);
+    if (!doc || doc.status === 'Voided') return false;
+    const nowIso = new Date().toISOString();
+    const voided: UnifiedDocument = {
+      ...doc,
+      status: 'Voided',
+      voidedAt: nowIso,
+      voidedReason: reason.trim() || 'Annulé',
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      unifiedDocuments: (globalState.unifiedDocuments || []).map((d) => (d.id === id ? voided : d)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      invoicingService.upsertUnifiedDocument(voided, globalState.currentUser?.id).catch(() => {});
+    }
+    return true;
+  };
+
+  const incrementUnifiedPrintCount = (id: string) => {
+    const target = (globalState.unifiedDocuments || []).find((d) => d.id === id);
+    if (!target) return;
+    const updated: UnifiedDocument = {
+      ...target,
+      printedCount: (target.printedCount || 0) + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      unifiedDocuments: (globalState.unifiedDocuments || []).map((d) => (d.id === id ? updated : d)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      invoicingService.upsertUnifiedDocument(updated, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const recordUnifiedPayment = (input: {
+    sourceVertical?: string;
+    partyId?: string;
+    partyName: string;
+    method: UnifiedPaymentMethod | string;
+    direction?: 'inflow' | 'outflow';
+    amountDzd: number;
+    currency?: UnifiedCurrency;
+    fxRate?: number;
+    paymentDate?: string;
+    allocations?: Array<{ documentId: string; requestedDzd?: number }>;
+    instrumentNumber?: string;
+    instrumentBank?: string;
+    instrumentDueDate?: string;
+    notes?: string;
+    idempotencyKey?: string;
+  }): UnifiedPayment | null => {
+    const amountCentimes = dzdToCentimes(Math.max(0, Number(input.amountDzd || 0)));
+    if (amountCentimes <= 0) return null;
+
+    const ctx = resolveUnifiedContext(input.sourceVertical);
+    const paymentDate = input.paymentDate || new Date().toISOString().slice(0, 10);
+    const closedPeriods =
+      globalState.businessConfigs?.[ctx.businessId]?.accountingPeriodClosedMonths || [];
+    if (isDateInClosedPeriod(paymentDate, closedPeriods)) {
+      throw new Error('PERIOD_CLOSED_LOCKED');
+    }
+
+    const method = normalizeUnifiedPaymentMethod(input.method);
+    const isInstrument = method === 'cheque' || method === 'traite';
+    const existingCount = (globalState.unifiedPayments || []).filter(
+      (p) => p.businessId === ctx.businessId
+    ).length;
+    const year = Number(paymentDate.slice(0, 4)) || new Date().getFullYear();
+    const paymentNumber = `REG-${year}-${String(existingCount + 1).padStart(5, '0')}`;
+    const paymentId = generateClientUuid();
+    const idempotencyKey = input.idempotencyKey || `${paymentId}_${Date.now()}`;
+    const nowIso = new Date().toISOString();
+
+    const targets = (input.allocations || [])
+      .map((a) => {
+        const doc = (globalState.unifiedDocuments || []).find((d) => d.id === a.documentId);
+        if (!doc || doc.balanceDueCentimes <= 0) return null;
+        return {
+          documentId: doc.id,
+          documentNumber: doc.docNumber || doc.draftNumber,
+          openBalanceCentimes: doc.balanceDueCentimes,
+          requestedCentimes: a.requestedDzd != null ? dzdToCentimes(a.requestedDzd) : undefined,
+        };
+      })
+      .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+    const plan =
+      targets.length > 0
+        ? allocatePaymentAcrossDocuments(amountCentimes, targets)
+        : { allocations: [], totalAllocatedCentimes: 0, unallocatedCreditCentimes: amountCentimes };
+
+    const openCashSession =
+      method === 'cash'
+        ? (globalState.posCashSessions || []).find(
+            (s) => s.branchId === ctx.branchId && s.status === 'open'
+          )
+        : undefined;
+
+    const paymentRecord: UnifiedPayment = {
+      id: paymentId,
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      sourceVertical: ctx.sourceVertical,
+      partyId: input.partyId,
+      partyName: input.partyName || 'Client',
+      paymentNumber,
+      method,
+      direction: input.direction || 'inflow',
+      amountCentimes,
+      unallocatedCreditCentimes: plan.unallocatedCreditCentimes,
+      currency: input.currency || 'DZD',
+      fxRate: input.fxRate ?? 1,
+      paymentDate,
+      recordedByStaffId: globalState.currentUser?.id,
+      cashSessionId: openCashSession?.id,
+      idempotencyKey,
+      status: isInstrument ? 'pending_clearance' : 'posted',
+      instrumentStatus: isInstrument ? 'received' : undefined,
+      instrumentNumber: input.instrumentNumber,
+      instrumentBank: input.instrumentBank,
+      instrumentDueDate: input.instrumentDueDate,
+      notes: input.notes,
+      allocations: plan.allocations.map((a) => ({
+        id: generateClientUuid(),
+        paymentId,
+        documentId: a.documentId,
+        documentNumber: a.documentNumber,
+        allocatedCentimes: a.allocatedCentimes,
+        createdAt: nowIso,
+      })),
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const allocByDoc = new Map(plan.allocations.map((a) => [a.documentId, a.allocatedCentimes]));
+    const updatedUnifiedDocs = (globalState.unifiedDocuments || []).map((doc) => {
+      const alloc = allocByDoc.get(doc.id);
+      if (!alloc) return doc;
+      const nextPaid = Math.min(doc.netToPayCentimes, doc.paidCentimes + alloc);
+      const nextBalance = Math.max(0, doc.netToPayCentimes - nextPaid);
+      const nextStatus: UnifiedDocStatus =
+        nextBalance === 0 ? 'Paid' : nextPaid > 0 ? 'PartiallyPaid' : doc.status;
+      return {
+        ...doc,
+        paidCentimes: nextPaid,
+        balanceDueCentimes: nextBalance,
+        status: nextStatus,
+        updatedAt: nowIso,
+      };
+    });
+
+    const settledAmountDzd = centimesToDzd(amountCentimes);
+    const updatedMembers = input.partyId
+      ? (globalState.members || []).map((m) =>
+          m.id === input.partyId
+            ? {
+                ...m,
+                balanceDue: Math.max(0, Number(m.balanceDue ?? m.balance ?? 0) - settledAmountDzd),
+                balance: Math.max(0, Number(m.balanceDue ?? m.balance ?? 0) - settledAmountDzd),
+              }
+            : m
+        )
+      : globalState.members;
+
+    const updatedB2bClients = input.partyId
+      ? (globalState.b2bClients || []).map((c) =>
+          c.id === input.partyId
+            ? {
+                ...c,
+                outstandingBalance: Math.max(0, Number(c.outstandingBalance || 0) - settledAmountDzd),
+              }
+            : c
+        )
+      : globalState.b2bClients;
+
+    globalState = {
+      ...globalState,
+      unifiedDocuments: updatedUnifiedDocs,
+      unifiedPayments: [paymentRecord, ...(globalState.unifiedPayments || [])],
+      members: updatedMembers,
+      b2bClients: updatedB2bClients,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      invoicingService
+        .recordPaymentWithAllocations(paymentRecord)
+        .then((res) => {
+          if (res.paymentNumber) {
+            globalState = {
+              ...globalState,
+              unifiedPayments: (globalState.unifiedPayments || []).map((p) =>
+                p.id === paymentId ? { ...p, paymentNumber: res.paymentNumber! } : p
+              ),
+            };
+            notify();
+          }
+        })
+        .catch(() => {});
+    }
+
+    showToast({
+      type: isInstrument ? 'info' : 'success',
+      title: ul('Payment Recorded', 'Règlement Enregistré', 'تم تسجيل الدفع'),
+      message: ul(
+        `${paymentRecord.paymentNumber} · ${paymentRecord.partyName}`,
+        `${paymentRecord.paymentNumber} · ${paymentRecord.partyName}`,
+        `${paymentRecord.paymentNumber} · ${paymentRecord.partyName}`
+      ),
+    });
+    return paymentRecord;
+  };
+
+  const transitionChequeStatus = (
+    paymentId: string,
+    nextStatus: ChequeInstrumentStatus,
+    reason?: string
+  ): boolean => {
+    const pay = (globalState.unifiedPayments || []).find((p) => p.id === paymentId);
+    if (!pay) return false;
+    try {
+      const { updatedPayment, updatedDocuments, reopenedCount } = applyChequeStatusTransition(
+        pay,
+        globalState.unifiedDocuments || [],
+        nextStatus,
+        reason
+      );
+
+      let nextB2bClients = globalState.b2bClients;
+      let nextMembers = globalState.members;
+      if (nextStatus === 'bounced' && pay.partyId) {
+        const restoreDzd = centimesToDzd(pay.amountCentimes);
+        nextB2bClients = (globalState.b2bClients || []).map((c) =>
+          c.id === pay.partyId
+            ? { ...c, outstandingBalance: Number(c.outstandingBalance || 0) + restoreDzd }
+            : c
+        );
+        nextMembers = (globalState.members || []).map((m) =>
+          m.id === pay.partyId
+            ? {
+                ...m,
+                balanceDue: Number(m.balanceDue ?? m.balance ?? 0) + restoreDzd,
+                balance: Number(m.balanceDue ?? m.balance ?? 0) + restoreDzd,
+              }
+            : m
+        );
+      }
+
+      globalState = {
+        ...globalState,
+        unifiedPayments: (globalState.unifiedPayments || []).map((p) =>
+          p.id === paymentId ? updatedPayment : p
+        ),
+        unifiedDocuments: updatedDocuments,
+        b2bClients: nextB2bClients,
+        members: nextMembers,
+      };
+      notify();
+
+      if (
+        isSupabaseConfigured() &&
+        (nextStatus === 'deposited' || nextStatus === 'cleared' || nextStatus === 'bounced')
+      ) {
+        invoicingService.transitionChequeTraiteStatus(paymentId, nextStatus, reason).catch(() => {});
+      }
+
+      showToast({
+        type: nextStatus === 'bounced' ? 'warning' : 'success',
+        title:
+          nextStatus === 'bounced'
+            ? ul('Instrument Bounced', 'Effet Impayé', 'شيك / كمبيالة مرفوضة')
+            : nextStatus === 'cleared'
+              ? ul('Instrument Cleared', 'Effet Encaissé', 'تم تحصيل الصك')
+              : ul('Instrument Deposited', 'Remis en Banque', 'أودع في البنك'),
+        message:
+          nextStatus === 'bounced' && reopenedCount > 0
+            ? ul(
+                `${reopenedCount} invoice balance(s) reopened.`,
+                `${reopenedCount} solde(s) de facture réouvert(s).`,
+                `تمت إعادة فتح رصيد ${reopenedCount} فاتورة.`
+              )
+            : updatedPayment.paymentNumber,
+      });
+      return true;
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: ul('Transition Blocked', 'Transition Bloquée', 'تعذر تحديث الحالة'),
+        message: err?.message || 'Invalid status transition.',
+      });
+      return false;
+    }
+  };
+
   return {
     setScreen,
     setTheme,
@@ -17854,6 +18817,7 @@ function createAtriumActions() {
     approveStaffPayrollRun,
     markStaffPayrollSlipPaid,
     logStaffAttendanceManual,
+    executePayrollMigrationBackfill: executePayrollMigrationBackfillAction,
     parkOrder,
     resumeParkedOrder,
     deleteParkedOrder,
@@ -18074,6 +19038,15 @@ function createAtriumActions() {
     deleteCategoryFormule: deleteCategoryFormuleAction,
     canAccessStaffScreen: canAccessStaffScreenFn,
     canViewSensitivePayroll: canViewSensitivePayrollFn,
+    createUnifiedDocument,
+    updateUnifiedDraft,
+    deleteUnifiedDraft,
+    issueUnifiedDocument,
+    createCreditNoteForDocument,
+    voidUnifiedDocument,
+    incrementUnifiedPrintCount,
+    recordUnifiedPayment,
+    transitionChequeStatus,
   };
 }
 
@@ -18161,6 +19134,8 @@ export function useAtriumStore() {
   const currentCommercialDocs = selectCurrentCommercialDocsFromState(state);
   const currentPurchaseDocs = selectCurrentPurchaseDocsFromState(state);
   const currentStockVouchers = selectCurrentStockVouchersFromState(state);
+  const currentUnifiedDocuments = selectCurrentUnifiedDocumentsFromState(state);
+  const currentUnifiedPayments = selectCurrentUnifiedPaymentsFromState(state);
   const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
   const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
   const selectedMember = selectSelectedMemberFromState(state);
@@ -18287,6 +19262,10 @@ export function useAtriumStore() {
     allPurchaseDocs: state.purchaseDocs || [],
     stockVouchers: currentStockVouchers,
     allStockVouchers: state.stockVouchers || [],
+    unifiedDocuments: currentUnifiedDocuments,
+    allUnifiedDocuments: state.unifiedDocuments || [],
+    unifiedPayments: currentUnifiedPayments,
+    allUnifiedPayments: state.unifiedPayments || [],
     // Operational Role State
     activeGarageRole: state.activeGarageRole || 'gerant',
     activeRealEstateRole: state.activeRealEstateRole || 'direction',

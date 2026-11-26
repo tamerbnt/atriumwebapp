@@ -2814,5 +2814,14 @@
   "step5_confirm_coach_action": "Confirmer coach",
   "step5_duplicate_week_title": "Dupliquer le planning semaine",
   "step5_re_inspection_locked_badge": "Validé & Verrouillé",
-  "step5_mfg_scrap_ncr_title": "Déclarer un rebut & Fiche NCR"
+  "step5_mfg_scrap_ncr_title": "Déclarer un rebut & Fiche NCR",
+  "phase2_unified_invoicing_title": "Facturation Unifiée",
+  "phase2_unified_doc_new": "Nouvelle Pièce Unifiée",
+  "phase2_unified_doc_issue": "Émettre Pièce Officielle",
+  "phase2_unified_credit_note": "Émettre un Avoir",
+  "phase2_unified_payment_record": "Enregistrer Règlement",
+  "phase2_unified_payments_ledger": "Journal Unifié des Règlements & Effets",
+  "phase2_instrument_deposit": "Remettre",
+  "phase2_instrument_clear": "Encaisser",
+  "phase2_instrument_bounce": "Impayé"
 }

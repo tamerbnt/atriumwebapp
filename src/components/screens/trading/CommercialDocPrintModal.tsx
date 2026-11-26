@@ -16,7 +16,9 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
 } from '../../../services/store';
+import { buildUnifiedFiscalHeader } from '../../../utils/invoicingEngine';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
@@ -26,16 +28,19 @@ interface CommercialDocPrintModalProps {
   document: CommercialDocument | null;
 }
 
-
-
 export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = ({ isOpen, onClose, document: rawDoc }) => {
 	const printRef = React.useRef<any>(null);
-	const { currentBusiness, currentBranch } = useAtriumSelector(
+	const { currentBusiness, currentBranch, currentBusinessConfig } = useAtriumSelector(
 	  (s) => ({
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranch: selectCurrentBranchFromState(s),
+	    currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
 	  }),
 	  shallowEqualObjects
+	);
+	const fiscalHeader = React.useMemo(
+	  () => buildUnifiedFiscalHeader(currentBusiness, currentBranch, currentBusinessConfig),
+	  [currentBusiness, currentBranch, currentBusinessConfig]
 	);
 	const doc = useRetainedModalValue(isOpen ? rawDoc : null);
 	const handlePrint = () => {
@@ -67,43 +72,34 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
 </div>
 </div>
 <div ref={printRef} className="p-8 sm:p-12 overflow-y-auto flex-1 bg-white text-black font-sans print:p-0 print:overflow-visible t-cap leading-relaxed">
-<div className="flex justify-between items-start border-b-2 border-black/80 pb-5 mb-5">
+<div className="flex justify-between items-start border-b-2 border-black/80 pb-5 mb-5 gap-4">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
-<span className="t-dialog font-semibold text-black">{currentBusiness?.displayName || "MAGHREB NÉGOCE & DISTRIBUTION SARL"}</span>
+<span className="t-dialog font-semibold text-black">{fiscalHeader.companyName}</span>
 </div>
+{currentBranch?.name && (
 <p className="text-black/75 font-medium t-small">
-Importation, Exportation & Distribution de Matériaux de Construction et Équipements
+{currentBranch.name}
 </p>
-<p className="text-black/55 t-cap">{currentBranch?.address || "Zone Industrielle Oued Smar, Lot 42, Alger"}</p>
+)}
+{fiscalHeader.address && <p className="text-black/55 t-cap">{fiscalHeader.address}</p>}
+{(fiscalHeader.phone || fiscalHeader.email) && (
 <p className="text-black/55 t-cap">
-{"Tél : "}
-{currentBusiness?.phone || "+213 23 93 40 10"}
-{" — Email : commercial@maghreb-negoce.dz"}
+{fiscalHeader.phone ? `Tél : ${fiscalHeader.phone}` : ''}
+{fiscalHeader.phone && fiscalHeader.email ? ' — ' : ''}
+{fiscalHeader.email ? `Email : ${fiscalHeader.email}` : ''}
 </p>
+)}
 </div>
+{(fiscalHeader.rc || fiscalHeader.nif || fiscalHeader.nis || fiscalHeader.ai || fiscalHeader.ribCcp) && (
 <div data-sq="ctl" data-sq-border="solid" className="text-right t-cap space-y-0.5 text-black/75 [--sq-stroke:rgba(23,19,15,0.14)] p-3 bg-stone-50/60 tabular-nums">
-<div>
-<span className="font-semibold text-black">R.C. N° :</span>
-{" 16/00-0198421B21 Alger"}
+{fiscalHeader.rc && <div><span className="font-semibold text-black">R.C. N° :</span> {fiscalHeader.rc}</div>}
+{fiscalHeader.nif && <div><span className="font-semibold text-black">N.I.F. :</span> {fiscalHeader.nif}</div>}
+{fiscalHeader.nis && <div><span className="font-semibold text-black">N.I.S. :</span> {fiscalHeader.nis}</div>}
+{fiscalHeader.ai && <div><span className="font-semibold text-black">Art. d'Imposition :</span> {fiscalHeader.ai}</div>}
+{fiscalHeader.ribCcp && <div><span className="font-semibold text-black">RIB / CCP :</span> {fiscalHeader.ribCcp}</div>}
 </div>
-<div>
-<span className="font-semibold text-black">N.I.F. :</span>
-{" 002116019842189"}
-</div>
-<div>
-<span className="font-semibold text-black">N.I.S. :</span>
-{" 0021160100412"}
-</div>
-<div>
-<span className="font-semibold text-black">Art. d'Imposition :</span>
-{" 16041290123"}
-</div>
-<div>
-<span className="font-semibold text-black">RIB (BNA) :</span>
-{" 00100 00123 0000456789 22"}
-</div>
-</div>
+)}
 </div>
 <div className="grid grid-cols-2 gap-6 mb-6">
 <div data-sq="card" data-sq-border="solid" className="[--sq-stroke:rgba(23,19,15,0.75)] p-4 bg-stone-50/40">

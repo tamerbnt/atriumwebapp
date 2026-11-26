@@ -31,3 +31,4 @@ export * from './services/configService';
 export * from './services/referenceDataService';
 export * from './services/sequenceService';
 export * from './services/storageService';
+export * from './services/invoicingService';

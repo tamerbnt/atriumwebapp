@@ -1,15 +1,24 @@
 import React from 'react';
-import { X, Printer, Download, Building, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { StaffPayrollSlipRecord } from '../../../types/index';
+import { X, Printer, AlertTriangle } from 'lucide-react';
+import { FiscalProfile, StaffPayrollSlipRecord } from '../../../types/index';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { numberToAlgerianWordsFR } from '../../../utils/algerianPayroll';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic/KineticModalShell';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
+} from '../../../services/store';
 
 interface PayslipPrintModalProps {
   isOpen: boolean;
   onClose: () => void;
   slip: StaffPayrollSlipRecord | null;
   businessName?: string;
+  fiscalProfile?: FiscalProfile;
+  businessAddress?: string;
   language: string;
 }
 
@@ -17,10 +26,31 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
   isOpen,
   onClose,
   slip: rawSlip,
-  businessName = 'ATRIUM FITNESS & WELLNESS CLUB',
+  businessName,
+  fiscalProfile,
+  businessAddress,
   language,
 }) => {
   const slip = useRetainedModalValue(isOpen ? rawSlip : null);
+  const { storeBusinessName, storeAddress, storeFiscalProfile } = useAtriumSelector(
+    (s) => {
+      const biz = selectCurrentBusinessFromState(s);
+      const branch = selectCurrentBranchFromState(s);
+      const cfg = selectCurrentBusinessConfigFromState(s);
+      return {
+        storeBusinessName: biz?.name || '',
+        storeAddress: branch?.address || biz?.address || '',
+        storeFiscalProfile: cfg?.fiscalProfile,
+      };
+    },
+    shallowEqualObjects
+  );
+
+  const resolvedBusinessName = businessName || storeBusinessName || '—';
+  const resolvedProfile = fiscalProfile || storeFiscalProfile;
+  const resolvedAddress = businessAddress || storeAddress || '—';
+  const nifValue = resolvedProfile?.nif || '—';
+  const rcValue = resolvedProfile?.rc || '—';
 
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -30,6 +60,8 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
   };
 
   const amountInWords = slip ? numberToAlgerianWordsFR(slip.netAPayer) : '';
+  const isUnverifiedRate = slip ? slip.rateSnapshot?.verificationStatus !== 'verified' : false;
+  const isLegacyBasis = slip ? slip.rateBasis !== 'versioned' : false;
 
   return (
     <KineticModalShell
@@ -41,20 +73,32 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
     >
       {slip && (
         <div
+          dir={isAr ? 'rtl' : 'ltr'}
           data-sq="panel"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'var(--sq-stroke-pop)' } as React.CSSProperties}
           className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative print:p-0 print:shadow-none"
         >
           {/* Header Toolbar (hidden on print) */}
-          <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] print:hidden">
-            <div className="flex items-center gap-[var(--s2,8px)]">
+          <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] print:hidden gap-2 flex-wrap">
+            <div className="flex items-center gap-[var(--s2,8px)] flex-wrap">
               <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10 tabular-nums">
                 {slip.receiptNumber}
               </span>
               <span className="t-label text-[var(--text-2)] dark:text-white/75">
                 {slip.periodLabel}
               </span>
+              {isUnverifiedRate && (
+                <span className="inline-flex items-center gap-1 h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300">
+                  <AlertTriangle className="w-3 h-3" />
+                  Rates not verified
+                </span>
+              )}
+              {isLegacyBasis && (
+                <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold bg-[#F3EDE7] text-[var(--text-2)] dark:bg-[#2B2825] dark:text-white/75">
+                  Legacy basis
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-[var(--s3,12px)]">
               <AtriumButton onClick={handlePrint} icon={<Printer className="w-4 h-4" strokeWidth={1.5} />}>
@@ -78,14 +122,19 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
               République Algérienne Démocratique et Populaire
             </p>
             <h2 className="t-dialog text-[var(--text-1)]">
-              {businessName}
+              {resolvedBusinessName}
             </h2>
             <p className="t-cap text-[var(--text-2)]">
-              Complexe Sportif & Salle de Musculation · Alger Centre · NIF : 002416098124589 · RC : 16/00-88124
+              {resolvedAddress} · NIF : {nifValue} · RC : {rcValue}
             </p>
             <div className="inline-block px-[var(--s4,16px)] py-[var(--s1,4px)] bg-black text-white t-btn rounded-[var(--r-check,6px)]">
               Bulletin de Paie · {slip.periodLabel}
             </div>
+            {(isUnverifiedRate || isLegacyBasis) && (
+              <p className="t-cap text-amber-800 font-medium">
+                {isUnverifiedRate ? 'Rates not verified' : ''}{isUnverifiedRate && isLegacyBasis ? ' · ' : ''}{isLegacyBasis ? 'Legacy basis' : ''}
+              </p>
+            )}
           </div>
 
           {/* Employee & Administrative Information */}
@@ -94,7 +143,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
               <p><span className="font-semibold text-[var(--text-2)]">Collaborateur :</span> <strong className="font-semibold text-[var(--text-1)] t-card">{slip.staffFullName}</strong></p>
               <p><span className="font-semibold text-[var(--text-2)]">Matricule :</span> <span className="font-semibold tabular-nums">{slip.matricule}</span></p>
               <p><span className="font-semibold text-[var(--text-2)]">Poste / Fonction :</span> {slip.role}</p>
-              <p><span className="font-semibold text-[var(--text-2)]">N° Sécurité Sociale (NSS) :</span> <span className="tabular-nums">{slip.nss || '89 04 16 0000 00'}</span></p>
+              <p><span className="font-semibold text-[var(--text-2)]">N° Sécurité Sociale (NSS) :</span> <span className="tabular-nums">{slip.nss || '—'}</span></p>
             </div>
             <div className="flex flex-col gap-[var(--s1,4px)] text-right">
               <p><span className="font-semibold text-[var(--text-2)]">Mode de Règlement :</span> <strong className="font-semibold">{slip.paymentMethod === 'ccp' ? 'Virement CCP Poste' : slip.paymentMethod === 'bank_transfer' ? 'Virement Bancaire' : 'Espèces (Caisse)'}</strong></p>
@@ -192,6 +241,16 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                   <td className="border border-black/[0.15] p-[var(--s2,8px)] text-center">-</td>
                   <td className="border border-black/[0.15] p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
                   <td className="border border-black/[0.15] p-[var(--s2,8px)] text-right font-semibold text-amber-900">{slip.acomptesDeduits.toLocaleString()}</td>
+                </tr>
+              )}
+              {(slip.advanceCarryover ?? 0) > 0 && (
+                <tr className="bg-amber-50/60">
+                  <td colSpan={4} className="border border-black/[0.15] p-[var(--s2,8px)] text-amber-900">
+                    Solde d'acompte reporté sur paie suivante
+                  </td>
+                  <td className="border border-black/[0.15] p-[var(--s2,8px)] text-right font-semibold text-amber-900">
+                    {(slip.advanceCarryover ?? 0).toLocaleString()} DZD
+                  </td>
                 </tr>
               )}
             </tbody>
