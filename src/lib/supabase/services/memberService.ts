@@ -187,13 +187,23 @@ export const memberService = {
     branchId: string,
     memberId: string,
     method: 'rfid' | 'qr' | 'manual' | 'turnstile' = 'rfid',
-    deviceId?: string
+    deviceId?: string,
+    options?: {
+      checkInId?: string;
+      duplicateWindowMinutes?: number;
+      overrideByStaffId?: string;
+      overrideReason?: string;
+    }
   ) {
     return syncCoordinator.rpcOrQueue('gym_record_check_in', {
       p_branch_id: toValidUuid(branchId),
       p_member_id: toValidUuid(memberId),
       p_method: method,
       p_device_id: deviceId || null,
+      p_check_in_id: options?.checkInId ? toValidUuid(options.checkInId) : null,
+      p_duplicate_window_minutes: options?.duplicateWindowMinutes ?? 5,
+      p_override_by_staff_id: options?.overrideByStaffId ? toValidUuid(options.overrideByStaffId) : null,
+      p_override_reason: options?.overrideReason?.trim() || null,
     });
   },
 
@@ -205,7 +215,7 @@ export const memberService = {
       let query = (client as any)
         .from('gym_check_ins')
         .select(
-          'id, account_id, business_id, branch_id, staff_id, member_id, member_name, checked_in_at, status, method, version'
+          'id, account_id, business_id, branch_id, staff_id, member_id, member_name, checked_in_at, status, method, remaining_sessions_after, override_by_staff_id, override_reason, version'
         )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
@@ -227,9 +237,64 @@ export const memberService = {
       planId: row.plan_id || '',
       planName: row.plan_name || '',
       timestamp: row.checked_in_at,
-      accessStatus: row.status === 'granted' ? 'Granted' : 'Denied_Expired',
-      checkInMethod: row.method === 'rfid' ? 'nfc_card' : row.method === 'qr' ? 'barcode_scanner' : 'manual_click',
+      accessStatus:
+        row.status === 'granted'
+          ? 'Granted'
+          : row.status === 'denied_frozen'
+          ? 'Denied_Frozen'
+          : 'Denied_Expired',
+      remainingSessionsAfter:
+        row.remaining_sessions_after != null ? Number(row.remaining_sessions_after) : undefined,
+      checkInMethod:
+        row.method === 'rfid'
+          ? 'nfc_card'
+          : row.method === 'qr'
+          ? 'barcode_scanner'
+          : 'manual_click',
+      overrideByStaffId: row.override_by_staff_id || undefined,
+      overrideReason: row.override_reason || undefined,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
+  },
+
+  async fetchWalkInTickets(branchId: string, updatedAfter?: string | null): Promise<WalkInTicket[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('gym_walk_in_tickets')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, visitor_name, phone_number, ticket_code, amount_dzd, payment_method, valid_date, created_at, version'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+      return rows.map((row: any): WalkInTicket => ({
+        id: row.id,
+        accountId: row.account_id || '',
+        businessId: row.business_id || '',
+        branchId: row.branch_id,
+        staffId: row.staff_id || '',
+        ticketNumber: row.ticket_code || '',
+        clientName: row.visitor_name || '',
+        phone: row.phone_number || undefined,
+        amountDzd: Number(row.amount_dzd || 0),
+        paymentMethod: (row.payment_method || 'cash').toLowerCase() as WalkInTicket['paymentMethod'],
+        timbreFiscalDzd: 0,
+        issuedAt: row.created_at || `${row.valid_date}T00:00:00.000Z`,
+        version: row.version != null ? Number(row.version) : undefined,
+      }));
+    } catch {
+      return [];
+    }
   },
 
   async upsertWalkInTicket(ticket: WalkInTicket, ctx: { accountId: string; businessId: string; branchId: string }) {
@@ -243,9 +308,9 @@ export const memberService = {
       ...trace,
       visitor_name: ticket.clientName,
       phone_number: ticket.phone || null,
-      ticket_code: ticket.ticketNumber || `DAY-${Date.now()}`,
+      ticket_code: ticket.ticketNumber || `WI-${new Date().getFullYear()}-00001`,
       amount_dzd: ticket.amountDzd,
-      payment_method: ticket.paymentMethod || 'Cash',
+      payment_method: ticket.paymentMethod || 'cash',
       valid_date: (ticket.issuedAt || new Date().toISOString()).slice(0, 10),
       is_used: false,
     };

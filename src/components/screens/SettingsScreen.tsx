@@ -67,6 +67,7 @@ import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
 import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab';
 import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
+import { PayrollMigrationDryRunPanel } from '../common/staff/PayrollMigrationDryRunPanel';
 import { getEffectivePermissionContext } from '../../utils/routePermissions';
 import { normalizeBusinessCategory } from '../../utils/staffRules';
 
@@ -1466,6 +1467,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           )}
         </div>
       </div>
+
+      <PayrollMigrationDryRunPanel language={language} />
         </>
       )}
 

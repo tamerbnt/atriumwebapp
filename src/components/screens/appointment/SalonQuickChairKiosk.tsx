@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Scissors,
   CheckCircle2,
   Play,
   Check,
   CreditCard,
-  Banknote,
   Plus,
   User,
   Printer,
   Building2,
+  Clock,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -19,8 +19,12 @@ import {
   selectCurrentServicesFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  selectCurrentSalonChairStationsFromState,
 } from '../../../services/store';
-import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
+import { SalonChairStation } from '../../../types/index';
+import { toValidUuid } from '../../../lib/supabase/index';
+import { dzdToCentimes, centimesToDzd } from '../../../utils/money';
+import { computeElapsedMinutesFromIso } from '../../../utils/step6Persistence';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
@@ -56,6 +60,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     staff,
     branches,
     currentBranch,
+    salonChairStations,
     language,
     isSyncing,
     networkMode,
@@ -68,6 +73,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
       staff: selectCurrentStaffFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
+      salonChairStations: selectCurrentSalonChairStationsFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -77,7 +83,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { retryCloudSync } = useAtriumActions();
+  const { updateSalonChairStation, retryCloudSync } = useAtriumActions();
   const isRtl = language === 'ar';
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
@@ -85,7 +91,6 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     hasCachedData: appointments.length > 0 || servicesCatalog.length > 0,
   });
 
-  const [activeStations, setActiveStations] = useState<Record<string, any>>({});
   const [stationFilter, setStationFilter] = useState<'all' | 'occupied' | 'free'>('all');
   const [checkoutModalStationKey, setCheckoutModalStationKey] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -97,6 +102,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
   const [selectedStylistId, setSelectedStylistId] = useState(staff[0]?.id || '');
   const [inspectedStationId, setInspectedStationId] = useState<string | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -110,15 +116,47 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     [isRtl]
   );
 
+  const activeStations = useMemo(() => {
+    const map: Record<string, SalonChairStation> = {};
+    workstationsList.forEach((ws) => {
+      const wsUuid = toValidUuid(ws.id);
+      const found = salonChairStations.find(
+        (st) => st.workstationId === ws.id || st.workstationId === wsUuid
+      );
+      if (found && found.clientName && found.stage !== 'paid') {
+        map[ws.id] = found;
+      }
+    });
+    return map;
+  }, [workstationsList, salonChairStations]);
+
+  const hasInProgressChair = useMemo(
+    () => Object.values(activeStations).some((st) => st.stage === 'in_progress' && Boolean(st.startTime)),
+    [activeStations]
+  );
+
+  useEffect(() => {
+    if (!hasInProgressChair) return;
+    setNowMs(Date.now());
+    const id = window.setInterval(() => setNowMs(Date.now()), 15000);
+    return () => window.clearInterval(id);
+  }, [hasInProgressChair]);
+
+  const getStationPriceDzd = useCallback((st?: SalonChairStation | null): number => {
+    if (!st) return 0;
+    if (st.servicePriceCentimes != null) return centimesToDzd(st.servicePriceCentimes);
+    return Number(st.servicePriceDzd || 0);
+  }, []);
+
   const metrics = useMemo(() => {
     const occupiedCount = workstationsList.filter((w) => Boolean(activeStations[w.id])).length;
     const freeCount = workstationsList.length - occupiedCount;
     const activeRevenue = Object.values(activeStations).reduce(
-      (sum: number, st: any) => sum + Number(st?.servicePriceDzd || 0),
+      (sum: number, st) => sum + getStationPriceDzd(st),
       0
     );
     return { occupiedCount, freeCount, activeRevenue };
-  }, [workstationsList, activeStations]);
+  }, [workstationsList, activeStations, getStationPriceDzd]);
 
   const inspectedStation = useMemo(
     () => (inspectedStationId ? workstationsList.find((w) => w.id === inspectedStationId) || null : null),
@@ -139,118 +177,92 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
   const handleAdvanceStage = useCallback(
     (stationKey: string) => {
       const current = activeStations[stationKey];
+      const wsMeta = workstationsList.find((w) => w.id === stationKey);
       if (!current) return;
       if (current.stage === 'waiting' || current.stage === 'in_progress') {
-        const prevStations = cloneSnapshot(activeStations);
         const nextStage = current.stage === 'waiting' ? 'in_progress' : 'completed';
-        const nextStations = {
-          ...prevStations,
-          [stationKey]: {
-            ...current,
-            stage: nextStage,
-            ...(nextStage === 'in_progress' ? { startTime: Date.now() } : {}),
-          },
-        };
-        setActiveStations(nextStations);
-        registerUndoEntry({
-          vertical: 'appointment_service',
-          operationType: 'status',
-          summary: pickLocalizedText(language, {
-            en: nextStage === 'in_progress' ? `Started: ${current.clientName}` : `Completed: ${current.clientName}`,
-            fr: nextStage === 'in_progress' ? `Prestation démarrée : ${current.clientName}` : `Prestation terminée : ${current.clientName}`,
-            ar: nextStage === 'in_progress' ? `بدء الخدمة: ${current.clientName}` : `اكتملت الخدمة: ${current.clientName}`,
-          }),
-          entityLabel: current.clientName,
-          toastType: nextStage === 'in_progress' ? 'info' : 'success',
-          undo: () => setActiveStations(cloneSnapshot(prevStations)),
-          redo: () => setActiveStations(cloneSnapshot(nextStations)),
+        const nowIso = new Date().toISOString();
+        updateSalonChairStation({
+          ...current,
+          workstationId: current.workstationId || stationKey,
+          workstationName: current.workstationName || wsMeta?.name || stationKey,
+          stage: nextStage,
+          startTime: nextStage === 'in_progress' ? nowIso : current.startTime,
+          elapsedMinutes:
+            nextStage === 'completed'
+              ? computeElapsedMinutesFromIso(current.startTime, Date.now())
+              : 0,
         });
       } else if (current.stage === 'completed') {
         setCheckoutModalStationKey(stationKey);
       }
     },
-    [activeStations, language]
+    [activeStations, workstationsList, updateSalonChairStation]
   );
 
   const handleConfirmCheckout = useCallback(() => {
     if (!checkoutModalStationKey) return;
     const current = activeStations[checkoutModalStationKey];
+    const wsMeta = workstationsList.find((w) => w.id === checkoutModalStationKey);
     if (!current) return;
-    const prevStations = cloneSnapshot(activeStations);
-    const prevReceipt = cloneSnapshot(lastReceipt);
-    const timbre = paymentMethod === 'cash' ? calculateArt317Timbre(current.servicePriceDzd) : 0;
-    const receiptNum = `REC-SAL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const nextStations = { ...prevStations };
-    delete nextStations[checkoutModalStationKey];
+    const priceDzd = getStationPriceDzd(current);
+    const timbre = paymentMethod === 'cash' ? calculateArt317Timbre(priceDzd) : 0;
+    const nowStamp = new Date();
+    const datePart = nowStamp.toISOString().slice(0, 10).replace(/-/g, '');
+    const seqPart = String(nowStamp.getTime()).slice(-4);
+    const receiptNum = `REC-SAL-${datePart}-${seqPart}`;
     const nextReceipt = {
       clientName: current.clientName,
       serviceName: current.serviceName,
-      amountDzd: current.servicePriceDzd,
+      amountDzd: priceDzd,
       timbreFiscalDzd: timbre,
       paymentMethod,
       receiptNumber: receiptNum,
     };
-    setActiveStations(nextStations);
+
+    updateSalonChairStation({
+      workstationId: current.workstationId || checkoutModalStationKey,
+      workstationName: current.workstationName || wsMeta?.name || checkoutModalStationKey,
+      stage: 'waiting',
+      clientName: undefined,
+      serviceName: undefined,
+      servicePriceDzd: undefined,
+      servicePriceCentimes: undefined,
+      currentStylistId: undefined,
+      currentStylistName: undefined,
+      currentAppointmentId: undefined,
+      startTime: undefined,
+      elapsedMinutes: 0,
+    });
     setLastReceipt(nextReceipt);
     setCheckoutModalStationKey(null);
-    registerUndoEntry({
-      vertical: 'appointment_service',
-      operationType: 'create',
-      summary: pickLocalizedText(language, {
-        en: `Chair checkout: ${current.clientName}`,
-        fr: `Encaissement réussi : ${current.clientName}`,
-        ar: `تم تحصيل الزبون: ${current.clientName}`,
-      }),
-      entityLabel: current.clientName,
-      toastType: 'success',
-      undo: () => {
-        setActiveStations(cloneSnapshot(prevStations));
-        setLastReceipt(cloneSnapshot(prevReceipt));
-      },
-      redo: () => {
-        setActiveStations(cloneSnapshot(nextStations));
-        setLastReceipt(cloneSnapshot(nextReceipt));
-      },
-    });
-  }, [checkoutModalStationKey, activeStations, lastReceipt, paymentMethod, language]);
+  }, [checkoutModalStationKey, activeStations, workstationsList, getStationPriceDzd, paymentMethod, updateSalonChairStation]);
 
   const handleAddNewClientToStation = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       const service = servicesCatalog.find((s) => s.id === selectedServiceId) || servicesCatalog[0];
       const stylist = staff.find((st) => st.id === selectedStylistId) || staff[0];
-      const prevStations = cloneSnapshot(activeStations);
+      const wsMeta = workstationsList.find((w) => w.id === targetStationId);
       const clientLabel = newClientName.trim() || (isRtl ? 'زبون صالون' : 'Client Salon');
-      const nextStations = {
-        ...prevStations,
-        [targetStationId]: {
-          clientName: clientLabel,
-          serviceName: service?.name || 'Prestation Salon',
-          servicePriceDzd: service?.price || 1500,
-          stylistName: stylist?.fullName || 'Styliste',
-          stylistId: stylist?.id || 'stf_01',
-          stage: 'waiting',
-          startTime: Date.now(),
-        },
-      };
-      setActiveStations(nextStations);
+      const priceDzd = Number(service?.price || 1500);
+      updateSalonChairStation({
+        workstationId: targetStationId,
+        workstationName: wsMeta?.name || targetStationId.toUpperCase(),
+        clientName: clientLabel,
+        serviceName: service?.name || 'Prestation Salon',
+        servicePriceDzd: priceDzd,
+        servicePriceCentimes: dzdToCentimes(priceDzd),
+        currentStylistName: stylist?.fullName || 'Styliste',
+        currentStylistId: stylist?.id,
+        stage: 'waiting',
+        startTime: new Date().toISOString(),
+        elapsedMinutes: 0,
+      });
       setIsAddClientModalOpen(false);
       setNewClientName('');
-      registerUndoEntry({
-        vertical: 'appointment_service',
-        operationType: 'create',
-        summary: pickLocalizedText(language, {
-          en: `Assigned ${clientLabel} to ${targetStationId.toUpperCase()}`,
-          fr: `Client installé : ${clientLabel} (${targetStationId.toUpperCase()})`,
-          ar: `تم تثبيت الزبون ${clientLabel}`,
-        }),
-        entityLabel: clientLabel,
-        toastType: 'success',
-        undo: () => setActiveStations(cloneSnapshot(prevStations)),
-        redo: () => setActiveStations(cloneSnapshot(nextStations)),
-      });
     },
-    [servicesCatalog, selectedServiceId, staff, selectedStylistId, activeStations, targetStationId, newClientName, isRtl, language]
+    [servicesCatalog, selectedServiceId, staff, selectedStylistId, workstationsList, targetStationId, newClientName, isRtl, updateSalonChairStation]
   );
 
   const activeCheckoutStation = checkoutModalStationKey
@@ -428,9 +440,22 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         <div className="flex items-center justify-between pt-1 font-semibold">
                           <span>{isRtl ? 'السعر' : 'Tarif'} :</span>
                           <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums t-body">
-                            {formatMoney(active.servicePriceDzd, 'DZD')}
+                            {formatMoney(getStationPriceDzd(active), 'DZD')}
                           </span>
                         </div>
+                        {active.startTime && (
+                          <div className="flex items-center justify-between text-black/60 dark:text-white/65 tabular-nums">
+                            <span className="flex items-center gap-1">
+                              <Clock size={12} />
+                              <span>{isRtl ? 'المدة' : 'Durée'}</span>
+                            </span>
+                            <span>
+                              {active.stage === 'in_progress'
+                                ? `${computeElapsedMinutesFromIso(active.startTime, nowMs)} min`
+                                : `${active.elapsedMinutes ?? 0} min`}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="mt-3">
@@ -549,7 +574,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 <InspectorCard>
                   <InspectorKeyValue label="Client" value={st?.clientName || 'Aucun client installé'} mono={false} />
                   <InspectorKeyValue label="Prestation" value={st?.serviceName || '—'} tone="accent" mono={false} />
-                  <InspectorKeyValue label="Styliste" value={st?.stylistName || '—'} mono={false} isLast />
+                  <InspectorKeyValue label="Styliste" value={st?.currentStylistName || '—'} mono={false} isLast />
                 </InspectorCard>
               </InspectorSection>
             );
@@ -559,7 +584,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             return (
               <InspectorSection index={0} title={isRtl ? 'قيمة الفاتورة' : 'Encaissement poste'}>
                 <InspectorBigStat
-                  value={st ? formatMoney(st.servicePriceDzd, 'DZD') : '0 DA'}
+                  value={st ? formatMoney(getStationPriceDzd(st), 'DZD') : '0 DA'}
                   tone={st ? 'accent' : 'ok'}
                   action={
                     st
@@ -613,7 +638,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 <InspectorCard>
                   <InspectorKeyValue label="Poste" value={ws.name} mono={false} />
                   <InspectorKeyValue label="Client actif" value={st?.clientName || 'Libre'} mono={false} />
-                  <InspectorKeyValue label="Montant en cours" value={st ? formatMoney(st.servicePriceDzd, 'DZD') : '—'} tone="accent" isLast />
+                  <InspectorKeyValue label="Montant en cours" value={st ? formatMoney(getStationPriceDzd(st), 'DZD') : '—'} tone="accent" isLast />
                 </InspectorCard>
               </InspectorSection>
               {!st && (
@@ -663,22 +688,22 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
                 <span className="tabular-nums font-semibold">
-                  {formatMoney(retainedCheckoutStation.servicePriceDzd, 'DZD')}
+                  {formatMoney(getStationPriceDzd(retainedCheckoutStation), 'DZD')}
                 </span>
               </div>
               {paymentMethod === 'cash' && (
                 <div className="flex justify-between text-amber-600 font-medium">
                   <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
-                  <span>+{calculateArt317Timbre(retainedCheckoutStation.servicePriceDzd)} DA</span>
+                  <span>+{calculateArt317Timbre(getStationPriceDzd(retainedCheckoutStation))} DA</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold t-label">
                 <span>{isRtl ? 'الإجمالي' : 'Total Net'}</span>
                 <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                   {formatMoney(
-                    retainedCheckoutStation.servicePriceDzd +
+                    getStationPriceDzd(retainedCheckoutStation) +
                       (paymentMethod === 'cash'
-                        ? calculateArt317Timbre(retainedCheckoutStation.servicePriceDzd)
+                        ? calculateArt317Timbre(getStationPriceDzd(retainedCheckoutStation))
                         : 0),
                     'DZD'
                   )}

@@ -21,6 +21,15 @@ DECLARE
   v_seq_2  jsonb;
   v_blk_1  jsonb;
   v_rate   public.statutory_rates%ROWTYPE;
+  v_staff_a uuid;
+  v_member_a uuid := '55555555-0000-4000-8000-000000000001';
+  v_prod_a   uuid := '66666666-0000-4000-8000-000000000001';
+  v_sale_a   uuid := '77777777-0000-4000-8000-000000000001';
+  v_z_a      uuid := '88888888-0000-4000-8000-000000000001';
+  v_chk_id   uuid := '99999999-0000-4000-8000-000000000001';
+  v_sess_a   uuid := 'abababab-0000-4000-8000-000000000001';
+  v_stu_a    uuid := 'cdcdcdcd-0000-4000-8000-000000000001';
+  v_mv_id    uuid := 'efefefef-0000-4000-8000-000000000001';
 BEGIN
   -- 1. Seed isolated fixture users, accounts, businesses, branches & platform admin
   INSERT INTO auth.users (id, email) VALUES
@@ -314,6 +323,113 @@ BEGIN
       AND cmup_adjustment_held = true
   ) THEN
     RAISE EXCEPTION 'Expected mfg_ncr_records row with disposition=Scrapped and cmup_adjustment_held=true';
+  END IF;
+
+  -- 8. Verify Step 6 (1.1 duplicate check-in, 1.2 edu_attendance unique index, 1.4 immutable Z-report, 1.5 refund/undo RPC)
+  INSERT INTO public.gym_members (
+    id, account_id, business_id, branch_id, full_name, status, start_date, expiration_date, remaining_sessions
+  ) VALUES (
+    v_member_a, v_user_a, v_biz_a, v_br_a, 'Adherent Step6', 'Active', CURRENT_DATE, CURRENT_DATE + 30, 10
+  );
+
+  v_seq_1 := public.gym_record_check_in(v_br_a, v_member_a, 'rfid', 'dev-a', v_chk_id, 5, NULL, NULL);
+  IF COALESCE((v_seq_1->>'success')::boolean, false) IS NOT TRUE
+     OR (v_seq_1->>'remainingSessions')::int <> 9 THEN
+    RAISE EXCEPTION 'Expected first gym_record_check_in to decrement sessions to 9: %', v_seq_1;
+  END IF;
+
+  -- Second check-in within 5 minutes with a different ID must be blocked
+  v_seq_2 := public.gym_record_check_in(v_br_a, v_member_a, 'rfid', 'dev-a', gen_random_uuid(), 5, NULL, NULL);
+  IF COALESCE((v_seq_2->>'duplicateBlocked')::boolean, false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected duplicate check-in within 5m to be blocked: %', v_seq_2;
+  END IF;
+
+  -- With override reason, check-in proceeds & decrements to 8
+  v_seq_2 := public.gym_record_check_in(v_br_a, v_member_a, 'manual', 'dev-a', gen_random_uuid(), 5, v_user_a, 'Card re-entry verified');
+  IF COALESCE((v_seq_2->>'success')::boolean, false) IS NOT TRUE
+     OR (v_seq_2->>'remainingSessions')::int <> 8 THEN
+    RAISE EXCEPTION 'Expected overridden gym_record_check_in to succeed with 8 remaining: %', v_seq_2;
+  END IF;
+
+  -- 1.2 Active edu_attendance partial unique index must reject duplicates
+  INSERT INTO public.edu_attendance (
+    account_id, business_id, branch_id, session_id, cohort_id, student_id, student_name, status
+  ) VALUES (
+    v_user_a, v_biz_a, v_br_a, v_sess_a, v_sess_a, v_stu_a, 'Student One', 'Present'
+  );
+  BEGIN
+    INSERT INTO public.edu_attendance (
+      account_id, business_id, branch_id, session_id, cohort_id, student_id, student_name, status
+    ) VALUES (
+      v_user_a, v_biz_a, v_br_a, v_sess_a, v_sess_a, v_stu_a, 'Student One', 'Late'
+    );
+    RAISE EXCEPTION 'Duplicate active edu_attendance unexpectedly succeeded';
+  EXCEPTION WHEN unique_violation THEN
+    NULL;
+  END;
+
+  -- 1.4 POS Z-report immutability: provisional finalize allowed once; money edits and deletes blocked
+  INSERT INTO public.pos_z_reports (
+    id, account_id, business_id, branch_id, local_close_ref, status, closed_by_name,
+    opening_float_centimes, expected_cash_centimes, actual_cash_centimes
+  ) VALUES (
+    v_z_a, v_user_a, v_biz_a, v_br_a, 'LOC-CLOSE-001', 'provisional_pending_sync', 'Manager A',
+    1500000, 2500000, 2500000
+  );
+
+  UPDATE public.pos_z_reports
+  SET status = 'finalized', z_number = 'Z-2026-00001', finalized_at = now()
+  WHERE id = v_z_a;
+
+  BEGIN
+    UPDATE public.pos_z_reports
+    SET actual_cash_centimes = 100
+    WHERE id = v_z_a;
+    RAISE EXCEPTION 'Immutable Z-report allowed monetary mutation';
+  EXCEPTION WHEN SQLSTATE '42501' THEN
+    NULL;
+  END;
+
+  -- 1.5 POS partial refund restores stock & undo reverses it
+  INSERT INTO public.pos_products (
+    id, account_id, business_id, branch_id, name, price_amount, cost_amount, stock_quantity
+  ) VALUES (
+    v_prod_a, v_user_a, v_biz_a, v_br_a, 'Bottle Water', 100, 60, 10
+  );
+  INSERT INTO public.pos_sales (
+    id, account_id, business_id, branch_id, receipt_number, total_amount, payment_method, status
+  ) VALUES (
+    v_sale_a, v_user_a, v_biz_a, v_br_a, 'POS-TEST-01', 300, 'Cash', 'Completed'
+  );
+  INSERT INTO public.pos_sale_items (
+    account_id, business_id, branch_id, sale_id, product_id, product_name, quantity, unit_price, total_price
+  ) VALUES (
+    v_user_a, v_biz_a, v_br_a, v_sale_a, v_prod_a, 'Bottle Water', 3, 100, 300
+  );
+
+  v_seq_1 := public.pos_refund_with_stock(
+    v_br_a,
+    v_sale_a,
+    jsonb_build_array(jsonb_build_object('productId', v_prod_a, 'productName', 'Bottle Water', 'quantity', 2)),
+    'Damaged cap',
+    'dev-a',
+    jsonb_build_array(v_mv_id)
+  );
+  IF COALESCE((v_seq_1->>'success')::boolean, false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'pos_refund_with_stock failed: %', v_seq_1;
+  END IF;
+  IF (SELECT stock_quantity FROM public.pos_products WHERE id = v_prod_a) <> 12 THEN
+    RAISE EXCEPTION 'Expected stock_quantity = 12 after refund of 2';
+  END IF;
+
+  v_seq_2 := public.pos_undo_refund_with_stock(
+    v_br_a, v_sale_a, jsonb_build_array(v_mv_id), 'Completed', NULL
+  );
+  IF COALESCE((v_seq_2->>'success')::boolean, false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'pos_undo_refund_with_stock failed: %', v_seq_2;
+  END IF;
+  IF (SELECT stock_quantity FROM public.pos_products WHERE id = v_prod_a) <> 10 THEN
+    RAISE EXCEPTION 'Expected stock_quantity = 10 after undo refund';
   END IF;
 
   RESET ROLE;

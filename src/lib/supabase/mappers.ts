@@ -290,6 +290,7 @@ export const mapSaleFromDb = (row: any): Sale => ({
   memberName: row.customer_name || row.member_name || undefined,
   totalAmount: Number(row.total_amount || 0),
   paymentMethod: row.payment_method || 'Cash',
+  status: (row.status || 'Completed') as Sale['status'],
   items: Array.isArray(row.items) ? row.items : [],
   notes: row.notes || undefined,
   version: row.version != null ? Number(row.version) : undefined,

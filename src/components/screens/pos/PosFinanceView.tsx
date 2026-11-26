@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   Wallet,
   Banknote,
@@ -8,15 +8,31 @@ import {
   Plus,
   Trash2,
   Eye,
+  LockOpen,
+  AlertTriangle,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
   selectCurrentSalesFromState,
+  selectCurrentPosCashSessionsFromState,
+  selectCurrentPosCashMovementsFromState,
+  selectCurrentPosZReportsFromState,
   shallowEqualObjects,
+  showToast,
+  useAtriumActions,
   useAtriumSelector,
   useDashboardShellState,
 } from '../../../services/store';
-import { registerUndoEntry, cloneSnapshot } from '../../../services/undoEngine';
+import { PosCashMovement, PosZReport } from '../../../types/index';
+import { dzdToCentimes, centimesToDzd } from '../../../utils/money';
+import {
+  computeDrawerExpectedCentimes,
+  computeVarianceCentimes,
+  requiresVarianceManagerPin,
+  sumSalePaymentCentimes,
+} from '../../../utils/step6Persistence';
+import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -64,9 +80,10 @@ interface PosExpense {
   facilityId?: string;
   reference: string;
   payee: string;
-  category: 'Supplies' | 'Supplier' | 'Maintenance' | 'Transport' | 'StaffMeal' | 'Other';
+  category: PosCashMovement['category'];
   amount: number;
-  paymentMethod: 'Cash' | 'Card' | 'BaridiMob';
+  amountCentimes: number;
+  paymentMethod: PosCashMovement['paymentMethod'];
   paidBy: string;
   notes?: string;
   createdAt: string;
@@ -78,9 +95,27 @@ export const PosFinanceView: React.FC = () => {
   const isEn = language === 'en';
   const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
     useDashboardShellState();
-  const { sales, currentBranch, branches, currentUser } = useAtriumSelector(
+  const {
+    openPosCashSession,
+    addPosCashMovement,
+    deletePosCashMovement,
+    closePosCashSessionAndIssueZReport,
+    reprintPosZReport,
+  } = useAtriumActions();
+  const {
+    sales,
+    posCashSessions,
+    posCashMovements,
+    posZReports,
+    currentBranch,
+    branches,
+    currentUser,
+  } = useAtriumSelector(
     (s) => ({
       sales: selectCurrentSalesFromState(s),
+      posCashSessions: selectCurrentPosCashSessionsFromState(s),
+      posCashMovements: selectCurrentPosCashMovementsFromState(s),
+      posZReports: selectCurrentPosZReportsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -88,10 +123,42 @@ export const PosFinanceView: React.FC = () => {
     shallowEqualObjects
   );
 
-  const [expenses, setExpenses] = useState<PosExpense[]>([]);
-  const [openingFloat, setOpeningFloat] = useState<number>(15000);
+  const openSession = useMemo(
+    () => posCashSessions.find((cs) => cs.status === 'open') || null,
+    [posCashSessions]
+  );
+  const [openingFloatInput, setOpeningFloatInput] = useState<number>(() =>
+    openSession ? centimesToDzd(openSession.openingFloatCentimes) : 15000
+  );
+  useEffect(() => {
+    if (openSession) {
+      setOpeningFloatInput(centimesToDzd(openSession.openingFloatCentimes));
+    }
+  }, [openSession?.id, openSession?.openingFloatCentimes]);
+
   const [actualCashInput, setActualCashInput] = useState<string>('');
   const [isZReportOpen, setIsZReportOpen] = useState(false);
+  const [activeZReportId, setActiveZReportId] = useState<string | null>(null);
+  const [isVariancePinOpen, setIsVariancePinOpen] = useState(false);
+  const [isClosingZ, setIsClosingZ] = useState(false);
+
+  const expenses: PosExpense[] = useMemo(
+    () =>
+      posCashMovements.map((m) => ({
+        id: m.id,
+        facilityId: m.branchId,
+        reference: m.reference,
+        payee: m.payee,
+        category: m.category,
+        amount: centimesToDzd(m.amountCentimes),
+        amountCentimes: m.amountCentimes,
+        paymentMethod: m.paymentMethod,
+        paidBy: m.paidBy || 'Cashier',
+        notes: m.notes,
+        createdAt: m.occurredAt,
+      })),
+    [posCashMovements]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -128,37 +195,41 @@ export const PosFinanceView: React.FC = () => {
 
   const todaySales = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    return branchSales.filter((s) => s.createdAt.startsWith(today) && s.status !== 'Refunded');
+    return branchSales.filter((s) => s.createdAt.startsWith(today));
   }, [branchSales]);
 
-  const financeTotals = useMemo(() => {
-    let cashSales = 0;
-    let cardSales = 0;
-    let baridiMobSales = 0;
-    let totalGrossSales = 0;
+  const activeSessionMovements = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return posCashMovements.filter((m) =>
+      openSession ? m.sessionId === openSession.id || !m.sessionId : m.occurredAt.startsWith(today)
+    );
+  }, [posCashMovements, openSession]);
 
-    todaySales.forEach((s) => {
-      totalGrossSales += s.totalAmount;
-      if (s.paymentMethod === 'Cash') cashSales += s.totalAmount;
-      else if (s.paymentMethod === 'Card') cardSales += s.totalAmount;
-      else if (s.paymentMethod === 'BankTransfer') baridiMobSales += s.totalAmount;
-      else if (s.paymentMethod === 'Split' && s.payments) {
-        s.payments.forEach((p) => {
-          if (p.method === 'Cash') cashSales += p.amount;
-          else if (p.method === 'Card') cardSales += p.amount;
-          else if (p.method === 'BankTransfer') baridiMobSales += p.amount;
-        });
-      }
+  const openingFloatCentimes = openSession
+    ? openSession.openingFloatCentimes
+    : dzdToCentimes(Math.max(0, openingFloatInput || 0));
+  const openingFloat = centimesToDzd(openingFloatCentimes);
+
+  const financeTotals = useMemo(() => {
+    const paymentCentimes = sumSalePaymentCentimes(todaySales);
+    const drawerSummary = computeDrawerExpectedCentimes({
+      openingFloatCentimes,
+      cashSalesCentimes: paymentCentimes.cashSalesCentimes,
+      cashMovements: activeSessionMovements,
+      cashRefundsCentimes: 0,
     });
 
-    const totalCashPayouts = expenses
-      .filter((e) => e.paymentMethod === 'Cash')
-      .reduce((acc, e) => acc + e.amount, 0);
-
-    const totalAllExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
-    const expectedCashInDrawer = openingFloat + cashSales - totalCashPayouts;
-    const actualCounted = parseFloat(actualCashInput) || 0;
-    const cashVariance = actualCashInput !== '' ? actualCounted - expectedCashInDrawer : 0;
+    const hasCounted = actualCashInput.trim() !== '';
+    const actualCountedCentimes = hasCounted
+      ? dzdToCentimes(Math.max(0, parseFloat(actualCashInput) || 0))
+      : drawerSummary.expectedCashCentimes;
+    const varianceCentimes = hasCounted
+      ? computeVarianceCentimes(actualCountedCentimes, drawerSummary.expectedCashCentimes)
+      : 0;
+    const totalAllExpensesCentimes = posCashMovements.reduce(
+      (acc, m) => acc + Math.max(0, m.amountCentimes),
+      0
+    );
 
     const branchCounts = new Map<string, number>();
     expenses.forEach((e) => {
@@ -167,23 +238,39 @@ export const PosFinanceView: React.FC = () => {
     });
 
     return {
-      cashSales,
-      cardSales,
-      baridiMobSales,
-      totalGrossSales,
-      totalCashPayouts,
-      totalAllExpenses,
-      expectedCashInDrawer,
-      actualCounted,
-      cashVariance,
-      hasCounted: actualCashInput !== '',
+      cashSales: centimesToDzd(paymentCentimes.cashSalesCentimes),
+      cardSales: centimesToDzd(paymentCentimes.cardSalesCentimes),
+      baridiMobSales: centimesToDzd(paymentCentimes.baridimobSalesCentimes),
+      totalGrossSales: centimesToDzd(paymentCentimes.totalGrossSalesCentimes),
+      totalCashPayouts: centimesToDzd(drawerSummary.cashOutCentimes),
+      totalAllExpenses: centimesToDzd(totalAllExpensesCentimes),
+      expectedCashInDrawer: centimesToDzd(drawerSummary.expectedCashCentimes),
+      expectedCashCentimes: drawerSummary.expectedCashCentimes,
+      actualCounted: centimesToDzd(actualCountedCentimes),
+      actualCountedCentimes,
+      cashVariance: centimesToDzd(varianceCentimes),
+      varianceCentimes,
+      pinRequiredForClose: hasCounted && requiresVarianceManagerPin(varianceCentimes),
+      hasCounted,
+      paymentCentimes,
+      drawerSummary,
       branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
         value: name,
         label: name,
         count,
       })),
     };
-  }, [todaySales, expenses, openingFloat, actualCashInput, branchesById, currentBranch, language]);
+  }, [
+    todaySales,
+    openingFloatCentimes,
+    activeSessionMovements,
+    actualCashInput,
+    posCashMovements,
+    expenses,
+    branchesById,
+    currentBranch,
+    language,
+  ]);
 
   const filteredExpenses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -227,43 +314,61 @@ export const PosFinanceView: React.FC = () => {
     });
   }, [filteredExpenses, pinnedExpenseIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
+  const handleOpenDrawerSession = useCallback(() => {
+    openPosCashSession({
+      openingFloatCentimes: dzdToCentimes(Math.max(0, openingFloatInput || 0)),
+    });
+  }, [openPosCashSession, openingFloatInput]);
+
+  const executeCloseAndIssueZReport = useCallback(
+    async (variancePinVerified: boolean) => {
+      if (isClosingZ) return;
+      setIsClosingZ(true);
+      try {
+        const report = await closePosCashSessionAndIssueZReport({
+          sessionId: openSession?.id,
+          openingFloatCentimes,
+          actualCashCentimes: financeTotals.actualCountedCentimes,
+          variancePinVerified,
+          varianceVerifiedByStaffId: variancePinVerified ? currentUser?.id : undefined,
+        });
+        setActiveZReportId(report.id);
+        setIsZReportOpen(true);
+        setActualCashInput('');
+      } finally {
+        setIsClosingZ(false);
+      }
+    },
+    [
+      isClosingZ,
+      closePosCashSessionAndIssueZReport,
+      openSession?.id,
+      openingFloatCentimes,
+      financeTotals.actualCountedCentimes,
+      currentUser?.id,
+    ]
+  );
+
+  const handleRequestCloseZReport = useCallback(() => {
+    if (financeTotals.pinRequiredForClose) {
+      setIsVariancePinOpen(true);
+      return;
+    }
+    void executeCloseAndIssueZReport(false);
+  }, [financeTotals.pinRequiredForClose, executeCloseAndIssueZReport]);
+
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
     if (!expPayee.trim() || expAmount <= 0) return;
 
-    const newExp: PosExpense = {
-      id: `exp_pos_${Date.now()}`,
-      facilityId: currentBranch.id,
-      reference: `DEC-${(expenses.length + 1).toString().padStart(3, '0')}`,
+    addPosCashMovement({
+      sessionId: openSession?.id,
       payee: expPayee.trim(),
       category: expCategory,
-      amount: expAmount,
       paymentMethod: expMethod,
-      paidBy: currentUser?.fullName || 'Cashier',
+      direction: 'out',
+      amountCentimes: dzdToCentimes(expAmount),
       notes: expNotes.trim() || undefined,
-      createdAt: new Date().toISOString(),
-    };
-
-    const prevExpenses = cloneSnapshot(expenses);
-    const nextExpenses = [newExp, ...prevExpenses];
-    setExpenses(nextExpenses);
-    registerUndoEntry({
-      vertical: 'pos_inventory',
-      operationType: 'create',
-      summary: isAr
-        ? `صرف صندوق: ${newExp.payee}`
-        : isEn
-        ? `Petty cash payout: ${newExp.payee}`
-        : `Sortie de caisse : ${newExp.payee}`,
-      entityLabel: newExp.payee,
-      branchId: currentBranch.id,
-      undo: () => {
-        setExpenses(cloneSnapshot(prevExpenses));
-        setInspectingExpense((curr) => (curr?.id === newExp.id ? null : curr));
-      },
-      redo: () => {
-        setExpenses(cloneSnapshot(nextExpenses));
-      },
     });
 
     setExpPayee('');
@@ -272,32 +377,20 @@ export const PosFinanceView: React.FC = () => {
     setIsExpenseModalOpen(false);
   };
 
-  const handleDeleteExpense = (id: string) => {
-    const target = expenses.find((e) => e.id === id);
-    if (!target) return;
-    const prevExpenses = cloneSnapshot(expenses);
-    const nextExpenses = prevExpenses.filter((e) => e.id !== id);
-    setExpenses(nextExpenses);
-    if (inspectingExpense?.id === id) setInspectingExpense(null);
-    registerUndoEntry({
-      vertical: 'pos_inventory',
-      operationType: 'delete',
-      summary: isAr
-        ? `حذف صرف: ${target.payee}`
-        : isEn
-        ? `Delete payout: ${target.payee}`
-        : `Suppression sortie : ${target.payee}`,
-      entityLabel: target.payee,
-      branchId: currentBranch.id,
-      undo: () => {
-        setExpenses(cloneSnapshot(prevExpenses));
-      },
-      redo: () => {
-        setExpenses(cloneSnapshot(nextExpenses));
-        setInspectingExpense((curr) => (curr?.id === id ? null : curr));
-      },
-    });
-  };
+  const handleDeleteExpense = useCallback(
+    (id: string) => {
+      deletePosCashMovement(id);
+      if (inspectingExpense?.id === id) setInspectingExpense(null);
+    },
+    [deletePosCashMovement, inspectingExpense?.id]
+  );
+
+  const activeZReport: PosZReport | null = useMemo(() => {
+    if (activeZReportId) {
+      return posZReports.find((r) => r.id === activeZReportId) || null;
+    }
+    return posZReports[0] || null;
+  }, [activeZReportId, posZReports]);
 
   const handleResetFilters = useCallback(() => {
     setCategoryFilter('All');
@@ -509,15 +602,29 @@ export const PosFinanceView: React.FC = () => {
         icon={<Wallet size={22} />}
         title={isAr ? 'المالية' : isEn ? 'Finance' : 'Finances'}
         secondaryActions={
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="md"
-            onClick={() => setIsZReportOpen(true)}
-            icon={<Printer size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
-          >
-            {isAr ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
-          </AtriumButton>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!openSession && (
+              <AtriumButton
+                type="button"
+                variant="secondary"
+                size="md"
+                onClick={handleOpenDrawerSession}
+                icon={<LockOpen size={15} className="text-emerald-600 dark:text-emerald-400" />}
+              >
+                {isAr ? 'فتح درج الصندوق' : isEn ? 'Open Cash Drawer' : 'Ouvrir Caisse'}
+              </AtriumButton>
+            )}
+            <AtriumButton
+              type="button"
+              variant="secondary"
+              size="md"
+              disabled={isClosingZ}
+              onClick={handleRequestCloseZReport}
+              icon={<Printer size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
+            >
+              {isAr ? 'إغلاق وإصدار تقرير Z' : isEn ? 'Close Drawer & Issue Z' : 'Clôturer & Émettre Z'}
+            </AtriumButton>
+          </div>
         }
         primaryAction={{
           label: isAr ? 'تسجيل مصاريف الصندوق' : isEn ? 'Cash Payout' : 'Sortie de Caisse',
@@ -553,7 +660,7 @@ export const PosFinanceView: React.FC = () => {
           valuePrefix: '',
           valueCount: financeTotals.expectedCashInDrawer,
           formatValue: (n) => formatMoney(n),
-          caption: `${currentBranch?.name || 'Magasin'} · Fond ${formatMoney(openingFloat)}`,
+          caption: `${currentBranch?.name || 'Magasin'} · ${openSession ? (isAr ? 'الدرج مفتوح' : isEn ? 'Drawer Open' : 'Caisse ouverte') : (isAr ? 'مغلق' : isEn ? 'Drawer Closed' : 'Caisse fermée')}`,
         }}
       />
 
@@ -576,6 +683,12 @@ export const PosFinanceView: React.FC = () => {
             <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
               {formatMoney(financeTotals.expectedCashInDrawer)}
             </span>
+            {financeTotals.pinRequiredForClose && (
+              <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold">
+                <ShieldCheck size={13} />
+                <span>{isAr ? 'يتطلب PIN للمطابقة' : isEn ? 'Manager PIN required (>500 DA variance)' : 'PIN gérant requis (>500 DA écart)'}</span>
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -583,9 +696,10 @@ export const PosFinanceView: React.FC = () => {
               <span>{isAr ? 'الرصيد الافتتاحي:' : 'Fond initial:'}</span>
               <input
                 type="number"
-                value={openingFloat}
-                onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
-                className="w-24 h-8 px-2.5 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
+                disabled={Boolean(openSession)}
+                value={openingFloatInput}
+                onChange={(e) => setOpeningFloatInput(parseFloat(e.target.value) || 0)}
+                className="w-24 h-8 px-2.5 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white disabled:opacity-65 focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </label>
             <label className="flex items-center gap-2 t-small font-semibold text-black/65 dark:text-white/70">
@@ -1010,90 +1124,233 @@ export const PosFinanceView: React.FC = () => {
         </form>
       </Modal>
 
+      {posZReports.length > 0 && (
+        <ScreenPod>
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {isAr ? 'أرشيف تقارير Z وإعادة الطباعة' : isEn ? 'Z-Report Archive & Reprints' : 'Archive Rapports Z & Réimpressions'}
+            </h3>
+            <span className="t-cap text-black/60 dark:text-white/60 tabular-nums">
+              {posZReports.length} {isAr ? 'تقارير' : 'rapports'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {posZReports.slice(0, 9).map((rep) => {
+              const isProv = rep.status === 'provisional_pending_sync' || !rep.zNumber;
+              return (
+                <div
+                  key={rep.id}
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-3.5 bg-white dark:bg-[#22201E] space-y-2 t-cap"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold tabular-nums text-black dark:text-white">
+                      {rep.zNumber || rep.localCloseRef}
+                    </span>
+                    <span
+                      className={`t-small font-semibold ${
+                        rep.driftDetected
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : isProv
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                      }`}
+                    >
+                      {rep.driftDetected
+                        ? isAr ? 'انحراف مكتشف' : isEn ? 'Drift Flagged' : 'Écart Sync'
+                        : isProv
+                        ? 'PROVISIONAL — NOT FINAL Z'
+                        : isAr ? 'معتمد' : isEn ? 'Finalized' : 'Définitif'}
+                    </span>
+                  </div>
+                  <div className="text-black/62 dark:text-white/65 tabular-nums">
+                    {new Date(rep.closedAt).toLocaleString()} · {rep.closedByName || 'Cashier'}
+                  </div>
+                  <div className="flex items-center justify-between tabular-nums font-semibold text-black dark:text-white">
+                    <span>{formatMoney(centimesToDzd(rep.actualCashCentimes))}</span>
+                    <span className="text-black/55 dark:text-white/55">
+                      {rep.reprintedCount > 0 ? `×${rep.reprintedCount}` : ''}
+                    </span>
+                  </div>
+                  <div className="pt-1 flex justify-end">
+                    <Button
+                      type="button"
+                      tone="soft"
+                      size={32}
+                      leading={<Printer size={13} />}
+                      onClick={() => {
+                        setActiveZReportId(rep.id);
+                        setIsZReportOpen(true);
+                      }}
+                    >
+                      {isAr ? 'عرض / طباعة' : isEn ? 'View / Reprint' : 'Voir / Réimprimer'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScreenPod>
+      )}
+
       <Modal
         isOpen={isZReportOpen}
         onClose={() => setIsZReportOpen(false)}
         title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : isEn ? 'Z-Report · Daily Cash Closure' : 'Rapport Z · Clôture Journalière'}
       >
         <div className="space-y-4 tabular-nums t-cap leading-relaxed" dir="ltr">
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-white text-black [--sq-stroke:rgba(23,19,15,0.12)] space-y-2"
-          >
-            <div className="text-center font-semibold pb-2 border-b border-dashed border-black/[0.22]">
-              <div className="t-label font-semibold">RAPPORT Z - CLÔTURE DE CAISSE</div>
-              <div className="t-cap text-black/75">{currentBranch.name}</div>
-              <div className="t-cap text-black/55">{new Date().toLocaleString()}</div>
-              <div className="t-cap text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
-            </div>
-            <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-              <div className="flex justify-between">
-                <span>FOND DE CAISSE INITIAL :</span>
-                <span className="font-semibold">{formatMoney(openingFloat)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>VENTES BRUTES :</span>
-                <span className="font-semibold">{formatMoney(financeTotals.totalGrossSales)}</span>
-              </div>
-              <div className="flex justify-between text-red-600">
-                <span>SORTIES DE CAISSE :</span>
-                <span>-{formatMoney(financeTotals.totalCashPayouts)}</span>
-              </div>
-              <div className="flex justify-between pt-1 font-semibold t-label">
-                <span>SOLDE THÉORIQUE ATTENDU :</span>
-                <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
-              </div>
-            </div>
-            <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-              <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
-              <div className="flex justify-between">
-                <span>ESPÈCES :</span>
-                <span className="font-semibold">{formatMoney(financeTotals.cashSales)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>CARTE CIB / EDAHABIA :</span>
-                <span className="font-semibold">{formatMoney(financeTotals.cardSales)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>BARIDIMOB / VIREMENT :</span>
-                <span className="font-semibold">{formatMoney(financeTotals.baridiMobSales)}</span>
-              </div>
-            </div>
-            {financeTotals.hasCounted && (
-              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
-                <div className="flex justify-between font-semibold">
-                  <span>ESPÈCES PHYSICOMPTÉES :</span>
-                  <span>{formatMoney(financeTotals.actualCounted)}</span>
+          {(() => {
+            const rep = activeZReport;
+            const isProvisional = rep ? rep.status === 'provisional_pending_sync' || !rep.zNumber : false;
+            const repOpeningDzd = rep ? centimesToDzd(rep.openingFloatCentimes) : openingFloat;
+            const repCashDzd = rep ? centimesToDzd(rep.cashSalesCentimes) : financeTotals.cashSales;
+            const repCardDzd = rep ? centimesToDzd(rep.cardSalesCentimes) : financeTotals.cardSales;
+            const repBaridiDzd = rep ? centimesToDzd(rep.baridimobSalesCentimes) : financeTotals.baridiMobSales;
+            const repOutDzd = rep ? centimesToDzd(rep.cashOutCentimes) : financeTotals.totalCashPayouts;
+            const repExpectedDzd = rep ? centimesToDzd(rep.expectedCashCentimes) : financeTotals.expectedCashInDrawer;
+            const repActualDzd = rep ? centimesToDzd(rep.actualCashCentimes) : financeTotals.actualCounted;
+            const repVarianceDzd = rep ? centimesToDzd(rep.varianceCentimes) : financeTotals.cashVariance;
+            const grossTotalDzd = repCashDzd + repCardDzd + repBaridiDzd;
+
+            return (
+              <>
+                {isProvisional && (
+                  <div className="rounded-xl border border-amber-400/70 bg-amber-50 p-3 text-amber-900 space-y-0.5 text-center font-semibold">
+                    <div>PROVISIONAL — NOT FINAL Z</div>
+                    <div>PROVISOIRE — PAS UN Z DÉFINITIF · تقرير مؤقت — ليس إغلاق Z نهائياً</div>
+                  </div>
+                )}
+                {rep?.driftDetected && (
+                  <div className="rounded-xl border border-rose-400/70 bg-rose-50 p-3 text-rose-900 flex items-start gap-2">
+                    <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-semibold">SYNC DRIFT DETECTED / ÉCART SYNCHRONISATION</div>
+                      <div className="text-xs">{rep.driftDetails}</div>
+                    </div>
+                  </div>
+                )}
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-4 bg-white text-black [--sq-stroke:rgba(23,19,15,0.12)] space-y-2"
+                >
+                  <div className="text-center font-semibold pb-2 border-b border-dashed border-black/[0.22]">
+                    <div className="t-label font-semibold">
+                      {isProvisional ? 'RAPPORT Z PROVISOIRE' : 'RAPPORT Z - CLÔTURE DE CAISSE'}
+                    </div>
+                    <div className="t-cap font-semibold text-black/80">
+                      {rep?.zNumber || rep?.localCloseRef || 'APERÇU'}
+                    </div>
+                    <div className="t-cap text-black/75">{currentBranch.name}</div>
+                    <div className="t-cap text-black/55">
+                      {rep ? new Date(rep.closedAt).toLocaleString() : new Date().toLocaleString()}
+                    </div>
+                    <div className="t-cap text-black/55">
+                      CAISSIER : {rep?.closedByName || currentUser?.fullName || 'Cashier'}
+                    </div>
+                  </div>
+                  <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+                    <div className="flex justify-between">
+                      <span>FOND DE CAISSE INITIAL :</span>
+                      <span className="font-semibold">{formatMoney(repOpeningDzd)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>VENTES BRUTES :</span>
+                      <span className="font-semibold">{formatMoney(grossTotalDzd)}</span>
+                    </div>
+                    <div className="flex justify-between text-red-600">
+                      <span>SORTIES DE CAISSE :</span>
+                      <span>-{formatMoney(repOutDzd)}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 font-semibold t-label">
+                      <span>SOLDE THÉORIQUE ATTENDU :</span>
+                      <span>{formatMoney(repExpectedDzd)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+                    <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
+                    <div className="flex justify-between">
+                      <span>ESPÈCES :</span>
+                      <span className="font-semibold">{formatMoney(repCashDzd)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>CARTE CIB / EDAHABIA :</span>
+                      <span className="font-semibold">{formatMoney(repCardDzd)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>BARIDIMOB / VIREMENT :</span>
+                      <span className="font-semibold">{formatMoney(repBaridiDzd)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
+                    <div className="flex justify-between font-semibold">
+                      <span>ESPÈCES PHYSICOMPTÉES :</span>
+                      <span>{formatMoney(repActualDzd)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ÉCART DE CAISSE :</span>
+                      <span className={repVarianceDzd >= 0 ? 'text-emerald-700 font-semibold' : 'text-red-700 font-semibold'}>
+                        {repVarianceDzd >= 0 ? `+${formatMoney(repVarianceDzd)}` : formatMoney(repVarianceDzd)}
+                      </span>
+                    </div>
+                    {rep && rep.reprintedCount > 0 && (
+                      <div className="flex justify-between text-amber-700 font-semibold">
+                        <span>RÉIMPRESSIONS :</span>
+                        <span>×{rep.reprintedCount}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2 t-cap text-center text-black/75">
+                    {isProvisional
+                      ? 'PROVISIONAL — NOT FINAL Z (PENDING SERVER FINALIZATION)'
+                      : 'SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE'}
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>ÉCART DE CAISSE :</span>
-                  <span className={financeTotals.cashVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-red-700 font-semibold'}>
-                    {financeTotals.cashVariance >= 0 ? `+${formatMoney(financeTotals.cashVariance)}` : formatMoney(financeTotals.cashVariance)}
-                  </span>
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                  <Button type="button" tone="soft" size={40} onClick={() => setIsZReportOpen(false)}>
+                    {isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
+                  </Button>
+                  <Button
+                    type="button"
+                    tone="accent"
+                    size={40}
+                    leading={<Printer size={14} />}
+                    onClick={() => {
+                      if (rep) reprintPosZReport(rep.id);
+                      window.print();
+                    }}
+                  >
+                    {isAr ? 'طباعة تقرير Z (80mm)' : isEn ? 'Print Z-Report 80mm' : 'Imprimer Rapport Z 80mm'}
+                  </Button>
                 </div>
-              </div>
-            )}
-            <div className="pt-2 t-cap text-center text-black/75">
-              SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
-            <Button type="button" tone="soft" size={40} onClick={() => setIsZReportOpen(false)}>
-              {isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
-            </Button>
-            <Button
-              type="button"
-              tone="accent"
-              size={40}
-              leading={<Printer size={14} />}
-              onClick={() => window.print()}
-            >
-              {isAr ? 'طباعة تقرير Z (80mm)' : isEn ? 'Print Z-Report 80mm' : 'Imprimer Rapport Z 80mm'}
-            </Button>
-          </div>
+              </>
+            );
+          })()}
         </div>
       </Modal>
+
+      <PinVerificationModal
+        isOpen={isVariancePinOpen}
+        onClose={() => setIsVariancePinOpen(false)}
+        onSuccess={() => {
+          setIsVariancePinOpen(false);
+          showToast({
+            type: 'info',
+            title: isAr ? 'تم التحقق من PIN المدير' : isEn ? 'Manager PIN Verified' : 'Code PIN gérant validé',
+            message: isAr ? 'جاري إغلاق الصندوق وإصدار التقرير.' : 'Clôture et émission du rapport Z en cours.',
+          });
+          void executeCloseAndIssueZReport(true);
+        }}
+        title={isAr ? 'تأكيد فرق الصندوق برمز PIN' : isEn ? 'Variance Manager PIN Required' : 'Validation Écart Caisse (PIN)'}
+        description={
+          isAr
+            ? 'يتجاوز العجز النقدي عتبة 500 د.ج. أدخل رمز PIN المدير.'
+            : isEn
+            ? 'Negative cash variance exceeds 500 DA. Manager PIN is required to close.'
+            : 'Écart négatif supérieur à 500 DA. Code PIN gérant requis.'
+        }
+      />
     </div>
   );
 };

@@ -130,7 +130,10 @@ jobs:
               'mfg_upsert_bom_atomic',
               'pm_generate_ccp_batch_slips_atomic',
               'logistics_upsert_wilaya_tariffs_batch',
-              'get_audit_logs_page'
+              'get_audit_logs_page',
+              'gym_record_check_in',
+              'pos_refund_with_stock',
+              'pos_undo_refund_with_stock'
             );
           SQL
 
@@ -147,8 +150,10 @@ jobs:
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/db/test_rls_rpc_triggers.sql
 
-      - name: Verify Phase 1, Step 4 & Phase 5 rollback & re-apply parity
+      - name: Verify Phase 1, Step 4, Phase 5 & Step 6 rollback & re-apply parity
         run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611260001_step6_section1_persistence.down.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611260001_step6_section1_persistence.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611240003_phase1_security_audit_rpc.down.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611240003_phase1_security_audit_rpc.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611240001_phase1_trust_infrastructure.down.sql

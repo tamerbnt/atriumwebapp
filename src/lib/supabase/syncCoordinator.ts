@@ -276,6 +276,9 @@ export const CATEGORY_TABLE_MAP: Record<BusinessCategory, string[]> = {
     'pos_parked_orders',
     'pos_stock_movements',
     'pos_receipt_configs',
+    'pos_cash_sessions',
+    'pos_cash_movements',
+    'pos_z_reports',
   ],
   project_milestone: [
     'pm_staff',

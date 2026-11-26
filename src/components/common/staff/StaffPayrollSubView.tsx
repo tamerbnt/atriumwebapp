@@ -19,6 +19,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSelect } from '../../ui/live/LiveSelect';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { SalaryAdvanceModal } from './SalaryAdvanceModal';
+import { PayrollMigrationDryRunPanel } from './PayrollMigrationDryRunPanel';
+import { useAtriumActions } from '../../../services/store';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
@@ -66,6 +68,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 }) => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const { canViewSensitivePayroll } = useAtriumActions();
+  const canInspectPayrollDryRun = canViewSensitivePayroll();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(11);
   const [selectedYear, setSelectedYear] = useState<number>(2026);
@@ -633,6 +637,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         onCreateAdvance={onCreateAdvance}
         language={language}
       />
+
+      {canInspectPayrollDryRun && <PayrollMigrationDryRunPanel language={language} />}
     </div>
   );
 };

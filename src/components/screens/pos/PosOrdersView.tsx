@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   ClipboardList,
   Receipt,
@@ -16,6 +16,7 @@ import {
   selectCurrentBranchFromState,
   selectCurrentParkedOrdersFromState,
   selectCurrentSalesFromState,
+  selectCurrentStockMovementsFromState,
   shallowEqualObjects,
   showToast,
   useAtriumActions,
@@ -24,6 +25,7 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { Sale, ParkedOrder } from '../../../types/index';
+import { computeRefundableQuantities, type RefundLineRequest } from '../../../utils/step6Persistence';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -92,6 +94,7 @@ export const PosOrdersView: React.FC = () => {
   const {
     sales,
     parkedOrders,
+    stockMovements,
     currentBranch,
     branches,
     receiptConfig,
@@ -100,6 +103,7 @@ export const PosOrdersView: React.FC = () => {
     (s) => ({
       sales: selectCurrentSalesFromState(s),
       parkedOrders: selectCurrentParkedOrdersFromState(s),
+      stockMovements: selectCurrentStockMovementsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       receiptConfig: s.receiptConfig,
@@ -137,8 +141,27 @@ export const PosOrdersView: React.FC = () => {
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const [selectedSaleForRefund, setSelectedSaleForRefund] = useState<Sale | null>(null);
   const [refundReason, setRefundReason] = useState('Demande Client / Avoir');
+  const [refundQuantities, setRefundQuantities] = useState<Record<string, number>>({});
   const retainedSaleForReceipt = useRetainedModalValue(selectedSaleForReceipt);
   const retainedSaleForRefund = useRetainedModalValue(selectedSaleForRefund);
+
+  const refundableLines = useMemo(
+    () => (selectedSaleForRefund ? computeRefundableQuantities(selectedSaleForRefund, stockMovements) : []),
+    [selectedSaleForRefund, stockMovements]
+  );
+
+  useEffect(() => {
+    if (!selectedSaleForRefund) {
+      setRefundQuantities({});
+      return;
+    }
+    const next: Record<string, number> = {};
+    refundableLines.forEach((line) => {
+      const key = line.productId || line.productName;
+      next[key] = line.remainingRefundableQuantity;
+    });
+    setRefundQuantities(next);
+  }, [selectedSaleForRefund?.id]);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -678,7 +701,19 @@ export const PosOrdersView: React.FC = () => {
 
   const handleConfirmRefund = () => {
     if (!selectedSaleForRefund) return;
-    refundSale(selectedSaleForRefund.id, refundReason);
+    const itemsToRefund: RefundLineRequest[] = refundableLines
+      .map((line) => {
+        const key = line.productId || line.productName;
+        const qty = Math.max(0, Math.min(line.remainingRefundableQuantity, Number(refundQuantities[key] || 0)));
+        return {
+          productId: line.productId,
+          productName: line.productName,
+          quantity: qty,
+        };
+      })
+      .filter((it) => it.quantity > 0);
+    if (itemsToRefund.length === 0) return;
+    refundSale(selectedSaleForRefund.id, refundReason, itemsToRefund);
     setSelectedSaleForRefund(null);
   };
 
@@ -1572,11 +1607,99 @@ export const PosOrdersView: React.FC = () => {
         <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <p className="t-cap text-black/55 dark:text-white/55">
             {isAr
-              ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
+              ? 'اختر الكميات المراد إرجاعها لكل منتج ليتم إعادتها إلى المخزون.'
               : isEn
-              ? 'Items will automatically return to physical inventory with a full audit trail.'
-              : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}
+              ? 'Select per-item quantities to return to inventory. Remaining quantities are clamped automatically.'
+              : 'Sélectionnez les quantités par article à réintégrer en stock (plafonné au restant remboursable).'}
           </p>
+
+          {refundableLines.length > 0 && (
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {refundableLines.map((line) => {
+                const key = line.productId || line.productName;
+                const qty = refundQuantities[key] ?? 0;
+                const saleItem = retainedSaleForRefund?.items.find((it) =>
+                  line.productId ? it.productId === line.productId : it.productName === line.productName
+                );
+                const unitPrice = saleItem?.unitPrice || 0;
+                return (
+                  <div
+                    key={key}
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3 bg-[#FAF6F1] dark:bg-[#191716] flex items-center justify-between gap-3 t-cap"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-black dark:text-white truncate">{line.productName}</div>
+                      <div className="text-black/60 dark:text-white/60 tabular-nums">
+                        {isAr ? 'المتاح:' : isEn ? 'Remaining:' : 'Restant:'} {line.remainingRefundableQuantity}/{line.soldQuantity}
+                        {unitPrice > 0 ? ` · ${formatMoney(unitPrice)}` : ''}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 tabular-nums">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRefundQuantities((prev) => ({
+                            ...prev,
+                            [key]: Math.max(0, (prev[key] ?? 0) - 1),
+                          }))
+                        }
+                        className="w-7 h-7 rounded-md bg-white dark:bg-[#2B2825] font-semibold cursor-pointer"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        max={line.remainingRefundableQuantity}
+                        value={qty}
+                        onChange={(e) => {
+                          const v = Math.max(
+                            0,
+                            Math.min(line.remainingRefundableQuantity, parseInt(e.target.value, 10) || 0)
+                          );
+                          setRefundQuantities((prev) => ({ ...prev, [key]: v }));
+                        }}
+                        className="w-12 h-7 text-center rounded-md bg-white dark:bg-[#2B2825] font-semibold text-black dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRefundQuantities((prev) => ({
+                            ...prev,
+                            [key]: Math.min(line.remainingRefundableQuantity, (prev[key] ?? 0) + 1),
+                          }))
+                        }
+                        className="w-7 h-7 rounded-md bg-white dark:bg-[#2B2825] font-semibold cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-sm font-semibold tabular-nums pt-1">
+            <span className="text-black/65 dark:text-white/65">
+              {isAr ? 'مجموع الاسترجاع:' : isEn ? 'Refund Estimate:' : 'Montant estimé:'}
+            </span>
+            <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+              {formatMoney(
+                refundableLines.reduce((sum, line) => {
+                  const key = line.productId || line.productName;
+                  const qty = refundQuantities[key] ?? 0;
+                  const unitPrice =
+                    retainedSaleForRefund?.items.find((it) =>
+                      line.productId ? it.productId === line.productId : it.productName === line.productName
+                    )?.unitPrice || 0;
+                  return sum + qty * unitPrice;
+                }, 0)
+              )}
+            </span>
+          </div>
 
           <LabelInput
             field="RefundReason"
@@ -1602,6 +1725,7 @@ export const PosOrdersView: React.FC = () => {
               type="button"
               variant="danger"
               size="md"
+              disabled={Object.values(refundQuantities).reduce((a, b) => a + b, 0) <= 0}
               onClick={handleConfirmRefund}
             >
               {isAr ? 'تأكيد الاسترجاع' : isEn ? 'Confirm Refund' : 'Valider le Remboursement'}

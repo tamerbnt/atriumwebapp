@@ -20,10 +20,11 @@ import {
   selectCurrentEduCohortsFromState,
   selectCurrentEduStudentsFromState,
   selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduAttendanceFromState,
   useAtriumActions,
 } from '../../../services/store';
-import { EduStudent } from '../../../types/index';
-import { pickLocalizedText, registerUndoEntry, runUndoBatch } from '../../../services/undoEngine';
+import { AttendanceStatus, EduStudent } from '../../../types/index';
+import { dedupeEduAttendanceRecords } from '../../../utils/step6Persistence';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Button } from '@/atrium/core';
@@ -46,12 +47,13 @@ type AttendanceMapState = Record<string, { status: QuickStatus }>;
 export const AcademyRollCallKiosk: React.FC = () => {
   const { language, isRtl } = useTranslation();
   const isEn = language === 'en';
-  const { eduSessions, eduCohorts, eduStudents, eduEnrollments, eduQuickAttendance, currentUser, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { eduSessions, eduCohorts, eduStudents, eduEnrollments, eduAttendance, eduQuickAttendance, currentUser, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       eduSessions: selectCurrentEduSessionsFromState(s),
       eduCohorts: selectCurrentEduCohortsFromState(s),
       eduStudents: selectCurrentEduStudentsFromState(s),
       eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduAttendance: selectCurrentEduAttendanceFromState(s),
       eduQuickAttendance: s.eduQuickAttendance || [],
       currentUser: s.currentUser,
       isSyncing: s.isSyncing,
@@ -61,7 +63,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { recordQuickAttendance, retryCloudSync } = useAtriumActions();
+  const { batchRecordAttendance, unlockEduSessionAttendance, retryCloudSync } = useAtriumActions();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -100,22 +102,41 @@ export const AcademyRollCallKiosk: React.FC = () => {
   const [pedagogyTopic, setPedagogyTopic] = useState('');
   const [homeworkNotes, setHomeworkNotes] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [isUnlockReasonModalOpen, setIsUnlockReasonModalOpen] = useState(false);
+  const [unlockReason, setUnlockReason] = useState('');
+  const [pendingSaveReason, setPendingSaveReason] = useState<string | undefined>(undefined);
   const [notifyingStudent, setNotifyingStudent] = useState<EduStudent | null>(null);
+
+  const sessionEduRecords = useMemo(() => {
+    if (!activeSession) return [];
+    return dedupeEduAttendanceRecords(eduAttendance.filter((r) => r.sessionId === activeSession.id));
+  }, [eduAttendance, activeSession]);
+
+  const sessionChangeCount = useMemo(
+    () =>
+      sessionEduRecords.reduce(
+        (sum, rec) => sum + (Array.isArray(rec.changeHistory) ? rec.changeHistory.length : 0),
+        0
+      ),
+    [sessionEduRecords]
+  );
 
   useEffect(() => {
     if (!activeSession) return;
-    const existingRecords = eduQuickAttendance.filter((r) => r.sessionId === activeSession.id);
-    if (existingRecords.length > 0) {
+    if (sessionEduRecords.length > 0) {
       const initialMap: AttendanceMapState = {};
       let locked = false;
       let lastLockedTime = '';
       let staffSig = '';
-      existingRecords.forEach((r) => {
-        initialMap[r.studentId] = { status: r.status as QuickStatus };
+      enrolledStudents.forEach((st) => {
+        initialMap[st.id] = { status: 'present' };
+      });
+      sessionEduRecords.forEach((r) => {
+        initialMap[r.studentId] = { status: r.status.toLowerCase() as QuickStatus };
         if (r.isLocked) {
           locked = true;
-          lastLockedTime = r.markedAt;
-          staffSig = r.markedByStaffId;
+          lastLockedTime = r.markedAt || r.recordedAt;
+          staffSig = r.markedBy || '';
         }
       });
       setAttendanceMap(initialMap);
@@ -127,16 +148,40 @@ export const AcademyRollCallKiosk: React.FC = () => {
       );
       setLockedByStaff(staffSig || currentUser?.fullName || 'Professeur');
     } else {
-      const defaultMap: AttendanceMapState = {};
-      enrolledStudents.forEach((s) => {
-        defaultMap[s.id] = { status: 'present' };
-      });
-      setAttendanceMap(defaultMap);
-      setIsSessionLocked(false);
-      setLockedTimestamp(null);
+      const existingQuick = eduQuickAttendance.filter((r) => r.sessionId === activeSession.id);
+      if (existingQuick.length > 0) {
+        const initialMap: AttendanceMapState = {};
+        let locked = false;
+        let lastLockedTime = '';
+        let staffSig = '';
+        existingQuick.forEach((r) => {
+          initialMap[r.studentId] = { status: r.status as QuickStatus };
+          if (r.isLocked) {
+            locked = true;
+            lastLockedTime = r.markedAt;
+            staffSig = r.markedByStaffId;
+          }
+        });
+        setAttendanceMap(initialMap);
+        setIsSessionLocked(locked);
+        setLockedTimestamp(
+          lastLockedTime
+            ? new Date(lastLockedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : null
+        );
+        setLockedByStaff(staffSig || currentUser?.fullName || 'Professeur');
+      } else {
+        const defaultMap: AttendanceMapState = {};
+        enrolledStudents.forEach((s) => {
+          defaultMap[s.id] = { status: 'present' };
+        });
+        setAttendanceMap(defaultMap);
+        setIsSessionLocked(false);
+        setLockedTimestamp(null);
+      }
     }
     setPedagogyTopic(activeSession.topic || '');
-  }, [activeSession?.id, enrolledStudents.length]);
+  }, [activeSession?.id, enrolledStudents.length, sessionEduRecords.length]);
 
   const filteredStudents = useMemo(() => {
     if (!searchQuery.trim()) return enrolledStudents;
@@ -195,61 +240,48 @@ export const AcademyRollCallKiosk: React.FC = () => {
 
   const handleSubmitRollCall = () => {
     if (!activeSession) return;
-    const now = new Date().toISOString();
-    const staffId = currentUser?.id || 'instructor_01';
-    const prevLocked = isSessionLocked;
-    const prevLockedTs = lockedTimestamp;
-    const prevLockedBy = lockedByStaff;
+    const statusMap: Record<QuickStatus, AttendanceStatus> = {
+      present: 'Present',
+      absent: 'Absent',
+      late: 'Late',
+      excused: 'Excused',
+    };
     const nextLockedTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const nextLockedBy = currentUser?.fullName || 'Enseignant';
 
-    runUndoBatch(
-      {
-        vertical: 'education_cohort',
-        operationType: 'bulk',
-        affectedCount: enrolledStudents.length,
-        toastType: 'success',
-        summary: pickLocalizedText(language, {
-          en: `Roll call locked (${stats.ratePercent}% · ${enrolledStudents.length} students)`,
-          fr: `Appel validé & verrouillé (${stats.ratePercent}% · ${enrolledStudents.length} étudiants)`,
-          ar: `تم تأكيد وقفل الحضور (${stats.ratePercent}%)`,
-        }),
-      },
-      () => {
-        enrolledStudents.forEach((s) => {
-          const current = attendanceMap[s.id] || { status: 'present' as QuickStatus };
-          recordQuickAttendance({
-            sessionId: activeSession.id,
-            cohortId: activeSession.cohortId,
-            studentId: s.id,
-            studentName: s.fullName,
-            status: current.status,
-            markedAt: now,
-            markedByStaffId: currentUser?.fullName || staffId,
-            isLocked: true,
-          });
-        });
-        registerUndoEntry({
-          vertical: 'education_cohort',
-          operationType: 'status',
-          summary: 'Lock roll call state',
-          undo: () => {
-            setIsSessionLocked(prevLocked);
-            setLockedTimestamp(prevLockedTs);
-            setLockedByStaff(prevLockedBy);
-          },
-          redo: () => {
-            setIsSessionLocked(true);
-            setLockedTimestamp(nextLockedTs);
-            setLockedByStaff(nextLockedBy);
-          },
-        });
-      }
-    );
+    const records = enrolledStudents.map((s) => {
+      const current = attendanceMap[s.id] || { status: 'present' as QuickStatus };
+      return {
+        studentId: s.id,
+        studentName: s.fullName,
+        status: statusMap[current.status] || 'Present',
+        reason: pendingSaveReason || 'Roll call locked',
+      };
+    });
 
+    batchRecordAttendance(activeSession.id, activeSession.cohortId, records);
+    setPendingSaveReason(undefined);
     setIsSessionLocked(true);
     setLockedTimestamp(nextLockedTs);
     setLockedByStaff(nextLockedBy);
+  };
+
+  const handleConfirmUnlockReason = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeSession || !unlockReason.trim()) return;
+    const reasonText = unlockReason.trim();
+    unlockEduSessionAttendance(activeSession.id, reasonText);
+    setPendingSaveReason(reasonText);
+    setIsSessionLocked(false);
+    setIsUnlockReasonModalOpen(false);
+    setUnlockReason('');
+    showToast({
+      type: 'info',
+      title: isRtl ? 'تم إلغاء قفل الحضور' : 'Appel Déverrouillé',
+      message: isRtl
+        ? `تم توثيق السبب: ${reasonText}`
+        : `Modifications autorisées (${reasonText}).`,
+    });
   };
 
   const handleSendGuardianAlert = (student: EduStudent) => {
@@ -356,7 +388,11 @@ export const AcademyRollCallKiosk: React.FC = () => {
         secondaryCard={{
           label: isRtl ? 'إجمالي الطلبة' : isEn ? 'Enrolled Roster' : 'Effectif Séance',
           count: stats.total,
-          badgeText: isSessionLocked && lockedTimestamp ? `${isRtl ? 'مغلق' : 'Verrouillé'} ${lockedTimestamp}` : `${stats.excused} ${isRtl ? 'مبرر' : 'excusés'}`,
+          badgeText: isSessionLocked && lockedTimestamp
+            ? `${isRtl ? 'مغلق' : 'Verrouillé'} ${lockedTimestamp}${sessionChangeCount > 0 ? ` · ${sessionChangeCount} édits` : ''}`
+            : sessionChangeCount > 0
+            ? `${sessionChangeCount} modifications auditées`
+            : `${stats.excused} ${isRtl ? 'مبرر' : 'excusés'}`,
           tone: 'terracotta',
         }}
         darkCard={{
@@ -738,12 +774,11 @@ export const AcademyRollCallKiosk: React.FC = () => {
         isOpen={isPinModalOpen}
         onClose={() => setIsPinModalOpen(false)}
         onSuccess={() => {
-          setIsSessionLocked(false);
-          showToast({
-            type: 'info',
-            title: isRtl ? 'تم إلغاء قفل الحضور' : 'Appel Déverrouillé',
-            message: isRtl ? 'يمكنك الآن تعديل حالات الحضور والغياب' : 'Modifications autorisées.',
-          });
+          setIsPinModalOpen(false);
+          setUnlockReason(
+            isRtl ? 'تصحيح حضور بعد مراجعة القسم' : isEn ? 'Instructor roll-call correction' : 'Correction feuille de présence'
+          );
+          setIsUnlockReasonModalOpen(true);
         }}
         title={isRtl ? 'إلغاء قفل ورقة الحضور' : 'Déverrouiller la Séance'}
         description={
@@ -752,6 +787,44 @@ export const AcademyRollCallKiosk: React.FC = () => {
             : "Saisissez votre code PIN pour modifier la feuille d'émargement."
         }
       />
+
+      <KineticModalShell
+        isOpen={isUnlockReasonModalOpen}
+        onClose={() => setIsUnlockReasonModalOpen(false)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+        >
+          <h3 className="t-card font-semibold text-black dark:text-white">
+            {isRtl ? 'سبب إلغاء القفل' : isEn ? 'Audit Reason for Unlock' : 'Motif de déverrouillage'}
+          </h3>
+          <form onSubmit={handleConfirmUnlockReason} className="space-y-4">
+            <div data-sq="ctl" data-sq-border="solid" className="h-10 bg-[#F5F1EC] dark:bg-[#292624]">
+              <input
+                type="text"
+                required
+                value={unlockReason}
+                onChange={(e) => setUnlockReason(e.target.value)}
+                placeholder={isRtl ? 'مثال: طالب وصل متأخراً' : 'Ex: Étudiant arrivé après appel'}
+                className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium focus:outline-none"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsUnlockReasonModalOpen(false)}>
+                {isRtl ? 'إلغاء' : 'Annuler'}
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {isRtl ? 'تأكيد وفتح القفل' : 'Déverrouiller'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
     </div>
   );
 };

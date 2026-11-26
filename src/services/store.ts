@@ -114,6 +114,9 @@ import {
   HomeSetupProgress,
   OnboardingContext,
   UndoOperationType,
+  PosCashSession,
+  PosCashMovement,
+  PosZReport,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -330,6 +333,27 @@ import {
   planWeekDuplication,
   prepareDepositReceiptPrint,
 } from '../utils/step5Actions';
+import { dzdToCentimes, centimesToDzd } from '../utils/money';
+import {
+  evaluateMemberCheckIn,
+  CheckInEvaluationResult,
+  dedupeEduAttendanceRecords,
+  appendEduAttendanceChange,
+  buildPersistedChairStation,
+  computeDrawerExpectedCentimes,
+  computeVarianceCentimes,
+  evaluateProvisionalZReportDrift,
+  sumSalePaymentCentimes,
+  clampPartialRefundItems,
+  type RefundLineRequest,
+} from '../utils/step6Persistence';
+
+const generateClientUuid = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return toValidUuid(`gen_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
+};
 
 
 export const ATRIUM_STORAGE_VERSION = 2;
@@ -517,6 +541,9 @@ interface AppState {
   walkInTickets: WalkInTicket[];
   salonChairStations: SalonChairStation[];
   eduQuickAttendance: EduQuickAttendanceRecord[];
+  posCashSessions: PosCashSession[];
+  posCashMovements: PosCashMovement[];
+  posZReports: PosZReport[];
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -700,6 +727,9 @@ const DEFAULT_STATE: AppState = {
   walkInTickets: [],
   salonChairStations: [],
   eduQuickAttendance: [],
+  posCashSessions: [],
+  posCashMovements: [],
+  posZReports: [],
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -972,6 +1002,9 @@ let globalState: AppState = backfillTraceability((() => {
           walkInTickets: Array.isArray(parsed.walkInTickets) ? parsed.walkInTickets : [],
           salonChairStations: Array.isArray(parsed.salonChairStations) ? parsed.salonChairStations : [],
           eduQuickAttendance: Array.isArray(parsed.eduQuickAttendance) ? parsed.eduQuickAttendance : [],
+          posCashSessions: Array.isArray(parsed.posCashSessions) ? parsed.posCashSessions : [],
+          posCashMovements: Array.isArray(parsed.posCashMovements) ? parsed.posCashMovements : [],
+          posZReports: Array.isArray(parsed.posZReports) ? parsed.posZReports : [],
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
           isFastSwitchOpen: false,
@@ -1366,6 +1399,26 @@ export const selectCurrentDevicesFromState = createBranchSelector<Device>(
 export const selectCurrentMemberCheckInsFromState = createBranchSelector<MemberCheckInLog>(
   (s) => s.memberCheckIns,
   (c, b) => (c.branchId || 'branch_gym_hydra') === b
+);
+export const selectCurrentWalkInTicketsFromState = createBranchSelector<WalkInTicket>(
+  (s) => s.walkInTickets,
+  (w, b) => w.branchId === b
+);
+export const selectCurrentSalonChairStationsFromState = createBranchSelector<SalonChairStation>(
+  (s) => s.salonChairStations,
+  () => true
+);
+export const selectCurrentPosCashSessionsFromState = createBranchSelector<PosCashSession>(
+  (s) => s.posCashSessions,
+  (cs, b) => cs.branchId === b
+);
+export const selectCurrentPosCashMovementsFromState = createBranchSelector<PosCashMovement>(
+  (s) => s.posCashMovements,
+  (cm, b) => cm.branchId === b
+);
+export const selectCurrentPosZReportsFromState = createBranchSelector<PosZReport>(
+  (s) => s.posZReports,
+  (zr, b) => zr.branchId === b
 );
 
 export const selectCurrentFreelanceClientsFromState = createBranchSelector<FreelanceClient>(
@@ -3095,14 +3148,20 @@ function pruneDeletedRecords(
     gym_registration_leads: 'leads',
     gym_schedule_events: 'schedule',
     gym_class_enrollments: 'classEnrollments',
+    gym_check_ins: 'memberCheckIns',
+    gym_walk_in_tickets: 'walkInTickets',
     salon_appointments: 'appointments',
     salon_services: 'servicesCatalog',
     salon_workstations: 'salonWorkstations',
     salon_stylist_payouts: 'stylistPayouts',
+    salon_chair_stations: 'salonChairStations',
     pos_products: 'products',
     pos_sales: 'sales',
     pos_parked_orders: 'parkedOrders',
     pos_stock_movements: 'stockMovements',
+    pos_cash_sessions: 'posCashSessions',
+    pos_cash_movements: 'posCashMovements',
+    pos_z_reports: 'posZReports',
     freelance_clients: 'freelanceClients',
     freelance_projects: 'freelanceProjects',
     freelance_time_logs: 'timeLogs',
@@ -3362,6 +3421,32 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           }
         });
       }
+      if (shouldSyncTable('gym_check_ins')) {
+        tasks.push(async () => {
+          const checkIns = await memberService.fetchCheckIns(branchId, updatedAfter);
+          if (checkIns.length > 0) {
+            const others = (globalState.memberCheckIns || []).filter((c) => c.branchId !== branchId);
+            const cur = (globalState.memberCheckIns || []).filter((c) => c.branchId === branchId);
+            updates.memberCheckIns = [
+              ...(updatedAfter ? mergeById(cur, checkIns) : checkIns),
+              ...others,
+            ];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_walk_in_tickets')) {
+        tasks.push(async () => {
+          const tickets = await memberService.fetchWalkInTickets(branchId, updatedAfter);
+          if (tickets.length > 0) {
+            const others = (globalState.walkInTickets || []).filter((t) => t.branchId !== branchId);
+            const cur = (globalState.walkInTickets || []).filter((t) => t.branchId === branchId);
+            updates.walkInTickets = [
+              ...(updatedAfter ? mergeById(cur, tickets) : tickets),
+              ...others,
+            ];
+          }
+        });
+      }
     } else if (activeCategory === 'appointment_service') {
       if (shouldSyncTable('salon_appointments')) {
         tasks.push(async () => {
@@ -3393,6 +3478,21 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           if (payouts.length > 0) updates.stylistPayouts = payouts;
         });
       }
+      if (shouldSyncTable('salon_chair_stations')) {
+        tasks.push(async () => {
+          const stations = await appointmentService.fetchChairStations(branchId, updatedAfter);
+          if (stations.length > 0) {
+            updates.salonChairStations = updatedAfter
+              ? (() => {
+                  const map = new Map<string, SalonChairStation>();
+                  (globalState.salonChairStations || []).forEach((s) => map.set(toValidUuid(s.workstationId), s));
+                  stations.forEach((s) => map.set(toValidUuid(s.workstationId), s));
+                  return Array.from(map.values());
+                })()
+              : stations;
+          }
+        });
+      }
     } else if (activeCategory === 'pos_inventory') {
       if (shouldSyncTable('pos_products')) {
         tasks.push(async () => {
@@ -3421,6 +3521,45 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           const movements = await posService.fetchStockMovements(branchId);
           if (movements.length > 0) {
             updates.stockMovements = mergeById(globalState.stockMovements || [], movements);
+          }
+        });
+      }
+      if (shouldSyncTable('pos_cash_sessions')) {
+        tasks.push(async () => {
+          const sessions = await posService.fetchCashSessions(branchId, updatedAfter);
+          if (sessions.length > 0) {
+            const others = (globalState.posCashSessions || []).filter((s) => s.branchId !== branchId);
+            const cur = (globalState.posCashSessions || []).filter((s) => s.branchId === branchId);
+            updates.posCashSessions = [
+              ...(updatedAfter ? mergeById(cur, sessions) : sessions),
+              ...others,
+            ];
+          }
+        });
+      }
+      if (shouldSyncTable('pos_cash_movements')) {
+        tasks.push(async () => {
+          const mvs = await posService.fetchCashMovements(branchId, updatedAfter);
+          if (mvs.length > 0) {
+            const others = (globalState.posCashMovements || []).filter((m) => m.branchId !== branchId);
+            const cur = (globalState.posCashMovements || []).filter((m) => m.branchId === branchId);
+            updates.posCashMovements = [
+              ...(updatedAfter ? mergeById(cur, mvs) : mvs),
+              ...others,
+            ];
+          }
+        });
+      }
+      if (shouldSyncTable('pos_z_reports')) {
+        tasks.push(async () => {
+          const reports = await posService.fetchZReports(branchId, updatedAfter);
+          if (reports.length > 0) {
+            const others = (globalState.posZReports || []).filter((r) => r.branchId !== branchId);
+            const cur = (globalState.posZReports || []).filter((r) => r.branchId === branchId);
+            updates.posZReports = [
+              ...(updatedAfter ? mergeById(cur, reports) : reports),
+              ...others,
+            ];
           }
         });
       }
@@ -3541,8 +3680,12 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
       }
       if (shouldSyncTable('edu_attendance')) {
         tasks.push(async () => {
-          const rows = await educationService.fetchAttendance(branchId);
-          if (rows.length > 0) updates.eduAttendance = mergeById(globalState.eduAttendance || [], rows);
+          const rows = await educationService.fetchAttendance(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.eduAttendance = dedupeEduAttendanceRecords(
+              mergeById(globalState.eduAttendance || [], rows)
+            );
+          }
         });
       }
       if (shouldSyncTable('edu_grades')) {
@@ -3707,6 +3850,10 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
       const postDeletePatch = pruneDeletedRecords(mergedState, options?.deletedIdsByTable);
       globalState = { ...mergedState, ...postDeletePatch };
       notify();
+
+      if (activeCategory === 'pos_inventory' && globalState.networkMode !== 'offline') {
+        void atriumActions.finalizeProvisionalPosZReports();
+      }
     } catch (err: any) {
       console.warn('[store] syncWithSupabase failed:', err);
       globalState = {
@@ -3918,8 +4065,17 @@ export function deleteMemberAction(id: string) {
   return atriumActions.deleteMember(id);
 }
 
-export function checkInMemberAction(id: string) {
-  return atriumActions.checkInMember(id);
+export function checkInMemberAction(
+  id: string,
+  options?: {
+    method?: 'rfid' | 'qr' | 'manual' | 'turnstile';
+    overrideByStaffId?: string;
+    overrideReason?: string;
+    duplicateWindowMinutes?: number;
+    logDenied?: boolean;
+  }
+) {
+  return atriumActions.checkInMember(id, options);
 }
 
 const EMPTY_PLANS: MembershipPlan[] = [];
@@ -5094,76 +5250,154 @@ function createAtriumActions() {
     });
   };
 
-  const checkInMember = (id: string) => {
+  const checkInMember = (
+    id: string,
+    options?: {
+      method?: 'rfid' | 'qr' | 'manual' | 'turnstile';
+      overrideByStaffId?: string;
+      overrideReason?: string;
+      duplicateWindowMinutes?: number;
+      logDenied?: boolean;
+    }
+  ): CheckInEvaluationResult | null => {
     const member = globalState.members.find((m) => m.id === id);
-    if (!member) return;
+    if (!member) return null;
 
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
     const lang = globalState.language || 'fr';
-
-    // 1. Check suspended/blocked status
-    if (member.status === 'Banned' || member.status === 'Suspended' || member.status === 'Frozen') {
-      showToast({
-        type: 'error',
-        title: t('toast_checkin_blocked_title', lang),
-        message: `${member.fullName}: ${t('toast_checkin_blocked_msg', lang)}`,
-        category: cat,
-      });
-      return;
-    }
-
-    // 2. Check expiration
-    const daysLeft = calculateDaysRemaining(false, member.expirationDate);
-    const isExpiredDate = member.expirationDate ? new Date(member.expirationDate).getTime() < Date.now() : false;
-    if (daysLeft <= 0 || member.status === 'Expired' || isExpiredDate) {
-      showToast({
-        type: 'warning',
-        title: t('toast_checkin_expired_title', lang),
-        message: `${member.fullName}: ${t('toast_checkin_expired_msg', lang)}`,
-        category: cat,
-      });
-      return;
-    }
-
-    // 3. Check remaining visits if finite
-    if (member.remainingSessions !== undefined && member.remainingSessions <= 0) {
-      showToast({
-        type: 'warning',
-        title: t('toast_checkin_expired_title', lang),
-        message: `${member.fullName}: ${t('toast_checkin_quota_exhausted', lang)}`,
-        category: cat,
-      });
-      return;
-    }
-
-    // 4. Access Granted
-    const before = captureStoreSlices(['members', 'memberCheckIns']);
-    const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
     const nowIso = new Date().toISOString();
+
+    const evaluation = evaluateMemberCheckIn(
+      member,
+      globalState.memberCheckIns || [],
+      nowIso,
+      {
+        duplicateWindowMinutes: options?.duplicateWindowMinutes,
+        overrideReason: options?.overrideReason,
+      }
+    );
+
+    if (evaluation.duplicateBlocked) {
+      showToast({
+        type: 'warning',
+        title: ul(
+          'Duplicate Check-In Blocked (5 min window)',
+          'Double pointage bloqué (fenêtre 5 min)',
+          'تم حظر تسجيل الدخول المكرر (نافذة 5 دقائق)'
+        ),
+        message: ul(
+          `${member.fullName}: Owner PIN & override reason required.`,
+          `${member.fullName} : Code PIN gérant et motif requis pour forcer.`,
+          `${member.fullName}: مطلوب رمز المدير وسبب التجاوز.`
+        ),
+        category: cat,
+      });
+      return evaluation;
+    }
+
+    const mappedMethod: MemberCheckInLog['checkInMethod'] =
+      options?.method === 'qr'
+        ? 'barcode_scanner'
+        : options?.method === 'manual'
+        ? 'manual_click'
+        : 'nfc_card';
+
+    if (!evaluation.allowed) {
+      if (evaluation.reasonCode === 'denied_frozen') {
+        showToast({
+          type: 'error',
+          title: t('toast_checkin_blocked_title', lang),
+          message: `${member.fullName}: ${t('toast_checkin_blocked_msg', lang)}`,
+          category: cat,
+        });
+      } else if (evaluation.reasonCode === 'denied_quota') {
+        showToast({
+          type: 'warning',
+          title: t('toast_checkin_expired_title', lang),
+          message: `${member.fullName}: ${t('toast_checkin_quota_exhausted', lang)}`,
+          category: cat,
+        });
+      } else {
+        showToast({
+          type: 'warning',
+          title: t('toast_checkin_expired_title', lang),
+          message: `${member.fullName}: ${t('toast_checkin_expired_msg', lang)}`,
+          category: cat,
+        });
+      }
+
+      if (options?.logDenied) {
+        const deniedId = generateClientUuid();
+        const deniedLog: MemberCheckInLog = {
+          id: deniedId,
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+          staffId: globalState.currentUser?.id || '',
+          memberId: member.id,
+          memberName: member.fullName,
+          planId: member.membershipPlanId || 'standard',
+          planName: member.membershipPlanName || 'Standard',
+          timestamp: nowIso,
+          accessStatus: evaluation.accessStatus,
+          remainingSessionsBefore: member.remainingSessions,
+          remainingSessionsAfter: member.remainingSessions,
+          checkInMethod: mappedMethod,
+        };
+        globalState = {
+          ...globalState,
+          memberCheckIns: [deniedLog, ...(globalState.memberCheckIns || [])],
+        };
+        notify();
+        if (isSupabaseConfigured()) {
+          memberService
+            .recordCheckIn(
+              globalState.currentBranchId,
+              id,
+              options?.method || 'rfid',
+              getActiveDeviceId(),
+              { checkInId: deniedId }
+            )
+            .catch(() => {});
+        }
+      }
+      return evaluation;
+    }
+
+    const before = captureStoreSlices(['members', 'memberCheckIns']);
+    const checkInId = generateClientUuid();
+    const updatedSessions = evaluation.shouldDecrementSession
+      ? evaluation.remainingSessionsAfter
+      : member.remainingSessions;
+
     const checkInLog: MemberCheckInLog = {
-      id: `chk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      id: checkInId,
       accountId: globalState.account.id,
       businessId: globalState.currentBusinessId,
       branchId: globalState.currentBranchId,
-      staffId: globalState.currentUser?.id || 'stf_01',
+      staffId: globalState.currentUser?.id || '',
       memberId: member.id,
       memberName: member.fullName,
       planId: member.membershipPlanId || 'standard',
       planName: member.membershipPlanName || 'Standard',
       timestamp: nowIso,
-      accessStatus: daysLeft <= 14 ? 'Warning_Expiring' : 'Granted',
+      accessStatus: evaluation.accessStatus,
       remainingSessionsBefore: member.remainingSessions,
       remainingSessionsAfter: updatedSessions,
-      checkInMethod: 'manual_click',
+      checkInMethod: mappedMethod,
+      overrideByStaffId: options?.overrideByStaffId,
+      overrideReason: options?.overrideReason,
     };
+
     globalState = {
       ...globalState,
       members: globalState.members.map((m) =>
         m.id === id
           ? {
               ...m,
-              remainingSessions: updatedSessions !== undefined ? updatedSessions : m.remainingSessions,
+              remainingSessions: updatedSessions ?? m.remainingSessions,
+              status: updatedSessions === 0 ? 'Expired' : m.status,
               lastVisitDate: nowIso,
               updatedAt: nowIso,
             }
@@ -5175,7 +5409,18 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       memberService
-        .recordCheckIn(globalState.currentBranchId, id, 'rfid', getActiveDeviceId())
+        .recordCheckIn(
+          globalState.currentBranchId,
+          id,
+          options?.method || 'rfid',
+          getActiveDeviceId(),
+          {
+            checkInId,
+            duplicateWindowMinutes: options?.duplicateWindowMinutes ?? 5,
+            overrideByStaffId: options?.overrideByStaffId,
+            overrideReason: options?.overrideReason,
+          }
+        )
         .catch((err) => {
           console.warn('[store] Failed to record check-in in Supabase:', err);
         });
@@ -5191,23 +5436,26 @@ function createAtriumActions() {
         `تسجيل دخول: ${member.fullName}`
       ),
       entityLabel: member.fullName,
-      toastType: 'success',
+      toastType: evaluation.accessStatus === 'Warning_Expiring' ? 'warning' : 'success',
       toastTitle: t('toast_checkin_granted_title', lang),
       toastMessage: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('gym_check_ins', checkInId, globalState.currentUser?.id).catch(() => {});
           memberService.updateMember(member).catch(() => {});
         }
       },
       redo: () => {
         restoreStoreSlices(after);
         const updatedM = after.members.find((m) => m.id === id);
-        if (updatedM && isSupabaseConfigured()) {
-          memberService.updateMember(updatedM).catch(() => {});
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_check_ins', checkInId, globalState.currentUser?.id).catch(() => {});
+          if (updatedM) memberService.updateMember(updatedM).catch(() => {});
         }
       },
     });
+    return evaluation;
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
@@ -5580,35 +5828,84 @@ function createAtriumActions() {
     return sale;
   };
 
-  const refundSale = (saleId: string, reason?: string) => {
+  const refundSale = (saleId: string, reason?: string, itemsToRefund?: RefundLineRequest[]) => {
     const sale = globalState.sales.find((s) => s.id === saleId);
-    if (!sale || sale.status === 'Refunded') return;
+    if (!sale || sale.status === 'Refunded') return null;
+
+    const clamped = clampPartialRefundItems(sale, itemsToRefund, globalState.stockMovements || []);
+    if (clamped.validItems.length === 0) {
+      showToast({
+        type: 'warning',
+        title: ul('Nothing to refund', 'Aucun article à rembourser', 'لا توجد عناصر للاسترجاع'),
+        message: ul(
+          'All quantities on this receipt have already been returned.',
+          'Toutes les quantités de ce ticket ont déjà été retournées.',
+          'تم استرجاع جميع الكميات لهذا الإيصال مسبقاً.'
+        ),
+      });
+      return null;
+    }
+
     const before = captureStoreSlices(['products', 'sales', 'stockMovements']);
+    const nowIso = new Date().toISOString();
+    const shortId = sale.id.slice(-6).toUpperCase();
+    const normalizedReason = reason?.trim() || 'Customer Return';
+    const movementIds = clamped.validItems.map(() => generateClientUuid());
 
     const returnMovements: StockMovement[] = [];
-    const updatedProducts = globalState.products.map((p) => {
-      const match = sale.items.find((item) => item.productId === p.id);
-      if (match) {
-        const prev = p.stockQuantity;
-        const next = prev + match.quantity;
-        returnMovements.push({
-          ...getTraceContext(),
-          id: `sm_${Date.now()}_${p.id}`,
-          tenantId: globalState.account.id,
-          facilityId: globalState.currentBranchId,
-          productId: p.id,
-          productName: p.name,
-          type: 'Return',
-          quantity: match.quantity,
-          previousStock: prev,
-          newStock: next,
-          reason: `Refund #${sale.id.slice(-6).toUpperCase()}: ${reason || 'Customer Return'}`,
-          createdAt: new Date().toISOString(),
-          createdBy: globalState.currentUser?.fullName || 'Manager',
-        });
-        return { ...p, stockQuantity: next };
+    const refundQtyByProductId = new Map<string, number>();
+    const refundQtyByProductName = new Map<string, number>();
+    clamped.validItems.forEach((line, idx) => {
+      if (line.productId) {
+        refundQtyByProductId.set(
+          line.productId,
+          (refundQtyByProductId.get(line.productId) || 0) + line.quantity
+        );
+      } else {
+        refundQtyByProductName.set(
+          line.productName,
+          (refundQtyByProductName.get(line.productName) || 0) + line.quantity
+        );
       }
-      return p;
+
+      const prod = globalState.products.find((p) =>
+        line.productId ? p.id === line.productId : p.name === line.productName
+      );
+      const prev = prod?.stockQuantity ?? 0;
+      const next = prev + line.quantity;
+      returnMovements.push({
+        ...getTraceContext(),
+        id: movementIds[idx],
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
+        productId: prod?.id || line.productId,
+        productName: prod?.name || line.productName,
+        type: 'Return',
+        quantity: line.quantity,
+        previousStock: prev,
+        newStock: next,
+        reason: `Refund #${shortId}: ${normalizedReason}`,
+        createdAt: nowIso,
+        createdBy: globalState.currentUser?.fullName || 'Manager',
+      });
+    });
+
+    const updatedProducts = globalState.products.map((p) => {
+      const addQty = refundQtyByProductId.get(p.id) || refundQtyByProductName.get(p.name) || 0;
+      if (addQty <= 0) return p;
+      return { ...p, stockQuantity: p.stockQuantity + addQty };
+    });
+
+    const prevRefundedItems = Array.isArray(sale.refundedItems) ? sale.refundedItems : [];
+    const mergedRefundedItemsMap = new Map<string, { productId: string; productName: string; quantity: number }>();
+    [...prevRefundedItems, ...clamped.validItems].forEach((entry) => {
+      const key = entry.productId || entry.productName;
+      const existing = mergedRefundedItemsMap.get(key);
+      if (existing) {
+        existing.quantity += entry.quantity;
+      } else {
+        mergedRefundedItemsMap.set(key, { ...entry });
+      }
     });
 
     globalState = {
@@ -5618,9 +5915,13 @@ function createAtriumActions() {
         s.id === saleId
           ? {
               ...s,
-              status: 'Refunded' as const,
-              refundReason: reason || 'Customer Return',
-              refundedAt: new Date().toISOString(),
+              status: clamped.isFullRefund ? ('Refunded' as const) : (s.status || 'Completed'),
+              refundReason: normalizedReason,
+              refundedAt: nowIso,
+              refundedItems: Array.from(mergedRefundedItemsMap.values()),
+              notes: clamped.isFullRefund
+                ? `Refund: ${normalizedReason}`
+                : `${s.notes ? `${s.notes} · ` : ''}Partial refund: ${normalizedReason}`,
             }
           : s
       ),
@@ -5629,110 +5930,62 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      syncCoordinator
-        .mutateOrQueueUpdate(
-          'pos_sales',
+      posService
+        .refundSaleWithStock({
+          branchId: globalState.currentBranchId,
           saleId,
-          {
-            status: 'Refunded',
-            notes: reason ? `Refund: ${reason}` : 'Customer Return',
-          },
-          {
-            expectedVersion: sale.version,
-            entityType: 'Sale',
-            entityLabel: `Sale #${sale.id.slice(-6).toUpperCase()}`,
-          }
-        )
+          items: clamped.validItems,
+          reason: normalizedReason,
+          movementIds,
+        })
         .catch(() => {});
-
-      const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
-      const touchedProducts = updatedProducts.filter((p) => returnedProductIds.has(p.id));
-      const tradingMode = isTradingCategory();
-      if (touchedProducts.length > 0) {
-        runWithConcurrency(
-          touchedProducts.map((p) => () =>
-            tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
-          ),
-          4
-        ).catch(() => {});
-      }
-      if (returnMovements.length > 0) {
-        runWithConcurrency(
-          returnMovements.map((mv) => () => {
-            const mvPayload = {
-              id: toValidUuid(mv.id),
-              account_id: toValidUuid(globalState.account.id),
-              business_id: toValidUuid(globalState.currentBusinessId),
-              branch_id: toValidUuid(globalState.currentBranchId),
-              staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-              updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-              device_id: getActiveDeviceId(),
-              product_id: toValidUuid(mv.productId),
-              product_name: mv.productName,
-              movement_type: 'refund',
-              quantity: Math.abs(mv.quantity),
-              previous_stock: mv.previousStock,
-              new_stock: mv.newStock,
-              reason: mv.reason || null,
-            };
-            return syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', mvPayload, {
-              expectedVersion: mv.version,
-              entityType: 'StockMovement',
-              entityLabel: mv.productName,
-              localData: mvPayload,
-            });
-          }),
-          4
-        ).catch(() => {});
-      }
     }
 
     const after = captureStoreSlices(['products', 'sales', 'stockMovements']);
-    const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
-    const tradingMode = isTradingCategory();
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'status',
       summary: ul(
-        `Refunded sale #${sale.id.slice(-6).toUpperCase()}`,
-        `Vente remboursée #${sale.id.slice(-6).toUpperCase()}`,
-        `استرجاع عملية بيع #${sale.id.slice(-6).toUpperCase()}`
+        `${clamped.isFullRefund ? 'Refunded' : 'Partially refunded'} sale #${shortId}`,
+        `${clamped.isFullRefund ? 'Vente remboursée' : 'Avoir partiel'} #${shortId}`,
+        `${clamped.isFullRefund ? 'استرجاع كامل' : 'استرجاع جزئي'} #${shortId}`
       ),
-      entityLabel: `Sale #${sale.id.slice(-6).toUpperCase()}`,
+      entityLabel: `Sale #${shortId}`,
       toastType: 'warning',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
-          syncCoordinator.mutateOrQueueUpdate('pos_sales', saleId, {
-            status: sale.status,
-            notes: sale.notes || null,
-          }).catch(() => {});
-          const prevTouched = before.products.filter((p) => returnedProductIds.has(p.id));
-          runWithConcurrency(
-            prevTouched.map((p) => () =>
-              tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
-            ),
-            4
-          ).catch(() => {});
+          posService
+            .undoRefundSaleWithStock({
+              branchId: globalState.currentBranchId,
+              saleId,
+              movementIds,
+              prevStatus: sale.status || 'Completed',
+              prevNotes: sale.notes || null,
+            })
+            .catch(() => {});
         }
       },
       redo: () => {
         restoreStoreSlices(after);
         if (isSupabaseConfigured()) {
-          syncCoordinator.mutateOrQueueUpdate('pos_sales', saleId, {
-            status: 'Refunded',
-            notes: reason ? `Refund: ${reason}` : 'Customer Return',
-          }).catch(() => {});
-          const nextTouched = after.products.filter((p) => returnedProductIds.has(p.id));
-          runWithConcurrency(
-            nextTouched.map((p) => () =>
-              tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
-            ),
-            4
-          ).catch(() => {});
+          posService
+            .refundSaleWithStock({
+              branchId: globalState.currentBranchId,
+              saleId,
+              items: clamped.validItems,
+              reason: normalizedReason,
+              movementIds,
+            })
+            .catch(() => {});
         }
       },
     });
+
+    return {
+      clamped,
+      movementIds,
+    };
   };
 
   const adjustStock = (
@@ -12508,30 +12761,57 @@ function createAtriumActions() {
   const batchRecordAttendance = (
     sessionId: string,
     cohortId: string,
-    records: { studentId: string; studentName: string; status: AttendanceStatus; minutesLate?: number; excuseNote?: string }[]
+    records: { studentId: string; studentName: string; status: AttendanceStatus; minutesLate?: number; excuseNote?: string; reason?: string }[]
   ) => {
-    const before = captureStoreSlices(['eduAttendance', 'eduSessions', 'eduStudents']);
+    const before = captureStoreSlices(['eduAttendance', 'eduQuickAttendance', 'eduSessions', 'eduStudents']);
     const prevSession = (globalState.eduSessions || []).find((s) => s.id === sessionId);
     const prevAttendanceForSession = (globalState.eduAttendance || []).filter((a) => a.sessionId === sessionId);
     const nowIso = new Date().toISOString();
+    const staffId = globalState.currentUser?.id || 'stf_01';
     const trace = getTraceContext();
-    const newRecords: EduAttendance[] = records.map((r) => ({
-      ...trace,
-      id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: globalState.account.id,
-      facilityId: globalState.currentBranchId,
-      sessionId,
-      cohortId,
-      studentId: r.studentId,
-      studentName: r.studentName,
-      status: r.status,
-      minutesLate: r.minutesLate,
-      excuseNote: r.excuseNote,
-      recordedAt: nowIso,
-    }));
+    const newRecords: EduAttendance[] = records.map((r) => {
+      const prevRec = prevAttendanceForSession.find((p) => p.studentId === r.studentId);
+      const changeHistory = appendEduAttendanceChange(
+        prevRec,
+        r.status,
+        staffId,
+        r.reason || 'Roll call saved',
+        nowIso
+      );
+      return {
+        ...trace,
+        id: prevRec?.id || generateClientUuid(),
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
+        sessionId,
+        cohortId,
+        studentId: r.studentId,
+        studentName: r.studentName,
+        status: r.status,
+        minutesLate: r.minutesLate,
+        excuseNote: r.excuseNote,
+        recordedAt: nowIso,
+        markedBy: staffId,
+        markedAt: nowIso,
+        isLocked: true,
+        changeHistory,
+      };
+    });
 
     const existing = (globalState.eduAttendance || []).filter((a) => a.sessionId !== sessionId);
-    const updatedAttendance = [...newRecords, ...existing];
+    const updatedAttendance = dedupeEduAttendanceRecords([...newRecords, ...existing]);
+
+    const mappedQuick: EduQuickAttendanceRecord[] = newRecords.map((rec) => ({
+      sessionId: rec.sessionId,
+      cohortId: rec.cohortId,
+      studentId: rec.studentId,
+      studentName: rec.studentName,
+      status: rec.status.toLowerCase() as EduQuickAttendanceRecord['status'],
+      markedAt: nowIso,
+      markedByStaffId: globalState.currentUser?.fullName || staffId,
+      isLocked: true,
+    }));
+    const otherQuick = (globalState.eduQuickAttendance || []).filter((q) => q.sessionId !== sessionId);
 
     const updatedSessions = (globalState.eduSessions || []).map((s) =>
       s.id === sessionId ? { ...s, status: 'Completed' as const } : s
@@ -12548,6 +12828,7 @@ function createAtriumActions() {
     globalState = {
       ...globalState,
       eduAttendance: updatedAttendance,
+      eduQuickAttendance: [...mappedQuick, ...otherQuick],
       eduSessions: updatedSessions,
       eduStudents: updatedStudents,
     };
@@ -12565,7 +12846,7 @@ function createAtriumActions() {
     }
 
     const presentTally = records.filter((r) => r.status === 'Present' || r.status === 'Late').length;
-    const after = captureStoreSlices(['eduAttendance', 'eduSessions', 'eduStudents']);
+    const after = captureStoreSlices(['eduAttendance', 'eduQuickAttendance', 'eduSessions', 'eduStudents']);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'bulk',
@@ -12579,9 +12860,12 @@ function createAtriumActions() {
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
+          const prevIds = new Set(prevAttendanceForSession.map((p) => p.id));
           runWithConcurrency(
             [
-              ...newRecords.map((rec) => () => syncCoordinator.softDeleteRow('edu_attendance', rec.id, globalState.currentUser?.id)),
+              ...newRecords
+                .filter((rec) => !prevIds.has(rec.id))
+                .map((rec) => () => syncCoordinator.softDeleteRow('edu_attendance', rec.id, globalState.currentUser?.id)),
               ...prevAttendanceForSession.map((rec) => () => educationService.upsertAttendance(rec)),
               ...(prevSession ? [() => educationService.upsertSession(prevSession)] : []),
             ],
@@ -16130,8 +16414,10 @@ function createAtriumActions() {
   };
   const addMemberCheckIn = (checkIn: MemberCheckInLog) => {
     const before = captureStoreSlices(['memberCheckIns']);
+    const id = checkIn.id || generateClientUuid();
     const scopedCheckIn: MemberCheckInLog = {
       ...checkIn,
+      id,
       businessId: checkIn.businessId || globalState.currentBusinessId,
       branchId: checkIn.branchId || globalState.currentBranchId,
     };
@@ -16140,6 +16426,30 @@ function createAtriumActions() {
       memberCheckIns: [scopedCheckIn, ...(globalState.memberCheckIns || [])],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const rpcMethod =
+        scopedCheckIn.checkInMethod === 'barcode_scanner'
+          ? 'qr'
+          : scopedCheckIn.checkInMethod === 'manual_click'
+          ? 'manual'
+          : 'rfid';
+      memberService
+        .recordCheckIn(
+          scopedCheckIn.branchId,
+          scopedCheckIn.memberId,
+          rpcMethod,
+          getActiveDeviceId(),
+          {
+            checkInId: id,
+            duplicateWindowMinutes: 5,
+            overrideByStaffId: scopedCheckIn.overrideByStaffId,
+            overrideReason: scopedCheckIn.overrideReason,
+          }
+        )
+        .catch(() => {});
+    }
+
     const after = captureStoreSlices(['memberCheckIns']);
     registerUndoEntry({
       vertical: 'membership_session',
@@ -16151,20 +16461,34 @@ function createAtriumActions() {
       ),
       entityLabel: scopedCheckIn.memberName,
       toastType: 'info',
-      undo: () => restoreStoreSlices(before),
-      redo: () => restoreStoreSlices(after),
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('gym_check_ins', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_check_ins', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
   const addWalkInTicket = (ticket: WalkInTicket) => {
     const before = captureStoreSlices(['walkInTickets']);
+    const normalizedTicket: WalkInTicket = {
+      ...ticket,
+      id: ticket.id && /^[0-9a-f]{8}-/i.test(ticket.id) ? ticket.id : generateClientUuid(),
+    };
     globalState = {
       ...globalState,
-      walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
+      walkInTickets: [normalizedTicket, ...(globalState.walkInTickets || [])],
     };
     notify();
     if (isSupabaseConfigured()) {
       memberService
-        .upsertWalkInTicket(ticket, {
+        .upsertWalkInTicket(normalizedTicket, {
           accountId: globalState.account.id,
           businessId: globalState.currentBusinessId,
           branchId: globalState.currentBranchId,
@@ -16176,25 +16500,25 @@ function createAtriumActions() {
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'create',
       summary: ul(
-        `Walk-in ticket issued: ${ticket.ticketNumber || ticket.id}`,
-        `Ticket sans RDV émis : ${ticket.ticketNumber || ticket.id}`,
-        `تذكرة دخول فوري: ${ticket.ticketNumber || ticket.id}`
+        `Walk-in ticket issued: ${normalizedTicket.ticketNumber || normalizedTicket.id}`,
+        `Ticket sans RDV émis : ${normalizedTicket.ticketNumber || normalizedTicket.id}`,
+        `تذكرة دخول فوري: ${normalizedTicket.ticketNumber || normalizedTicket.id}`
       ),
-      entityLabel: ticket.ticketNumber || ticket.id,
+      entityLabel: normalizedTicket.ticketNumber || normalizedTicket.id,
       toastType: 'success',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
-          syncCoordinator.softDeleteRow('gym_walk_in_tickets', ticket.id, globalState.currentUser?.id).catch(() => {});
+          syncCoordinator.softDeleteRow('gym_walk_in_tickets', normalizedTicket.id, globalState.currentUser?.id).catch(() => {});
         }
       },
       redo: () => {
         restoreStoreSlices(after);
         if (isSupabaseConfigured()) {
           syncCoordinator
-            .restoreRow('gym_walk_in_tickets', ticket.id, globalState.currentUser?.id)
+            .restoreRow('gym_walk_in_tickets', normalizedTicket.id, globalState.currentUser?.id)
             .then(() =>
-              memberService.upsertWalkInTicket(ticket, {
+              memberService.upsertWalkInTicket(normalizedTicket, {
                 accountId: globalState.account.id,
                 businessId: globalState.currentBusinessId,
                 branchId: globalState.currentBranchId,
@@ -16207,18 +16531,34 @@ function createAtriumActions() {
   };
   const updateSalonChairStation = (station: SalonChairStation) => {
     const before = captureStoreSlices(['salonChairStations']);
+    const targetUuid = toValidUuid(station.workstationId);
+    const normalizedInput: SalonChairStation = buildPersistedChairStation({
+      ...station,
+      servicePriceCentimes:
+        station.servicePriceCentimes != null
+          ? Math.round(station.servicePriceCentimes)
+          : station.servicePriceDzd != null
+          ? dzdToCentimes(station.servicePriceDzd)
+          : undefined,
+      servicePriceDzd:
+        station.servicePriceDzd != null
+          ? station.servicePriceDzd
+          : station.servicePriceCentimes != null
+          ? centimesToDzd(station.servicePriceCentimes)
+          : undefined,
+    });
     const existing = (globalState.salonChairStations || []).findIndex(
-      (s) => s.workstationId === station.workstationId
+      (s) => s.workstationId === station.workstationId || toValidUuid(s.workstationId) === targetUuid
     );
     const prevStation = existing >= 0 ? (globalState.salonChairStations || [])[existing] : null;
     const nextStations = [...(globalState.salonChairStations || [])];
-    if (existing >= 0) nextStations[existing] = station;
-    else nextStations.push(station);
+    if (existing >= 0) nextStations[existing] = normalizedInput;
+    else nextStations.push(normalizedInput);
     globalState = { ...globalState, salonChairStations: nextStations };
     notify();
     if (isSupabaseConfigured()) {
       appointmentService
-        .upsertChairStation(station, {
+        .upsertChairStation(normalizedInput, {
           accountId: globalState.account.id,
           businessId: globalState.currentBusinessId,
           branchId: globalState.currentBranchId,
@@ -16230,11 +16570,11 @@ function createAtriumActions() {
       vertical: 'appointment_service',
       operationType: 'status',
       summary: ul(
-        `Chair station updated: ${station.workstationId}`,
-        `Poste salon mis à jour : ${station.workstationId}`,
-        `تحديث كرسي الصالون: ${station.workstationId}`
+        `Chair station updated: ${normalizedInput.workstationName || normalizedInput.workstationId}`,
+        `Poste salon mis à jour : ${normalizedInput.workstationName || normalizedInput.workstationId}`,
+        `تحديث كرسي الصالون: ${normalizedInput.workstationName || normalizedInput.workstationId}`
       ),
-      entityLabel: station.workstationId,
+      entityLabel: normalizedInput.clientName || normalizedInput.workstationName || normalizedInput.workstationId,
       toastType: 'info',
       undo: () => {
         restoreStoreSlices(before);
@@ -16248,35 +16588,114 @@ function createAtriumActions() {
               })
               .catch(() => {});
           } else {
-            syncCoordinator.softDeleteRow('salon_chair_stations', station.workstationId, globalState.currentUser?.id).catch(() => {});
+            syncCoordinator.softDeleteRow('salon_chair_stations', normalizedInput.workstationId, globalState.currentUser?.id).catch(() => {});
           }
         }
       },
       redo: () => {
         restoreStoreSlices(after);
         if (isSupabaseConfigured()) {
-          appointmentService
-            .upsertChairStation(station, {
-              accountId: globalState.account.id,
-              businessId: globalState.currentBusinessId,
-              branchId: globalState.currentBranchId,
-            })
+          syncCoordinator
+            .restoreRow('salon_chair_stations', normalizedInput.workstationId, globalState.currentUser?.id)
+            .then(() =>
+              appointmentService.upsertChairStation(normalizedInput, {
+                accountId: globalState.account.id,
+                businessId: globalState.currentBusinessId,
+                branchId: globalState.currentBranchId,
+              })
+            )
             .catch(() => {});
         }
       },
     });
   };
-  const recordQuickAttendance = (record: EduQuickAttendanceRecord) => {
-    const before = captureStoreSlices(['eduQuickAttendance']);
-    const existing = (globalState.eduQuickAttendance || []).findIndex(
+  const recordQuickAttendance = (
+    record: EduQuickAttendanceRecord & { changeReason?: string }
+  ) => {
+    const before = captureStoreSlices(['eduQuickAttendance', 'eduAttendance', 'eduStudents']);
+    const existingQuick = (globalState.eduQuickAttendance || []).findIndex(
       (r) => r.sessionId === record.sessionId && r.studentId === record.studentId
     );
-    const nextRecords = [...(globalState.eduQuickAttendance || [])];
-    if (existing >= 0) nextRecords[existing] = record;
-    else nextRecords.push(record);
-    globalState = { ...globalState, eduQuickAttendance: nextRecords };
+    const nextQuick = [...(globalState.eduQuickAttendance || [])];
+    const cleanQuick: EduQuickAttendanceRecord = {
+      sessionId: record.sessionId,
+      cohortId: record.cohortId,
+      studentId: record.studentId,
+      studentName: record.studentName,
+      status: record.status,
+      markedAt: record.markedAt,
+      markedByStaffId: record.markedByStaffId,
+      isLocked: record.isLocked,
+    };
+    if (existingQuick >= 0) nextQuick[existingQuick] = cleanQuick;
+    else nextQuick.push(cleanQuick);
+
+    const statusMap: Record<EduQuickAttendanceRecord['status'], AttendanceStatus> = {
+      present: 'Present',
+      absent: 'Absent',
+      late: 'Late',
+      excused: 'Excused',
+    };
+    const nextStatus = statusMap[record.status] || 'Present';
+    const prevEdu = (globalState.eduAttendance || []).find(
+      (a) => a.sessionId === record.sessionId && a.studentId === record.studentId
+    );
+    const staffId = globalState.currentUser?.id || record.markedByStaffId || 'stf_01';
+    const nowIso = record.markedAt || new Date().toISOString();
+    const changeHistory = appendEduAttendanceChange(
+      prevEdu,
+      nextStatus,
+      staffId,
+      record.changeReason || 'Roll call update',
+      nowIso
+    );
+    const eduRecord: EduAttendance = {
+      ...getTraceContext(),
+      id: prevEdu?.id || generateClientUuid(),
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
+      sessionId: record.sessionId,
+      cohortId: record.cohortId,
+      studentId: record.studentId,
+      studentName: record.studentName,
+      status: nextStatus,
+      recordedAt: prevEdu?.recordedAt || nowIso,
+      markedBy: staffId,
+      markedAt: nowIso,
+      isLocked: record.isLocked,
+      changeHistory,
+      version: prevEdu?.version,
+    };
+
+    const nextEduAttendance = dedupeEduAttendanceRecords([
+      ...(globalState.eduAttendance || []).filter(
+        (a) => !(a.sessionId === record.sessionId && a.studentId === record.studentId)
+      ),
+      eduRecord,
+    ]);
+
+    const updatedStudents = (globalState.eduStudents || []).map((st) => {
+      if (st.id !== record.studentId) return st;
+      const studentRecords = nextEduAttendance.filter((a) => a.studentId === st.id);
+      if (studentRecords.length === 0) return st;
+      const presentCount = studentRecords.filter((a) => a.status === 'Present' || a.status === 'Late').length;
+      const rate = Math.round((presentCount / studentRecords.length) * 1000) / 10;
+      return { ...st, attendanceRatePercent: rate };
+    });
+
+    globalState = {
+      ...globalState,
+      eduQuickAttendance: nextQuick,
+      eduAttendance: nextEduAttendance,
+      eduStudents: updatedStudents,
+    };
     notify();
-    const after = captureStoreSlices(['eduQuickAttendance']);
+
+    if (isSupabaseConfigured()) {
+      educationService.upsertAttendance(eduRecord).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['eduQuickAttendance', 'eduAttendance', 'eduStudents']);
     registerUndoEntry({
       vertical: 'education_cohort',
       operationType: 'status',
@@ -16286,9 +16705,455 @@ function createAtriumActions() {
         `تسجيل حضور سريع (${record.status})`
       ),
       toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          if (prevEdu) {
+            educationService.upsertAttendance(prevEdu).catch(() => {});
+          } else {
+            syncCoordinator.softDeleteRow('edu_attendance', eduRecord.id, globalState.currentUser?.id).catch(() => {});
+          }
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('edu_attendance', eduRecord.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertAttendance(eduRecord))
+            .catch(() => {});
+        }
+      },
+    });
+  };
+  const unlockEduSessionAttendance = (sessionId: string, reason: string) => {
+    const before = captureStoreSlices(['eduQuickAttendance', 'eduAttendance']);
+    const nowIso = new Date().toISOString();
+    const staffId = globalState.currentUser?.id || 'stf_01';
+    const nextEdu = (globalState.eduAttendance || []).map((a) =>
+      a.sessionId === sessionId
+        ? {
+            ...a,
+            isLocked: false,
+            markedBy: staffId,
+            markedAt: nowIso,
+            changeHistory: [
+              ...(Array.isArray(a.changeHistory) ? a.changeHistory : []),
+              {
+                previousStatus: a.status,
+                newStatus: a.status,
+                changedBy: staffId,
+                changedAt: nowIso,
+                reason: `Unlocked: ${reason.trim() || 'PIN verified'}`,
+              },
+            ],
+          }
+        : a
+    );
+    const nextQuick = (globalState.eduQuickAttendance || []).map((q) =>
+      q.sessionId === sessionId ? { ...q, isLocked: false } : q
+    );
+    globalState = { ...globalState, eduAttendance: nextEdu, eduQuickAttendance: nextQuick };
+    notify();
+
+    const changedRows = nextEdu.filter((a) => a.sessionId === sessionId);
+    if (isSupabaseConfigured() && changedRows.length > 0) {
+      runWithConcurrency(
+        changedRows.map((rec) => () => educationService.upsertAttendance(rec)),
+        4
+      ).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['eduQuickAttendance', 'eduAttendance']);
+    registerUndoEntry({
+      vertical: 'education_cohort',
+      operationType: 'status',
+      summary: ul('Roll call unlocked', 'Appel déverrouillé', 'إلغاء قفل الحضور'),
+      toastType: 'info',
       undo: () => restoreStoreSlices(before),
       redo: () => restoreStoreSlices(after),
     });
+  };
+  const openPosCashSession = (params: { openingFloatCentimes: number; notes?: string }): PosCashSession => {
+    const before = captureStoreSlices(['posCashSessions']);
+    const nowIso = new Date().toISOString();
+    const floatCentimes = Math.max(0, Math.round(params.openingFloatCentimes || 0));
+    const session: PosCashSession = {
+      id: generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      staffId: globalState.currentUser?.id,
+      openedByStaffId: globalState.currentUser?.id,
+      openedByName: globalState.currentUser?.fullName || 'Cashier',
+      openedAt: nowIso,
+      openingFloatCentimes: floatCentimes,
+      expectedCashCentimes: floatCentimes,
+      varianceCentimes: 0,
+      status: 'open',
+      notes: params.notes?.trim() || undefined,
+    };
+    globalState = {
+      ...globalState,
+      posCashSessions: [session, ...(globalState.posCashSessions || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.upsertCashSession(session).catch(() => {});
+    }
+    const after = captureStoreSlices(['posCashSessions']);
+    registerUndoEntry({
+      vertical: 'pos_inventory',
+      operationType: 'create',
+      summary: ul('Opened cash drawer', 'Caisse ouverte', 'فتح درج الصندوق'),
+      entityLabel: session.openedByName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('pos_cash_sessions', session.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pos_cash_sessions', session.id, globalState.currentUser?.id)
+            .then(() => posService.upsertCashSession(session))
+            .catch(() => {});
+        }
+      },
+    });
+    return session;
+  };
+  const addPosCashMovement = (params: {
+    sessionId?: string;
+    reference?: string;
+    payee: string;
+    category: PosCashMovement['category'];
+    paymentMethod: PosCashMovement['paymentMethod'];
+    direction?: 'in' | 'out';
+    amountCentimes: number;
+    notes?: string;
+  }): PosCashMovement => {
+    const before = captureStoreSlices(['posCashMovements']);
+    const existingCount = (globalState.posCashMovements || []).filter(
+      (m) => m.branchId === globalState.currentBranchId
+    ).length;
+    const mv: PosCashMovement = {
+      id: generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      staffId: globalState.currentUser?.id,
+      sessionId: params.sessionId,
+      reference: params.reference || `DEC-${String(existingCount + 1).padStart(3, '0')}`,
+      payee: params.payee.trim(),
+      category: params.category,
+      paymentMethod: params.paymentMethod,
+      direction: params.direction || 'out',
+      amountCentimes: Math.max(0, Math.round(params.amountCentimes || 0)),
+      paidBy: globalState.currentUser?.fullName || 'Cashier',
+      notes: params.notes?.trim() || undefined,
+      occurredAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      posCashMovements: [mv, ...(globalState.posCashMovements || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.upsertCashMovement(mv).catch(() => {});
+    }
+    const after = captureStoreSlices(['posCashMovements']);
+    registerUndoEntry({
+      vertical: 'pos_inventory',
+      operationType: 'create',
+      summary: ul(
+        `Cash movement: ${mv.payee}`,
+        `Mouvement de caisse : ${mv.payee}`,
+        `حركة صندوق: ${mv.payee}`
+      ),
+      entityLabel: mv.payee,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          posService.deleteCashMovement(mv.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pos_cash_movements', mv.id, globalState.currentUser?.id)
+            .then(() => posService.upsertCashMovement(mv))
+            .catch(() => {});
+        }
+      },
+    });
+    return mv;
+  };
+  const deletePosCashMovement = (movementId: string) => {
+    const target = (globalState.posCashMovements || []).find((m) => m.id === movementId);
+    if (!target) return;
+    const before = captureStoreSlices(['posCashMovements']);
+    globalState = {
+      ...globalState,
+      posCashMovements: (globalState.posCashMovements || []).filter((m) => m.id !== movementId),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.deleteCashMovement(movementId, globalState.currentUser?.id).catch(() => {});
+    }
+    const after = captureStoreSlices(['posCashMovements']);
+    registerUndoEntry({
+      vertical: 'pos_inventory',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted movement: ${target.payee}`,
+        `Mouvement supprimé : ${target.payee}`,
+        `حذف حركة: ${target.payee}`
+      ),
+      entityLabel: target.payee,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pos_cash_movements', movementId, globalState.currentUser?.id)
+            .then(() => posService.upsertCashMovement(target))
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          posService.deleteCashMovement(movementId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
+  };
+  const closePosCashSessionAndIssueZReport = async (params: {
+    sessionId?: string;
+    openingFloatCentimes?: number;
+    actualCashCentimes: number;
+    variancePinVerified: boolean;
+    varianceVerifiedByStaffId?: string;
+    notes?: string;
+  }): Promise<PosZReport> => {
+    const nowIso = new Date().toISOString();
+    const businessDate = nowIso.slice(0, 10);
+    const branchId = globalState.currentBranchId;
+    const existingSession = params.sessionId
+      ? (globalState.posCashSessions || []).find((s) => s.id === params.sessionId)
+      : (globalState.posCashSessions || []).find(
+          (s) => s.branchId === branchId && s.status === 'open'
+        );
+
+    const openingFloatCentimes =
+      existingSession?.openingFloatCentimes ??
+      Math.max(0, Math.round(params.openingFloatCentimes ?? 0));
+
+    const branchSalesToday = (globalState.sales || []).filter(
+      (s) =>
+        (s.facilityId === branchId || s.branchId === branchId) &&
+        s.createdAt.startsWith(businessDate)
+    );
+    const paymentTotals = sumSalePaymentCentimes(branchSalesToday);
+
+    const branchMovements = (globalState.posCashMovements || []).filter(
+      (m) =>
+        m.branchId === branchId &&
+        (existingSession ? m.sessionId === existingSession.id || !m.sessionId : m.occurredAt.startsWith(businessDate))
+    );
+
+    const drawerSummary = computeDrawerExpectedCentimes({
+      openingFloatCentimes,
+      cashSalesCentimes: paymentTotals.cashSalesCentimes,
+      cashMovements: branchMovements,
+      cashRefundsCentimes: 0,
+    });
+
+    const actualCashCentimes = Math.max(0, Math.round(params.actualCashCentimes));
+    const varianceCentimes = computeVarianceCentimes(
+      actualCashCentimes,
+      drawerSummary.expectedCashCentimes
+    );
+
+    const closedSession: PosCashSession = existingSession
+      ? {
+          ...existingSession,
+          closedByStaffId: globalState.currentUser?.id,
+          closedByName: globalState.currentUser?.fullName || 'Cashier',
+          closedAt: nowIso,
+          expectedCashCentimes: drawerSummary.expectedCashCentimes,
+          actualCashCentimes,
+          varianceCentimes,
+          variancePinVerified: params.variancePinVerified,
+          varianceVerifiedByStaffId: params.varianceVerifiedByStaffId,
+          status: 'closed',
+          notes: params.notes?.trim() || existingSession.notes,
+        }
+      : {
+          id: generateClientUuid(),
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId,
+          staffId: globalState.currentUser?.id,
+          openedByStaffId: globalState.currentUser?.id,
+          openedByName: globalState.currentUser?.fullName || 'Cashier',
+          closedByStaffId: globalState.currentUser?.id,
+          closedByName: globalState.currentUser?.fullName || 'Cashier',
+          openedAt: nowIso,
+          closedAt: nowIso,
+          openingFloatCentimes,
+          expectedCashCentimes: drawerSummary.expectedCashCentimes,
+          actualCashCentimes,
+          varianceCentimes,
+          variancePinVerified: params.variancePinVerified,
+          varianceVerifiedByStaffId: params.varianceVerifiedByStaffId,
+          status: 'closed',
+          notes: params.notes?.trim() || undefined,
+        };
+
+    const reportId = generateClientUuid();
+    const localCloseRef = `ZLOC-${businessDate.replace(/-/g, '')}-${reportId.slice(0, 6).toUpperCase()}`;
+    const provisionalReport: PosZReport = {
+      id: reportId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId,
+      sessionId: closedSession.id,
+      zNumber: null,
+      localCloseRef,
+      status: 'provisional_pending_sync',
+      businessDate,
+      closedByStaffId: globalState.currentUser?.id,
+      closedByName: globalState.currentUser?.fullName || 'Cashier',
+      openingFloatCentimes,
+      cashSalesCentimes: paymentTotals.cashSalesCentimes,
+      cardSalesCentimes: paymentTotals.cardSalesCentimes,
+      baridimobSalesCentimes: paymentTotals.baridimobSalesCentimes,
+      refundsTotalCentimes: paymentTotals.refundsTotalCentimes,
+      cashInCentimes: drawerSummary.cashInCentimes,
+      cashOutCentimes: drawerSummary.cashOutCentimes,
+      expectedCashCentimes: drawerSummary.expectedCashCentimes,
+      actualCashCentimes,
+      varianceCentimes,
+      variancePinVerified: params.variancePinVerified,
+      closedAt: nowIso,
+      driftDetected: false,
+      reprintedCount: 0,
+      notes: params.notes?.trim() || undefined,
+    };
+
+    const nextSessions = existingSession
+      ? (globalState.posCashSessions || []).map((s) =>
+          s.id === closedSession.id ? closedSession : s
+        )
+      : [closedSession, ...(globalState.posCashSessions || [])];
+
+    globalState = {
+      ...globalState,
+      posCashSessions: nextSessions,
+      posZReports: [provisionalReport, ...(globalState.posZReports || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      await posService.upsertCashSession(closedSession).catch(() => {});
+    }
+
+    const canFinalizeOnline = isSupabaseConfigured() && globalState.networkMode !== 'offline';
+    if (canFinalizeOnline) {
+      const res = await posService.upsertZReport(provisionalReport).catch(() => null);
+      if (res?.zNumber) {
+        const finalizedAt = new Date().toISOString();
+        const finalizedReport: PosZReport = {
+          ...provisionalReport,
+          zNumber: res.zNumber,
+          status: res.status,
+          finalizedAt,
+        };
+        globalState = {
+          ...globalState,
+          posZReports: (globalState.posZReports || []).map((r) =>
+            r.id === reportId ? finalizedReport : r
+          ),
+        };
+        notify();
+        return finalizedReport;
+      }
+    } else if (isSupabaseConfigured()) {
+      // Queue provisional close when offline
+      await posService.upsertZReport(provisionalReport).catch(() => {});
+    }
+
+    return provisionalReport;
+  };
+  const reprintPosZReport = (reportId: string) => {
+    const target = (globalState.posZReports || []).find((r) => r.id === reportId);
+    if (!target) return;
+    const nextCount = (target.reprintedCount || 0) + 1;
+    globalState = {
+      ...globalState,
+      posZReports: (globalState.posZReports || []).map((r) =>
+        r.id === reportId ? { ...r, reprintedCount: nextCount } : r
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.incrementZReportReprint(reportId, nextCount, target.version).catch(() => {});
+    }
+  };
+  const finalizeProvisionalPosZReports = async () => {
+    if (!isSupabaseConfigured() || globalState.networkMode === 'offline') return;
+    const branchId = globalState.currentBranchId;
+    const pending = (globalState.posZReports || []).filter(
+      (r) =>
+        r.branchId === branchId &&
+        r.status === 'provisional_pending_sync' &&
+        !r.zNumber
+    );
+    if (pending.length === 0) return;
+
+    for (const report of pending) {
+      const salesForDay = (globalState.sales || []).filter(
+        (s) =>
+          (s.facilityId === branchId || s.branchId === branchId) &&
+          s.createdAt.startsWith(report.businessDate)
+      );
+      const serverTotals = sumSalePaymentCentimes(salesForDay);
+      const driftEval = evaluateProvisionalZReportDrift(report, serverTotals);
+      const candidate: PosZReport = {
+        ...report,
+        driftDetected: driftEval.driftDetected,
+        driftDetails: driftEval.driftDetails,
+        status: driftEval.nextStatus,
+      };
+      const res = await posService.upsertZReport(candidate).catch(() => null);
+      if (res) {
+        const finalStatus: PosZReport['status'] = driftEval.driftDetected
+          ? 'drift_flagged'
+          : res.status;
+        const finalizedAt = new Date().toISOString();
+        globalState = {
+          ...globalState,
+          posZReports: (globalState.posZReports || []).map((r) =>
+            r.id === report.id
+              ? {
+                  ...candidate,
+                  zNumber: res.zNumber || r.zNumber,
+                  status: finalStatus,
+                  finalizedAt: r.finalizedAt || finalizedAt,
+                }
+              : r
+          ),
+        };
+        notify();
+      }
+    }
   };
   const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
   const toggleTopBarAutoHide = toggleTopBarAutoHideAction;
@@ -17178,6 +18043,13 @@ function createAtriumActions() {
     addWalkInTicket,
     updateSalonChairStation,
     recordQuickAttendance,
+    unlockEduSessionAttendance,
+    openPosCashSession,
+    addPosCashMovement,
+    deletePosCashMovement,
+    closePosCashSessionAndIssueZReport,
+    reprintPosZReport,
+    finalizeProvisionalPosZReports,
     toggleTopBarCollapsed,
     toggleTopBarAutoHide,
     setTopBarAutoHide,
@@ -17428,9 +18300,12 @@ export function useAtriumStore() {
     activePosRole: state.activePosRole || 'owner',
     activeEducationRole: state.activeEducationRole || 'owner',
     memberCheckIns: currentMemberCheckIns,
-    walkInTickets: state.walkInTickets || [],
+    walkInTickets: selectCurrentWalkInTicketsFromState(state),
     salonChairStations: state.salonChairStations || [],
     eduQuickAttendance: state.eduQuickAttendance || [],
+    posCashSessions: selectCurrentPosCashSessionsFromState(state),
+    posCashMovements: selectCurrentPosCashMovementsFromState(state),
+    posZReports: selectCurrentPosZReportsFromState(state),
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],

@@ -18,12 +18,14 @@ import {
   shallowEqualObjects,
   selectCurrentMembersFromState,
   selectCurrentMemberCheckInsFromState,
+  selectCurrentWalkInTicketsFromState,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { sequenceService, toValidUuid } from '../../../lib/supabase/index';
+import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
@@ -76,7 +78,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       account: s.account,
       currentUser: s.currentUser,
       memberCheckIns: selectCurrentMemberCheckInsFromState(s),
-      walkInTickets: s.walkInTickets,
+      walkInTickets: selectCurrentWalkInTicketsFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -87,9 +89,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   );
 
   const {
-    addMemberCheckIn,
+    checkInMember,
     addWalkInTicket,
-    updateMember,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -110,6 +111,11 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   const [lastPrintedTicket, setLastPrintedTicket] = useState<any>(null);
   const [inspectedLogId, setInspectedLogId] = useState<string | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [pendingDuplicateMember, setPendingDuplicateMember] = useState<any | null>(null);
+  const [isPinOverrideOpen, setIsPinOverrideOpen] = useState(false);
+  const [isOverrideReasonOpen, setIsOverrideReasonOpen] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [isCreatingWalkIn, setIsCreatingWalkIn] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -165,42 +171,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   }, [members, scanInput]);
 
   const handleValidateCheckIn = useCallback(
-    (member: any) => {
-      const now = new Date();
-      const expiry = member.expirationDate ? new Date(member.expirationDate) : null;
-      const daysUntilExpiry = expiry
-        ? Math.ceil((expiry.getTime() - now.getTime()) / 864e5)
-        : 999;
-
-      let status = 'Granted';
-      let message = isRtl ? 'تم التحقق من الاشتراك بنجاح' : 'Accès validé avec succès';
-
-      if (member.status === 'Frozen' || member.status === 'Suspended') {
-        status = 'Denied_Frozen';
-        message = isRtl ? 'الاشتراك مجمّد حالياً' : 'Abonnement actuellement gelé';
-      } else if (member.status === 'Expired' || (expiry && expiry < now)) {
-        status = 'Denied_Expired';
-        message = isRtl ? 'الاشتراك منتهي الصلاحية' : 'Abonnement expiré';
-      } else if (daysUntilExpiry <= 5) {
-        status = 'Warning_Expiring';
-        message = isRtl
-          ? `تنبيه: الاشتراك ينتهي خلال ${daysUntilExpiry} أيام`
-          : `Attention: Expire dans ${daysUntilExpiry} jour(s)`;
-      }
-
-      const remainingBefore = member.remainingSessions;
-      let remainingAfter = remainingBefore;
-      let shouldDecrementSession = false;
-      if (remainingBefore !== undefined && remainingBefore !== null) {
-        if (remainingBefore <= 0) {
-          status = 'Denied_Expired';
-          message = isRtl ? 'نفدت جميع الحصص المتاحة في الباقة' : 'Nombre de séances épuisé';
-        } else {
-          remainingAfter = remainingBefore - 1;
-          shouldDecrementSession = true;
-        }
-      }
-
+    (member: any, override?: { overrideByStaffId?: string; overrideReason?: string }) => {
       const activeAccountId = (account?.id || currentBranch?.accountId || '').trim();
       const resolvedBranchId = (currentBranchId || currentBranch?.id || member.branchId || '').trim();
       if (!activeAccountId || !resolvedBranchId) {
@@ -212,55 +183,70 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         return;
       }
 
-      if (status === 'Granted') playChime('success');
-      else if (status === 'Warning_Expiring') playChime('warning');
+      const evaluation = checkInMember(member.id, {
+        method: 'qr',
+        logDenied: true,
+        overrideByStaffId: override?.overrideByStaffId,
+        overrideReason: override?.overrideReason,
+      });
+      if (!evaluation) return;
+
+      if (evaluation.duplicateBlocked) {
+        playChime('warning');
+        setPendingDuplicateMember(member);
+        setOverrideReason(
+          isRtl
+            ? 'تصريح مرور استثنائي من المدير'
+            : language === 'en'
+            ? 'Manager PIN override'
+            : 'Forçage autorisé par le gérant'
+        );
+        setIsPinOverrideOpen(true);
+        return;
+      }
+
+      let message = isRtl ? 'تم التحقق من الاشتراك بنجاح' : language === 'en' ? 'Access granted' : 'Accès validé avec succès';
+      if (evaluation.reasonCode === 'denied_frozen') {
+        message = isRtl ? 'الاشتراك مجمّد حالياً' : language === 'en' ? 'Membership frozen/suspended' : 'Abonnement actuellement gelé';
+      } else if (evaluation.reasonCode === 'denied_quota') {
+        message = isRtl ? 'نفدت جميع الحصص المتاحة في الباقة' : language === 'en' ? 'Session quota exhausted' : 'Nombre de séances épuisé';
+      } else if (evaluation.reasonCode === 'denied_expired') {
+        message = isRtl ? 'الاشتراك منتهي الصلاحية' : language === 'en' ? 'Membership expired' : 'Abonnement expiré';
+      } else if (evaluation.reasonCode === 'warning_expiring') {
+        message = isRtl ? 'تنبيه: الاشتراك على وشك الانتهاء' : language === 'en' ? 'Warning: Membership expiring soon' : 'Attention: Abonnement expire bientôt';
+      }
+
+      if (evaluation.accessStatus === 'Granted') playChime('success');
+      else if (evaluation.accessStatus === 'Warning_Expiring') playChime('warning');
       else playChime('error');
 
-      const checkInLog = {
-        id: `chk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        accountId: activeAccountId,
-        businessId: currentBusinessId || currentBranch?.businessId || '',
-        branchId: resolvedBranchId,
-        staffId: currentUser?.id || '',
-        memberId: member.id,
-        memberName: member.fullName,
-        planId: member.membershipPlanId || 'standard_plan',
-        planName: member.membershipPlanName || 'Pass Standard',
-        timestamp: new Date().toISOString(),
-        accessStatus: status,
-        remainingSessionsBefore: remainingBefore,
-        remainingSessionsAfter: remainingAfter,
-        checkInMethod: 'barcode_scanner',
-      };
-
-      runUndoBatch(
-        {
-          vertical: 'membership_session',
-          operationType: shouldDecrementSession ? 'bulk' : 'create',
-          entityLabel: member.fullName,
-          affectedCount: shouldDecrementSession ? 2 : 1,
-          businessId: currentBusinessId || 'biz_01',
-          branchId: resolvedBranchId,
-          toastType: status === 'Granted' ? 'success' : status === 'Warning_Expiring' ? 'warning' : 'info',
-          summary: isRtl
-            ? `تسجيل دخول: ${member.fullName}`
-            : `Passage enregistré : ${member.fullName}`,
+      setLastCheckInResult({
+        status: evaluation.accessStatus,
+        message,
+        member: {
+          ...member,
+          remainingSessions: evaluation.remainingSessionsAfter ?? member.remainingSessions,
         },
-        () => {
-          if (shouldDecrementSession) {
-            updateMember(member.id, {
-              remainingSessions: remainingAfter,
-              status: remainingAfter === 0 ? 'Expired' : member.status,
-            });
-          }
-          addMemberCheckIn(checkInLog as any);
-        }
-      );
-
-      setLastCheckInResult({ status, message, member });
+      });
       setScanInput('');
     },
-    [account, currentBusinessId, currentBranchId, currentUser, isRtl, playChime, updateMember, addMemberCheckIn]
+    [account, currentBranchId, currentBranch, checkInMember, isRtl, language, playChime]
+  );
+
+  const handleConfirmDuplicateOverride = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!pendingDuplicateMember || !overrideReason.trim()) return;
+      const target = pendingDuplicateMember;
+      const reasonText = overrideReason.trim();
+      setIsOverrideReasonOpen(false);
+      setPendingDuplicateMember(null);
+      handleValidateCheckIn(target, {
+        overrideByStaffId: currentUser?.id || 'owner_pin',
+        overrideReason: reasonText,
+      });
+    },
+    [pendingDuplicateMember, overrideReason, handleValidateCheckIn, currentUser?.id]
   );
 
   const handleScanSubmit = useCallback(
@@ -285,15 +271,17 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         });
       }
     },
-    [scanInput, members, searchResults, handleValidateCheckIn, playChime, showToast, isRtl]
+    [scanInput, members, searchResults, handleValidateCheckIn, playChime, isRtl]
   );
 
   const handleCreateWalkIn = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
+      if (isCreatingWalkIn) return;
       const activeAccountId = (account?.id || currentBranch?.accountId || '').trim();
+      const activeBusinessId = (currentBusinessId || currentBranch?.businessId || '').trim();
       const activeBranchId = (currentBranchId || currentBranch?.id || '').trim();
-      if (!activeAccountId || !activeBranchId) {
+      if (!activeAccountId || !activeBusinessId || !activeBranchId) {
         showToast?.({
           type: 'error',
           title: t('tenant_context_missing_title', language),
@@ -301,30 +289,80 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         });
         return;
       }
-      const amountNum = parseFloat(walkInAmount) || 500;
-      const timbre = walkInPaymentMethod === 'cash' ? calculateArt317Timbre(amountNum) : 0;
-      const ticket = {
-        id: `wi_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        accountId: activeAccountId,
-        businessId: currentBusinessId || currentBranch?.businessId || '',
-        branchId: activeBranchId,
-        staffId: currentUser?.id || '',
-        ticketNumber: `WI-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        clientName: walkInName.trim() || (isRtl ? 'زبون غير مسجل' : 'Client Séance Libre'),
-        phone: walkInPhone.trim() || undefined,
-        amountDzd: amountNum,
-        paymentMethod: walkInPaymentMethod,
-        timbreFiscalDzd: timbre,
-        issuedAt: new Date().toISOString(),
-      };
-      addWalkInTicket(ticket as any);
-      setLastPrintedTicket(ticket);
-      setIsWalkInModalOpen(false);
-      setWalkInName('');
-      setWalkInPhone('');
-      playChime('success');
+
+      setIsCreatingWalkIn(true);
+      try {
+        const seqRes = await sequenceService.allocateFromDeviceBlock({
+          businessId: activeBusinessId,
+          branchId: activeBranchId,
+          docType: 'walk_in_ticket',
+        });
+        if (!seqRes.data?.formattedNumber) {
+          playChime('error');
+          showToast?.({
+            type: 'error',
+            title: isRtl
+              ? 'تعذر تخصيص رقم التذكرة'
+              : language === 'en'
+              ? 'Ticket Number Allocation Failed'
+              : 'Attribution de numéro indisponible',
+            message:
+              seqRes.error ||
+              (isRtl
+                ? 'اتصل بالخادم لحجز نطاق التذاكر لهذا الجهاز.'
+                : language === 'en'
+                ? 'Connect once to reserve a sequential ticket block for this device.'
+                : 'Connectez-vous pour réserver une plage séquentielle sur cet appareil.'),
+          });
+          return;
+        }
+
+        const amountNum = parseFloat(walkInAmount) || 500;
+        const timbre = walkInPaymentMethod === 'cash' ? calculateArt317Timbre(amountNum) : 0;
+        const ticketId =
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : toValidUuid(`wi_${Date.now()}`);
+        const ticket = {
+          id: ticketId,
+          accountId: activeAccountId,
+          businessId: activeBusinessId,
+          branchId: activeBranchId,
+          staffId: currentUser?.id || '',
+          ticketNumber: seqRes.data.formattedNumber,
+          clientName: walkInName.trim() || (isRtl ? 'زبون غير مسجل' : 'Client Séance Libre'),
+          phone: walkInPhone.trim() || undefined,
+          amountDzd: amountNum,
+          paymentMethod: walkInPaymentMethod,
+          timbreFiscalDzd: timbre,
+          issuedAt: new Date().toISOString(),
+        };
+        addWalkInTicket(ticket as any);
+        setLastPrintedTicket(ticket);
+        setIsWalkInModalOpen(false);
+        setWalkInName('');
+        setWalkInPhone('');
+        playChime('success');
+      } finally {
+        setIsCreatingWalkIn(false);
+      }
     },
-    [walkInAmount, walkInPaymentMethod, account, currentBusinessId, currentBranchId, currentBranch, currentUser, isRtl, language, walkInName, walkInPhone, addWalkInTicket, playChime]
+    [
+      isCreatingWalkIn,
+      walkInAmount,
+      walkInPaymentMethod,
+      account,
+      currentBusinessId,
+      currentBranchId,
+      currentBranch,
+      currentUser,
+      isRtl,
+      language,
+      walkInName,
+      walkInPhone,
+      addWalkInTicket,
+      playChime,
+    ]
   );
 
   const { activeMembersCount, grantedLogsCount, alertLogsCount, visibleLogs } = useMemo(() => {
@@ -1019,6 +1057,71 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             </div>
           </div>
         )}
+      </KineticModalShell>
+      <PinVerificationModal
+        isOpen={isPinOverrideOpen}
+        onClose={() => {
+          setIsPinOverrideOpen(false);
+          setPendingDuplicateMember(null);
+        }}
+        onSuccess={() => {
+          setIsPinOverrideOpen(false);
+          setIsOverrideReasonOpen(true);
+        }}
+        title={isRtl ? 'تجاوز حظر الدخول المكرر (5 دقائق)' : language === 'en' ? 'Override Duplicate Check-In Guard' : 'Forcer le Double Pointage (5 min)'}
+        description={
+          isRtl
+            ? 'تم تسجيل دخول هذا العضو خلال الدقائق الخمس الماضية. أدخل رمز PIN للمتابعة.'
+            : language === 'en'
+            ? 'Member checked in within the last 5 minutes. Enter Owner PIN to log an override.'
+            : 'Passage déjà enregistré il y a moins de 5 minutes. Code PIN requis.'
+        }
+      />
+
+      <KineticModalShell
+        isOpen={isOverrideReasonOpen}
+        onClose={() => {
+          setIsOverrideReasonOpen(false);
+          setPendingDuplicateMember(null);
+        }}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+        >
+          <h3 className="t-card font-semibold text-black dark:text-white">
+            {isRtl ? 'سبب التجاوز الاستثنائي' : language === 'en' ? 'Override Reason Required' : 'Motif de dérogation requis'}
+          </h3>
+          <form onSubmit={handleConfirmDuplicateOverride} className="space-y-4">
+            <LabelInput
+              label={isRtl ? 'السبب الموثق في سجل التدقيق' : language === 'en' ? 'Audit reason' : 'Motif d’audit'}
+              value={overrideReason}
+              onChange={setOverrideReason}
+              placeholder={isRtl ? 'مثال: خروج مؤقت وإعادة دخول' : 'Ex: Sortie temporaire / badge oublié'}
+              required
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
+              <Button
+                type="button"
+                tone="soft"
+                size={40}
+                onClick={() => {
+                  setIsOverrideReasonOpen(false);
+                  setPendingDuplicateMember(null);
+                }}
+              >
+                {isRtl ? 'إلغاء' : 'Annuler'}
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {isRtl ? 'تأكيد الدخول' : 'Valider le passage'}
+              </Button>
+            </div>
+          </form>
+        </div>
       </KineticModalShell>
     </div>
   );

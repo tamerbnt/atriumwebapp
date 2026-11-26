@@ -23,12 +23,15 @@ import {
   Split,
   Settings2,
   Eye,
+  AlertTriangle,
+  LockOpen,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
   selectCurrentBusinessConfigFromState,
   selectCurrentMembersFromState,
   selectCurrentParkedOrdersFromState,
+  selectCurrentPosCashSessionsFromState,
   selectCurrentProductsFromState,
   selectCurrentSalesFromState,
   selectCurrentStaffFromState,
@@ -41,6 +44,7 @@ import {
 } from '../../../services/store';
 import { Product, ParkedOrder } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
+import { dzdToCentimes } from '../../../utils/money';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -121,6 +125,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     resumeParkedOrder,
     deleteParkedOrder,
     updateReceiptConfig,
+    openPosCashSession,
   } = useAtriumActions();
   const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
     useDashboardShellState();
@@ -136,6 +141,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     sales,
     stockMovements,
     receiptConfig,
+    posCashSessions,
   } = useAtriumSelector(
     (s) => ({
       account: s.account,
@@ -149,10 +155,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
       sales: selectCurrentSalesFromState(s),
       stockMovements: selectCurrentStockMovementsFromState(s),
       receiptConfig: s.receiptConfig,
+      posCashSessions: selectCurrentPosCashSessionsFromState(s),
     }),
     shallowEqualObjects
   );
   const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
+  const openCashSession = useMemo(
+    () => posCashSessions.find((cs) => cs.status === 'open') || null,
+    [posCashSessions]
+  );
 
   const [activeTab, setActiveTab] = useState<'register' | 'parked' | 'receipt_settings' | 'inventory'>(initialTab);
   useEffect(() => {
@@ -521,8 +532,32 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setIsCheckoutModalOpen(true);
   };
 
+  const usesCashInCheckout =
+    checkoutMode === 'single'
+      ? singlePaymentMethod === 'Cash'
+      : splitPayments.some((sp) => sp.method === 'Cash' && sp.amount > 0);
+
+  const handleQuickOpenCashDrawer = () => {
+    openPosCashSession({
+      openingFloatCentimes: dzdToCentimes(15000),
+      notes: 'Opened from POS Register checkout',
+    });
+  };
+
   const handleConfirmCheckout = () => {
     if (cart.length === 0) return;
+    if (usesCashInCheckout && !openCashSession) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'صندوق النقد مغلق' : isEn ? 'Cash drawer closed' : 'Caisse fermée',
+        message: isAr
+          ? 'افتح جلسة الصندوق قبل إتمام المبيعات النقدية.'
+          : isEn
+            ? 'Open a cash drawer session before completing a cash checkout.'
+            : 'Ouvrez une session de caisse avant de valider un paiement en espèces.',
+      });
+      return;
+    }
     if (checkoutMode === 'split' && splitRemaining !== 0) {
       showToast({
         type: 'warning',
@@ -2674,6 +2709,34 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   <span>{t('shop_add_split_line')}</span>
                 </button>
               </div>
+            </div>
+          )}
+
+          {usesCashInCheckout && !openCashSession && (
+            <div className="rounded-xl border border-amber-300/70 dark:border-amber-700/60 bg-amber-50/90 dark:bg-amber-950/30 p-3 flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex items-start gap-2 min-w-0 flex-1">
+                <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="t-small text-amber-900 dark:text-amber-200 leading-snug">
+                  {isAr
+                    ? 'لا توجد جلسة صندوق مفتوحة حالياً للمبيعات النقدية.'
+                    : isEn
+                      ? 'No cash drawer session is open yet for cash settlement.'
+                      : 'Aucune session de caisse ouverte pour enregistrer un encaissement espèces.'}
+                </div>
+              </div>
+              <Button
+                type="button"
+                tone="soft"
+                size={32}
+                leading={<LockOpen size={14} />}
+                onClick={handleQuickOpenCashDrawer}
+              >
+                {isAr
+                  ? 'فتح الصندوق (15,000 دج)'
+                  : isEn
+                    ? 'Open Cash Drawer (15 000 DA)'
+                    : 'Ouvrir Caisse (15 000 DA)'}
+              </Button>
             </div>
           )}
 

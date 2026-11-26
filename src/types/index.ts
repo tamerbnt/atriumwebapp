@@ -445,6 +445,7 @@ export interface Sale {
   status?: 'Completed' | 'Refunded' | 'Voided';
   refundReason?: string;
   refundedAt?: string;
+  refundedItems?: Array<{ productId: string; productName: string; quantity: number }>;
   version?: number;
   createdAt: string;
 }
@@ -1259,6 +1260,16 @@ export interface EduAttendance {
   minutesLate?: number;
   excuseNote?: string;
   recordedAt: string;
+  markedBy?: string;
+  markedAt?: string;
+  isLocked?: boolean;
+  changeHistory?: Array<{
+    previousStatus: AttendanceStatus;
+    newStatus: AttendanceStatus;
+    changedBy: string;
+    changedAt: string;
+    reason?: string;
+  }>;
   version?: number;
 }
 
@@ -3734,6 +3745,9 @@ export interface MemberCheckInLog {
   remainingSessionsBefore?: number;
   remainingSessionsAfter?: number;
   checkInMethod: 'barcode_scanner' | 'manual_click' | 'nfc_card';
+  overrideByStaffId?: string;
+  overrideReason?: string;
+  version?: number;
 }
 
 export interface WalkInTicket {
@@ -3763,6 +3777,7 @@ export interface SalonChairStation {
   clientName?: string;
   serviceName?: string;
   servicePriceDzd?: number;
+  servicePriceCentimes?: number;
   stage: SalonChairStage;
   startTime?: string;
   elapsedMinutes?: number;
@@ -3778,6 +3793,80 @@ export interface EduQuickAttendanceRecord {
   markedAt: string;
   markedByStaffId: string;
   isLocked: boolean;
+}
+
+export interface PosCashSession {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  staffId?: string;
+  openedByStaffId?: string;
+  openedByName: string;
+  closedByStaffId?: string;
+  closedByName?: string;
+  openedAt: string;
+  closedAt?: string;
+  openingFloatCentimes: number;
+  expectedCashCentimes: number;
+  actualCashCentimes?: number;
+  varianceCentimes: number;
+  variancePinVerified?: boolean;
+  varianceVerifiedByStaffId?: string;
+  status: 'open' | 'closed';
+  notes?: string;
+  version?: number;
+}
+
+export interface PosCashMovement {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  staffId?: string;
+  sessionId?: string;
+  reference: string;
+  payee: string;
+  category: 'Supplies' | 'Supplier' | 'Maintenance' | 'Transport' | 'StaffMeal' | 'FloatIn' | 'Other';
+  paymentMethod: 'Cash' | 'Card' | 'BaridiMob';
+  direction: 'in' | 'out';
+  amountCentimes: number;
+  paidBy: string;
+  notes?: string;
+  occurredAt: string;
+  version?: number;
+}
+
+export interface PosZReport {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  sessionId?: string;
+  zNumber?: string | null;
+  localCloseRef: string;
+  status: 'finalized' | 'provisional_pending_sync' | 'drift_flagged';
+  businessDate: string;
+  closedByStaffId?: string;
+  closedByName: string;
+  openingFloatCentimes: number;
+  cashSalesCentimes: number;
+  cardSalesCentimes: number;
+  baridimobSalesCentimes: number;
+  refundsTotalCentimes: number;
+  cashInCentimes: number;
+  cashOutCentimes: number;
+  expectedCashCentimes: number;
+  actualCashCentimes: number;
+  varianceCentimes: number;
+  variancePinVerified: boolean;
+  closedAt: string;
+  finalizedAt?: string;
+  driftDetected?: boolean;
+  driftDetails?: string;
+  reprintedCount: number;
+  notes?: string;
+  version?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

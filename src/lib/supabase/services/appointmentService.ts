@@ -215,31 +215,50 @@ export const appointmentService = {
     return res.success;
   },
 
-  async fetchChairStations(branchId: string): Promise<SalonChairStation[]> {
+  async fetchChairStations(branchId: string, updatedAfter?: string | null): Promise<SalonChairStation[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const data = await fetchAllPages<any>((from, to) =>
-      (client as any)
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
         .from('salon_chair_stations')
         .select(
-          'id, chair_number, stylist_name, current_client_name, current_service_name, status, started_at, version'
+          'id, chair_number, stylist_id, stylist_name, current_appointment_id, current_client_name, current_service_name, service_price_centimes, stage, status, started_at, version'
         )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
-        .range(from, to)
-    );
-    return data.map((row: any): SalonChairStation => ({
-      workstationId: row.id,
-      workstationName: row.chair_number,
-      currentStylistName: row.stylist_name || '',
-      clientName: row.current_client_name || undefined,
-      serviceName: row.current_service_name || undefined,
-      stage: row.status === 'Occupied' ? 'in_progress' : row.status === 'Free' ? 'waiting' : 'completed',
-      startTime: row.started_at || undefined,
-      version: row.version != null ? Number(row.version) : undefined,
-    }));
+        .range(from, to);
+
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return data.map((row: any): SalonChairStation => {
+      const priceCentimes =
+        row.service_price_centimes != null ? Number(row.service_price_centimes) : undefined;
+      const stage =
+        row.stage === 'in_progress' || row.stage === 'completed' || row.stage === 'paid'
+          ? row.stage
+          : row.status === 'Occupied'
+          ? 'in_progress'
+          : row.status === 'Free'
+          ? 'waiting'
+          : 'completed';
+      return {
+        workstationId: row.id,
+        workstationName: row.chair_number,
+        currentStylistId: row.stylist_id || undefined,
+        currentStylistName: row.stylist_name || '',
+        currentAppointmentId: row.current_appointment_id || undefined,
+        clientName: row.current_client_name || undefined,
+        serviceName: row.current_service_name || undefined,
+        servicePriceCentimes: priceCentimes,
+        servicePriceDzd: priceCentimes != null ? priceCentimes / 100 : undefined,
+        stage,
+        startTime: row.started_at || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
+      };
+    });
   },
 
   async upsertChairStation(
@@ -248,14 +267,32 @@ export const appointmentService = {
   ): Promise<boolean> {
     const trace = buildTraceEnvelope(ctx);
     const dbStatus =
-      station.stage === 'in_progress' ? 'Occupied' : station.stage === 'waiting' ? 'Free' : 'Cleaning';
+      station.stage === 'in_progress'
+        ? 'Occupied'
+        : station.stage === 'completed'
+        ? 'Occupied'
+        : station.clientName
+        ? 'Occupied'
+        : 'Free';
+    const priceCentimes =
+      station.servicePriceCentimes != null
+        ? Math.round(station.servicePriceCentimes)
+        : station.servicePriceDzd != null
+        ? Math.round(station.servicePriceDzd * 100)
+        : null;
     const payload = {
       id: toValidUuid(station.workstationId),
       ...trace,
       chair_number: station.workstationName,
+      stylist_id: station.currentStylistId ? toValidUuid(station.currentStylistId) : null,
       stylist_name: station.currentStylistName || null,
+      current_appointment_id: station.currentAppointmentId
+        ? toValidUuid(station.currentAppointmentId)
+        : null,
       current_client_name: station.clientName || null,
       current_service_name: station.serviceName || null,
+      service_price_centimes: priceCentimes,
+      stage: station.stage || 'waiting',
       status: dbStatus,
       started_at: station.startTime || null,
     };

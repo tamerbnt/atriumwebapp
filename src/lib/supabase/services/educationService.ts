@@ -167,6 +167,10 @@ export const mapEduAttendanceFromDb = (row: any): EduAttendance => ({
   minutesLate: row.minutes_late ?? undefined,
   excuseNote: row.excuse_note || undefined,
   recordedAt: row.recorded_at,
+  markedBy: row.marked_by || undefined,
+  markedAt: row.marked_at || undefined,
+  isLocked: Boolean(row.is_locked),
+  changeHistory: Array.isArray(row.change_history) ? row.change_history : [],
   version: row.version != null ? Number(row.version) : undefined,
 });
 
@@ -556,21 +560,24 @@ export const educationService = {
     return res.success;
   },
 
-  async fetchAttendance(branchId: string): Promise<EduAttendance[]> {
+  async fetchAttendance(branchId: string, updatedAfter?: string | null): Promise<EduAttendance[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const data = await fetchAllPages<any>((from, to) =>
-      (client as any)
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
         .from('edu_attendance')
         .select(
-          'id, account_id, business_id, branch_id, staff_id, session_id, cohort_id, student_id, student_name, status, minutes_late, excuse_note, recorded_at, version'
+          'id, account_id, business_id, branch_id, staff_id, session_id, cohort_id, student_id, student_name, status, minutes_late, excuse_note, recorded_at, marked_by, marked_at, is_locked, change_history, version'
         )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
-        .range(from, to)
-    );
+        .range(from, to);
+
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
     return data.map(mapEduAttendanceFromDb);
   },
 
@@ -592,6 +599,10 @@ export const educationService = {
       minutes_late: att.minutesLate ?? 0,
       excuse_note: att.excuseNote || null,
       recorded_at: att.recordedAt,
+      marked_by: att.markedBy ? toValidUuid(att.markedBy) : null,
+      marked_at: att.markedAt || att.recordedAt,
+      is_locked: Boolean(att.isLocked),
+      change_history: Array.isArray(att.changeHistory) ? att.changeHistory : [],
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('edu_attendance', payload, {
       expectedVersion: att.version,
