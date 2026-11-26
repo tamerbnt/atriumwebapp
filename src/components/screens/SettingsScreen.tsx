@@ -35,6 +35,7 @@ import {
   Scale,
   Bell,
   FileSpreadsheet,
+  Lock,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -71,6 +72,7 @@ import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
 import { ReminderEngineWorkspace } from '../common/reminders/ReminderEngineWorkspace';
 import { DataImportWorkspace } from '../common/import/DataImportWorkspace';
+import { SecurityRbacWorkspace } from '../common/security/SecurityRbacWorkspace';
 import { PayrollMigrationDryRunPanel } from '../common/staff/PayrollMigrationDryRunPanel';
 import { getEffectivePermissionContext } from '../../utils/routePermissions';
 import { normalizeBusinessCategory } from '../../utils/staffRules';
@@ -120,6 +122,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    currentBusinessId,
+    rbacPermissions,
   } = useAtriumSelector(
     (s) => ({
       account: s.account,
@@ -129,6 +133,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       devices: selectCurrentDevicesFromState(s),
       quotas: selectQuotasFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessId: s.currentBusinessId,
+      rbacPermissions: s.rbacPermissions,
       theme: s.theme,
       density: s.density || 'default',
       language: s.language,
@@ -160,10 +166,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     }),
     shallowEqualObjects
   );
+  const rbacMatrix = (rbacPermissions || []).filter(
+    (r) => r.businessId === currentBusinessId && !r.deletedAt
+  );
   const permissionContext = getEffectivePermissionContext(
     normalizeBusinessCategory(currentBusiness?.category),
     {
       currentUser,
+      businessId: currentBusinessId,
       activePmRole,
       activeGarageRole,
       activeRealEstateRole,
@@ -176,6 +186,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       activeAppointmentRole,
       activePosRole,
       activeEducationRole,
+      rbacMatrix,
     }
   );
   const effectivePreferencesOnly = Boolean(preferencesOnly) || !permissionContext.isExecutive;
@@ -522,6 +533,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             icon: <FileSpreadsheet size={15} strokeWidth={1.5} />,
           },
           {
+            id: 'security_rbac',
+            label: t('phase2_sec_tab', language),
+            icon: <Lock size={15} strokeWidth={1.5} />,
+          },
+          {
             id: 'branches_devices',
             label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
             icon: <Monitor size={15} strokeWidth={1.5} />,
@@ -597,6 +613,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       {effectiveTab === 'reminders' && <ReminderEngineWorkspace />}
 
       {effectiveTab === 'data_import' && <DataImportWorkspace />}
+
+      {effectiveTab === 'security_rbac' && <SecurityRbacWorkspace />}
 
       {effectiveTab === 'preferences' && (
         <>

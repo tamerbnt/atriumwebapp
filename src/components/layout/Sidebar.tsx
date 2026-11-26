@@ -100,11 +100,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activePosRole,
     activeEducationRole,
     currentUser,
+    currentBusinessId,
+    rbacPermissions,
     language,
   } = useAtriumSelector(
     (s) => ({
       terminology: selectTerminologyFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessId: s.currentBusinessId,
+      rbacPermissions: s.rbacPermissions,
       activePmRole: s.activePmRole || 'direction',
       activeGarageRole: s.activeGarageRole || 'gerant',
       activeRealEstateRole: s.activeRealEstateRole || 'direction',
@@ -1891,8 +1895,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     items.unshift(homeNavItem);
   }
 
+  const rbacMatrix = (rbacPermissions || []).filter(
+    (r) => r.businessId === currentBusinessId && !r.deletedAt
+  );
+
   const permState = {
     currentUser,
+    businessId: currentBusinessId,
     activePmRole,
     activeGarageRole,
     activeRealEstateRole,
@@ -1905,6 +1914,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    rbacMatrix,
   };
 
   // Unified Staff / Workforce Screen Injection Across All Categories
@@ -1929,7 +1939,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return items.filter((item) => canAccessRoute(category, permState, item.id));
-  }, [category, activePmRole, activeGarageRole, activeRealEstateRole,
+  }, [category, currentBusinessId, rbacPermissions, activePmRole, activeGarageRole, activeRealEstateRole,
      activeManufacturingRole, activeLegalRole, activeLogisticsRole,
      activeContractorRole, activeAgriRole, activeMembershipRole,
      activeAppointmentRole, activePosRole, activeEducationRole,

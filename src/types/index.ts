@@ -4039,6 +4039,8 @@ export type SettingsTabId =
   | 'reference_rates'
   | 'reminders'
   | 'data_import'
+  | 'security_rbac'
+  | 'platform_governance'
   | 'branches_devices'
   | 'license'
   | 'cloud_backup';
@@ -5168,6 +5170,375 @@ export interface ImportJob {
   updatedAt: string;
   deletedAt?: string;
 }
+
+// ============================================================================
+// PHASE 2 SECTION 6.8: CONFIGURABLE RBAC, SECURITY POLICY & LAW 18-07 AID
+// ============================================================================
+
+export type RbacAction = 'view' | 'create' | 'edit' | 'delete' | 'approve' | 'export';
+
+export type RbacResource =
+  | 'dashboard'
+  | 'members'
+  | 'registrations'
+  | 'shop'
+  | 'scheduler'
+  | 'finance'
+  | 'history'
+  | 'analytics'
+  | 'staff'
+  | 'settings'
+  | 'medical_records'
+  | 'legal_records'
+  | 'wms'
+  | 'data_import'
+  | 'rbac'
+  | 'data_protection';
+
+export interface RbacPermissionRule {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  category: string;
+  roleKey: string;
+  resource: RbacResource;
+  action: RbacAction;
+  allowed: boolean;
+  updatedByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface SecurityWorkspacePolicy {
+  id: string;
+  accountId: string;
+  businessId: string;
+  owner2faEnabled: boolean;
+  owner2faSecretMasked?: string;
+  owner2faVerifier?: string;
+  owner2faRecoveryHashes: string[];
+  owner2faVerifiedAt?: string;
+  sessionTimeoutMinutes: number;
+  pinLockMaxAttempts: number;
+  pinLockoutSeconds: number;
+  requirePinOnIdle: boolean;
+  logSensitiveReads: boolean;
+  dataRetentionDays: number;
+  law1807ReviewStatus: 'pending_counsel_review' | 'counsel_reviewed';
+  counselReviewNotes?: string;
+  updatedByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type DataConsentSubjectType =
+  | 'member'
+  | 'patient'
+  | 'legal_client'
+  | 'student'
+  | 'customer'
+  | 'staff'
+  | 'party';
+
+export type DataConsentStatus = 'granted' | 'withdrawn' | 'expired';
+
+export interface DataProtectionConsent {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  subjectType: DataConsentSubjectType;
+  subjectId: string;
+  subjectName: string;
+  purpose: string;
+  legalBasis: 'consent' | 'contract' | 'legal_obligation';
+  status: DataConsentStatus;
+  consentMethod: 'signed_paper' | 'digital_pin' | 'portal_checkbox';
+  capturedByStaffId?: string;
+  grantedAt: string;
+  withdrawnAt?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type DataSubjectRequestType = 'export' | 'erase' | 'rectify';
+export type DataSubjectRequestStatus = 'requested' | 'exported' | 'erased' | 'rejected';
+
+export interface DataSubjectRequest {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  subjectType: DataConsentSubjectType;
+  subjectId: string;
+  subjectName: string;
+  requestType: DataSubjectRequestType;
+  status: DataSubjectRequestStatus;
+  requestedByStaffId?: string;
+  processedByStaffId?: string;
+  exportSummary?: Record<string, any> | null;
+  reason?: string;
+  processedAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface SensitiveReadEvent {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string | null;
+  actorStaffId?: string | null;
+  targetTable: string;
+  recordLabel: string;
+  vertical: string;
+  role: string;
+  occurredAt: string;
+}
+
+export interface PinAttemptTracker {
+  failedAttempts: number;
+  firstFailedAtMs?: number;
+  lockedUntilMs?: number;
+}
+
+export interface SessionLockState {
+  isLocked: boolean;
+  lockedReason?: 'idle_timeout' | 'manual_lock' | '2fa_required';
+  lockedAt?: string;
+  lastActivityAtMs: number;
+}
+
+// ============================================================================
+// PHASE 2 SECTION 6.9: APPROVALS, ATTACHMENTS, CUSTOM FIELDS, API & WEBHOOKS
+// ============================================================================
+
+export type ApprovalActionScope =
+  | 'discount'
+  | 'refund'
+  | 'expense'
+  | 'payroll_release'
+  | 'price_change';
+
+export type ApprovalRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface PlatformApprovalRule {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  actionScope: ApprovalActionScope;
+  ruleName: string;
+  thresholdCentimes: number;
+  thresholdPercent?: number | null;
+  approverRoles: string[];
+  requireDualControl: boolean;
+  isActive: boolean;
+  updatedByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface PlatformApprovalRequest {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  ruleId?: string | null;
+  actionScope: ApprovalActionScope;
+  entityType: string;
+  entityId: string;
+  entityLabel: string;
+  amountCentimes: number;
+  percentDelta?: number | null;
+  reason: string;
+  status: ApprovalRequestStatus;
+  requestedByStaffId?: string;
+  requestedByName?: string;
+  decidedByStaffId?: string;
+  decidedByName?: string;
+  decisionNote?: string;
+  decidedAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type VirusScanStatus = 'pending' | 'clean' | 'quarantined';
+
+export interface PlatformAttachmentRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  entityType: string;
+  entityId: string;
+  entityLabel: string;
+  bucket: string;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  virusScanStatus: VirusScanStatus;
+  signedUrlToken?: string;
+  signedUrlExpiresAt?: string;
+  retentionDays: number;
+  legalHold: boolean;
+  eSignatureDataUrl?: string;
+  customMetadata?: Record<string, any>;
+  uploadedByStaffId?: string;
+  purgedAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type PlatformCustomFieldType = 'text' | 'number' | 'date' | 'select' | 'boolean';
+
+export interface PlatformCustomField {
+  id: string;
+  accountId: string;
+  businessId: string;
+  entityType: string;
+  fieldKey: string;
+  labelEn: string;
+  labelFr: string;
+  labelAr: string;
+  fieldType: PlatformCustomFieldType;
+  options: string[];
+  isRequired: boolean;
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type PrintTemplateDocType =
+  | 'invoice'
+  | 'quote'
+  | 'receipt'
+  | 'payslip'
+  | 'credit_note'
+  | 'report';
+
+export interface PlatformPrintTemplate {
+  id: string;
+  accountId: string;
+  businessId: string;
+  docType: PrintTemplateDocType;
+  headerNote?: string;
+  footerNote?: string;
+  accentColor: string;
+  showQr: boolean;
+  showStamp: boolean;
+  showSignature: boolean;
+  rtlMirrorLayout: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type PlatformApiScope =
+  | 'invoices:read'
+  | 'invoices:write'
+  | 'payments:read'
+  | 'crm:read'
+  | 'crm:write'
+  | 'wms:read'
+  | 'bi:read'
+  | 'approvals:read'
+  | 'attachments:read';
+
+export interface PlatformApiKey {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  label: string;
+  keyPrefix: string;
+  keyHash: string;
+  scopes: PlatformApiScope[];
+  rateLimitPerMinute: number;
+  status: 'active' | 'revoked';
+  expiresAt?: string;
+  lastUsedAt?: string;
+  revokedAt?: string;
+  createdByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type PlatformWebhookEventType =
+  | 'invoice.issued'
+  | 'payment.recorded'
+  | 'approval.decided'
+  | 'stock.low'
+  | 'crm.party.merged'
+  | 'attachment.uploaded'
+  | 'dsr.processed';
+
+export interface PlatformWebhook {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  label: string;
+  endpointUrl: string;
+  subscribedEvents: PlatformWebhookEventType[];
+  signingSecretMasked: string;
+  signingSecretHash: string;
+  status: 'active' | 'paused';
+  maxRetries: number;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export type WebhookDeliveryStatus = 'pending' | 'delivered' | 'retrying' | 'dead_letter';
+
+export interface PlatformWebhookDelivery {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  webhookId: string;
+  eventType: PlatformWebhookEventType;
+  idempotencyKey: string;
+  payloadJson: Record<string, any>;
+  signatureHeader: string;
+  status: WebhookDeliveryStatus;
+  attemptCount: number;
+  httpStatus?: number | null;
+  responseSnippet?: string;
+  nextRetryAt?: string;
+  deliveredAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+
 
 
 

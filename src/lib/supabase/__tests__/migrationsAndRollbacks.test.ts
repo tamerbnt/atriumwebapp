@@ -340,4 +340,63 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.import_jobs');
     expect(downSql).toContain('DROP TABLE IF EXISTS public.import_column_mappings');
   });
+
+  it('verifies Phase 2 Step 7 (6.8) configurable RBAC, full RLS, 2FA policy, sensitive read & DSR migration and rollback parity', () => {
+    const rbacPath = path.join(MIGRATIONS_DIR, '202611270007_phase2_rbac_rls.sql');
+    const rbacDownPath = path.join(ROLLBACKS_DIR, '202611270007_phase2_rbac_rls.down.sql');
+    const sql = fs.readFileSync(rbacPath, 'utf8');
+    const downSql = fs.readFileSync(rbacDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.rbac_role_permissions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.can_rbac(');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.security_workspace_policies');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.data_protection_consents');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.data_subject_requests');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.log_sensitive_read_event(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.process_data_subject_request(');
+    expect(sql).toContain('law_18_07_review_status');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.process_data_subject_request(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.log_sensitive_read_event(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.can_rbac(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.data_subject_requests');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.data_protection_consents');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.security_workspace_policies');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.rbac_role_permissions');
+  });
+
+  it('verifies Phase 2 Step 8 (6.9) platform approvals, legal-hold attachments, custom fields, API keys & webhooks migration and rollback parity', () => {
+    const platPath = path.join(MIGRATIONS_DIR, '202611270008_phase2_platform_approvals_attachments_api.sql');
+    const platDownPath = path.join(ROLLBACKS_DIR, '202611270008_phase2_platform_approvals_attachments_api.down.sql');
+    const sql = fs.readFileSync(platPath, 'utf8');
+    const downSql = fs.readFileSync(platDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_approval_rules');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_approval_requests');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_attachments');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_custom_fields');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_print_templates');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_api_keys');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_webhooks');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.platform_webhook_deliveries');
+    expect(sql).toContain('APPROVAL_SELF_DECISION_FORBIDDEN');
+    expect(sql).toContain('ATTACHMENT_LEGAL_HOLD_ACTIVE');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.decide_platform_approval(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.purge_expired_platform_attachment(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.dispatch_webhook_delivery_idempotent(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.dispatch_webhook_delivery_idempotent(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.purge_expired_platform_attachment(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.decide_platform_approval(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_webhook_deliveries');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_webhooks');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_api_keys');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_print_templates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_custom_fields');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_attachments');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_approval_requests');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_approval_rules');
+  });
 });
+

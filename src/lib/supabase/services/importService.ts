@@ -118,10 +118,16 @@ export const importService = {
     return { mappings, jobs };
   },
 
-  async upsertMapping(mapping: ImportColumnMapping, staffId?: string): Promise<void> {
+  async upsertMapping(mapping: ImportColumnMapping, staffId?: string): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: mapping.accountId,
+      businessId: mapping.businessId,
+      branchId: mapping.branchId || mapping.businessId,
+      staffId: staffId || mapping.createdByStaffId,
+    });
     const payload = {
+      ...trace,
       id: toValidUuid(mapping.id),
-      account_id: toValidUuid(mapping.accountId),
       business_id: toValidUuid(mapping.businessId),
       branch_id: mapping.branchId ? toValidUuid(mapping.branchId) : null,
       entity_type: mapping.entityType,
@@ -131,34 +137,35 @@ export const importService = {
       duplicate_policy: mapping.duplicatePolicy,
       column_map: mapping.columnMap,
       created_by_staff_id: staffId ? toValidUuid(staffId) : null,
-      updated_at: new Date().toISOString(),
-      ...buildTraceEnvelope(),
+      version: mapping.version ?? 1,
     };
-    await syncCoordinator.enqueueMutation({
-      kind: 'upsert',
-      table: 'import_column_mappings',
-      payload,
-      recordId: payload.id,
+    const res = await syncCoordinator.mutateOrQueueUpsert('import_column_mappings', payload, {
       entityType: 'import_column_mappings',
       entityLabel: `${mapping.entityType}: ${mapping.templateName}`,
+      expectedVersion: mapping.version,
     });
+    return res.success || res.queued;
   },
 
-  async deleteMapping(mappingId: string, staffId?: string): Promise<void> {
-    await syncCoordinator.enqueueMutation({
-      kind: 'soft_delete',
-      table: 'import_column_mappings',
-      recordId: toValidUuid(mappingId),
-      deletedByStaffId: staffId ? toValidUuid(staffId) : null,
-      entityType: 'import_column_mappings',
-      entityLabel: mappingId,
-    });
+  async deleteMapping(mappingId: string, staffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow(
+      'import_column_mappings',
+      toValidUuid(mappingId),
+      staffId ? toValidUuid(staffId) : null
+    );
+    return res.success || res.queued;
   },
 
-  async upsertJob(job: ImportJob, staffId?: string): Promise<void> {
+  async upsertJob(job: ImportJob, staffId?: string): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: job.accountId,
+      businessId: job.businessId,
+      branchId: job.branchId || job.businessId,
+      staffId: staffId || job.createdByStaffId,
+    });
     const payload = {
+      ...trace,
       id: toValidUuid(job.id),
-      account_id: toValidUuid(job.accountId),
       business_id: toValidUuid(job.businessId),
       branch_id: job.branchId ? toValidUuid(job.branchId) : null,
       entity_type: job.entityType,
@@ -184,30 +191,30 @@ export const importService = {
       completed_at: job.completedAt || null,
       created_by_staff_id: staffId ? toValidUuid(staffId) : null,
       created_by_name: job.createdByName || null,
-      updated_at: new Date().toISOString(),
-      ...buildTraceEnvelope(),
+      version: job.version ?? 1,
     };
-    await syncCoordinator.enqueueMutation({
-      kind: 'upsert',
-      table: 'import_jobs',
-      payload,
-      recordId: payload.id,
+    const res = await syncCoordinator.mutateOrQueueUpsert('import_jobs', payload, {
       entityType: 'import_jobs',
       entityLabel: job.fileName,
+      expectedVersion: job.version,
     });
+    return res.success || res.queued;
   },
 
-  async markJobRolledBack(jobId: string, reason?: string): Promise<void> {
-    await syncCoordinator.enqueueMutation({
-      kind: 'rpc',
-      fn: 'mark_import_job_rolled_back',
-      args: {
+  async markJobRolledBack(jobId: string, reason?: string): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue(
+      'mark_import_job_rolled_back',
+      {
         p_job_id: toValidUuid(jobId),
         p_reason: reason || null,
       },
-      recordId: toValidUuid(jobId),
-      entityType: 'import_jobs',
-      entityLabel: `Rollback ${jobId}`,
-    });
+      {
+        table: 'import_jobs',
+        recordId: toValidUuid(jobId),
+        entityType: 'import_jobs',
+        entityLabel: `Rollback ${jobId}`,
+      }
+    );
+    return res.success || res.queued;
   },
 };

@@ -102,11 +102,15 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    currentBusinessId,
+    rbacPermissions,
     language,
   } = useAtriumSelector(
     (s) => ({
       activeScreen: s.activeScreen,
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessId: s.currentBusinessId,
+      rbacPermissions: s.rbacPermissions,
       theme: s.theme,
       density: s.density || 'default',
       terminology: selectTerminologyFromState(s),
@@ -156,8 +160,12 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   const items = useMemo<PaletteItem[]>(() => {
     const list: PaletteItem[] = [];
+    const rbacMatrix = (rbacPermissions || []).filter(
+      (r) => r.businessId === currentBusinessId && !r.deletedAt
+    );
     const permState = {
       currentUser,
+      businessId: currentBusinessId,
       activePmRole,
       activeGarageRole,
       activeRealEstateRole,
@@ -170,6 +178,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       activeAppointmentRole,
       activePosRole,
       activeEducationRole,
+      rbacMatrix,
     };
 
     const navCategoryLabel = language === 'ar' ? 'التنقل' : language === 'fr' ? 'Navigation' : 'Navigation';
@@ -560,6 +569,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    currentBusinessId,
+    rbacPermissions,
   ]);
 
   const filteredItems = useMemo(() => {

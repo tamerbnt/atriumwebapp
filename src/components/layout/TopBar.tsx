@@ -66,6 +66,7 @@ import {
   LayoutDashboard,
   Globe,
   Layout,
+  Shield,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -93,6 +94,7 @@ import {
   switchBusinessAction as switchBusiness,
   switchBranchAction as switchBranch,
   setNetworkModeAction as setNetworkMode,
+  atriumActions,
   useTimerState,
 } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -211,6 +213,7 @@ const TopBarInner: React.FC<TopBarProps> = ({
     unreadNotificationCount,
     isTopBarAutoHide,
     density,
+    rbacPermissions,
   } = useAtriumSelector(
     (s) => ({
       activeScreen: s.activeScreen,
@@ -237,12 +240,17 @@ const TopBarInner: React.FC<TopBarProps> = ({
       unreadNotificationCount: selectUnreadNotificationCountFromState(s),
       isTopBarAutoHide: s.isTopBarAutoHide ?? false,
       density: s.density || 'default',
+      rbacPermissions: s.rbacPermissions,
     }),
     shallowEqualObjects
   );
   const topBarCategory = normalizeBusinessCategory(currentBusiness?.category);
+  const topBarRbacMatrix = (rbacPermissions || []).filter(
+    (r) => r.businessId === currentBusinessId && !r.deletedAt
+  );
   const topBarPermState = {
     currentUser,
+    businessId: currentBusinessId,
     activePmRole,
     activeGarageRole,
     activeRealEstateRole,
@@ -255,6 +263,7 @@ const TopBarInner: React.FC<TopBarProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    rbacMatrix: topBarRbacMatrix,
   };
   const canOpenSettings = canAccessRoute(topBarCategory, topBarPermState, 'settings');
   const canOpenPreferences = canAccessRoute(topBarCategory, topBarPermState, 'preferences');
@@ -1083,6 +1092,13 @@ const TopBarInner: React.FC<TopBarProps> = ({
                 description: language === 'ar' ? 'دخول سريع بالرمز' : language === 'fr' ? 'Accès rapide PIN' : 'Quick PIN switch',
                 icon: <Lock size={16} strokeWidth={1.5} />,
                 onSelect: () => openFastSwitch(),
+              },
+              {
+                id: 'lock_session',
+                label: t('phase2_sec_lock_now', language),
+                description: t('phase2_sec_lock_now_desc', language),
+                icon: <Shield size={16} strokeWidth={1.5} />,
+                onSelect: () => atriumActions.lockActiveSession('manual_lock'),
               },
               {
                 id: 'wizard',

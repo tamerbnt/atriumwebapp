@@ -1059,6 +1059,178 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- SECTION 16: Phase 2 Step 7 (6.8) — Configurable RBAC, Sensitive Read Audit,
+-- DSR Processing & 100% Public Table RLS Coverage
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_dsr_id uuid := gen_random_uuid();
+  v_unprotected_count int;
+  v_count int;
+  v_res jsonb;
+BEGIN
+  -- Assert EVERY public table has RLS enabled
+  SELECT count(*) INTO v_unprotected_count
+  FROM pg_tables
+  WHERE schemaname = 'public'
+    AND rowsecurity = false;
+  IF v_unprotected_count <> 0 THEN
+    RAISE EXCEPTION 'Found % public tables without Row Level Security enabled', v_unprotected_count;
+  END IF;
+
+  INSERT INTO public.rbac_role_permissions (
+    account_id, business_id, branch_id, category, role_key, resource, action, allowed
+  ) VALUES (
+    v_acc_a, v_biz_a, v_br_a, 'membership_session', 'staff', 'finance', 'export', true
+  );
+
+  INSERT INTO public.data_subject_requests (
+    id, account_id, business_id, branch_id, subject_type, subject_id, subject_name, request_type
+  ) VALUES (
+    v_dsr_id, v_acc_a, v_biz_a, v_br_a, 'patient', 'pat_sec_1', 'Karim Mansouri', 'export'
+  );
+
+  -- Tenant B must not read Tenant A RBAC matrix or DSR records
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.rbac_role_permissions WHERE business_id = v_biz_a;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A rbac_role_permissions';
+  END IF;
+  IF public.can_rbac(v_biz_a, 'finance', 'export') THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly passed can_rbac for Tenant A business';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A owner executes sensitive read audit + dedupe + DSR export processing
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  IF NOT public.can_rbac(v_biz_a, 'rbac', 'edit') THEN
+    RAISE EXCEPTION 'Tenant A owner failed can_rbac check for rbac edit';
+  END IF;
+
+  v_res := public.log_sensitive_read_event(
+    v_biz_a, v_br_a, 'medical_patients', 'Karim Mansouri', 'medical_clinic', 'Doctor', now()
+  );
+  IF (v_res ->> 'recorded')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected initial sensitive read audit to record, got %', v_res;
+  END IF;
+
+  v_res := public.log_sensitive_read_event(
+    v_biz_a, v_br_a, 'medical_patients', 'Karim Mansouri', 'medical_clinic', 'Doctor', now()
+  );
+  IF (v_res ->> 'recorded')::boolean IS TRUE OR (v_res ->> 'reason') <> 'DEDUPED' THEN
+    RAISE EXCEPTION 'Expected duplicate sensitive read within 10s to dedupe, got %', v_res;
+  END IF;
+
+  v_res := public.process_data_subject_request(
+    v_dsr_id, 'export', '{"recordCount": 3}'::jsonb, 'Owner verified export'
+  );
+  IF (v_res ->> 'status') <> 'exported' THEN
+    RAISE EXCEPTION 'Expected DSR exported status, got %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
+-- ============================================================================
+-- SECTION 17: Phase 2 Step 8 (6.9) — Approvals Maker-Checker, Legal Hold
+-- Attachments, Scoped SHA-256 API Keys & Idempotent Signed Webhooks
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_staff_a uuid := '33333333-1111-1111-1111-111111111111';
+  v_rule_id uuid := gen_random_uuid();
+  v_req_id uuid := gen_random_uuid();
+  v_att_id uuid := gen_random_uuid();
+  v_wh_id uuid := gen_random_uuid();
+  v_blocked boolean := false;
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.platform_approval_rules (
+    id, account_id, business_id, branch_id, action_scope, rule_name, threshold_centimes, require_dual_control
+  ) VALUES (
+    v_rule_id, v_acc_a, v_biz_a, v_br_a, 'discount', 'Discount > 10,000 DZD', 1000000, true
+  );
+
+  INSERT INTO public.platform_approval_requests (
+    id, account_id, business_id, branch_id, rule_id, action_scope,
+    entity_type, entity_id, entity_label, amount_centimes, reason, requested_by_staff_id
+  ) VALUES (
+    v_req_id, v_acc_a, v_biz_a, v_br_a, v_rule_id, 'discount',
+    'invoice', 'FAC-2026-009', 'VIP Wholesale Rebate', 1500000, 'Annual commitment', v_staff_a
+  );
+
+  INSERT INTO public.platform_attachments (
+    id, account_id, business_id, branch_id, entity_type, entity_id, entity_label,
+    storage_path, file_name, mime_type, size_bytes, sha256, legal_hold
+  ) VALUES (
+    v_att_id, v_acc_a, v_biz_a, v_br_a, 'invoice', 'FAC-2026-009', 'Contract PDF',
+    v_acc_a::text || '/' || v_biz_a::text || '/contract.pdf', 'contract.pdf', 'application/pdf', 24576,
+    repeat('a', 64), true
+  );
+
+  INSERT INTO public.platform_webhooks (
+    id, account_id, business_id, branch_id, label, endpoint_url,
+    signing_secret_masked, signing_secret_hash
+  ) VALUES (
+    v_wh_id, v_acc_a, v_biz_a, v_br_a, 'ERP Webhook', 'https://hooks.example.dz/events',
+    'whsec_••••9999', repeat('b', 64)
+  );
+
+  -- Tenant B must not read Tenant A approvals, attachments, or webhooks
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.platform_approval_requests WHERE id = v_req_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A platform_approval_requests';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A: purge of legal-hold attachment MUST be blocked; webhook delivery MUST dedupe
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_blocked := false;
+  BEGIN
+    PERFORM public.purge_expired_platform_attachment(v_att_id);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected legal hold attachment purge to be blocked';
+  END IF;
+
+  v_res := public.dispatch_webhook_delivery_idempotent(
+    v_wh_id, 'invoice.issued', 'idem_wh_001', '{"invoice":"FAC-2026-009"}'::jsonb,
+    't=1700000000,v1=' || repeat('c', 64), 'delivered', 200, 'OK'
+  );
+  IF (v_res ->> 'deduped')::boolean IS TRUE THEN
+    RAISE EXCEPTION 'Expected first webhook dispatch not to be deduped';
+  END IF;
+
+  v_res := public.dispatch_webhook_delivery_idempotent(
+    v_wh_id, 'invoice.issued', 'idem_wh_001', '{"invoice":"FAC-2026-009"}'::jsonb,
+    't=1700000000,v1=' || repeat('c', 64), 'delivered', 200, 'OK'
+  );
+  IF (v_res ->> 'deduped')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected duplicate webhook idempotency key to dedupe';
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
+
 
 

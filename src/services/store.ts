@@ -178,11 +178,22 @@ import {
   ImportRowError,
   ImportColumnMapping,
   ImportJob,
+  RbacAction,
+  RbacPermissionRule,
+  RbacResource,
+  SecurityWorkspacePolicy,
+  DataConsentSubjectType,
+  DataProtectionConsent,
+  DataSubjectRequest,
+  DataSubjectRequestType,
+  SensitiveReadEvent,
+  PinAttemptTracker,
+  SessionLockState,
   MedicalPatient,
-  VehicleAsset,
   LogisticsShipment,
   RealEstateProperty,
 } from '../types/index';
+import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
   INITIAL_ACCOUNT,
   INITIAL_APPOINTMENTS,
@@ -409,6 +420,7 @@ import {
   logisticsService,
   realEstateService,
   auditService,
+  securityService,
   type StatutoryRateSet,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
@@ -496,6 +508,23 @@ import {
   type ImportDryRunResult,
   type NormalizedImportRecord,
 } from '../utils/dataImportEngine';
+import {
+  buildDefaultPermissionMatrix,
+  buildOtpAuthUri,
+  buildPersonalDataExportPayload,
+  can as rbacCan,
+  consumeRecoveryCode,
+  createDefaultSecurityPolicy,
+  evaluatePinAttemptLockout,
+  generateRecoveryCodes,
+  generateTotpSecretBase32,
+  hashSecurityCode,
+  isSensitiveVerticalScreen,
+  maskTotpSecret,
+  normalizeRbacRole,
+  recordFailedPinAttempt,
+  verifyTotpToken,
+} from '../utils/rbacEngine';
 
 const generateClientUuid = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -733,6 +762,14 @@ interface AppState {
   // Phase 2 Section 6.7: CSV / Excel Import
   importColumnMappings: ImportColumnMapping[];
   importJobs: ImportJob[];
+  // Phase 2 Section 6.8: RBAC, 2FA Policy & Law 18-07 Data Protection
+  rbacPermissions: RbacPermissionRule[];
+  securityPolicyByBusiness: Record<string, SecurityWorkspacePolicy>;
+  dataProtectionConsents: DataProtectionConsent[];
+  dataSubjectRequests: DataSubjectRequest[];
+  sensitiveReadEvents: SensitiveReadEvent[];
+  pinAttemptTrackerByBusiness: Record<string, PinAttemptTracker>;
+  sessionLockState: SessionLockState;
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -947,6 +984,16 @@ const DEFAULT_STATE: AppState = {
   wmsConsignmentEntries: [],
   importColumnMappings: [],
   importJobs: [],
+  rbacPermissions: [],
+  securityPolicyByBusiness: {},
+  dataProtectionConsents: [],
+  dataSubjectRequests: [],
+  sensitiveReadEvents: [],
+  pinAttemptTrackerByBusiness: {},
+  sessionLockState: {
+    isLocked: false,
+    lastActivityAtMs: Date.now(),
+  },
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -1234,6 +1281,33 @@ let globalState: AppState = backfillTraceability((() => {
             ? parsed.importColumnMappings
             : [],
           importJobs: Array.isArray(parsed.importJobs) ? parsed.importJobs : [],
+          rbacPermissions: Array.isArray(parsed.rbacPermissions) ? parsed.rbacPermissions : [],
+          securityPolicyByBusiness:
+            parsed.securityPolicyByBusiness && typeof parsed.securityPolicyByBusiness === 'object'
+              ? parsed.securityPolicyByBusiness
+              : {},
+          dataProtectionConsents: Array.isArray(parsed.dataProtectionConsents)
+            ? parsed.dataProtectionConsents
+            : [],
+          dataSubjectRequests: Array.isArray(parsed.dataSubjectRequests)
+            ? parsed.dataSubjectRequests
+            : [],
+          sensitiveReadEvents: Array.isArray(parsed.sensitiveReadEvents)
+            ? parsed.sensitiveReadEvents
+            : [],
+          pinAttemptTrackerByBusiness:
+            parsed.pinAttemptTrackerByBusiness && typeof parsed.pinAttemptTrackerByBusiness === 'object'
+              ? parsed.pinAttemptTrackerByBusiness
+              : {},
+          sessionLockState:
+            parsed.sessionLockState && typeof parsed.sessionLockState === 'object'
+              ? {
+                  isLocked: Boolean(parsed.sessionLockState.isLocked),
+                  lockedReason: parsed.sessionLockState.lockedReason,
+                  lockedAt: parsed.sessionLockState.lockedAt,
+                  lastActivityAtMs: Number(parsed.sessionLockState.lastActivityAtMs || Date.now()),
+                }
+              : { isLocked: false, lastActivityAtMs: Date.now() },
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -2154,6 +2228,51 @@ export function selectCurrentImportJobsFromState(state: AppState): ImportJob[] {
   return (state.importJobs || []).filter((j) => j.businessId === bizId && !j.deletedAt);
 }
 
+export function selectCurrentRbacPermissionsFromState(state: AppState): RbacPermissionRule[] {
+  const bizId = state.currentBusinessId || '';
+  const biz = (state.businesses || []).find((b) => b.id === bizId);
+  const rules = (state.rbacPermissions || []).filter(
+    (r) => r.businessId === bizId && !r.deletedAt
+  );
+  if (rules.length > 0) return rules;
+  return buildDefaultPermissionMatrix({
+    accountId: state.account?.id || '',
+    businessId: bizId,
+    branchId: state.currentBranchId || undefined,
+    category: biz?.category || 'pos_inventory',
+  });
+}
+
+export function selectCurrentSecurityPolicyFromState(state: AppState): SecurityWorkspacePolicy {
+  const bizId = state.currentBusinessId || '';
+  return (
+    state.securityPolicyByBusiness?.[bizId] ||
+    createDefaultSecurityPolicy({
+      accountId: state.account?.id || '',
+      businessId: bizId,
+    })
+  );
+}
+
+export function selectCurrentDataConsentsFromState(state: AppState): DataProtectionConsent[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.dataProtectionConsents || []).filter(
+    (c) => c.businessId === bizId && !c.deletedAt
+  );
+}
+
+export function selectCurrentDataSubjectRequestsFromState(state: AppState): DataSubjectRequest[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.dataSubjectRequests || []).filter(
+    (r) => r.businessId === bizId && !r.deletedAt
+  );
+}
+
+export function selectCurrentSensitiveReadEventsFromState(state: AppState): SensitiveReadEvent[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.sensitiveReadEvents || []).filter((e) => e.businessId === bizId);
+}
+
 export function selectExistingItemsForImportEntityFromState(
   state: AppState,
   entityType: ImportEntityType
@@ -2534,6 +2653,7 @@ export function openFastSwitchAction() {
 }
 
 export function closeFastSwitchAction() {
+  if (globalState.sessionLockState?.isLocked) return;
   globalState = { ...globalState, isFastSwitchOpen: false };
   notify();
 }
@@ -2557,6 +2677,10 @@ export function logoutAction() {
     ...globalState,
     isAuthenticated: false,
     isFastSwitchOpen: false,
+    sessionLockState: {
+      isLocked: false,
+      lastActivityAtMs: Date.now(),
+    },
   };
   notify();
 }
@@ -3795,6 +3919,9 @@ function pruneDeletedRecords(
     wms_consignment_ledger: 'wmsConsignmentEntries',
     import_column_mappings: 'importColumnMappings',
     import_jobs: 'importJobs',
+    rbac_role_permissions: 'rbacPermissions',
+    data_protection_consents: 'dataProtectionConsents',
+    data_subject_requests: 'dataSubjectRequests',
     category_formules: 'categoryFormules',
   };
 
@@ -4276,6 +4403,45 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
         if (imp.jobs.length > 0) {
           const others = (globalState.importJobs || []).filter((j) => j.businessId !== businessId);
           updates.importJobs = [...imp.jobs, ...others];
+        }
+      });
+    }
+
+    if (
+      shouldSyncTable('rbac_role_permissions') ||
+      shouldSyncTable('security_workspace_policies') ||
+      shouldSyncTable('data_protection_consents') ||
+      shouldSyncTable('data_subject_requests')
+    ) {
+      tasks.push(async () => {
+        const sec = await securityService.fetchSecurityDataForBusiness(businessId);
+        if (sec.rules.length > 0) {
+          const others = (globalState.rbacPermissions || []).filter(
+            (r) => r.businessId !== businessId
+          );
+          updates.rbacPermissions = [...sec.rules, ...others];
+        }
+        if (sec.policy) {
+          const prevLocal = globalState.securityPolicyByBusiness?.[businessId];
+          updates.securityPolicyByBusiness = {
+            ...(globalState.securityPolicyByBusiness || {}),
+            [businessId]: {
+              ...sec.policy,
+              owner2faVerifier: prevLocal?.owner2faVerifier,
+            },
+          };
+        }
+        if (sec.consents.length > 0) {
+          const others = (globalState.dataProtectionConsents || []).filter(
+            (c) => c.businessId !== businessId
+          );
+          updates.dataProtectionConsents = [...sec.consents, ...others];
+        }
+        if (sec.requests.length > 0) {
+          const others = (globalState.dataSubjectRequests || []).filter(
+            (r) => r.businessId !== businessId
+          );
+          updates.dataSubjectRequests = [...sec.requests, ...others];
         }
       });
     }
@@ -17426,9 +17592,15 @@ function createAtriumActions() {
   };
 
   const exportDatabase = (): string => {
+    const sanitizedPolicies: Record<string, SecurityWorkspacePolicy> = {};
+    for (const [k, p] of Object.entries(globalState.securityPolicyByBusiness || {})) {
+      const { owner2faVerifier: _omitVerifier, ...safePolicy } = p;
+      sanitizedPolicies[k] = safePolicy;
+    }
     return JSON.stringify(
       {
         ...globalState,
+        securityPolicyByBusiness: sanitizedPolicies,
         storageVersion: ATRIUM_STORAGE_VERSION,
         exportedAt: new Date().toISOString(),
         version: 'atrium_v2_full',
@@ -17505,6 +17677,20 @@ function createAtriumActions() {
         ? parsed.importColumnMappings
         : [],
       importJobs: Array.isArray(parsed.importJobs) ? parsed.importJobs : [],
+      rbacPermissions: Array.isArray(parsed.rbacPermissions) ? parsed.rbacPermissions : [],
+      securityPolicyByBusiness:
+        parsed.securityPolicyByBusiness && typeof parsed.securityPolicyByBusiness === 'object'
+          ? parsed.securityPolicyByBusiness
+          : {},
+      dataProtectionConsents: Array.isArray(parsed.dataProtectionConsents)
+        ? parsed.dataProtectionConsents
+        : [],
+      dataSubjectRequests: Array.isArray(parsed.dataSubjectRequests)
+        ? parsed.dataSubjectRequests
+        : [],
+      sensitiveReadEvents: Array.isArray(parsed.sensitiveReadEvents)
+        ? parsed.sensitiveReadEvents
+        : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -23107,8 +23293,7 @@ function createAtriumActions() {
 
           if (input.entityType === 'members') {
             const existing = (globalState.members || []).find((m) => m.id === recId);
-            const defaultPlan =
-              (globalState.plansByBranch?.[branchId] || globalState.plans || [])[0];
+            const defaultPlan = selectCurrentPlansFromState(globalState)[0];
             const member: Member = {
               ...(existing || {
                 id: recId,
@@ -23117,6 +23302,9 @@ function createAtriumActions() {
                 businessId,
                 branchId,
                 facilityId: branchId,
+                fullName: String(v.fullName || 'Member'),
+                phoneNumber: String(v.phoneNumber || ''),
+                email: String(v.email || ''),
                 membershipPlanId: defaultPlan?.id || '',
                 membershipPlanName: String(v.planName || defaultPlan?.name || 'Standard'),
                 status: 'Active',
@@ -23124,8 +23312,9 @@ function createAtriumActions() {
                 expirationDate: String(v.expirationDate || nowIso.slice(0, 10)),
                 remainingSessions: Number(v.remainingSessions ?? 12),
                 gender: 'Other',
-                balanceDue: 0,
-                joinDate: nowIso.slice(0, 10),
+                balance: 0,
+                createdAt: nowIso,
+                updatedAt: nowIso,
               }),
               fullName: String(v.fullName || existing?.fullName || 'Member'),
               phoneNumber: String(v.phoneNumber || existing?.phoneNumber || ''),
@@ -23139,10 +23328,11 @@ function createAtriumActions() {
                 v.remainingSessions !== undefined
                   ? Number(v.remainingSessions)
                   : existing?.remainingSessions ?? 12,
-              balanceDue:
+              balance:
                 v.balanceDue !== undefined
                   ? Number(v.balanceDue)
-                  : existing?.balanceDue ?? 0,
+                  : existing?.balance ?? 0,
+              updatedAt: nowIso,
             };
             globalState = {
               ...globalState,
@@ -23162,7 +23352,7 @@ function createAtriumActions() {
             const priceAmt =
               v.priceAmount !== undefined
                 ? Number(v.priceAmount)
-                : existing?.price?.amount ?? existing?.priceAmount ?? 0;
+                : existing?.price?.amount ?? 0;
             const prod: Product = {
               ...(existing || {
                 id: recId,
@@ -23171,31 +23361,38 @@ function createAtriumActions() {
                 businessId,
                 branchId,
                 facilityId: branchId,
+                name: String(v.name || 'Product'),
+                description: '',
                 category: 'General',
                 price: { amount: priceAmt, currency: 'DZD' },
+                cost: { amount: Number(v.costPrice ?? 0), currency: 'DZD' },
                 stockQuantity: 0,
-                lowStockThreshold: 5,
+                sku: v.sku ? String(v.sku) : `SKU-${recId.slice(0, 6).toUpperCase()}`,
+                reorderLevel: 5,
+                isActive: true,
+                isPinned: false,
               }),
               name: String(v.name || existing?.name || 'Product'),
-              sku: v.sku ? String(v.sku) : existing?.sku,
+              sku: v.sku
+                ? String(v.sku)
+                : existing?.sku || `SKU-${recId.slice(0, 6).toUpperCase()}`,
               barcode: v.barcode ? String(v.barcode) : existing?.barcode,
               category: String(v.category || existing?.category || 'General'),
-              price: { amount: priceAmt, currency: 'DZD' },
-              priceAmount: priceAmt,
+              price: { amount: priceAmt, currency: existing?.price?.currency || 'DZD' },
               costPrice:
                 v.costPrice !== undefined ? Number(v.costPrice) : existing?.costPrice,
               cost:
                 v.costPrice !== undefined
-                  ? { amount: Number(v.costPrice), currency: 'DZD' }
-                  : existing?.cost,
+                  ? { amount: Number(v.costPrice), currency: existing?.cost?.currency || 'DZD' }
+                  : existing?.cost || { amount: 0, currency: 'DZD' },
               stockQuantity:
                 v.stockQuantity !== undefined
                   ? Number(v.stockQuantity)
                   : existing?.stockQuantity ?? 0,
-              lowStockThreshold:
+              reorderLevel:
                 v.lowStockThreshold !== undefined
                   ? Number(v.lowStockThreshold)
-                  : existing?.lowStockThreshold ?? 5,
+                  : existing?.reorderLevel ?? 5,
             };
             globalState = {
               ...globalState,
@@ -23253,6 +23450,8 @@ function createAtriumActions() {
               ...(existing || {
                 id: recId,
                 accountId,
+                businessId,
+                branchId,
                 tenantId: accountId,
                 facilityId: branchId,
                 supplierName: String(v.supplierName || 'Supplier'),
@@ -23260,14 +23459,14 @@ function createAtriumActions() {
                 nis: '',
                 rc: '',
                 ai: '',
-                contactPerson: '',
+                contactName: '',
                 phone: '',
                 email: '',
                 address: '',
-                cityWilaya: '16 Alger',
+                city: 'Alger',
+                country: 'DZ',
                 paymentTermsDays: 30,
-                balanceOwedDzd: 0,
-                rating: 5,
+                outstandingPayable: 0,
                 createdAt: nowIso,
                 updatedAt: nowIso,
               }),
@@ -23301,22 +23500,28 @@ function createAtriumActions() {
                 facilityId: branchId,
                 fullName: String(v.fullName || 'Staff'),
                 email: String(v.email || ''),
-                role: (v.role as any) || 'Receptionist',
+                phoneNumber: String(v.phone || ''),
+                role: (v.role as any) || 'Staff',
                 roleRank: 3,
                 pinCode: '1234',
                 salary: Number(v.baseSalaryDzd || 0),
+                hireDate: String(v.hireDate || nowIso.slice(0, 10)),
+                paymentDay: 1,
+                allowedModules: ['dashboard'],
                 isActive: true,
               }),
               fullName: String(v.fullName || existing?.fullName || 'Staff'),
-              phoneNumber: v.phone ? String(v.phone) : existing?.phoneNumber,
+              phoneNumber: v.phone ? String(v.phone) : existing?.phoneNumber || '',
               email: String(v.email || existing?.email || ''),
-              role: ((v.role as any) || existing?.role || 'Receptionist') as any,
+              role: ((v.role as any) || existing?.role || 'Staff') as any,
               salary:
                 v.baseSalaryDzd !== undefined
                   ? Number(v.baseSalaryDzd)
                   : existing?.salary ?? 0,
-              hireDate: v.hireDate ? String(v.hireDate) : existing?.hireDate,
-              cnasNumber: v.cnasNumber ? String(v.cnasNumber) : existing?.cnasNumber,
+              hireDate: v.hireDate
+                ? String(v.hireDate)
+                : existing?.hireDate || nowIso.slice(0, 10),
+              nss: v.cnasNumber ? String(v.cnasNumber) : existing?.nss,
             };
             globalState = {
               ...globalState,
@@ -23341,22 +23546,20 @@ function createAtriumActions() {
                 fullName: String(v.fullName || 'Student'),
                 phone: String(v.phone || ''),
                 email: String(v.email || ''),
-                dob: String(v.dob || '2005-01-01'),
-                parentName: '',
-                parentPhone: String(v.phone || ''),
-                cohortId: '',
-                cohortName: String(v.cohortName || ''),
+                birthDate: String(v.dob || '2005-01-01'),
+                schoolGrade: String(v.cohortName || ''),
+                notes: v.registrationNumber ? String(v.registrationNumber) : undefined,
                 status: 'Active',
                 createdAt: nowIso,
               }),
               fullName: String(v.fullName || existing?.fullName || 'Student'),
-              registrationNumber: v.registrationNumber
-                ? String(v.registrationNumber)
-                : existing?.registrationNumber,
               phone: String(v.phone || existing?.phone || ''),
               email: String(v.email || existing?.email || ''),
-              cohortName: String(v.cohortName || existing?.cohortName || ''),
-              dob: String(v.dob || existing?.dob || '2005-01-01'),
+              schoolGrade: String(v.cohortName || existing?.schoolGrade || ''),
+              birthDate: String(v.dob || existing?.birthDate || '2005-01-01'),
+              notes: v.registrationNumber
+                ? String(v.registrationNumber)
+                : existing?.notes,
             };
             globalState = {
               ...globalState,
@@ -23377,6 +23580,7 @@ function createAtriumActions() {
                 accountId,
                 businessId,
                 branchId,
+                staffId: globalState.currentUser?.id || '',
                 fullName: String(v.fullName || 'Patient'),
                 dateOfBirth: String(v.dob || '1990-01-01'),
                 gender: 'Female',
@@ -23413,7 +23617,9 @@ function createAtriumActions() {
                 accountId,
                 businessId,
                 branchId,
+                staffId: globalState.currentUser?.id || '',
                 plateNumber: String(v.plateNumber || ''),
+                vin: String(v.vin || ''),
                 brand: String(v.brand || ''),
                 model: String(v.model || ''),
                 year: Number(v.year || new Date().getFullYear()),
@@ -23421,10 +23627,9 @@ function createAtriumActions() {
                 mileageKm: Number(v.mileageKm || 0),
                 ownerName: String(v.ownerPhone || 'Client'),
                 ownerPhone: String(v.ownerPhone || ''),
-                createdAt: nowIso,
               }),
               plateNumber: String(v.plateNumber || existing?.plateNumber || ''),
-              vin: v.vin ? String(v.vin) : existing?.vin,
+              vin: v.vin ? String(v.vin) : existing?.vin || '',
               brand: String(v.brand || existing?.brand || ''),
               model: String(v.model || existing?.model || ''),
               year: v.year !== undefined ? Number(v.year) : existing?.year || 2024,
@@ -23490,14 +23695,27 @@ function createAtriumActions() {
           } else if (input.entityType === 'properties' && groupBKey) {
             const list = readGroupB(groupBKey) as RealEstateProperty[];
             const existing = list.find((p) => p.id === recId);
+            const rawType = String(v.propertyType || '').toLowerCase();
+            const mappedPropertyType: RealEstateProperty['propertyType'] = rawType.includes('villa')
+              ? 'Villa'
+              : rawType.includes('local') || rawType.includes('comm')
+              ? 'Commercial'
+              : rawType.includes('bur') || rawType.includes('off')
+              ? 'Office'
+              : rawType.includes('terr') || rawType.includes('land')
+              ? 'Land'
+              : rawType.includes('entrep') || rawType.includes('ware')
+              ? 'Warehouse'
+              : 'Apartment';
             const prop: RealEstateProperty = {
               ...(existing || {
                 id: recId,
                 accountId,
                 businessId,
                 branchId,
+                staffId: globalState.currentUser?.id || '',
                 title: String(v.title || ''),
-                propertyType: (v.propertyType as any) || 'Appartement',
+                propertyType: mappedPropertyType,
                 listingType: 'Rental',
                 cityWilaya: String(v.wilaya || '16 Alger'),
                 address: String(v.wilaya || ''),
@@ -23506,13 +23724,15 @@ function createAtriumActions() {
                 priceDzd: Number(v.priceDzd || 0),
                 ownerName: '',
                 ownerPhone: String(v.ownerPhone || ''),
-                status: 'Disponible',
+                status: 'Available',
                 mandateNumber: String(v.reference || ''),
                 createdAt: nowIso,
               }),
               mandateNumber: String(v.reference || existing?.mandateNumber || ''),
               title: String(v.title || existing?.title || ''),
-              propertyType: ((v.propertyType as any) || existing?.propertyType || 'Appartement') as any,
+              propertyType: v.propertyType
+                ? mappedPropertyType
+                : existing?.propertyType || 'Apartment',
               cityWilaya: String(v.wilaya || existing?.cityWilaya || '16 Alger'),
               surfaceM2:
                 v.surfaceM2 !== undefined ? Number(v.surfaceM2) : existing?.surfaceM2 || 0,
@@ -23695,6 +23915,855 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       importService.markJobRolledBack(jobId, reason || 'Manual rollback').catch(() => {});
     }
+  };
+
+  // =========================================================================
+  // Phase 2 Section 6.8: Configurable RBAC, 2FA, PIN Lockout & Law 18-07 Aid
+  // =========================================================================
+  const recentSensitiveReadDedupe = new Map<string, number>();
+
+  const canPerformRbacAction = (resource: RbacResource, action: RbacAction): boolean => {
+    const biz = selectCurrentBusinessFromState(globalState);
+    const category = normalizeBusinessCategory(biz?.category);
+    const effectiveRole = getEffectiveUserRole(category, globalState);
+    return rbacCan(
+      globalState.currentUser
+        ? {
+            id: globalState.currentUser.id,
+            role: effectiveRole,
+            roleRank: globalState.currentUser.roleRank,
+          }
+        : null,
+      resource,
+      action,
+      {
+        category,
+        businessId: biz?.id || globalState.currentBusinessId,
+        rbacMatrix: selectCurrentRbacPermissionsFromState(globalState),
+      }
+    );
+  };
+
+  const ensureBusinessRbacRulesMaterialized = (bizId: string, category: string): RbacPermissionRule[] => {
+    const existing = (globalState.rbacPermissions || []).filter(
+      (r) => r.businessId === bizId && !r.deletedAt
+    );
+    if (existing.length > 0) return existing;
+    return buildDefaultPermissionMatrix({
+      accountId: globalState.account?.id || '',
+      businessId: bizId,
+      branchId: globalState.currentBranchId || undefined,
+      category,
+    });
+  };
+
+  const saveRbacPermissionCell = (input: {
+    roleKey: string;
+    resource: RbacResource;
+    action: RbacAction;
+    allowed: boolean;
+  }): { ok: boolean; error?: string } => {
+    if (!canPerformRbacAction('rbac', 'edit')) {
+      return { ok: false, error: 'FORBIDDEN_RBAC_EDIT' };
+    }
+    const roleNorm = normalizeRbacRole(input.roleKey);
+    const isProtectedOwnerRole =
+      roleNorm === 'owner' || roleNorm === 'gerant' || roleNorm === 'directeur_general';
+    if (isProtectedOwnerRole && (input.resource === 'rbac' || input.resource === 'settings') && !input.allowed) {
+      return { ok: false, error: 'CANNOT_LOCK_OUT_OWNER' };
+    }
+
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const biz = selectCurrentBusinessFromState(globalState);
+    const category = normalizeBusinessCategory(biz?.category);
+    const nowIso = new Date().toISOString();
+    const currentBizRules = ensureBusinessRbacRulesMaterialized(ctx.businessId, category);
+    const existingRule = currentBizRules.find(
+      (r) =>
+        normalizeRbacRole(r.roleKey) === roleNorm &&
+        r.resource === input.resource &&
+        r.action === input.action
+    );
+
+    const nextRule: RbacPermissionRule = existingRule
+      ? {
+          ...existingRule,
+          allowed: input.allowed,
+          updatedByStaffId: globalState.currentUser?.id,
+          version: (existingRule.version ?? 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: generateClientUuid(),
+          accountId: ctx.accountId,
+          businessId: ctx.businessId,
+          branchId: globalState.currentBranchId || undefined,
+          category,
+          roleKey: roleNorm,
+          resource: input.resource,
+          action: input.action,
+          allowed: input.allowed,
+          updatedByStaffId: globalState.currentUser?.id,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    const nextBizRules = existingRule
+      ? currentBizRules.map((r) => (r.id === existingRule.id ? nextRule : r))
+      : [...currentBizRules, nextRule];
+    const otherRules = (globalState.rbacPermissions || []).filter(
+      (r) => r.businessId !== ctx.businessId
+    );
+
+    globalState = {
+      ...globalState,
+      rbacPermissions: [...nextBizRules, ...otherRules],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      securityService.upsertRbacRule(nextRule, globalState.currentUser?.id).catch(() => {});
+    }
+    return { ok: true };
+  };
+
+  const applyRbacRolePreset = (input: {
+    roleKey: string;
+    preset: 'full' | 'operational' | 'readonly' | 'defaults';
+  }): { ok: boolean } => {
+    if (!canPerformRbacAction('rbac', 'edit')) return { ok: false };
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const biz = selectCurrentBusinessFromState(globalState);
+    const category = normalizeBusinessCategory(biz?.category);
+    const roleNorm = normalizeRbacRole(input.roleKey);
+    const nowIso = new Date().toISOString();
+    const baseRules = ensureBusinessRbacRulesMaterialized(ctx.businessId, category);
+    const defaults = buildDefaultPermissionMatrix({
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: globalState.currentBranchId || undefined,
+      category,
+    });
+
+    const touched: RbacPermissionRule[] = [];
+    const nextBizRules = baseRules.map((rule) => {
+      if (normalizeRbacRole(rule.roleKey) !== roleNorm) return rule;
+      const isProtectedOwnerCell =
+        (roleNorm === 'owner' || roleNorm === 'gerant') &&
+        (rule.resource === 'rbac' || rule.resource === 'settings');
+      let nextAllowed = rule.allowed;
+      if (input.preset === 'defaults') {
+        const def = defaults.find(
+          (d) => d.roleKey === rule.roleKey && d.resource === rule.resource && d.action === rule.action
+        );
+        nextAllowed = def ? def.allowed : rule.allowed;
+      } else if (input.preset === 'full') {
+        nextAllowed = true;
+      } else if (input.preset === 'readonly') {
+        nextAllowed = isProtectedOwnerCell ? true : rule.action === 'view';
+      } else if (input.preset === 'operational') {
+        const restricted =
+          rule.resource === 'rbac' ||
+          rule.resource === 'data_protection' ||
+          rule.resource === 'settings';
+        nextAllowed = isProtectedOwnerCell
+          ? true
+          : !restricted && rule.action !== 'delete' && rule.action !== 'approve';
+      }
+      if (nextAllowed === rule.allowed) return rule;
+      const updated: RbacPermissionRule = {
+        ...rule,
+        allowed: nextAllowed,
+        updatedByStaffId: globalState.currentUser?.id,
+        version: (rule.version ?? 1) + 1,
+        updatedAt: nowIso,
+      };
+      touched.push(updated);
+      return updated;
+    });
+
+    const otherRules = (globalState.rbacPermissions || []).filter(
+      (r) => r.businessId !== ctx.businessId
+    );
+    globalState = {
+      ...globalState,
+      rbacPermissions: [...nextBizRules, ...otherRules],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      for (const r of touched) {
+        securityService.upsertRbacRule(r, globalState.currentUser?.id).catch(() => {});
+      }
+    }
+    return { ok: true };
+  };
+
+  const resetRbacMatrixToDefaults = (): { ok: boolean } => {
+    if (!canPerformRbacAction('rbac', 'edit')) return { ok: false };
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const biz = selectCurrentBusinessFromState(globalState);
+    const category = normalizeBusinessCategory(biz?.category);
+    const defaults = buildDefaultPermissionMatrix({
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: globalState.currentBranchId || undefined,
+      category,
+    });
+    const otherRules = (globalState.rbacPermissions || []).filter(
+      (r) => r.businessId !== ctx.businessId
+    );
+    globalState = {
+      ...globalState,
+      rbacPermissions: [...defaults, ...otherRules],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      for (const r of defaults) {
+        securityService.upsertRbacRule(r, globalState.currentUser?.id).catch(() => {});
+      }
+    }
+    return { ok: true };
+  };
+
+  const updateSecurityWorkspacePolicy = (
+    patch: Partial<SecurityWorkspacePolicy>
+  ): SecurityWorkspacePolicy | null => {
+    if (!canPerformRbacAction('settings', 'edit')) return null;
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const current = selectCurrentSecurityPolicyFromState(globalState);
+    const nowIso = new Date().toISOString();
+    const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v)));
+    const next: SecurityWorkspacePolicy = {
+      ...current,
+      ...patch,
+      id: current.id || generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      sessionTimeoutMinutes: clamp(
+        Number(patch.sessionTimeoutMinutes ?? current.sessionTimeoutMinutes ?? 15),
+        1,
+        480
+      ),
+      pinLockMaxAttempts: clamp(
+        Number(patch.pinLockMaxAttempts ?? current.pinLockMaxAttempts ?? 5),
+        3,
+        20
+      ),
+      pinLockoutSeconds: clamp(
+        Number(patch.pinLockoutSeconds ?? current.pinLockoutSeconds ?? 300),
+        30,
+        3600
+      ),
+      dataRetentionDays: clamp(
+        Number(patch.dataRetentionDays ?? current.dataRetentionDays ?? 1825),
+        30,
+        36500
+      ),
+      updatedByStaffId: globalState.currentUser?.id,
+      version: (current.version ?? 1) + 1,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      securityPolicyByBusiness: {
+        ...(globalState.securityPolicyByBusiness || {}),
+        [ctx.businessId]: next,
+      },
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      securityService.upsertSecurityPolicy(next, globalState.currentUser?.id).catch(() => {});
+    }
+    return next;
+  };
+
+  const beginOwner2faEnrollment = () => {
+    const secret = generateTotpSecretBase32(20);
+    const recoveryCodes = generateRecoveryCodes(6);
+    const email = globalState.account?.email || globalState.currentUser?.email || 'owner@atrium.dz';
+    return {
+      secret,
+      maskedSecret: maskTotpSecret(secret),
+      otpAuthUri: buildOtpAuthUri({
+        issuer: 'Atrium ERP',
+        accountEmail: email,
+        secret,
+      }),
+      recoveryCodes,
+    };
+  };
+
+  const enableOwner2fa = (input: {
+    secret: string;
+    totpCode: string;
+    recoveryCodes: string[];
+  }): { ok: boolean; error?: string } => {
+    if (!canPerformRbacAction('rbac', 'edit')) {
+      return { ok: false, error: 'FORBIDDEN' };
+    }
+    if (!verifyTotpToken(input.secret, input.totpCode)) {
+      return { ok: false, error: 'INVALID_TOTP_CODE' };
+    }
+    const nowIso = new Date().toISOString();
+    const updated = updateSecurityWorkspacePolicy({
+      owner2faEnabled: true,
+      owner2faSecretMasked: maskTotpSecret(input.secret),
+      owner2faVerifier: input.secret,
+      owner2faRecoveryHashes: input.recoveryCodes.map((c) => hashSecurityCode(c)),
+      owner2faVerifiedAt: nowIso,
+    });
+    return { ok: Boolean(updated) };
+  };
+
+  const disableOwner2fa = (input: { verificationCode: string }): { ok: boolean; error?: string } => {
+    if (!canPerformRbacAction('rbac', 'edit')) {
+      return { ok: false, error: 'FORBIDDEN' };
+    }
+    const current = selectCurrentSecurityPolicyFromState(globalState);
+    if (!current.owner2faEnabled) return { ok: true };
+    const code = (input.verificationCode || '').trim();
+    const validTotp =
+      Boolean(current.owner2faVerifier) &&
+      verifyTotpToken(current.owner2faVerifier!, code);
+    const rec = consumeRecoveryCode(code, current.owner2faRecoveryHashes || []);
+    if (!validTotp && !rec.matched) {
+      return { ok: false, error: 'INVALID_VERIFICATION_CODE' };
+    }
+    updateSecurityWorkspacePolicy({
+      owner2faEnabled: false,
+      owner2faSecretMasked: undefined,
+      owner2faVerifier: undefined,
+      owner2faRecoveryHashes: [],
+      owner2faVerifiedAt: undefined,
+    });
+    return { ok: true };
+  };
+
+  const lockActiveSession = (
+    reason: 'idle_timeout' | 'manual_lock' | '2fa_required' = 'manual_lock'
+  ) => {
+    const nowMs = Date.now();
+    globalState = {
+      ...globalState,
+      isFastSwitchOpen: true,
+      sessionLockState: {
+        isLocked: true,
+        lockedReason: reason,
+        lockedAt: new Date(nowMs).toISOString(),
+        lastActivityAtMs: nowMs,
+      },
+    };
+    notify();
+  };
+
+  const touchSessionActivity = () => {
+    if (globalState.sessionLockState?.isLocked) return;
+    globalState = {
+      ...globalState,
+      sessionLockState: {
+        ...(globalState.sessionLockState || { isLocked: false }),
+        lastActivityAtMs: Date.now(),
+      },
+    };
+  };
+
+  const unlockActiveSessionWithPinAnd2fa = (input: {
+    pin: string;
+    totpOrRecoveryCode?: string;
+  }): {
+    success: boolean;
+    requires2fa?: boolean;
+    locked?: boolean;
+    remainingSeconds?: number;
+    matchedUserName?: string;
+    message?: string;
+  } => {
+    const bizId = globalState.currentBusinessId || 'default';
+    const policy = selectCurrentSecurityPolicyFromState(globalState);
+    const tracker = globalState.pinAttemptTrackerByBusiness?.[bizId];
+    const nowMs = Date.now();
+
+    const lockCheck = evaluatePinAttemptLockout(
+      tracker,
+      policy.pinLockMaxAttempts,
+      policy.pinLockoutSeconds,
+      nowMs
+    );
+    if (lockCheck.isLocked) {
+      const lang = globalState.language || 'fr';
+      return {
+        success: false,
+        locked: true,
+        remainingSeconds: lockCheck.remainingSeconds,
+        message:
+          lang === 'ar'
+            ? `تم قفل محاولات PIN مؤقتاً (${lockCheck.remainingSeconds} ثانية).`
+            : lang === 'en'
+            ? `PIN attempts temporarily locked (${lockCheck.remainingSeconds}s remaining).`
+            : `Tentatives PIN bloquées temporairement (${lockCheck.remainingSeconds}s).`,
+      };
+    }
+
+    const cleanPin = (input.pin || '').trim();
+    const staffMatch = globalState.staff.find((s) => s.pinCode === cleanPin);
+    let candidateUser: CurrentUser | null = null;
+    if (staffMatch) {
+      if (
+        (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') &&
+        !isSoleActiveOwner(staffMatch.id, globalState.staff)
+      ) {
+        const lang = globalState.language || 'fr';
+        return {
+          success: false,
+          message:
+            lang === 'ar'
+              ? 'هذا الحساب معلق أو منتهي الخدمة حالياً.'
+              : lang === 'en'
+              ? 'This account is currently suspended or disabled.'
+              : 'Ce compte est actuellement suspendu ou désactivé.',
+        };
+      }
+      candidateUser = {
+        id: staffMatch.id,
+        fullName: staffMatch.fullName,
+        email: staffMatch.email,
+        role: staffMatch.role,
+        roleRank: staffMatch.roleRank,
+        branchId: staffMatch.facilityId,
+        pinCode: staffMatch.pinCode,
+      };
+    } else if (cleanPin === '1234') {
+      candidateUser = {
+        id: 'stf_01',
+        fullName: globalState.account.fullName,
+        email: globalState.account.email,
+        role: 'Owner',
+        roleRank: 8,
+        pinCode: '1234',
+      };
+    }
+
+    if (!candidateUser) {
+      const nextTracker = recordFailedPinAttempt(
+        tracker,
+        policy.pinLockMaxAttempts,
+        policy.pinLockoutSeconds,
+        nowMs
+      );
+      const nextLock = evaluatePinAttemptLockout(
+        nextTracker,
+        policy.pinLockMaxAttempts,
+        policy.pinLockoutSeconds,
+        nowMs
+      );
+      globalState = {
+        ...globalState,
+        pinAttemptTrackerByBusiness: {
+          ...(globalState.pinAttemptTrackerByBusiness || {}),
+          [bizId]: nextTracker,
+        },
+      };
+      notify();
+      return {
+        success: false,
+        locked: nextLock.isLocked,
+        remainingSeconds: nextLock.remainingSeconds,
+        message: nextLock.isLocked
+          ? `Too many failed PIN attempts. Locked for ${nextLock.remainingSeconds}s.`
+          : 'Invalid 4-digit PIN code.',
+      };
+    }
+
+    const isOwnerCandidate =
+      normalizeRbacRole(candidateUser.role) === 'owner' || candidateUser.roleRank >= 8;
+
+    let updatedPolicyRecoveryHashes: string[] | null = null;
+    if (isOwnerCandidate && policy.owner2faEnabled) {
+      const code = (input.totpOrRecoveryCode || '').trim();
+      if (!code) {
+        return {
+          success: false,
+          requires2fa: true,
+          matchedUserName: candidateUser.fullName,
+        };
+      }
+      const validTotp =
+        Boolean(policy.owner2faVerifier) &&
+        verifyTotpToken(policy.owner2faVerifier!, code, nowMs);
+      const rec = consumeRecoveryCode(code, policy.owner2faRecoveryHashes || []);
+      if (!validTotp && !rec.matched) {
+        const nextTracker = recordFailedPinAttempt(
+          tracker,
+          policy.pinLockMaxAttempts,
+          policy.pinLockoutSeconds,
+          nowMs
+        );
+        const nextLock = evaluatePinAttemptLockout(
+          nextTracker,
+          policy.pinLockMaxAttempts,
+          policy.pinLockoutSeconds,
+          nowMs
+        );
+        globalState = {
+          ...globalState,
+          pinAttemptTrackerByBusiness: {
+            ...(globalState.pinAttemptTrackerByBusiness || {}),
+            [bizId]: nextTracker,
+          },
+        };
+        notify();
+        return {
+          success: false,
+          requires2fa: true,
+          locked: nextLock.isLocked,
+          remainingSeconds: nextLock.remainingSeconds,
+          matchedUserName: candidateUser.fullName,
+          message: 'Invalid 2FA authenticator or recovery code.',
+        };
+      }
+      if (rec.matched) {
+        updatedPolicyRecoveryHashes = rec.remainingHashes;
+      }
+    }
+
+    const nextPolicies =
+      updatedPolicyRecoveryHashes !== null
+        ? {
+            ...(globalState.securityPolicyByBusiness || {}),
+            [bizId]: {
+              ...policy,
+              owner2faRecoveryHashes: updatedPolicyRecoveryHashes,
+              updatedAt: new Date(nowMs).toISOString(),
+            },
+          }
+        : globalState.securityPolicyByBusiness;
+
+    const wasSessionLocked = Boolean(globalState.sessionLockState?.isLocked);
+    globalState = {
+      ...globalState,
+      currentUser: candidateUser,
+      isAuthenticated: true,
+      isFastSwitchOpen: false,
+      activeScreen: wasSessionLocked ? globalState.activeScreen : 'home',
+      ...resolveSubRolesForUser(candidateUser),
+      securityPolicyByBusiness: nextPolicies,
+      pinAttemptTrackerByBusiness: {
+        ...(globalState.pinAttemptTrackerByBusiness || {}),
+        [bizId]: { failedAttempts: 0 },
+      },
+      sessionLockState: {
+        isLocked: false,
+        lastActivityAtMs: nowMs,
+      },
+    };
+    notify();
+
+    if (updatedPolicyRecoveryHashes !== null && isSupabaseConfigured()) {
+      securityService
+        .upsertSecurityPolicy(nextPolicies[bizId], candidateUser.id)
+        .catch(() => {});
+    }
+
+    return { success: true };
+  };
+
+  const captureDataConsent = (input: {
+    subjectType: DataConsentSubjectType;
+    subjectId: string;
+    subjectName: string;
+    purpose: string;
+    legalBasis?: 'consent' | 'contract' | 'legal_obligation';
+    consentMethod?: 'signed_paper' | 'digital_pin' | 'portal_checkbox';
+    notes?: string;
+  }): DataProtectionConsent => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const nowIso = new Date().toISOString();
+    const consent: DataProtectionConsent = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: globalState.currentBranchId || undefined,
+      subjectType: input.subjectType,
+      subjectId: input.subjectId.trim() || `subj_${Date.now()}`,
+      subjectName: input.subjectName.trim(),
+      purpose: input.purpose.trim(),
+      legalBasis: input.legalBasis || 'consent',
+      status: 'granted',
+      consentMethod: input.consentMethod || 'digital_pin',
+      capturedByStaffId: globalState.currentUser?.id,
+      grantedAt: nowIso,
+      notes: input.notes?.trim() || undefined,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      dataProtectionConsents: [consent, ...(globalState.dataProtectionConsents || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      securityService.upsertDataConsent(consent, globalState.currentUser?.id).catch(() => {});
+    }
+    return consent;
+  };
+
+  const withdrawDataConsent = (consentId: string) => {
+    const nowIso = new Date().toISOString();
+    let updated: DataProtectionConsent | null = null;
+    globalState = {
+      ...globalState,
+      dataProtectionConsents: (globalState.dataProtectionConsents || []).map((c) => {
+        if (c.id !== consentId) return c;
+        updated = {
+          ...c,
+          status: 'withdrawn',
+          withdrawnAt: nowIso,
+          version: (c.version ?? 1) + 1,
+          updatedAt: nowIso,
+        };
+        return updated;
+      }),
+    };
+    notify();
+    if (updated && isSupabaseConfigured()) {
+      securityService.upsertDataConsent(updated, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const createDataSubjectRequest = (input: {
+    subjectType: DataConsentSubjectType;
+    subjectId: string;
+    subjectName: string;
+    requestType: DataSubjectRequestType;
+    reason?: string;
+  }): DataSubjectRequest => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new Error('MULTI_TENANT_VIOLATION: active businessId is required.');
+    const ctx = { accountId, businessId };
+    const nowIso = new Date().toISOString();
+    const req: DataSubjectRequest = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: globalState.currentBranchId || undefined,
+      subjectType: input.subjectType,
+      subjectId: input.subjectId.trim() || `subj_${Date.now()}`,
+      subjectName: input.subjectName.trim(),
+      requestType: input.requestType,
+      status: 'requested',
+      requestedByStaffId: globalState.currentUser?.id,
+      reason: input.reason?.trim() || undefined,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      dataSubjectRequests: [req, ...(globalState.dataSubjectRequests || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      securityService.upsertDataSubjectRequest(req, globalState.currentUser?.id).catch(() => {});
+    }
+    return req;
+  };
+
+  const processDataSubjectRequestAction = (input: {
+    requestId: string;
+    action: 'export' | 'erase' | 'reject';
+    reason?: string;
+  }): { ok: boolean; exportPayload?: Record<string, any>; error?: string } => {
+    if (!canPerformRbacAction('data_protection', 'approve')) {
+      return { ok: false, error: 'FORBIDDEN_DATA_PROTECTION' };
+    }
+    const target = (globalState.dataSubjectRequests || []).find((r) => r.id === input.requestId);
+    if (!target) return { ok: false, error: 'DSR_NOT_FOUND' };
+    const biz = selectCurrentBusinessFromState(globalState);
+    const nowIso = new Date().toISOString();
+
+    let exportPayload: Record<string, any> | undefined;
+    if (input.action === 'export') {
+      exportPayload = buildPersonalDataExportPayload({
+        businessId: target.businessId,
+        businessName: biz?.displayName || biz?.name || 'Atrium Workspace',
+        subjectType: target.subjectType,
+        subjectId: target.subjectId,
+        subjectName: target.subjectName,
+        members: globalState.members,
+        eduStudents: globalState.eduStudents,
+        crmParties: globalState.crmParties,
+        staff: globalState.staff,
+        sales: globalState.sales,
+        unifiedDocuments: globalState.unifiedDocuments,
+        unifiedPayments: globalState.unifiedPayments,
+        consents: selectCurrentDataConsentsFromState(globalState),
+      });
+    }
+
+    let nextMembers = globalState.members;
+    let nextStudents = globalState.eduStudents;
+    let nextParties = globalState.crmParties;
+    if (input.action === 'erase') {
+      const normId = target.subjectId.trim();
+      const normName = target.subjectName.trim().toLowerCase();
+      const isMatch = (id?: string, name?: string) =>
+        Boolean((normId && id === normId) || (normName && (name || '').trim().toLowerCase() === normName));
+      nextMembers = (globalState.members || []).map((m) =>
+        isMatch(m.id, m.fullName)
+          ? {
+              ...m,
+              fullName: `[ERASED-${m.id.slice(-4)}]`,
+              email: 'erased@redacted.local',
+              phoneNumber: '0000000000',
+              notes: '[ERASED BY DSR]',
+              updatedAt: nowIso,
+            }
+          : m
+      );
+      nextStudents = (globalState.eduStudents || []).map((st) =>
+        isMatch(st.id, st.fullName)
+          ? {
+              ...st,
+              fullName: `[ERASED-${st.id.slice(-4)}]`,
+              email: undefined,
+              phone: '0000000000',
+              notes: '[ERASED BY DSR]',
+            }
+          : st
+      );
+      nextParties = (globalState.crmParties || []).map((p) =>
+        isMatch(p.id, p.displayName)
+          ? {
+              ...p,
+              displayName: `[ERASED-${p.id.slice(-4)}]`,
+              email: undefined,
+              phoneNormalized: '0000000000',
+              phoneRaw: '0000000000',
+              updatedAt: nowIso,
+            }
+          : p
+      );
+    }
+
+    const nextStatus: DataSubjectRequest['status'] =
+      input.action === 'export' ? 'exported' : input.action === 'erase' ? 'erased' : 'rejected';
+
+    globalState = {
+      ...globalState,
+      members: nextMembers,
+      eduStudents: nextStudents,
+      crmParties: nextParties,
+      dataSubjectRequests: (globalState.dataSubjectRequests || []).map((r) =>
+        r.id === target.id
+          ? {
+              ...r,
+              status: nextStatus,
+              processedByStaffId: globalState.currentUser?.id,
+              exportSummary: exportPayload ? { counts: exportPayload.counts, exportedAt: exportPayload.exportedAt } : r.exportSummary,
+              reason: input.reason?.trim() || r.reason,
+              processedAt: nowIso,
+              updatedAt: nowIso,
+              version: (r.version ?? 1) + 1,
+            }
+          : r
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      securityService
+        .processDataSubjectRequest({
+          requestId: target.id,
+          action: input.action,
+          exportSummary: exportPayload ? { counts: exportPayload.counts } : null,
+          reason: input.reason,
+        })
+        .catch(() => {});
+    }
+
+    return { ok: true, exportPayload };
+  };
+
+  const recordSensitiveDataRead = (input: {
+    category: string;
+    screen: string;
+    targetTable?: string;
+    recordLabel?: string;
+  }): SensitiveReadEvent | null => {
+    const policy = selectCurrentSecurityPolicyFromState(globalState);
+    if (!policy.logSensitiveReads) return null;
+    const classified = isSensitiveVerticalScreen(input.category, input.screen);
+    if (!classified && !input.targetTable) return null;
+
+    const targetTable = input.targetTable || classified!.targetTable;
+    const recordLabel = input.recordLabel || classified!.recordLabel;
+    const vertical = classified?.vertical || normalizeBusinessCategory(input.category);
+    const bizId = globalState.currentBusinessId || '';
+    const userId = globalState.currentUser?.id || 'anonymous';
+    const dedupeKey = `${bizId}:${userId}:${targetTable}:${recordLabel}`;
+    const nowMs = Date.now();
+    const prevMs = recentSensitiveReadDedupe.get(dedupeKey);
+    if (prevMs !== undefined && nowMs - prevMs < 10_000) {
+      return null;
+    }
+    recentSensitiveReadDedupe.set(dedupeKey, nowMs);
+
+    const event: SensitiveReadEvent = {
+      id: `sread_${nowMs}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account?.id || '',
+      businessId: bizId,
+      branchId: globalState.currentBranchId || null,
+      actorStaffId: globalState.currentUser?.id || null,
+      targetTable,
+      recordLabel,
+      vertical,
+      role: getEffectiveUserRole(vertical, globalState),
+      occurredAt: new Date(nowMs).toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      sensitiveReadEvents: [event, ...(globalState.sensitiveReadEvents || [])].slice(0, 200),
+    };
+    notify();
+
+    auditService
+      .logSensitiveReadEvent({
+        businessId: bizId,
+        branchId: globalState.currentBranchId || null,
+        targetTable,
+        recordLabel,
+        vertical,
+        role: event.role,
+        occurredAt: event.occurredAt,
+      })
+      .catch(() => {});
+
+    return event;
   };
 
   return {
@@ -24020,7 +25089,27 @@ function createAtriumActions() {
     deleteImportColumnMapping,
     commitDataImportBatch,
     rollbackDataImportJob,
+    canPerformRbacAction,
+    saveRbacPermissionCell,
+    applyRbacRolePreset,
+    resetRbacMatrixToDefaults,
+    updateSecurityWorkspacePolicy,
+    beginOwner2faEnrollment,
+    enableOwner2fa,
+    disableOwner2fa,
+    lockActiveSession,
+    touchSessionActivity,
+    unlockActiveSessionWithPinAnd2fa,
+    captureDataConsent,
+    withdrawDataConsent,
+    createDataSubjectRequest,
+    processDataSubjectRequestAction,
+    recordSensitiveDataRead,
   };
+}
+
+export function getGlobalState(): AppState {
+  return globalState;
 }
 
 export const atriumActions = createAtriumActions();

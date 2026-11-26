@@ -203,4 +203,73 @@ export const auditService = {
       return { ok: queued, persistedRemote: false, queued };
     }
   },
+
+  async logSensitiveReadEvent(params: {
+    businessId: string;
+    branchId?: string | null;
+    targetTable: string;
+    recordLabel: string;
+    vertical: string;
+    role: string;
+    occurredAt: string;
+  }): Promise<{ ok: boolean; persistedRemote: boolean; queued?: boolean }> {
+    const businessUuid = toValidUuid(params.businessId);
+    const branchUuid = params.branchId ? toValidUuid(params.branchId) : null;
+    const rpcArgs = {
+      p_business_id: businessUuid,
+      p_branch_id: branchUuid,
+      p_target_table: params.targetTable,
+      p_record_label: params.recordLabel,
+      p_vertical: params.vertical,
+      p_role: params.role,
+      p_occurred_at: params.occurredAt,
+    };
+
+    const client = getSupabaseClient();
+    const configured = isSupabaseConfigured();
+    const isOffline =
+      typeof navigator !== 'undefined' && navigator.onLine === false;
+
+    if (!configured || !client) {
+      return { ok: true, persistedRemote: false, queued: false };
+    }
+
+    const enqueueSensitiveRead = (): boolean => {
+      try {
+        enqueueMutation({
+          kind: 'rpc',
+          fn: 'log_sensitive_read_event',
+          table: 'immutable_audit_logs',
+          args: rpcArgs,
+          entityType: 'sensitive_data_read',
+          entityLabel: `${params.targetTable}:${params.recordLabel}`,
+        });
+        return true;
+      } catch (err) {
+        if (err instanceof OfflineQueueCapacityError) return false;
+        return false;
+      }
+    };
+
+    if (isOffline) {
+      const queued = enqueueSensitiveRead();
+      return { ok: true, persistedRemote: false, queued };
+    }
+
+    try {
+      const { error } = await (client as any).rpc('log_sensitive_read_event', rpcArgs);
+      if (!error) {
+        return { ok: true, persistedRemote: true, queued: false };
+      }
+      const errCode = String(error?.code || error?.sqlstate || '');
+      if (NON_RETRYABLE_AUDIT_CODES.has(errCode)) {
+        return { ok: false, persistedRemote: false, queued: false };
+      }
+      const queued = enqueueSensitiveRead();
+      return { ok: queued, persistedRemote: false, queued };
+    } catch {
+      const queued = enqueueSensitiveRead();
+      return { ok: queued, persistedRemote: false, queued };
+    }
+  },
 };

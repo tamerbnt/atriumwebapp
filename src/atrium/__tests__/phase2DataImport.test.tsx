@@ -2,7 +2,14 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
+  clearOfflineQueue,
+  clearQuarantinedMutations,
+} from '../../lib/supabase/offlineQueue';
+import {
+  atriumActions,
   getGlobalState,
+  loginWithPinAction,
+  setLanguageAction,
   useAtriumActions,
   selectCurrentImportJobsFromState,
   selectCurrentImportMappingsFromState,
@@ -23,7 +30,15 @@ function HookBridge({ onActions }: { onActions: (a: ReturnType<typeof useAtriumA
 
 describe('Phase 2 Step 6 (6.7) — CSV / Excel Data Import Integration', () => {
   beforeEach(() => {
-    localStorage.clear();
+    clearOfflineQueue();
+    clearQuarantinedMutations();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear();
+    }
+    atriumActions.resetAllData();
+    setLanguageAction('en');
+    const pinResult = loginWithPinAction('1234');
+    expect(pinResult.success).toBe(true);
   });
 
   it('saves/deletes column mapping templates, imports products with skip duplicate policy, and rolls back atomically on chunk failure or manual rollback', () => {

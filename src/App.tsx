@@ -12,6 +12,7 @@ import {
   setTopBarCollapsedAction,
   loginWithPinAction,
   logoutAction,
+  atriumActions,
   shallowEqualObjects,
 } from './services/store';
 import { Member } from './types/index';
@@ -32,6 +33,11 @@ import {
   type RolePermissionState,
 } from './utils/routePermissions';
 import { getEffectiveUserRole, normalizeBusinessCategory } from './utils/staffRules';
+import {
+  createDefaultSecurityPolicy,
+  evaluateSessionIdleTimeout,
+  isSensitiveVerticalScreen,
+} from './utils/rbacEngine';
 
 // Lazy-loaded Onboarding & Global Modals (loaded on-demand only when open)
 const PowerOnboardingScreen = React.lazy(() =>
@@ -282,6 +288,9 @@ export default function App() {
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    rbacPermissions,
+    securityPolicyByBusiness,
+    sessionLockState,
   } = useAtriumSelector(
     (s) => ({
       accountId: s.account?.id || null,
@@ -298,6 +307,9 @@ export default function App() {
       activeAppointmentRole: s.activeAppointmentRole,
       activePosRole: s.activePosRole,
       activeEducationRole: s.activeEducationRole,
+      rbacPermissions: s.rbacPermissions,
+      securityPolicyByBusiness: s.securityPolicyByBusiness,
+      sessionLockState: s.sessionLockState,
     }),
     shallowEqualObjects
   );
@@ -530,6 +542,24 @@ export default function App() {
     [currentBusiness?.category]
   );
 
+  const currentRbacMatrix = useMemo(
+    () =>
+      (rbacPermissions || []).filter(
+        (r) => r.businessId === currentBusinessId && !r.deletedAt
+      ),
+    [rbacPermissions, currentBusinessId]
+  );
+
+  const currentSecurityPolicy = useMemo(
+    () =>
+      securityPolicyByBusiness?.[currentBusinessId] ||
+      createDefaultSecurityPolicy({
+        accountId: accountId || '',
+        businessId: currentBusinessId || '',
+      }),
+    [securityPolicyByBusiness, accountId, currentBusinessId]
+  );
+
   const permissionState = useMemo<RolePermissionState>(
     () => ({
       currentUser,
@@ -548,6 +578,7 @@ export default function App() {
       activeAppointmentRole,
       activePosRole,
       activeEducationRole,
+      rbacMatrix: currentRbacMatrix,
     }),
     [
       currentUser,
@@ -566,6 +597,7 @@ export default function App() {
       activeAppointmentRole,
       activePosRole,
       activeEducationRole,
+      currentRbacMatrix,
     ]
   );
 
@@ -601,6 +633,57 @@ export default function App() {
       reason: 'ROUTE_GUARD_DENIED',
     });
   }, [isAuthenticated, isRouteAllowed, activeScreen, canonicalCategory, permissionState]);
+
+  // Sensitive vertical read audit log (Medical Clinic & Legal Accounting)
+  useEffect(() => {
+    if (!isAuthenticated || !isRouteAllowed) return;
+    if (!isSensitiveVerticalScreen(canonicalCategory, resolvedScreen)) return;
+    atriumActions.recordSensitiveDataRead({
+      category: canonicalCategory,
+      screen: resolvedScreen,
+    });
+  }, [isAuthenticated, isRouteAllowed, canonicalCategory, resolvedScreen, currentBusinessId, currentUser?.id]);
+
+  // Idle session timeout auto-lock
+  useEffect(() => {
+    if (!isAuthenticated || sessionLockState?.isLocked) return;
+    let lastTouchMs = Date.now();
+    const handleActivity = () => {
+      const now = Date.now();
+      if (now - lastTouchMs >= 5000) {
+        lastTouchMs = now;
+        atriumActions.touchSessionActivity();
+      }
+    };
+    window.addEventListener('pointerdown', handleActivity, { passive: true });
+    window.addEventListener('keydown', handleActivity, { passive: true });
+    window.addEventListener('touchstart', handleActivity, { passive: true });
+
+    const intervalId = window.setInterval(() => {
+      const check = evaluateSessionIdleTimeout(
+        sessionLockState?.lastActivityAtMs ?? lastTouchMs,
+        currentSecurityPolicy.sessionTimeoutMinutes,
+        Date.now(),
+        currentSecurityPolicy.requirePinOnIdle
+      );
+      if (check.shouldLock) {
+        atriumActions.lockActiveSession('idle_timeout');
+      }
+    }, 10_000);
+
+    return () => {
+      window.removeEventListener('pointerdown', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.clearInterval(intervalId);
+    };
+  }, [
+    isAuthenticated,
+    sessionLockState?.isLocked,
+    sessionLockState?.lastActivityAtMs,
+    currentSecurityPolicy.sessionTimeoutMinutes,
+    currentSecurityPolicy.requirePinOnIdle,
+  ]);
 
   const isFreelance = canonicalCategory === 'freelance_solo';
   const isProjectMilestone = canonicalCategory === 'project_milestone';

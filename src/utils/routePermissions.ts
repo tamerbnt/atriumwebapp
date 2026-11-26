@@ -1,10 +1,11 @@
-import { BusinessCategory } from '../types/index';
+import { BusinessCategory, RbacPermissionRule } from '../types/index';
 import {
   canAccessStaffScreen,
   getEffectiveUserRole,
   normalizeBusinessCategory,
   normalizeOperationalRole,
 } from './staffRules';
+import { can as rbacCan, mapScreenToRbacResource, normalizeRbacRole } from './rbacEngine';
 import { auditService } from '../lib/supabase/services/auditService';
 
 export interface RolePermissionState {
@@ -28,6 +29,7 @@ export interface RolePermissionState {
   activeAppointmentRole?: string;
   activePosRole?: string;
   activeEducationRole?: string;
+  rbacMatrix?: RbacPermissionRule[];
 }
 
 export interface EffectivePermissionContext {
@@ -505,6 +507,37 @@ export function canAccessRoute(
 
   if (targetScreen === 'preferences') {
     return Boolean(state.currentUser || ctx.rawRole || ctx.normalizedRole !== 'staff');
+  }
+
+  // Evaluate explicit owner-configured RBAC matrix cell override when configured for this business
+  const mappedResource = mapScreenToRbacResource(ctx.category, targetScreen);
+  if (mappedResource && state.rbacMatrix && state.rbacMatrix.length > 0) {
+    const roleKey = normalizeRbacRole(ctx.effectiveRole);
+    const hasExplicitRule = state.rbacMatrix.some(
+      (r) =>
+        !r.deletedAt &&
+        (!state.businessId || r.businessId === state.businessId) &&
+        normalizeRbacRole(r.roleKey) === roleKey &&
+        r.resource === mappedResource &&
+        r.action === 'view'
+    );
+    if (hasExplicitRule) {
+      return rbacCan(
+        {
+          id: state.currentUser?.id,
+          role: ctx.effectiveRole,
+          roleRank: ctx.roleRank,
+        },
+        mappedResource,
+        'view',
+        {
+          category: ctx.category,
+          businessId: state.businessId,
+          rbacMatrix: state.rbacMatrix,
+          isExecutiveOverride: ctx.isExecutive,
+        }
+      );
+    }
   }
 
   if (targetScreen === 'staff') {

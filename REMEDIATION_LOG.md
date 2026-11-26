@@ -575,3 +575,44 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - Live headless Chromium (`playwright-cli`): Verified `Wholesale Food & Groceries -> Stock -> WMS / FEFO`, lot registration (`LOT-2026-A1`), `WmsBarcodePrintModal` A4/80mm SVG barcode render, `Reorder, Units & Landed Cost` tab, mobile (`390x844`) responsive audit & fix, and `0` console errors.
 - **Remaining Phase 2 Scope (`6.7`–`6.10`)**: CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 
+---
+
+## Phase 2 Step 6 — CSV / Excel Data Import Engine (`6.7`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270006_phase2_data_import.sql` + `supabase/rollbacks/202611270006_phase2_data_import.down.sql`.
+  - Created tenant/branch-isolated `import_column_mappings` (reusable per-entity mapping templates) and `import_jobs` (batch execution log with chunk counters, error snapshots, and created record rollback manifest), plus transactional `mark_import_job_rolled_back` RPC.
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 15) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (14/14).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/dataImportEngine.ts` + `src/utils/dataImportEngine.test.ts`: Encoding detection (`UTF-8`, `UTF-16LE`, `Windows-1256` Arabic, `ISO-8859-1` Latin), auto delimiter detection (`,` / `;` / `\t`), OOXML `.xlsx` & SpreadsheetML `.xml` parsing, Excel date serial normalization, Eastern Arabic/Persian digit normalization, `+213` phone formatting, CSV formula-injection neutralization, chunk planning, duplicate policies (`skip` / `update` / `merge`), and validation across 10 entities (`member`, `client`, `product`, `supplier`, `staff`, `patient`, `vehicle`, `parcel`, `property`, `student`).
+  - `src/lib/supabase/services/importService.ts`, `src/lib/supabase/offlineQueue.ts` (priorities `import_column_mappings: 20`, `import_jobs: 48`), and `src/services/store.ts` (`commitDataImportBatch`, `rollbackDataImportBatch`, `saveImportColumnMapping`, `getGlobalState`): Reconciled strict entity builders (`Member`, `Product`, `B2bSupplier`, `StaffMember`, `EduStudent`, `MedicalPatient`, `VehicleAsset`, `RealEstateProperty`) and `buildTraceEnvelope` / `syncCoordinator` offline queueing.
+  - `src/components/common/import/DataImportWorkspace.tsx` & `src/components/screens/SettingsScreen.tsx` (`data_import` tab): 5-step wizard (Target & File -> Column Mapping & Saved Templates -> Preview -> Dry-Run KPIs -> Commit & History with Rollback) with EN/FR/AR `phase2_import_*` localization.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`npm run lint`) & `npm run build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **156 / 156 passed** (6 suites, incl. `dataImportEngine.test.ts` 8/8).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **41 / 41 files, 315 / 315 tests passed** (incl. `phase2DataImport.test.tsx` 2/2 and `migrationsAndRollbacks.test.ts` 14/14).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Settings -> Import CSV / Excel`, `Load Sample Data` auto-mapping & dry run (`To Insert: 1`, `Row Errors: 0`), `Commit Valid Rows (1)` (`Existing records: 1`, job status `committed`), `Rollback Job` (`Existing records: 0`, job status `rolled_back`), and `0` console errors / `0` warnings.
+- **Remaining Phase 2 Scope (`6.8`–`6.10`)**: Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
+
+---
+
+## Phase 2 Step 7 — Configurable RBAC, Full Public RLS, Owner 2FA / Lockouts & Law 18-07 Aid (`6.8`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270007_phase2_rbac_rls.sql` + `supabase/rollbacks/202611270007_phase2_rbac_rls.down.sql`.
+  - Created tenant/owner-isolated `rbac_role_permissions` + `can_rbac(business_id, resource, action)` `SECURITY DEFINER` authorization helper, `security_workspace_policies` (Owner 2FA masked secret, salted recovery hashes, idle timeout, PIN lockout threshold/duration, retention days, and `law_18_07_review_status` defaulting to `'pending_counsel_review'`), `data_protection_consents`, and `data_subject_requests`.
+  - Added server-side `log_sensitive_read_event(...)` (10s dedupe window + `immutable_audit_logs` write for sensitive medical/legal dossier access) and transactional `process_data_subject_request(...)` (`export`/`erase`/`reject` + audit event), hardened `pm_collateral_catalog` RLS, attached `fn_audit_log_mutation()` to Phase 1/2 financial tables, and asserted `ENABLE ROW LEVEL SECURITY` across all `public` tables.
+  - Extended `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (15/15).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/rbacEngine.ts` + `src/utils/rbacEngine.test.ts` (wired into `npm test`): Configurable `CATALOG_ROLES_BY_CATEGORY` × `RBAC_RESOURCES` (16 resources) × `RBAC_ACTIONS` (6 actions) evaluation with owner lockout immunity (`rbac`/`settings`), RFC-6238 HMAC-SHA1 TOTP secret/token generation & constant-window verification, 6 single-use recovery code hashing/consumption, PIN brute-force attempt locking, backup `owner2faVerifier` scrubbing, Law 18-07 portable DSR export builder, and `medical_clinic`/`legal_accounting` sensitive screen classifier.
+  - `src/lib/supabase/services/securityService.ts`, `src/lib/supabase/offlineQueue.ts` (priorities for `rbac_role_permissions`, `security_workspace_policies`, `data_protection_consents`, `data_subject_requests`, `process_data_subject_request`, `log_sensitive_read_event`), and `src/services/store.ts` (`saveRbacPermissionCell`, `applyRbacRolePreset`, `resetRbacMatrixToDefaults`, `updateSecurityWorkspacePolicy`, `beginOwner2faEnrollment`, `enableOwner2fa`, `disableOwner2fa`, `lockActiveSession`, `touchSessionActivity`, `unlockActiveSessionWithPinAnd2fa`, `captureDataConsent`, `withdrawDataConsent`, `createDataSubjectRequest`, `processDataSubjectRequestAction`, `recordSensitiveDataRead`).
+  - Wired live `rbacMatrix` + security hooks across `App.tsx` (idle timeout monitor + sensitive read auditing), `Sidebar.tsx`, `TopBar.tsx` (`Lock Session` menu action), `CommandPaletteModal.tsx`, `FastSwitchModal.tsx` (non-dismissible lock mode, 2FA TOTP/recovery challenge step, live PIN lockout countdown), and `SettingsScreen.tsx` (`security_rbac` tab -> `src/components/common/security/SecurityRbacWorkspace.tsx`) with explicit Law 18-07 `"Configuration & Documentation Aid — Pending Legal Counsel Review"` disclaimer banner and strict EN/FR/AR `phase2_sec_*` parity.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`lint_applet`) & `vite build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **162 / 162 passed** (7 suites, incl. `rbacEngine.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **42 / 42 files, 320 / 320 tests passed** (incl. `phase2RbacSecurity.test.tsx` 4/4 and `migrationsAndRollbacks.test.ts` 15/15).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Settings -> Security & RBAC` matrix role switching & live cell toggle (`staff` / `finance:view` -> `true`), owner lock cells disabled, `2FA & Session Policy` (`Begin 2FA Setup` masked secret + URI + 6 recovery codes), `Law 18-07 Aid & Audits` amber `"Configuration & Documentation Aid — Pending Legal Counsel Review"` disclaimer banner, and **`0` console errors / `0` console warnings**.
+- **Remaining Phase 2 Scope (`6.9`–`6.10`)**: Approvals, attachments/signed URLs, REST API & webhooks (`6.9`), and Unified BI KPI registry & reports (`6.10`) remain queued next.
+
+
+
