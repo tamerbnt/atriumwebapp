@@ -289,4 +289,55 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.reminder_rules');
     expect(downSql).toContain('DROP TABLE IF EXISTS public.reminder_quiet_hours_configs');
   });
+
+  it('verifies Phase 2 Step 5 (6.6) shared WMS migration and rollback parity', () => {
+    const wmsPath = path.join(MIGRATIONS_DIR, '202611270005_phase2_shared_wms.sql');
+    const wmsDownPath = path.join(ROLLBACKS_DIR, '202611270005_phase2_shared_wms.down.sql');
+    const sql = fs.readFileSync(wmsPath, 'utf8');
+    const downSql = fs.readFileSync(wmsDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_bins');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_stock_lots');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_serial_numbers');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_unit_conversions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_reorder_rules');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_cycle_counts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_cycle_count_lines');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_stock_transfers');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_landed_cost_allocations');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.wms_consignment_ledger');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.wms_atomic_consume_stock(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.wms_post_cycle_count(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.wms_transition_stock_transfer(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.wms_transition_stock_transfer(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.wms_post_cycle_count(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.wms_atomic_consume_stock(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_consignment_ledger');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_landed_cost_allocations');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_stock_transfers');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_cycle_count_lines');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_cycle_counts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_reorder_rules');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_unit_conversions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_serial_numbers');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_stock_lots');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.wms_bins');
+  });
+
+  it('verifies Phase 2 Step 6 (6.7) CSV/Excel data import migration and rollback parity', () => {
+    const impPath = path.join(MIGRATIONS_DIR, '202611270006_phase2_data_import.sql');
+    const impDownPath = path.join(ROLLBACKS_DIR, '202611270006_phase2_data_import.down.sql');
+    const sql = fs.readFileSync(impPath, 'utf8');
+    const downSql = fs.readFileSync(impDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.import_column_mappings');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.import_jobs');
+    expect(sql).toContain('windows-1256');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mark_import_job_rolled_back(');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mark_import_job_rolled_back(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.import_jobs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.import_column_mappings');
+  });
 });

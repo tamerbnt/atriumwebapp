@@ -34,6 +34,7 @@ import {
   Receipt,
   Scale,
   Bell,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -69,6 +70,7 @@ import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab'
 import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab';
 import { ReminderEngineWorkspace } from '../common/reminders/ReminderEngineWorkspace';
+import { DataImportWorkspace } from '../common/import/DataImportWorkspace';
 import { PayrollMigrationDryRunPanel } from '../common/staff/PayrollMigrationDryRunPanel';
 import { getEffectivePermissionContext } from '../../utils/routePermissions';
 import { normalizeBusinessCategory } from '../../utils/staffRules';
@@ -515,6 +517,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             icon: <Bell size={15} strokeWidth={1.5} />,
           },
           {
+            id: 'data_import',
+            label: t('phase2_import_tab', language),
+            icon: <FileSpreadsheet size={15} strokeWidth={1.5} />,
+          },
+          {
             id: 'branches_devices',
             label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
             icon: <Monitor size={15} strokeWidth={1.5} />,
@@ -588,6 +595,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       {effectiveTab === 'reference_rates' && <SettingsReferenceRatesTab />}
 
       {effectiveTab === 'reminders' && <ReminderEngineWorkspace />}
+
+      {effectiveTab === 'data_import' && <DataImportWorkspace />}
 
       {effectiveTab === 'preferences' && (
         <>

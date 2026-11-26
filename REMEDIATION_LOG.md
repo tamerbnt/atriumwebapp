@@ -541,3 +541,37 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Members -> Amira Cherif -> CRM`, `+213550112233 · Ooredoo` operator badge, 2×2 consent/opt-out switches, `Messages` tab opt-out block banner (`blocked_opt_out` in Delivery Log), and `0` console errors / `0` warnings.
 - **Remaining Phase 2 Scope (`6.5`–`6.10`)**: Reminder engine (`6.5`), Shared WMS (`6.6`), CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
 
+---
+
+## Phase 2 Step 4 — Reminder & Notification Engine (`6.5`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270004_phase2_reminder_engine.sql` + `supabase/rollbacks/202611270004_phase2_reminder_engine.down.sql`.
+  - Created `reminder_quiet_hours_configs` (default `Africa/Algiers`, configurable `start_time`/`end_time` quiet window and `allow_in_app_during_quiet`), `reminder_rules` (13 event rules covering `membership_expiring`, `invoice_overdue`, `installment_due`, `rent_due`, `appointment_tomorrow`, `low_stock`, `expiry_date`, `service_due`, `dar_lockout`, `cheque_due`, `cpca_deadline`, `contract_expiry`, `vehicle_documents_expiry`), and `reminder_delivery_logs` with `uq_reminder_delivery_idempotency` partial unique index and `dispatch_reminder_idempotent` RPC preventing duplicate reminders per window.
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 13) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts`.
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/reminderEngine.ts` + `src/utils/reminderEngine.test.ts`: `REMINDER_EVENT_CATALOG` (13 triggers EN/FR/AR), `isWithinQuietHours` (Africa/Algiers wrap-around midnight logic), idempotency key derivation per target/rule/window, CRM opt-out & template variable rendering via `crmPartyEngine`, and deferred quiet-hours queue flushing.
+  - `src/lib/supabase/services/reminderService.ts`, `src/lib/supabase/offlineQueue.ts`, `src/services/store.ts`, and `src/components/common/reminders/ReminderEngineWorkspace.tsx` (mounted in `SettingsScreen` under `Reminders & Alerts`).
+- **Verified Checks**:
+  - `npx tsc --noEmit` & `npm run build`: **0 errors**; `npm run ci:guards` (strict): **0 findings**.
+  - `src/atrium/__tests__/phase2ReminderEngine.test.tsx`: All 3/3 integration specs passing (idempotent scan deduplication, quiet hours deferral/flush, and workspace UI SSR).
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Settings -> Reminders & Alerts` quiet hours toggle (`21:00–08:00`) and all 13 event rules rendered with `0` console errors.
+
+---
+
+## Phase 2 Step 5 — Shared Inventory / WMS Services (`6.6`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270005_phase2_shared_wms.sql` + `supabase/rollbacks/202611270005_phase2_shared_wms.down.sql`.
+  - Created 10 tenant/branch-isolated WMS tables (`wms_bins`, `wms_stock_lots`, `wms_serial_numbers`, `wms_unit_conversions`, `wms_reorder_rules`, `wms_cycle_counts`, `wms_cycle_count_lines`, `wms_stock_transfers`, `wms_landed_cost_allocations`, `wms_consignment_ledger`) and transactional RPCs (`wms_atomic_consume_stock`, `wms_post_cycle_count`, `wms_transition_stock_transfer`).
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 14) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (13/13).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/wmsEngine.ts` + `src/utils/wmsEngine.test.ts`: FEFO expiry sorting & sellability filtering (blocking expired & recalled/quarantined lots), negative stock policy (`block`/`warn`/`allow`), unit conversions (`piece`/`carton`/`pallet`), cycle count variance with active-sales delta deduction, integer-centimes landed cost allocation (`freight + customs + insurance * fxRate`), reorder suggestion builder, returnable consignment balance summary, and deterministic Code-128 style barcode bar builder.
+  - `src/lib/supabase/services/wmsService.ts`, `src/lib/supabase/offlineQueue.ts` (dependency-ordered replay priorities), and `src/services/store.ts` (`processSale` POS FEFO & open-cycle-count active sales hook, `createPurchaseOrdersFromReorderSuggestions`, and `createWarehouseDepot` fixed to `generateClientUuid()`).
+  - `src/components/common/wms/WmsWorkspace.tsx` & `src/components/common/wms/WmsBarcodePrintModal.tsx`: Integrated into `TradingInventoryView` (`WMS / FEFO` tab) and `PosInventoryView` (`WMS / FEFO` tab), with responsive mobile breakpoints (`sm:grid-cols-*`), A4/80mm printable barcode sheets, and EN/FR/AR `phase2_wms_*` i18n keys.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`npm run lint`) & `npm run build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **148 / 148 passed** (6 suites, incl. `wmsEngine.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **40 / 40 files, 312 / 312 tests passed** (incl. `phase2Wms.test.tsx` 5/5 and `migrationsAndRollbacks.test.ts` 13/13).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli`): Verified `Wholesale Food & Groceries -> Stock -> WMS / FEFO`, lot registration (`LOT-2026-A1`), `WmsBarcodePrintModal` A4/80mm SVG barcode render, `Reorder, Units & Landed Cost` tab, mobile (`390x844`) responsive audit & fix, and `0` console errors.
+- **Remaining Phase 2 Scope (`6.7`–`6.10`)**: CSV/Excel import (`6.7`), Configurable RBAC & full RLS (`6.8`), Platform approvals/attachments/REST API (`6.9`), and BI KPI registry (`6.10`) remain queued next.
+

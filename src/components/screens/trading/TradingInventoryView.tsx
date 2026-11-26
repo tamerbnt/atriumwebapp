@@ -22,6 +22,7 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StockMovementModal } from './StockMovementModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { WmsWorkspace } from '../../common/wms/WmsWorkspace';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -57,7 +58,7 @@ const STATUS_PILL_WARN =
 const STATUS_PILL_INFO =
   'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
-type InventoryViewTab = 'stock_state' | 'vouchers';
+type InventoryViewTab = 'stock_state' | 'vouchers' | 'wms';
 type ProductDrawerTab = 'stock' | 'valorisation' | 'mouvements';
 type VoucherDrawerTab = 'bon' | 'trajet' | 'articles';
 
@@ -694,10 +695,16 @@ export const TradingInventoryView: React.FC = () => {
           title={
             subTab === 'stock_state'
               ? t('trading_inventory_tab_state', 'État des Stocks')
-              : t('trading_inventory_tab_vouchers', 'Bons de Mouvements')
+              : subTab === 'vouchers'
+              ? t('trading_inventory_tab_vouchers', 'Bons de Mouvements')
+              : t('phase2_wms_tab_title', isAr ? 'المستودع والدفعات WMS' : isEn ? 'WMS & FEFO Lots' : 'Entrepôt WMS & Lots FEFO')
           }
           liveRegionText={
-            subTab === 'stock_state' ? `${sortedProducts.length} SKUs` : `${filteredVouchers.length} bons`
+            subTab === 'stock_state'
+              ? `${sortedProducts.length} SKUs`
+              : subTab === 'vouchers'
+              ? `${filteredVouchers.length} bons`
+              : 'WMS'
           }
           language={language}
           searchQuery={searchQuery}
@@ -706,6 +713,7 @@ export const TradingInventoryView: React.FC = () => {
           statusOptions={[
             { value: 'stock_state', label: isAr ? 'المخزون' : isEn ? 'Stock' : 'Stocks', count: products.length },
             { value: 'vouchers', label: isAr ? 'السندات' : isEn ? 'Vouchers' : 'Bons', count: stockVouchers.length },
+            { value: 'wms', label: 'WMS / FEFO' },
           ]}
           statusValue={subTab}
           onStatusChange={(val) => setSubTab(val as InventoryViewTab)}
@@ -726,7 +734,11 @@ export const TradingInventoryView: React.FC = () => {
           }}
         />
 
-        {subTab === 'stock_state' ? (
+        {subTab === 'wms' ? (
+          <div className="pt-4">
+            <WmsWorkspace />
+          </div>
+        ) : subTab === 'stock_state' ? (
           <UniversalDataCollection<Product>
             hideToolbar
             items={sortedProducts}

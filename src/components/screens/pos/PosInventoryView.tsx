@@ -35,6 +35,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { B2bEntityModal } from '../trading/B2bEntityModal';
+import { WmsWorkspace } from '../../common/wms/WmsWorkspace';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -118,7 +119,7 @@ export const PosInventoryView: React.FC<any> = () => {
   );
 
   const isStaff = activePosRole === 'staff';
-  const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'purchases'>('inventory');
+  const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'purchases' | 'wms'>('inventory');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
   const [branchFilter, setBranchFilter] = useState('All');
@@ -958,7 +959,7 @@ export const PosInventoryView: React.FC<any> = () => {
               <LiveSegmentedControl
                 size="md"
                 value={activeSubTab}
-                onValueChange={(val) => setActiveSubTab(val as 'inventory' | 'purchases')}
+                onValueChange={(val) => setActiveSubTab(val as 'inventory' | 'purchases' | 'wms')}
                 options={[
                   {
                     value: 'inventory',
@@ -971,6 +972,10 @@ export const PosInventoryView: React.FC<any> = () => {
                     label: isAr ? 'المشتريات' : 'Achats',
                     icon: <Truck size={14} />,
                     count: purchaseStats.pendingCount,
+                  },
+                  {
+                    value: 'wms',
+                    label: 'WMS / FEFO',
                   },
                 ]}
                 aria-label="POS Inventory Section Switcher"
@@ -998,7 +1003,9 @@ export const PosInventoryView: React.FC<any> = () => {
         }}
       />
 
-      {isStaff || activeSubTab === 'inventory' ? (
+      {!isStaff && activeSubTab === 'wms' ? (
+        <WmsWorkspace />
+      ) : isStaff || activeSubTab === 'inventory' ? (
         <>
           <ScreenKpiBanner
             heading={isAr ? 'تقييم المخزون ومؤشرات النواقص' : isEn ? 'Inventory Valuation & Stock Alerts' : 'Valorisation Stock & Alertes Réassort'}

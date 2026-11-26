@@ -153,6 +153,18 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   reminder_quiet_hours_configs: 16,
   reminder_rules: 19,
   reminder_delivery_logs: 44,
+  wms_bins: 23,
+  wms_unit_conversions: 24,
+  wms_reorder_rules: 25,
+  wms_stock_lots: 26,
+  wms_serial_numbers: 27,
+  wms_cycle_counts: 36,
+  wms_cycle_count_lines: 37,
+  wms_stock_transfers: 38,
+  wms_landed_cost_allocations: 41,
+  wms_consignment_ledger: 42,
+  import_column_mappings: 20,
+  import_jobs: 48,
   immutable_audit_logs: 50,
 };
 
@@ -499,6 +511,7 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'merge_crm_parties') return 268;
     if (item.fn === 'record_crm_communication_attempt') return 435;
     if (item.fn === 'dispatch_reminder_idempotent') return 445;
+    if (item.fn === 'mark_import_job_rolled_back') return 485;
   }
   return (item.table ? TABLE_REPLAY_PRIORITY[item.table] ?? 35 : 48) * 10 + getKindPriority(item.kind);
 }

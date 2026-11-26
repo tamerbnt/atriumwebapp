@@ -35,3 +35,5 @@ export * from './services/invoicingService';
 export * from './services/scfAccountingService';
 export * from './services/crmService';
 export * from './services/reminderService';
+export * from './services/wmsService';
+export * from './services/importService';

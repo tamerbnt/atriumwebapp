@@ -93,6 +93,7 @@ import {
   B2bSupplier,
   WarehouseDepot,
   CommercialDocument,
+  PurchaseDocItem,
   PurchaseDocument,
   StockMovementVoucher,
   CommercialDocType,
@@ -152,6 +153,35 @@ import {
   ReminderQuietHoursConfig,
   ReminderRule,
   ReminderDeliveryLog,
+  WmsNegativeStockPolicy,
+  WmsLotRecallStatus,
+  WmsSerialStatus,
+  WmsCycleCountStatus,
+  WmsTransferStatus,
+  WmsLandedCostMethod,
+  WmsConsignmentMovementType,
+  WmsBin,
+  WmsStockLot,
+  WmsSerialNumber,
+  WmsUnitConversion,
+  WmsReorderRule,
+  WmsCycleCountLine,
+  WmsCycleCount,
+  WmsStockTransferItem,
+  WmsStockTransfer,
+  WmsLandedCostAllocation,
+  WmsConsignmentEntry,
+  ImportEntityType,
+  ImportEncoding,
+  ImportDelimiter,
+  ImportDuplicatePolicy,
+  ImportRowError,
+  ImportColumnMapping,
+  ImportJob,
+  MedicalPatient,
+  VehicleAsset,
+  LogisticsShipment,
+  RealEstateProperty,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -372,6 +402,12 @@ import {
   scfAccountingService,
   crmService,
   reminderService,
+  wmsService,
+  importService,
+  medicalService,
+  garageService,
+  logisticsService,
+  realEstateService,
   auditService,
   type StatutoryRateSet,
 } from '../lib/supabase/index';
@@ -444,6 +480,22 @@ import {
   clampPartialRefundItems,
   type RefundLineRequest,
 } from '../utils/step6Persistence';
+import {
+  allocateLandedCosts,
+  computeCycleCountVarianceLine,
+  computeReorderSuggestions,
+  convertQuantityUnit,
+  evaluateFefoConsumption,
+  validateSerialAssignment,
+  type FefoAllocationResult,
+  type ReorderSuggestion,
+} from '../utils/wmsEngine';
+import {
+  executeChunkedImportCommit,
+  runImportDryRun,
+  type ImportDryRunResult,
+  type NormalizedImportRecord,
+} from '../utils/dataImportEngine';
 
 const generateClientUuid = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -667,6 +719,20 @@ interface AppState {
   reminderQuietHoursConfigs: ReminderQuietHoursConfig[];
   reminderRules: ReminderRule[];
   reminderDeliveryLogs: ReminderDeliveryLog[];
+  // Phase 2 Step 5 (6.6 Shared Inventory / WMS)
+  wmsNegativeStockPolicyByBusiness: Record<string, WmsNegativeStockPolicy>;
+  wmsBins: WmsBin[];
+  wmsStockLots: WmsStockLot[];
+  wmsSerialNumbers: WmsSerialNumber[];
+  wmsUnitConversions: WmsUnitConversion[];
+  wmsReorderRules: WmsReorderRule[];
+  wmsCycleCounts: WmsCycleCount[];
+  wmsStockTransfers: WmsStockTransfer[];
+  wmsLandedCostAllocations: WmsLandedCostAllocation[];
+  wmsConsignmentEntries: WmsConsignmentEntry[];
+  // Phase 2 Section 6.7: CSV / Excel Import
+  importColumnMappings: ImportColumnMapping[];
+  importJobs: ImportJob[];
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -869,6 +935,18 @@ const DEFAULT_STATE: AppState = {
   reminderQuietHoursConfigs: [],
   reminderRules: [],
   reminderDeliveryLogs: [],
+  wmsNegativeStockPolicyByBusiness: {},
+  wmsBins: [],
+  wmsStockLots: [],
+  wmsSerialNumbers: [],
+  wmsUnitConversions: [],
+  wmsReorderRules: [],
+  wmsCycleCounts: [],
+  wmsStockTransfers: [],
+  wmsLandedCostAllocations: [],
+  wmsConsignmentEntries: [],
+  importColumnMappings: [],
+  importJobs: [],
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -1134,6 +1212,28 @@ let globalState: AppState = backfillTraceability((() => {
           reminderDeliveryLogs: Array.isArray(parsed.reminderDeliveryLogs)
             ? parsed.reminderDeliveryLogs
             : [],
+          wmsNegativeStockPolicyByBusiness:
+            parsed.wmsNegativeStockPolicyByBusiness &&
+            typeof parsed.wmsNegativeStockPolicyByBusiness === 'object'
+              ? parsed.wmsNegativeStockPolicyByBusiness
+              : {},
+          wmsBins: Array.isArray(parsed.wmsBins) ? parsed.wmsBins : [],
+          wmsStockLots: Array.isArray(parsed.wmsStockLots) ? parsed.wmsStockLots : [],
+          wmsSerialNumbers: Array.isArray(parsed.wmsSerialNumbers) ? parsed.wmsSerialNumbers : [],
+          wmsUnitConversions: Array.isArray(parsed.wmsUnitConversions) ? parsed.wmsUnitConversions : [],
+          wmsReorderRules: Array.isArray(parsed.wmsReorderRules) ? parsed.wmsReorderRules : [],
+          wmsCycleCounts: Array.isArray(parsed.wmsCycleCounts) ? parsed.wmsCycleCounts : [],
+          wmsStockTransfers: Array.isArray(parsed.wmsStockTransfers) ? parsed.wmsStockTransfers : [],
+          wmsLandedCostAllocations: Array.isArray(parsed.wmsLandedCostAllocations)
+            ? parsed.wmsLandedCostAllocations
+            : [],
+          wmsConsignmentEntries: Array.isArray(parsed.wmsConsignmentEntries)
+            ? parsed.wmsConsignmentEntries
+            : [],
+          importColumnMappings: Array.isArray(parsed.importColumnMappings)
+            ? parsed.importColumnMappings
+            : [],
+          importJobs: Array.isArray(parsed.importJobs) ? parsed.importJobs : [],
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -1985,6 +2085,111 @@ export function selectCurrentReminderDeliveryLogsFromState(
   cachedRemLogsBiz = bizId;
   cachedRemLogsRes = list.filter((l) => l.businessId === bizId && !l.deletedAt);
   return cachedRemLogsRes;
+}
+
+export function selectCurrentWmsNegativeStockPolicyFromState(state: AppState): WmsNegativeStockPolicy {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsNegativeStockPolicyByBusiness || {})[bizId] || 'block';
+}
+
+export function selectCurrentWmsBinsFromState(state: AppState): WmsBin[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsBins || []).filter((b) => b.businessId === bizId && !b.deletedAt);
+}
+
+export function selectCurrentWmsStockLotsFromState(state: AppState): WmsStockLot[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsStockLots || []).filter((l) => l.businessId === bizId && !l.deletedAt);
+}
+
+export function selectCurrentWmsSerialNumbersFromState(state: AppState): WmsSerialNumber[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsSerialNumbers || []).filter((s) => s.businessId === bizId && !s.deletedAt);
+}
+
+export function selectCurrentWmsUnitConversionsFromState(state: AppState): WmsUnitConversion[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsUnitConversions || []).filter((u) => u.businessId === bizId && !u.deletedAt);
+}
+
+export function selectCurrentWmsReorderRulesFromState(state: AppState): WmsReorderRule[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsReorderRules || []).filter((r) => r.businessId === bizId && !r.deletedAt);
+}
+
+export function selectCurrentWmsCycleCountsFromState(state: AppState): WmsCycleCount[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsCycleCounts || []).filter((c) => c.businessId === bizId && !c.deletedAt);
+}
+
+export function selectCurrentWmsStockTransfersFromState(state: AppState): WmsStockTransfer[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsStockTransfers || []).filter((t) => t.businessId === bizId && !t.deletedAt);
+}
+
+export function selectCurrentWmsLandedCostAllocationsFromState(
+  state: AppState
+): WmsLandedCostAllocation[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsLandedCostAllocations || []).filter((a) => a.businessId === bizId && !a.deletedAt);
+}
+
+export function selectCurrentWmsConsignmentEntriesFromState(state: AppState): WmsConsignmentEntry[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.wmsConsignmentEntries || []).filter((e) => e.businessId === bizId && !e.deletedAt);
+}
+
+export function selectCurrentImportMappingsFromState(
+  state: AppState,
+  entityType?: ImportEntityType
+): ImportColumnMapping[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.importColumnMappings || []).filter(
+    (m) => m.businessId === bizId && !m.deletedAt && (!entityType || m.entityType === entityType)
+  );
+}
+
+export function selectCurrentImportJobsFromState(state: AppState): ImportJob[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.importJobs || []).filter((j) => j.businessId === bizId && !j.deletedAt);
+}
+
+export function selectExistingItemsForImportEntityFromState(
+  state: AppState,
+  entityType: ImportEntityType
+): Array<Record<string, any>> {
+  const bizId = state.currentBusinessId || '';
+  const branchId = state.currentBranchId || '';
+  if (entityType === 'members') {
+    return (state.members || []).filter((m) => m.facilityId === branchId);
+  }
+  if (entityType === 'products') {
+    return (state.products || []).filter((p) => p.facilityId === branchId);
+  }
+  if (entityType === 'clients') {
+    return (state.crmParties || []).filter((c) => c.businessId === bizId && !c.deletedAt);
+  }
+  if (entityType === 'suppliers') {
+    return (state.b2bSuppliers || []).filter((s) => s.businessId === bizId);
+  }
+  if (entityType === 'staff') {
+    return (state.staff || [])
+      .filter((s) => s.facilityId === branchId)
+      .map((s) => ({ ...s, phone: s.phoneNumber }));
+  }
+  if (entityType === 'students') {
+    return (state.eduStudents || []).filter((s) => s.facilityId === branchId);
+  }
+  if (entityType === 'patients') return safeReadLocalArray('atrium_medical_patients_v2');
+  if (entityType === 'vehicles') return safeReadLocalArray('atrium_garage_vehicles_v2');
+  if (entityType === 'parcels') return safeReadLocalArray('atrium_logistics_shipments_v2');
+  if (entityType === 'properties') {
+    return safeReadLocalArray('atrium_realestate_props_v2').map((p: any) => ({
+      ...p,
+      reference: p.mandateNumber || p.reference || p.id,
+    }));
+  }
+  return [];
 }
 
 let cachedNotifSrc: AppNotification[] | undefined;
@@ -3579,6 +3784,17 @@ function pruneDeletedRecords(
     reminder_quiet_hours_configs: 'reminderQuietHoursConfigs',
     reminder_rules: 'reminderRules',
     reminder_delivery_logs: 'reminderDeliveryLogs',
+    wms_bins: 'wmsBins',
+    wms_stock_lots: 'wmsStockLots',
+    wms_serial_numbers: 'wmsSerialNumbers',
+    wms_unit_conversions: 'wmsUnitConversions',
+    wms_reorder_rules: 'wmsReorderRules',
+    wms_cycle_counts: 'wmsCycleCounts',
+    wms_stock_transfers: 'wmsStockTransfers',
+    wms_landed_cost_allocations: 'wmsLandedCostAllocations',
+    wms_consignment_ledger: 'wmsConsignmentEntries',
+    import_column_mappings: 'importColumnMappings',
+    import_jobs: 'importJobs',
     category_formules: 'categoryFormules',
   };
 
@@ -3987,6 +4203,79 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           } else if (logs.length > 0) {
             updates.reminderDeliveryLogs = [...logs, ...others];
           }
+        }
+      });
+    }
+    if (
+      shouldSyncTable(
+        'wms_bins',
+        'wms_stock_lots',
+        'wms_serial_numbers',
+        'wms_unit_conversions',
+        'wms_reorder_rules',
+        'wms_cycle_counts',
+        'wms_stock_transfers',
+        'wms_landed_cost_allocations',
+        'wms_consignment_ledger'
+      )
+    ) {
+      tasks.push(async () => {
+        const wms = await wmsService.fetchWmsDataForBusiness(businessId, updatedAfter);
+        const mergeSlice = <T extends { id: string; businessId: string }>(
+          prev: T[],
+          fetched: T[]
+        ): T[] | undefined => {
+          if (fetched.length === 0 && updatedAfter) return undefined;
+          if (fetched.length === 0) return undefined;
+          const others = (prev || []).filter((x) => x.businessId !== businessId);
+          const cur = (prev || []).filter((x) => x.businessId === businessId);
+          return [...(updatedAfter ? mergeById(cur, fetched) : fetched), ...others];
+        };
+        const nextBins = mergeSlice(globalState.wmsBins || [], wms.bins);
+        if (nextBins) updates.wmsBins = nextBins;
+        const nextLots = mergeSlice(globalState.wmsStockLots || [], wms.stockLots);
+        if (nextLots) updates.wmsStockLots = nextLots;
+        const nextSerials = mergeSlice(globalState.wmsSerialNumbers || [], wms.serialNumbers);
+        if (nextSerials) updates.wmsSerialNumbers = nextSerials;
+        const nextConversions = mergeSlice(
+          globalState.wmsUnitConversions || [],
+          wms.unitConversions
+        );
+        if (nextConversions) updates.wmsUnitConversions = nextConversions;
+        const nextRules = mergeSlice(globalState.wmsReorderRules || [], wms.reorderRules);
+        if (nextRules) updates.wmsReorderRules = nextRules;
+        const nextCounts = mergeSlice(globalState.wmsCycleCounts || [], wms.cycleCounts);
+        if (nextCounts) updates.wmsCycleCounts = nextCounts;
+        const nextTransfers = mergeSlice(
+          globalState.wmsStockTransfers || [],
+          wms.stockTransfers
+        );
+        if (nextTransfers) updates.wmsStockTransfers = nextTransfers;
+        const nextLanded = mergeSlice(
+          globalState.wmsLandedCostAllocations || [],
+          wms.landedCostAllocations
+        );
+        if (nextLanded) updates.wmsLandedCostAllocations = nextLanded;
+        const nextConsignment = mergeSlice(
+          globalState.wmsConsignmentEntries || [],
+          wms.consignmentEntries
+        );
+        if (nextConsignment) updates.wmsConsignmentEntries = nextConsignment;
+      });
+    }
+
+    if (shouldSyncTable('import_column_mappings') || shouldSyncTable('import_jobs')) {
+      tasks.push(async () => {
+        const imp = await importService.fetchImportDataForBusiness(businessId);
+        if (imp.mappings.length > 0) {
+          const others = (globalState.importColumnMappings || []).filter(
+            (m) => m.businessId !== businessId
+          );
+          updates.importColumnMappings = [...imp.mappings, ...others];
+        }
+        if (imp.jobs.length > 0) {
+          const others = (globalState.importJobs || []).filter((j) => j.businessId !== businessId);
+          updates.importJobs = [...imp.jobs, ...others];
         }
       });
     }
@@ -6400,11 +6689,79 @@ function createAtriumActions() {
       return p;
     });
 
+    const nowSaleIso = new Date().toISOString();
+    const saleDayIso = nowSaleIso.slice(0, 10);
+    const bizLots = selectCurrentWmsStockLotsFromState(globalState);
+    const saleLotDeltas = new Map<string, number>();
+    const soldQtyByProduct = new Map<string, number>();
+    const policy = selectCurrentWmsNegativeStockPolicyFromState(globalState);
+
+    for (const item of items) {
+      soldQtyByProduct.set(
+        item.product.id,
+        (soldQtyByProduct.get(item.product.id) || 0) + item.quantity
+      );
+      const prodLots = bizLots.filter((l) => l.productId === item.product.id);
+      if (prodLots.length > 0) {
+        const fefo = evaluateFefoConsumption({
+          lots: prodLots,
+          productOnHandQty: item.product.stockQuantity || 0,
+          requestedQty: item.quantity,
+          refDateIso: saleDayIso,
+          negativeStockPolicy: policy === 'block' ? 'allow' : policy,
+        });
+        for (const slice of fefo.allocations) {
+          saleLotDeltas.set(slice.lotId, (saleLotDeltas.get(slice.lotId) || 0) + slice.quantity);
+        }
+      }
+    }
+
+    const updatedLots =
+      saleLotDeltas.size > 0
+        ? (globalState.wmsStockLots || []).map((l) => {
+            const take = saleLotDeltas.get(l.id);
+            if (!take) return l;
+            return {
+              ...l,
+              qtyOnHand: Math.max(0, Number((l.qtyOnHand - take).toFixed(4))),
+              updatedAt: nowSaleIso,
+            };
+          })
+        : globalState.wmsStockLots;
+
+    const updatedCycleCounts =
+      soldQtyByProduct.size > 0 && (globalState.wmsCycleCounts || []).length > 0
+        ? (globalState.wmsCycleCounts || []).map((cc) => {
+            if (cc.businessId !== globalState.currentBusinessId) return cc;
+            if (cc.status !== 'open' && cc.status !== 'counting') return cc;
+            let touched = false;
+            const nextLines = cc.lines.map((line) => {
+              const delta = soldQtyByProduct.get(line.productId);
+              if (!delta) return line;
+              touched = true;
+              return computeCycleCountVarianceLine({
+                ...line,
+                activeSalesDeltaQty: Number((line.activeSalesDeltaQty + delta).toFixed(4)),
+              });
+            });
+            if (!touched) return cc;
+            return {
+              ...cc,
+              lines: nextLines,
+              totalVarianceUnits: Number(nextLines.reduce((s, l) => s + l.varianceQty, 0).toFixed(4)),
+              totalVarianceCentimes: nextLines.reduce((s, l) => s + l.varianceCentimes, 0),
+              updatedAt: nowSaleIso,
+            };
+          })
+        : globalState.wmsCycleCounts;
+
     globalState = {
       ...globalState,
       products: updatedProducts,
       sales: [sale, ...globalState.sales],
       stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
+      wmsStockLots: updatedLots,
+      wmsCycleCounts: updatedCycleCounts,
     };
     notify();
 
@@ -16985,7 +17342,7 @@ function createAtriumActions() {
 
   const createWarehouseDepot = (depot: Omit<WarehouseDepot, 'id' | 'createdAt'>) => {
     const before = captureStoreSlices(['warehouses']);
-    const id = `depot_${Date.now()}`;
+    const id = generateClientUuid();
     const newDepot: WarehouseDepot = {
       ...getTraceContext(),
       ...depot,
@@ -17126,6 +17483,28 @@ function createAtriumActions() {
       reminderDeliveryLogs: Array.isArray(parsed.reminderDeliveryLogs)
         ? parsed.reminderDeliveryLogs
         : [],
+      wmsNegativeStockPolicyByBusiness:
+        parsed.wmsNegativeStockPolicyByBusiness &&
+        typeof parsed.wmsNegativeStockPolicyByBusiness === 'object'
+          ? parsed.wmsNegativeStockPolicyByBusiness
+          : {},
+      wmsBins: Array.isArray(parsed.wmsBins) ? parsed.wmsBins : [],
+      wmsStockLots: Array.isArray(parsed.wmsStockLots) ? parsed.wmsStockLots : [],
+      wmsSerialNumbers: Array.isArray(parsed.wmsSerialNumbers) ? parsed.wmsSerialNumbers : [],
+      wmsUnitConversions: Array.isArray(parsed.wmsUnitConversions) ? parsed.wmsUnitConversions : [],
+      wmsReorderRules: Array.isArray(parsed.wmsReorderRules) ? parsed.wmsReorderRules : [],
+      wmsCycleCounts: Array.isArray(parsed.wmsCycleCounts) ? parsed.wmsCycleCounts : [],
+      wmsStockTransfers: Array.isArray(parsed.wmsStockTransfers) ? parsed.wmsStockTransfers : [],
+      wmsLandedCostAllocations: Array.isArray(parsed.wmsLandedCostAllocations)
+        ? parsed.wmsLandedCostAllocations
+        : [],
+      wmsConsignmentEntries: Array.isArray(parsed.wmsConsignmentEntries)
+        ? parsed.wmsConsignmentEntries
+        : [],
+      importColumnMappings: Array.isArray(parsed.importColumnMappings)
+        ? parsed.importColumnMappings
+        : [],
+      importJobs: Array.isArray(parsed.importJobs) ? parsed.importJobs : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -21429,6 +21808,1895 @@ function createAtriumActions() {
     };
   };
 
+  // ==========================================================================
+  // SECTION 6.6: SHARED INVENTORY / WMS ACTIONS
+  // ==========================================================================
+  const setWmsNegativeStockPolicy = (policy: WmsNegativeStockPolicy): WmsNegativeStockPolicy => {
+    const bizId = globalState.currentBusinessId || '';
+    if (!bizId) return policy;
+    globalState = {
+      ...globalState,
+      wmsNegativeStockPolicyByBusiness: {
+        ...(globalState.wmsNegativeStockPolicyByBusiness || {}),
+        [bizId]: policy,
+      },
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: ul('Negative Stock Policy Updated', 'Politique stock négatif mise à jour', 'تم تحديث سياسة المخزون السالب'),
+      message:
+        policy === 'block'
+          ? ul('Strict block enabled', 'Blocage strict activé', 'تفعيل المنع الصارم')
+          : policy === 'warn'
+          ? ul('Warn & allow enabled', 'Avertissement activé', 'تحذير مع السماح')
+          : ul('Negative stock allowed', 'Stock négatif autorisé', 'السماح بالمخزون السالب'),
+    });
+    return policy;
+  };
+
+  const upsertWmsBin = (input: {
+    id?: string;
+    warehouseId: string;
+    code: string;
+    name: string;
+    zone?: string;
+    aisle?: string;
+    rack?: string;
+    isDefault?: boolean;
+    capacityUnits?: number;
+    notes?: string;
+  }): WmsBin => {
+    const nowIso = new Date().toISOString();
+    const accountId = globalState.account?.id || '';
+    const businessId = globalState.currentBusinessId || '';
+    const branchId = globalState.currentBranchId || '';
+    const existing = input.id
+      ? (globalState.wmsBins || []).find((b) => b.id === input.id)
+      : undefined;
+    const bin: WmsBin = {
+      id: existing?.id || generateClientUuid(),
+      accountId: existing?.accountId || accountId,
+      businessId: existing?.businessId || businessId,
+      branchId: existing?.branchId || branchId,
+      warehouseId: input.warehouseId,
+      code: input.code.trim(),
+      name: input.name.trim(),
+      zone: input.zone?.trim() || undefined,
+      aisle: input.aisle?.trim() || undefined,
+      rack: input.rack?.trim() || undefined,
+      isDefault: Boolean(input.isDefault),
+      capacityUnits: input.capacityUnits,
+      notes: input.notes?.trim() || undefined,
+      version: existing?.version,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsBins: existing
+        ? (globalState.wmsBins || []).map((b) => (b.id === existing.id ? bin : b))
+        : [bin, ...(globalState.wmsBins || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertBin(bin, globalState.currentUser?.id).catch(() => {});
+    }
+    return bin;
+  };
+
+  const upsertWmsStockLot = (input: {
+    id?: string;
+    warehouseId?: string;
+    binId?: string;
+    productId: string;
+    productName?: string;
+    sku?: string;
+    lotNumber: string;
+    manufactureDate?: string;
+    expiryDate?: string;
+    qtyOnHand: number;
+    qtyReserved?: number;
+    unitCostCentimes: number;
+    recallStatus?: WmsLotRecallStatus;
+    recallReason?: string;
+    supplierName?: string;
+    notes?: string;
+  }): WmsStockLot => {
+    const nowIso = new Date().toISOString();
+    const accountId = globalState.account?.id || '';
+    const businessId = globalState.currentBusinessId || '';
+    const branchId = globalState.currentBranchId || '';
+    const prod = (globalState.products || []).find((p) => p.id === input.productId);
+    const existing = input.id
+      ? (globalState.wmsStockLots || []).find((l) => l.id === input.id)
+      : undefined;
+    const lot: WmsStockLot = {
+      id: existing?.id || generateClientUuid(),
+      accountId: existing?.accountId || accountId,
+      businessId: existing?.businessId || businessId,
+      branchId: existing?.branchId || branchId,
+      warehouseId: input.warehouseId || existing?.warehouseId,
+      binId: input.binId || existing?.binId,
+      productId: input.productId,
+      productName: input.productName || prod?.name || input.productId,
+      sku: input.sku || prod?.sku,
+      lotNumber: input.lotNumber.trim(),
+      manufactureDate: input.manufactureDate || undefined,
+      expiryDate: input.expiryDate || undefined,
+      qtyOnHand: Number(input.qtyOnHand || 0),
+      qtyReserved: Math.max(0, Number(input.qtyReserved ?? existing?.qtyReserved ?? 0)),
+      unitCostCentimes: Math.max(0, Math.round(input.unitCostCentimes || 0)),
+      recallStatus: input.recallStatus || existing?.recallStatus || 'active',
+      recallReason: input.recallReason || existing?.recallReason,
+      supplierName: input.supplierName || existing?.supplierName,
+      notes: input.notes || existing?.notes,
+      version: existing?.version,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    const deltaQty = existing ? lot.qtyOnHand - existing.qtyOnHand : lot.qtyOnHand;
+    globalState = {
+      ...globalState,
+      wmsStockLots: existing
+        ? (globalState.wmsStockLots || []).map((l) => (l.id === existing.id ? lot : l))
+        : [lot, ...(globalState.wmsStockLots || [])],
+      products:
+        deltaQty !== 0
+          ? (globalState.products || []).map((p) =>
+              p.id === lot.productId
+                ? { ...p, stockQuantity: Number(((p.stockQuantity || 0) + deltaQty).toFixed(4)) }
+                : p
+            )
+          : globalState.products,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertStockLot(lot, globalState.currentUser?.id).catch(() => {});
+    }
+    return lot;
+  };
+
+  const setWmsLotRecallStatus = (
+    lotId: string,
+    recallStatus: WmsLotRecallStatus,
+    recallReason?: string
+  ): WmsStockLot | null => {
+    const target = (globalState.wmsStockLots || []).find((l) => l.id === lotId);
+    if (!target) return null;
+    const updated: WmsStockLot = {
+      ...target,
+      recallStatus,
+      recallReason: recallReason?.trim() || target.recallReason,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      wmsStockLots: (globalState.wmsStockLots || []).map((l) => (l.id === lotId ? updated : l)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertStockLot(updated, globalState.currentUser?.id).catch(() => {});
+    }
+    showToast({
+      type: recallStatus === 'active' ? 'success' : 'warning',
+      title: ul('Lot Status Updated', 'Statut du lot mis à jour', 'تم تحديث حالة الدفعة'),
+      message: `${updated.lotNumber} · ${recallStatus}`,
+    });
+    return updated;
+  };
+
+  const consumeWmsStockAtomic = (params: {
+    productId: string;
+    quantity: number;
+    warehouseId?: string;
+    explicitLotId?: string;
+    referenceDoc?: string;
+    unit?: string;
+  }): FefoAllocationResult & { convertedBaseQty: number } => {
+    const bizId = globalState.currentBusinessId || '';
+    const brId = globalState.currentBranchId || '';
+    const policy = selectCurrentWmsNegativeStockPolicyFromState(globalState);
+    const prod = (globalState.products || []).find((p) => p.id === params.productId);
+    if (!prod) {
+      return {
+        ok: false,
+        errorCode: 'INSUFFICIENT_ACTIVE_LOTS',
+        errorMessage: 'Product not found in active branch.',
+        allocations: [],
+        shortfallQty: params.quantity,
+        totalAllocatedQty: 0,
+        convertedBaseQty: 0,
+      };
+    }
+
+    let requestedBaseQty = params.quantity;
+    if (params.unit && prod.unit && params.unit.toLowerCase() !== prod.unit.toLowerCase()) {
+      const conv = convertQuantityUnit({
+        quantity: params.quantity,
+        fromUnit: params.unit,
+        toUnit: prod.unit,
+        conversions: selectCurrentWmsUnitConversionsFromState(globalState),
+        productId: prod.id,
+      });
+      if (conv.ok) {
+        requestedBaseQty = conv.convertedQuantity;
+      }
+    }
+
+    const scopedLots = selectCurrentWmsStockLotsFromState(globalState).filter(
+      (l) => l.productId === prod.id
+    );
+    const refDateIso = new Date().toISOString().slice(0, 10);
+    const result = evaluateFefoConsumption({
+      lots: scopedLots,
+      productOnHandQty: prod.stockQuantity || 0,
+      requestedQty: requestedBaseQty,
+      refDateIso,
+      warehouseId: params.warehouseId,
+      explicitLotId: params.explicitLotId,
+      negativeStockPolicy: policy,
+    });
+
+    if (!result.ok) {
+      showToast({
+        type: 'error',
+        title: ul('Stock Consumption Blocked', 'Sortie de stock bloquée', 'تم حظر إخراج المخزون'),
+        message: result.errorMessage || result.errorCode || 'Blocked',
+      });
+      return { ...result, convertedBaseQty: requestedBaseQty };
+    }
+
+    const deductionByLot = new Map<string, number>();
+    for (const slice of result.allocations) {
+      deductionByLot.set(slice.lotId, (deductionByLot.get(slice.lotId) || 0) + slice.quantity);
+    }
+
+    const nowIso = new Date().toISOString();
+    const prevQty = prod.stockQuantity || 0;
+    const newQty = Number((prevQty - requestedBaseQty).toFixed(4));
+    const movement: StockMovement = {
+      ...getTraceContext(),
+      id: generateClientUuid(),
+      accountId: globalState.account?.id || '',
+      businessId: bizId,
+      branchId: brId,
+      tenantId: globalState.account?.id || '',
+      facilityId: brId,
+      productId: prod.id,
+      productName: prod.name,
+      type: 'Sale',
+      quantity: -requestedBaseQty,
+      previousStock: prevQty,
+      newStock: newQty,
+      reason: params.referenceDoc
+        ? `WMS FEFO (${params.referenceDoc})`
+        : 'WMS FEFO Consumption',
+      createdBy: globalState.currentUser?.fullName || 'System',
+      createdAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      wmsStockLots: (globalState.wmsStockLots || []).map((lot) => {
+        const take = deductionByLot.get(lot.id);
+        if (!take) return lot;
+        return {
+          ...lot,
+          qtyOnHand: Number((lot.qtyOnHand - take).toFixed(4)),
+          updatedAt: nowIso,
+        };
+      }),
+      products: (globalState.products || []).map((p) =>
+        p.id === prod.id ? { ...p, stockQuantity: newQty } : p
+      ),
+      stockMovements: [movement, ...(globalState.stockMovements || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      wmsService
+        .atomicConsumeStock({
+          businessId: bizId,
+          branchId: brId,
+          productId: prod.id,
+          quantity: requestedBaseQty,
+          warehouseId: params.warehouseId,
+          lotId: params.explicitLotId,
+          negativeStockPolicy: policy,
+          referenceDoc: params.referenceDoc,
+        })
+        .catch(() => {});
+    }
+
+    if (result.warningMessage) {
+      showToast({
+        type: 'warning',
+        title: ul('Negative Stock Warning', 'Alerte stock négatif', 'تنبيه مخزون سالب'),
+        message: result.warningMessage,
+      });
+    }
+
+    return { ...result, convertedBaseQty: requestedBaseQty };
+  };
+
+  const registerWmsSerialNumber = (input: {
+    productId: string;
+    serialNumber: string;
+    warehouseId?: string;
+    binId?: string;
+    lotId?: string;
+    sourceDocId?: string;
+    notes?: string;
+  }): { ok: boolean; serial?: WmsSerialNumber; errorMessage?: string } => {
+    const validation = validateSerialAssignment({
+      existingSerials: selectCurrentWmsSerialNumbersFromState(globalState),
+      productId: input.productId,
+      serialNumber: input.serialNumber,
+    });
+    if (!validation.ok) {
+      showToast({
+        type: 'error',
+        title: ul('Invalid Serial Number', 'Numéro de série invalide', 'رقم تسلسلي غير صالح'),
+        message: validation.errorMessage || 'Duplicate serial',
+      });
+      return { ok: false, errorMessage: validation.errorMessage };
+    }
+    const nowIso = new Date().toISOString();
+    const prod = (globalState.products || []).find((p) => p.id === input.productId);
+    const serial: WmsSerialNumber = {
+      id: generateClientUuid(),
+      accountId: globalState.account?.id || '',
+      businessId: globalState.currentBusinessId || '',
+      branchId: globalState.currentBranchId || '',
+      warehouseId: input.warehouseId || undefined,
+      binId: input.binId || undefined,
+      lotId: input.lotId || undefined,
+      productId: input.productId,
+      productName: prod?.name || input.productId,
+      serialNumber: input.serialNumber.trim(),
+      status: 'in_stock',
+      sourceDocId: input.sourceDocId || undefined,
+      notes: input.notes || undefined,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsSerialNumbers: [serial, ...(globalState.wmsSerialNumbers || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertSerialNumber(serial, globalState.currentUser?.id).catch(() => {});
+    }
+    return { ok: true, serial };
+  };
+
+  const updateWmsSerialStatus = (
+    serialId: string,
+    status: WmsSerialStatus,
+    saleId?: string
+  ): WmsSerialNumber | null => {
+    const existing = (globalState.wmsSerialNumbers || []).find((s) => s.id === serialId);
+    if (!existing) return null;
+    const updated: WmsSerialNumber = {
+      ...existing,
+      status,
+      saleId: saleId ?? existing.saleId,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      wmsSerialNumbers: (globalState.wmsSerialNumbers || []).map((s) =>
+        s.id === serialId ? updated : s
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertSerialNumber(updated, globalState.currentUser?.id).catch(() => {});
+    }
+    return updated;
+  };
+
+  const upsertWmsUnitConversion = (input: {
+    id?: string;
+    productId?: string;
+    fromUnit: string;
+    toBaseUnit: string;
+    conversionFactor: number;
+    barcode?: string;
+    isDefaultPurchase?: boolean;
+    isDefaultSale?: boolean;
+  }): WmsUnitConversion => {
+    const nowIso = new Date().toISOString();
+    const prod = input.productId
+      ? (globalState.products || []).find((p) => p.id === input.productId)
+      : undefined;
+    const existing = input.id
+      ? (globalState.wmsUnitConversions || []).find((c) => c.id === input.id)
+      : undefined;
+    const conv: WmsUnitConversion = {
+      id: existing?.id || generateClientUuid(),
+      accountId: existing?.accountId || globalState.account?.id || '',
+      businessId: existing?.businessId || globalState.currentBusinessId || '',
+      branchId: existing?.branchId || globalState.currentBranchId || '',
+      productId: input.productId || undefined,
+      productName: prod?.name,
+      fromUnit: input.fromUnit.trim(),
+      toBaseUnit: input.toBaseUnit.trim(),
+      conversionFactor: Math.max(0.0001, Number(input.conversionFactor || 1)),
+      barcode: input.barcode?.trim() || undefined,
+      isDefaultPurchase: Boolean(input.isDefaultPurchase),
+      isDefaultSale: Boolean(input.isDefaultSale),
+      version: existing?.version,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsUnitConversions: existing
+        ? (globalState.wmsUnitConversions || []).map((c) => (c.id === existing.id ? conv : c))
+        : [conv, ...(globalState.wmsUnitConversions || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertUnitConversion(conv, globalState.currentUser?.id).catch(() => {});
+    }
+    return conv;
+  };
+
+  const upsertWmsReorderRule = (input: {
+    id?: string;
+    warehouseId?: string;
+    productId: string;
+    minQty: number;
+    maxQty: number;
+    reorderQty: number;
+    preferredSupplierId?: string;
+    preferredSupplierName?: string;
+    leadTimeDays?: number;
+    isActive?: boolean;
+  }): WmsReorderRule => {
+    const nowIso = new Date().toISOString();
+    const prod = (globalState.products || []).find((p) => p.id === input.productId);
+    const existing = input.id
+      ? (globalState.wmsReorderRules || []).find((r) => r.id === input.id)
+      : undefined;
+    const rule: WmsReorderRule = {
+      id: existing?.id || generateClientUuid(),
+      accountId: existing?.accountId || globalState.account?.id || '',
+      businessId: existing?.businessId || globalState.currentBusinessId || '',
+      branchId: existing?.branchId || globalState.currentBranchId || '',
+      warehouseId: input.warehouseId || undefined,
+      productId: input.productId,
+      productName: prod?.name || input.productId,
+      minQty: Math.max(0, Number(input.minQty || 0)),
+      maxQty: Math.max(0, Number(input.maxQty || 0)),
+      reorderQty: Math.max(0, Number(input.reorderQty || 0)),
+      preferredSupplierId: input.preferredSupplierId || undefined,
+      preferredSupplierName: input.preferredSupplierName || undefined,
+      leadTimeDays: Math.max(0, Math.round(input.leadTimeDays ?? 3)),
+      isActive: input.isActive !== false,
+      version: existing?.version,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsReorderRules: existing
+        ? (globalState.wmsReorderRules || []).map((r) => (r.id === existing.id ? rule : r))
+        : [rule, ...(globalState.wmsReorderRules || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertReorderRule(rule, globalState.currentUser?.id).catch(() => {});
+    }
+    return rule;
+  };
+
+  const createPurchaseOrdersFromReorderSuggestions = (
+    providedSuggestions?: ReorderSuggestion[]
+  ): PurchaseDocument[] => {
+    const suggestions =
+      providedSuggestions ||
+      computeReorderSuggestions({
+        rules: selectCurrentWmsReorderRulesFromState(globalState),
+        products: selectCurrentProductsFromState(globalState),
+        lots: selectCurrentWmsStockLotsFromState(globalState),
+        refDateIso: new Date().toISOString().slice(0, 10),
+      });
+    if (suggestions.length === 0) return [];
+
+    const bySupplier = new Map<string, ReorderSuggestion[]>();
+    for (const s of suggestions) {
+      const key = s.preferredSupplierId || s.preferredSupplierName || 'general_supplier';
+      const group = bySupplier.get(key) || [];
+      group.push(s);
+      bySupplier.set(key, group);
+    }
+
+    const created: PurchaseDocument[] = [];
+    const products = selectCurrentProductsFromState(globalState);
+    const suppliers = globalState.b2bSuppliers || [];
+
+    for (const [, group] of bySupplier.entries()) {
+      const first = group[0];
+      const matchedSup =
+        suppliers.find((s) => s.id === first.preferredSupplierId) ||
+        suppliers.find((s) => s.supplierName === first.preferredSupplierName);
+
+      const items: PurchaseDocItem[] = group.map((s) => {
+        const prod = products.find((p) => p.id === s.productId);
+        const unitCost = Number(prod?.cost?.amount ?? prod?.costPrice ?? 0);
+        const tvaRate = Number(prod?.taxRate ?? 19);
+        const lineHt = Number((unitCost * s.suggestedOrderQty).toFixed(2));
+        return {
+          id: generateClientUuid(),
+          productId: s.productId,
+          description: s.productName,
+          orderedQty: s.suggestedOrderQty,
+          receivedQty: 0,
+          unit: prod?.unit || 'u',
+          unitCostHt: unitCost,
+          tvaPercent: tvaRate,
+          totalHt: lineHt,
+        };
+      });
+
+      const totalHt = Number(items.reduce((sum, i) => sum + i.totalHt, 0).toFixed(2));
+      const totalTva = Number(
+        items.reduce((sum, i) => sum + (i.totalHt * i.tvaPercent) / 100, 0).toFixed(2)
+      );
+      const totalTtc = Number((totalHt + totalTva).toFixed(2));
+      const warehouses = selectCurrentWarehousesFromState(globalState);
+      const depotId = first.warehouseId || warehouses[0]?.id || '';
+      const depotName = warehouses.find((w) => w.id === depotId)?.name;
+      const existingPoCount = (globalState.purchaseDocs || []).length;
+      const poNumber = `PO-${new Date().getFullYear()}-${String(existingPoCount + created.length + 1).padStart(4, '0')}`;
+
+      const po = createPurchaseDoc({
+        tenantId: globalState.account?.id || '',
+        facilityId: globalState.currentBranchId || '',
+        type: 'po',
+        docNumber: poNumber,
+        supplierId: matchedSup?.id || first.preferredSupplierId || 'sup_reorder',
+        supplierName: matchedSup?.supplierName || first.preferredSupplierName || 'Fournisseur Réassort',
+        depotId,
+        depotName,
+        orderDate: new Date().toISOString().slice(0, 10),
+        status: 'Draft',
+        items,
+        totalHt,
+        totalTva,
+        totalTtc,
+        currency: 'DZD',
+        notes: 'Generated automatically from WMS reorder rules (min/max).',
+      });
+      created.push(po);
+    }
+
+    return created;
+  };
+
+  const createWmsCycleCount = (params: {
+    warehouseId?: string;
+    notes?: string;
+  }): WmsCycleCount => {
+    const nowIso = new Date().toISOString();
+    const accountId = globalState.account?.id || '';
+    const businessId = globalState.currentBusinessId || '';
+    const branchId = globalState.currentBranchId || '';
+    const countId = generateClientUuid();
+    const lots = selectCurrentWmsStockLotsFromState(globalState).filter(
+      (l) => !params.warehouseId || l.warehouseId === params.warehouseId
+    );
+    const products = selectCurrentProductsFromState(globalState);
+
+    const lines: WmsCycleCountLine[] =
+      lots.length > 0
+        ? lots.map((lot) => ({
+            id: generateClientUuid(),
+            cycleCountId: countId,
+            productId: lot.productId,
+            productName: lot.productName,
+            lotId: lot.id,
+            lotNumber: lot.lotNumber,
+            binId: lot.binId,
+            systemQty: lot.qtyOnHand,
+            activeSalesDeltaQty: 0,
+            countedQty: lot.qtyOnHand,
+            varianceQty: 0,
+            unitCostCentimes: lot.unitCostCentimes,
+            varianceCentimes: 0,
+          }))
+        : products.map((prod) => ({
+            id: generateClientUuid(),
+            cycleCountId: countId,
+            productId: prod.id,
+            productName: prod.name,
+            systemQty: prod.stockQuantity || 0,
+            activeSalesDeltaQty: 0,
+            countedQty: prod.stockQuantity || 0,
+            varianceQty: 0,
+            unitCostCentimes: dzdToCentimes(prod.cost?.amount ?? prod.costPrice ?? 0),
+            varianceCentimes: 0,
+          }));
+
+    const existingCount = selectCurrentWmsCycleCountsFromState(globalState).length;
+    const countNumber = `INV-${new Date().getFullYear()}-${String(existingCount + 1).padStart(4, '0')}`;
+    const count: WmsCycleCount = {
+      id: countId,
+      accountId,
+      businessId,
+      branchId,
+      warehouseId: params.warehouseId || undefined,
+      countNumber,
+      status: 'counting',
+      startedAt: nowIso,
+      countedByStaffId: globalState.currentUser?.id,
+      countedByName: globalState.currentUser?.fullName,
+      snapshotTakenAt: nowIso,
+      totalVarianceUnits: 0,
+      totalVarianceCentimes: 0,
+      lines,
+      notes: params.notes || undefined,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsCycleCounts: [count, ...(globalState.wmsCycleCounts || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertCycleCount(count, globalState.currentUser?.id).catch(() => {});
+    }
+    return count;
+  };
+
+  const updateWmsCycleCountLine = (params: {
+    cycleCountId: string;
+    lineId: string;
+    countedQty?: number;
+    activeSalesDeltaQty?: number;
+    reason?: string;
+  }): WmsCycleCount | null => {
+    const target = (globalState.wmsCycleCounts || []).find((c) => c.id === params.cycleCountId);
+    if (!target || target.status === 'posted' || target.status === 'cancelled') return null;
+
+    const updatedLines = target.lines.map((l) => {
+      if (l.id !== params.lineId) return l;
+      return computeCycleCountVarianceLine({
+        ...l,
+        countedQty: params.countedQty ?? l.countedQty,
+        activeSalesDeltaQty: params.activeSalesDeltaQty ?? l.activeSalesDeltaQty,
+        reason: params.reason !== undefined ? params.reason : l.reason,
+      });
+    });
+
+    const totalVarianceUnits = Number(
+      updatedLines.reduce((s, l) => s + l.varianceQty, 0).toFixed(4)
+    );
+    const totalVarianceCentimes = updatedLines.reduce((s, l) => s + l.varianceCentimes, 0);
+    const updatedCount: WmsCycleCount = {
+      ...target,
+      lines: updatedLines,
+      totalVarianceUnits,
+      totalVarianceCentimes,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      wmsCycleCounts: (globalState.wmsCycleCounts || []).map((c) =>
+        c.id === params.cycleCountId ? updatedCount : c
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertCycleCount(updatedCount, globalState.currentUser?.id).catch(() => {});
+    }
+    return updatedCount;
+  };
+
+  const postWmsCycleCount = (cycleCountId: string): WmsCycleCount | null => {
+    const target = (globalState.wmsCycleCounts || []).find((c) => c.id === cycleCountId);
+    if (!target || target.status === 'posted' || target.status === 'cancelled') return null;
+
+    const nowIso = new Date().toISOString();
+    const recomputedLines = target.lines.map(computeCycleCountVarianceLine);
+    const totalVarianceUnits = Number(
+      recomputedLines.reduce((s, l) => s + l.varianceQty, 0).toFixed(4)
+    );
+    const totalVarianceCentimes = recomputedLines.reduce((s, l) => s + l.varianceCentimes, 0);
+
+    const lotDeltas = new Map<string, number>();
+    const prodDeltas = new Map<string, number>();
+    const newMovements: StockMovement[] = [];
+
+    for (const line of recomputedLines) {
+      if (line.varianceQty === 0) continue;
+      if (line.lotId) {
+        lotDeltas.set(line.lotId, (lotDeltas.get(line.lotId) || 0) + line.varianceQty);
+      }
+      prodDeltas.set(line.productId, (prodDeltas.get(line.productId) || 0) + line.varianceQty);
+      const prod = (globalState.products || []).find((p) => p.id === line.productId);
+      const prevQty = prod?.stockQuantity || 0;
+      newMovements.push({
+        ...getTraceContext(),
+        id: generateClientUuid(),
+        accountId: target.accountId,
+        businessId: target.businessId,
+        branchId: target.branchId,
+        tenantId: target.accountId,
+        facilityId: target.branchId,
+        productId: line.productId,
+        productName: line.productName,
+        type: 'Adjustment',
+        quantity: line.varianceQty,
+        previousStock: prevQty,
+        newStock: Math.max(0, Number((prevQty + line.varianceQty).toFixed(4))),
+        reason: line.reason || `Cycle Count ${target.countNumber}`,
+        createdBy: globalState.currentUser?.fullName || 'System',
+        createdAt: nowIso,
+      });
+    }
+
+    const posted: WmsCycleCount = {
+      ...target,
+      status: 'posted',
+      postedAt: nowIso,
+      lines: recomputedLines,
+      totalVarianceUnits,
+      totalVarianceCentimes,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      wmsCycleCounts: (globalState.wmsCycleCounts || []).map((c) =>
+        c.id === cycleCountId ? posted : c
+      ),
+      wmsStockLots: (globalState.wmsStockLots || []).map((lot) => {
+        const delta = lotDeltas.get(lot.id);
+        if (!delta) return lot;
+        return {
+          ...lot,
+          qtyOnHand: Math.max(0, Number((lot.qtyOnHand + delta).toFixed(4))),
+          updatedAt: nowIso,
+        };
+      }),
+      products: (globalState.products || []).map((p) => {
+        const delta = prodDeltas.get(p.id);
+        if (!delta) return p;
+        return {
+          ...p,
+          stockQuantity: Math.max(0, Number(((p.stockQuantity || 0) + delta).toFixed(4))),
+        };
+      }),
+      stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      wmsService.upsertCycleCount(posted, globalState.currentUser?.id).catch(() => {});
+      wmsService.postCycleCountAtomic(posted.id).catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title: ul('Cycle Count Posted', 'Inventaire validé', 'تم ترحيل الجرد'),
+      message: `${posted.countNumber} · Δ ${totalVarianceUnits} u`,
+    });
+    return posted;
+  };
+
+  const createWmsStockTransfer = (params: {
+    fromWarehouseId?: string;
+    toWarehouseId?: string;
+    carrierName?: string;
+    items: WmsStockTransferItem[];
+    notes?: string;
+  }): WmsStockTransfer => {
+    const nowIso = new Date().toISOString();
+    const warehouses = selectCurrentWarehousesFromState(globalState);
+    const fromWh = warehouses.find((w) => w.id === params.fromWarehouseId);
+    const toWh = warehouses.find((w) => w.id === params.toWarehouseId);
+    const existingCount = selectCurrentWmsStockTransfersFromState(globalState).length;
+    const transferNumber = `TRF-${new Date().getFullYear()}-${String(existingCount + 1).padStart(4, '0')}`;
+    const transfer: WmsStockTransfer = {
+      id: generateClientUuid(),
+      accountId: globalState.account?.id || '',
+      businessId: globalState.currentBusinessId || '',
+      branchId: globalState.currentBranchId || '',
+      transferNumber,
+      fromWarehouseId: params.fromWarehouseId,
+      fromWarehouseName: fromWh?.name,
+      toWarehouseId: params.toWarehouseId,
+      toWarehouseName: toWh?.name,
+      status: 'draft',
+      carrierName: params.carrierName?.trim() || undefined,
+      items: params.items,
+      notes: params.notes?.trim() || undefined,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsStockTransfers: [transfer, ...(globalState.wmsStockTransfers || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertStockTransfer(transfer, globalState.currentUser?.id).catch(() => {});
+    }
+    return transfer;
+  };
+
+  const transitionWmsStockTransfer = (
+    transferId: string,
+    action: 'dispatch' | 'receive' | 'partial'
+  ): WmsStockTransfer | null => {
+    const trf = (globalState.wmsStockTransfers || []).find((t) => t.id === transferId);
+    if (!trf) return null;
+    const nowIso = new Date().toISOString();
+    let updatedLots = [...(globalState.wmsStockLots || [])];
+
+    if (action === 'dispatch' && trf.status === 'draft') {
+      for (const item of trf.items) {
+        if (item.lotId && item.quantity > 0) {
+          updatedLots = updatedLots.map((l) =>
+            l.id === item.lotId
+              ? { ...l, qtyOnHand: Math.max(0, Number((l.qtyOnHand - item.quantity).toFixed(4))), updatedAt: nowIso }
+              : l
+          );
+        }
+      }
+      const next: WmsStockTransfer = {
+        ...trf,
+        status: 'in_transit',
+        dispatchedAt: nowIso,
+        updatedAt: nowIso,
+      };
+      globalState = {
+        ...globalState,
+        wmsStockLots: updatedLots,
+        wmsStockTransfers: (globalState.wmsStockTransfers || []).map((t) =>
+          t.id === transferId ? next : t
+        ),
+      };
+      notify();
+      if (isSupabaseConfigured()) {
+        wmsService.transitionStockTransferAtomic(transferId, 'dispatch').catch(() => {});
+      }
+      return next;
+    }
+
+    if ((action === 'receive' || action === 'partial') && (trf.status === 'in_transit' || trf.status === 'partial')) {
+      for (const item of trf.items) {
+        const recvQty = item.receivedQuantity ?? item.quantity;
+        if (recvQty > 0 && trf.toWarehouseId) {
+          const lotCode = item.lotNumber || `TRF-${trf.transferNumber}`;
+          const existingDestIdx = updatedLots.findIndex(
+            (l) =>
+              !l.deletedAt &&
+              l.businessId === trf.businessId &&
+              l.warehouseId === trf.toWarehouseId &&
+              l.productId === item.productId &&
+              l.lotNumber === lotCode
+          );
+          if (existingDestIdx >= 0) {
+            const cur = updatedLots[existingDestIdx];
+            updatedLots[existingDestIdx] = {
+              ...cur,
+              qtyOnHand: Number((cur.qtyOnHand + recvQty).toFixed(4)),
+              updatedAt: nowIso,
+            };
+          } else {
+            updatedLots.unshift({
+              id: generateClientUuid(),
+              accountId: trf.accountId,
+              businessId: trf.businessId,
+              branchId: trf.branchId,
+              warehouseId: trf.toWarehouseId,
+              productId: item.productId,
+              productName: item.productName,
+              sku: item.sku,
+              lotNumber: lotCode,
+              qtyOnHand: recvQty,
+              qtyReserved: 0,
+              unitCostCentimes: item.unitCostCentimes || 0,
+              recallStatus: 'active',
+              createdAt: nowIso,
+              updatedAt: nowIso,
+            });
+          }
+        }
+      }
+      const nextStatus: WmsTransferStatus = action === 'partial' ? 'partial' : 'received';
+      const next: WmsStockTransfer = {
+        ...trf,
+        status: nextStatus,
+        receivedAt: nextStatus === 'received' ? nowIso : trf.receivedAt,
+        updatedAt: nowIso,
+      };
+      globalState = {
+        ...globalState,
+        wmsStockLots: updatedLots,
+        wmsStockTransfers: (globalState.wmsStockTransfers || []).map((t) =>
+          t.id === transferId ? next : t
+        ),
+      };
+      notify();
+      if (isSupabaseConfigured()) {
+        wmsService.transitionStockTransferAtomic(transferId, action).catch(() => {});
+      }
+      return next;
+    }
+
+    return null;
+  };
+
+  const createLandedCostAllocation = (params: {
+    purchaseDocId?: string;
+    referenceNumber: string;
+    method: WmsLandedCostMethod;
+    currency?: string;
+    fxRate?: number;
+    freightCentimes: number;
+    customsCentimes: number;
+    insuranceCentimes: number;
+    otherCentimes: number;
+    lines: Array<{
+      productId: string;
+      productName: string;
+      lotId?: string;
+      lotNumber?: string;
+      quantity: number;
+      baseUnitCostCentimes: number;
+    }>;
+    applyImmediately?: boolean;
+    notes?: string;
+  }): WmsLandedCostAllocation => {
+    const nowIso = new Date().toISOString();
+    const computed = allocateLandedCosts({
+      lines: params.lines,
+      freightCentimes: params.freightCentimes,
+      customsCentimes: params.customsCentimes,
+      insuranceCentimes: params.insuranceCentimes,
+      otherCentimes: params.otherCentimes,
+      fxRate: params.fxRate,
+      method: params.method,
+    });
+    const alloc: WmsLandedCostAllocation = {
+      id: generateClientUuid(),
+      accountId: globalState.account?.id || '',
+      businessId: globalState.currentBusinessId || '',
+      branchId: globalState.currentBranchId || '',
+      purchaseDocId: params.purchaseDocId || undefined,
+      referenceNumber: params.referenceNumber.trim(),
+      allocationMethod: params.method,
+      currency: params.currency || 'DZD',
+      fxRate: params.fxRate && params.fxRate > 0 ? params.fxRate : 1,
+      freightCentimes: Math.max(0, Math.round(params.freightCentimes)),
+      customsCentimes: Math.max(0, Math.round(params.customsCentimes)),
+      insuranceCentimes: Math.max(0, Math.round(params.insuranceCentimes)),
+      otherCentimes: Math.max(0, Math.round(params.otherCentimes)),
+      totalLandedCentimes: computed.totalLandedCentimes,
+      lines: computed.lines,
+      status: params.applyImmediately ? 'applied' : 'draft',
+      appliedAt: params.applyImmediately ? nowIso : undefined,
+      notes: params.notes?.trim() || undefined,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    let updatedLots = globalState.wmsStockLots || [];
+    if (params.applyImmediately) {
+      const lotNewCost = new Map<string, number>();
+      for (const l of computed.lines) {
+        if (l.lotId) lotNewCost.set(l.lotId, l.newUnitCostCentimes);
+      }
+      if (lotNewCost.size > 0) {
+        updatedLots = updatedLots.map((lot) =>
+          lotNewCost.has(lot.id)
+            ? { ...lot, unitCostCentimes: lotNewCost.get(lot.id)!, updatedAt: nowIso }
+            : lot
+        );
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      wmsLandedCostAllocations: [alloc, ...(globalState.wmsLandedCostAllocations || [])],
+      wmsStockLots: updatedLots,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertLandedCostAllocation(alloc, globalState.currentUser?.id).catch(() => {});
+    }
+    return alloc;
+  };
+
+  const applyLandedCostAllocation = (allocationId: string): WmsLandedCostAllocation | null => {
+    const alloc = (globalState.wmsLandedCostAllocations || []).find((a) => a.id === allocationId);
+    if (!alloc || alloc.status === 'applied') return null;
+    const nowIso = new Date().toISOString();
+    const next: WmsLandedCostAllocation = {
+      ...alloc,
+      status: 'applied',
+      appliedAt: nowIso,
+      updatedAt: nowIso,
+    };
+    const lotNewCost = new Map<string, number>();
+    for (const l of alloc.lines) {
+      if (l.lotId) lotNewCost.set(l.lotId, l.newUnitCostCentimes);
+    }
+    globalState = {
+      ...globalState,
+      wmsLandedCostAllocations: (globalState.wmsLandedCostAllocations || []).map((a) =>
+        a.id === allocationId ? next : a
+      ),
+      wmsStockLots:
+        lotNewCost.size > 0
+          ? (globalState.wmsStockLots || []).map((lot) =>
+              lotNewCost.has(lot.id)
+                ? { ...lot, unitCostCentimes: lotNewCost.get(lot.id)!, updatedAt: nowIso }
+                : lot
+            )
+          : globalState.wmsStockLots,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertLandedCostAllocation(next, globalState.currentUser?.id).catch(() => {});
+    }
+    return next;
+  };
+
+  const recordWmsConsignmentEntry = (input: {
+    partyId?: string;
+    partyName: string;
+    packagingCode: string;
+    packagingName: string;
+    movementType: WmsConsignmentMovementType;
+    quantity: number;
+    unitDepositCentimes: number;
+    referenceDoc?: string;
+    movementDate?: string;
+    notes?: string;
+  }): WmsConsignmentEntry => {
+    const nowIso = new Date().toISOString();
+    const qty = Math.max(0.0001, Number(input.quantity || 1));
+    const unitDep = Math.max(0, Math.round(input.unitDepositCentimes || 0));
+    const entry: WmsConsignmentEntry = {
+      id: generateClientUuid(),
+      accountId: globalState.account?.id || '',
+      businessId: globalState.currentBusinessId || '',
+      branchId: globalState.currentBranchId || '',
+      partyId: input.partyId || undefined,
+      partyName: input.partyName.trim(),
+      packagingCode: input.packagingCode.trim().toUpperCase(),
+      packagingName: input.packagingName.trim(),
+      movementType: input.movementType,
+      quantity: qty,
+      unitDepositCentimes: unitDep,
+      totalDepositCentimes: Math.round(qty * unitDep),
+      referenceDoc: input.referenceDoc?.trim() || undefined,
+      movementDate: input.movementDate || nowIso.slice(0, 10),
+      notes: input.notes?.trim() || undefined,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      wmsConsignmentEntries: [entry, ...(globalState.wmsConsignmentEntries || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      wmsService.upsertConsignmentEntry(entry, globalState.currentUser?.id).catch(() => {});
+    }
+    return entry;
+  };
+
+  // ==========================================================================
+  // PHASE 2 SECTION 6.7: CSV / EXCEL IMPORT & ONBOARDING DATA TOOLS
+  // ==========================================================================
+
+  const saveImportColumnMapping = (input: {
+    id?: string;
+    entityType: ImportEntityType;
+    templateName: string;
+    encoding?: ImportEncoding;
+    delimiter?: ImportDelimiter;
+    duplicatePolicy?: ImportDuplicatePolicy;
+    columnMap: Record<string, string>;
+  }): ImportColumnMapping => {
+    const nowIso = new Date().toISOString();
+    const existing = input.id
+      ? (globalState.importColumnMappings || []).find((m) => m.id === input.id)
+      : (globalState.importColumnMappings || []).find(
+          (m) =>
+            m.businessId === globalState.currentBusinessId &&
+            m.entityType === input.entityType &&
+            m.templateName.toLowerCase() === input.templateName.trim().toLowerCase() &&
+            !m.deletedAt
+        );
+
+    const mapping: ImportColumnMapping = {
+      id: existing?.id || generateClientUuid(),
+      accountId: existing?.accountId || globalState.account?.id || '',
+      businessId: globalState.currentBusinessId || '',
+      branchId: globalState.currentBranchId || undefined,
+      entityType: input.entityType,
+      templateName: input.templateName.trim(),
+      encoding: input.encoding || 'auto',
+      delimiter: input.delimiter || 'auto',
+      duplicatePolicy: input.duplicatePolicy || 'skip',
+      columnMap: { ...input.columnMap },
+      createdByStaffId: globalState.currentUser?.id,
+      version: (existing?.version || 0) + 1,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      importColumnMappings: existing
+        ? (globalState.importColumnMappings || []).map((m) => (m.id === existing.id ? mapping : m))
+        : [mapping, ...(globalState.importColumnMappings || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      importService.upsertMapping(mapping, globalState.currentUser?.id).catch(() => {});
+    }
+    return mapping;
+  };
+
+  const deleteImportColumnMapping = (mappingId: string) => {
+    const existing = (globalState.importColumnMappings || []).find((m) => m.id === mappingId);
+    if (!existing) return;
+    globalState = {
+      ...globalState,
+      importColumnMappings: (globalState.importColumnMappings || []).filter(
+        (m) => m.id !== mappingId
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      importService.deleteMapping(mappingId, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const getExistingItemsForImportEntity = (
+    entityType: ImportEntityType
+  ): Array<Record<string, any>> => {
+    const bizId = globalState.currentBusinessId;
+    const branchId = globalState.currentBranchId;
+    if (entityType === 'members') {
+      return (globalState.members || []).filter((m) => m.facilityId === branchId);
+    }
+    if (entityType === 'products') {
+      return (globalState.products || []).filter((p) => p.facilityId === branchId);
+    }
+    if (entityType === 'clients') {
+      return (globalState.crmParties || []).filter(
+        (c) => c.businessId === bizId && !c.deletedAt
+      );
+    }
+    if (entityType === 'suppliers') {
+      return (globalState.b2bSuppliers || []).filter((s) => s.businessId === bizId);
+    }
+    if (entityType === 'staff') {
+      return (globalState.staff || [])
+        .filter((s) => s.facilityId === branchId)
+        .map((s) => ({ ...s, phone: s.phoneNumber }));
+    }
+    if (entityType === 'students') {
+      return (globalState.eduStudents || []).filter((s) => s.facilityId === branchId);
+    }
+    const readGroupB = (key: string): Array<Record<string, any>> => {
+      try {
+        if (typeof localStorage === 'undefined') return [];
+        const raw = localStorage.getItem(key);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    };
+    if (entityType === 'patients') return readGroupB('atrium_medical_patients_v2');
+    if (entityType === 'vehicles') return readGroupB('atrium_garage_vehicles_v2');
+    if (entityType === 'parcels') return readGroupB('atrium_logistics_shipments_v2');
+    if (entityType === 'properties') {
+      return readGroupB('atrium_realestate_props_v2').map((p) => ({
+        ...p,
+        reference: p.mandateNumber || p.reference || p.id,
+      }));
+    }
+    return [];
+  };
+
+  const commitDataImportBatch = (input: {
+    entityType: ImportEntityType;
+    fileName: string;
+    encoding?: ImportEncoding;
+    delimiter?: ImportDelimiter;
+    duplicatePolicy: ImportDuplicatePolicy;
+    mappingId?: string;
+    headers: string[];
+    rows: string[][];
+    columnMap: Record<string, string>;
+    chunkSize?: number;
+    simulateFailChunkIndex?: number;
+  }): ImportJob => {
+    const nowIso = new Date().toISOString();
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    const branchId = globalState.currentBranchId || '';
+    const existingItems = getExistingItemsForImportEntity(input.entityType);
+
+    const dryRun: ImportDryRunResult = runImportDryRun({
+      entityType: input.entityType,
+      headers: input.headers,
+      rows: input.rows,
+      columnMap: input.columnMap,
+      duplicatePolicy: input.duplicatePolicy,
+      existingItems,
+    });
+
+    const writeSnapshot = captureStoreSlices([
+      'members',
+      'crmParties',
+      'products',
+      'b2bClients',
+      'b2bSuppliers',
+      'staff',
+      'eduStudents',
+    ]);
+
+    const readGroupB = (key: string): any[] => {
+      try {
+        if (typeof localStorage === 'undefined') return [];
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    };
+    const writeGroupB = (key: string, rows: any[]) => {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(key, JSON.stringify(rows));
+        }
+      } catch {
+        // Non-fatal in SSR/restricted storage
+      }
+    };
+    const groupBKey =
+      input.entityType === 'patients'
+        ? 'atrium_medical_patients_v2'
+        : input.entityType === 'vehicles'
+        ? 'atrium_garage_vehicles_v2'
+        : input.entityType === 'parcels'
+        ? 'atrium_logistics_shipments_v2'
+        : input.entityType === 'properties'
+        ? 'atrium_realestate_props_v2'
+        : null;
+    const prevGroupBRows = groupBKey ? readGroupB(groupBKey) : null;
+
+    const commitRes = executeChunkedImportCommit({
+      records: dryRun.normalizedRecords,
+      chunkSize: input.chunkSize || 500,
+      rollbackOnFailure: true,
+      applyChunk: (chunk: NormalizedImportRecord[], chunkIdx: number) => {
+        if (
+          input.simulateFailChunkIndex !== undefined &&
+          chunkIdx === input.simulateFailChunkIndex
+        ) {
+          return {
+            ok: false,
+            error: `Injected chunk failure at chunk ${chunkIdx + 1}`,
+          };
+        }
+
+        const chunkIds: string[] = [];
+        for (const rec of chunk) {
+          if (rec.action === 'skip') continue;
+          const v = rec.values;
+          const recId = rec.matchedExistingId || generateClientUuid();
+
+          if (input.entityType === 'members') {
+            const existing = (globalState.members || []).find((m) => m.id === recId);
+            const defaultPlan =
+              (globalState.plansByBranch?.[branchId] || globalState.plans || [])[0];
+            const member: Member = {
+              ...(existing || {
+                id: recId,
+                tenantId: accountId,
+                accountId,
+                businessId,
+                branchId,
+                facilityId: branchId,
+                membershipPlanId: defaultPlan?.id || '',
+                membershipPlanName: String(v.planName || defaultPlan?.name || 'Standard'),
+                status: 'Active',
+                startDate: String(v.startDate || nowIso.slice(0, 10)),
+                expirationDate: String(v.expirationDate || nowIso.slice(0, 10)),
+                remainingSessions: Number(v.remainingSessions ?? 12),
+                gender: 'Other',
+                balanceDue: 0,
+                joinDate: nowIso.slice(0, 10),
+              }),
+              fullName: String(v.fullName || existing?.fullName || 'Member'),
+              phoneNumber: String(v.phoneNumber || existing?.phoneNumber || ''),
+              email: String(v.email || existing?.email || ''),
+              membershipPlanName: String(v.planName || existing?.membershipPlanName || 'Standard'),
+              startDate: String(v.startDate || existing?.startDate || nowIso.slice(0, 10)),
+              expirationDate: String(
+                v.expirationDate || existing?.expirationDate || nowIso.slice(0, 10)
+              ),
+              remainingSessions:
+                v.remainingSessions !== undefined
+                  ? Number(v.remainingSessions)
+                  : existing?.remainingSessions ?? 12,
+              balanceDue:
+                v.balanceDue !== undefined
+                  ? Number(v.balanceDue)
+                  : existing?.balanceDue ?? 0,
+            };
+            globalState = {
+              ...globalState,
+              members: existing
+                ? globalState.members.map((m) => (m.id === recId ? member : m))
+                : [member, ...globalState.members],
+            };
+            if (isSupabaseConfigured()) {
+              (existing
+                ? memberService.updateMember(member)
+                : memberService.createMember(member)
+              ).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'products') {
+            const existing = (globalState.products || []).find((p) => p.id === recId);
+            const priceAmt =
+              v.priceAmount !== undefined
+                ? Number(v.priceAmount)
+                : existing?.price?.amount ?? existing?.priceAmount ?? 0;
+            const prod: Product = {
+              ...(existing || {
+                id: recId,
+                tenantId: accountId,
+                accountId,
+                businessId,
+                branchId,
+                facilityId: branchId,
+                category: 'General',
+                price: { amount: priceAmt, currency: 'DZD' },
+                stockQuantity: 0,
+                lowStockThreshold: 5,
+              }),
+              name: String(v.name || existing?.name || 'Product'),
+              sku: v.sku ? String(v.sku) : existing?.sku,
+              barcode: v.barcode ? String(v.barcode) : existing?.barcode,
+              category: String(v.category || existing?.category || 'General'),
+              price: { amount: priceAmt, currency: 'DZD' },
+              priceAmount: priceAmt,
+              costPrice:
+                v.costPrice !== undefined ? Number(v.costPrice) : existing?.costPrice,
+              cost:
+                v.costPrice !== undefined
+                  ? { amount: Number(v.costPrice), currency: 'DZD' }
+                  : existing?.cost,
+              stockQuantity:
+                v.stockQuantity !== undefined
+                  ? Number(v.stockQuantity)
+                  : existing?.stockQuantity ?? 0,
+              lowStockThreshold:
+                v.lowStockThreshold !== undefined
+                  ? Number(v.lowStockThreshold)
+                  : existing?.lowStockThreshold ?? 5,
+            };
+            globalState = {
+              ...globalState,
+              products: existing
+                ? globalState.products.map((p) => (p.id === recId ? prod : p))
+                : [prod, ...globalState.products],
+            };
+            if (isSupabaseConfigured()) {
+              posService.upsertProduct(prod).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'clients') {
+            const existingParty = (globalState.crmParties || []).find((c) => c.id === recId);
+            const party: CrmParty = {
+              ...(existingParty || {
+                id: recId,
+                accountId,
+                businessId,
+                branchId,
+                partyKind: v.nif || v.rc ? 'company' : 'person',
+                displayName: String(v.displayName || 'Client'),
+                phoneValid: Boolean(v.phone),
+                sharedPhoneGroup: false,
+                preferredLanguage: globalState.language || 'fr',
+                consentSms: true,
+                consentWhatsapp: true,
+                consentEmail: true,
+                optOutAll: false,
+                createdAt: nowIso,
+                updatedAt: nowIso,
+              }),
+              displayName: String(v.displayName || existingParty?.displayName || 'Client'),
+              phoneRaw: v.phone ? String(v.phone) : existingParty?.phoneRaw,
+              phoneE164: v.phone ? String(v.phone) : existingParty?.phoneE164,
+              phoneValid: Boolean(v.phone || existingParty?.phoneValid),
+              email: v.email ? String(v.email) : existingParty?.email,
+              nif: v.nif ? String(v.nif) : existingParty?.nif,
+              rc: v.rc ? String(v.rc) : existingParty?.rc,
+              address: v.address ? String(v.address) : existingParty?.address,
+              updatedAt: nowIso,
+            };
+            globalState = {
+              ...globalState,
+              crmParties: existingParty
+                ? (globalState.crmParties || []).map((c) => (c.id === recId ? party : c))
+                : [party, ...(globalState.crmParties || [])],
+            };
+            if (isSupabaseConfigured()) {
+              crmService.upsertParty(party, globalState.currentUser?.id).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'suppliers') {
+            const existing = (globalState.b2bSuppliers || []).find((s) => s.id === recId);
+            const sup: B2bSupplier = {
+              ...(existing || {
+                id: recId,
+                accountId,
+                tenantId: accountId,
+                facilityId: branchId,
+                supplierName: String(v.supplierName || 'Supplier'),
+                nif: '',
+                nis: '',
+                rc: '',
+                ai: '',
+                contactPerson: '',
+                phone: '',
+                email: '',
+                address: '',
+                cityWilaya: '16 Alger',
+                paymentTermsDays: 30,
+                balanceOwedDzd: 0,
+                rating: 5,
+                createdAt: nowIso,
+                updatedAt: nowIso,
+              }),
+              supplierName: String(v.supplierName || existing?.supplierName || 'Supplier'),
+              phone: String(v.phone || existing?.phone || ''),
+              email: String(v.email || existing?.email || ''),
+              nif: String(v.nif || existing?.nif || ''),
+              rc: String(v.rc || existing?.rc || ''),
+              address: String(v.address || existing?.address || ''),
+              updatedAt: nowIso,
+            };
+            globalState = {
+              ...globalState,
+              b2bSuppliers: existing
+                ? (globalState.b2bSuppliers || []).map((s) => (s.id === recId ? sup : s))
+                : [sup, ...(globalState.b2bSuppliers || [])],
+            };
+            if (isSupabaseConfigured()) {
+              tradingService.upsertSupplier(sup).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'staff') {
+            const existing = (globalState.staff || []).find((s) => s.id === recId);
+            const staffMember: StaffMember = {
+              ...(existing || {
+                id: recId,
+                tenantId: accountId,
+                accountId,
+                businessId,
+                branchId,
+                facilityId: branchId,
+                fullName: String(v.fullName || 'Staff'),
+                email: String(v.email || ''),
+                role: (v.role as any) || 'Receptionist',
+                roleRank: 3,
+                pinCode: '1234',
+                salary: Number(v.baseSalaryDzd || 0),
+                isActive: true,
+              }),
+              fullName: String(v.fullName || existing?.fullName || 'Staff'),
+              phoneNumber: v.phone ? String(v.phone) : existing?.phoneNumber,
+              email: String(v.email || existing?.email || ''),
+              role: ((v.role as any) || existing?.role || 'Receptionist') as any,
+              salary:
+                v.baseSalaryDzd !== undefined
+                  ? Number(v.baseSalaryDzd)
+                  : existing?.salary ?? 0,
+              hireDate: v.hireDate ? String(v.hireDate) : existing?.hireDate,
+              cnasNumber: v.cnasNumber ? String(v.cnasNumber) : existing?.cnasNumber,
+            };
+            globalState = {
+              ...globalState,
+              staff: existing
+                ? globalState.staff.map((s) => (s.id === recId ? staffMember : s))
+                : [staffMember, ...globalState.staff],
+            };
+            if (isSupabaseConfigured()) {
+              staffService.createStaff(staffMember).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'students') {
+            const existing = (globalState.eduStudents || []).find((s) => s.id === recId);
+            const student: EduStudent = {
+              ...(existing || {
+                id: recId,
+                tenantId: accountId,
+                accountId,
+                businessId,
+                branchId,
+                facilityId: branchId,
+                fullName: String(v.fullName || 'Student'),
+                phone: String(v.phone || ''),
+                email: String(v.email || ''),
+                dob: String(v.dob || '2005-01-01'),
+                parentName: '',
+                parentPhone: String(v.phone || ''),
+                cohortId: '',
+                cohortName: String(v.cohortName || ''),
+                status: 'Active',
+                createdAt: nowIso,
+              }),
+              fullName: String(v.fullName || existing?.fullName || 'Student'),
+              registrationNumber: v.registrationNumber
+                ? String(v.registrationNumber)
+                : existing?.registrationNumber,
+              phone: String(v.phone || existing?.phone || ''),
+              email: String(v.email || existing?.email || ''),
+              cohortName: String(v.cohortName || existing?.cohortName || ''),
+              dob: String(v.dob || existing?.dob || '2005-01-01'),
+            };
+            globalState = {
+              ...globalState,
+              eduStudents: existing
+                ? (globalState.eduStudents || []).map((s) => (s.id === recId ? student : s))
+                : [student, ...(globalState.eduStudents || [])],
+            };
+            if (isSupabaseConfigured()) {
+              educationService.upsertStudent(student).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'patients' && groupBKey) {
+            const list = readGroupB(groupBKey) as MedicalPatient[];
+            const existing = list.find((p) => p.id === recId);
+            const patient: MedicalPatient = {
+              ...(existing || {
+                id: recId,
+                accountId,
+                businessId,
+                branchId,
+                fullName: String(v.fullName || 'Patient'),
+                dateOfBirth: String(v.dob || '1990-01-01'),
+                gender: 'Female',
+                phone: String(v.phone || ''),
+                allergies: [],
+                chronicConditions: [],
+                createdAt: nowIso,
+              }),
+              fullName: String(v.fullName || existing?.fullName || 'Patient'),
+              phone: String(v.phone || existing?.phone || ''),
+              dateOfBirth: String(v.dob || existing?.dateOfBirth || '1990-01-01'),
+              bloodGroup: v.bloodGroup ? (String(v.bloodGroup) as any) : existing?.bloodGroup,
+              chifaCardNumber: v.chifaNumber
+                ? String(v.chifaNumber)
+                : existing?.chifaCardNumber,
+              allergies: v.allergies
+                ? String(v.allergies).split(/[;,]/).map((s) => s.trim()).filter(Boolean)
+                : existing?.allergies || [],
+            };
+            const nextList = existing
+              ? list.map((p) => (p.id === recId ? patient : p))
+              : [patient, ...list];
+            writeGroupB(groupBKey, nextList);
+            if (isSupabaseConfigured()) {
+              medicalService.upsertPatient(patient).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'vehicles' && groupBKey) {
+            const list = readGroupB(groupBKey) as VehicleAsset[];
+            const existing = list.find((vh) => vh.id === recId);
+            const vehicle: VehicleAsset = {
+              ...(existing || {
+                id: recId,
+                accountId,
+                businessId,
+                branchId,
+                plateNumber: String(v.plateNumber || ''),
+                brand: String(v.brand || ''),
+                model: String(v.model || ''),
+                year: Number(v.year || new Date().getFullYear()),
+                fuelType: 'Essence',
+                mileageKm: Number(v.mileageKm || 0),
+                ownerName: String(v.ownerPhone || 'Client'),
+                ownerPhone: String(v.ownerPhone || ''),
+                createdAt: nowIso,
+              }),
+              plateNumber: String(v.plateNumber || existing?.plateNumber || ''),
+              vin: v.vin ? String(v.vin) : existing?.vin,
+              brand: String(v.brand || existing?.brand || ''),
+              model: String(v.model || existing?.model || ''),
+              year: v.year !== undefined ? Number(v.year) : existing?.year || 2024,
+              mileageKm:
+                v.mileageKm !== undefined ? Number(v.mileageKm) : existing?.mileageKm || 0,
+              ownerPhone: String(v.ownerPhone || existing?.ownerPhone || ''),
+            };
+            const nextList = existing
+              ? list.map((vh) => (vh.id === recId ? vehicle : vh))
+              : [vehicle, ...list];
+            writeGroupB(groupBKey, nextList);
+            if (isSupabaseConfigured()) {
+              garageService
+                .upsertVehicle(vehicle, { accountId, businessId, branchId })
+                .catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'parcels' && groupBKey) {
+            const list = readGroupB(groupBKey) as LogisticsShipment[];
+            const existing = list.find((s) => s.id === recId);
+            const shipment: LogisticsShipment = {
+              ...(existing || {
+                id: recId,
+                accountId,
+                businessId,
+                branchId,
+                staffId: globalState.currentUser?.id || '',
+                trackingCode: String(v.trackingCode || ''),
+                merchantName: globalState.businesses.find((b) => b.id === businessId)?.name || 'Merchant',
+                recipientName: String(v.recipientName || ''),
+                recipientPhone: String(v.recipientPhone || ''),
+                destinationWilaya: String(v.wilayaCode || '16 Alger'),
+                destinationAddress: String(v.commune || ''),
+                codAmountDzd: Number(v.codAmountDzd || 0),
+                shippingFeeDzd: 600,
+                weightKg: Number(v.weightKg || 1),
+                status: 'Created',
+                deliveryMode: 'HomeDelivery',
+                createdAt: nowIso,
+              }),
+              trackingCode: String(v.trackingCode || existing?.trackingCode || ''),
+              recipientName: String(v.recipientName || existing?.recipientName || ''),
+              recipientPhone: String(v.recipientPhone || existing?.recipientPhone || ''),
+              destinationWilaya: String(
+                v.wilayaCode || existing?.destinationWilaya || '16 Alger'
+              ),
+              destinationAddress: String(v.commune || existing?.destinationAddress || ''),
+              codAmountDzd:
+                v.codAmountDzd !== undefined
+                  ? Number(v.codAmountDzd)
+                  : existing?.codAmountDzd || 0,
+              weightKg:
+                v.weightKg !== undefined ? Number(v.weightKg) : existing?.weightKg || 1,
+            };
+            const nextList = existing
+              ? list.map((s) => (s.id === recId ? shipment : s))
+              : [shipment, ...list];
+            writeGroupB(groupBKey, nextList);
+            if (isSupabaseConfigured()) {
+              logisticsService.upsertShipment(shipment).catch(() => {});
+            }
+            chunkIds.push(recId);
+          } else if (input.entityType === 'properties' && groupBKey) {
+            const list = readGroupB(groupBKey) as RealEstateProperty[];
+            const existing = list.find((p) => p.id === recId);
+            const prop: RealEstateProperty = {
+              ...(existing || {
+                id: recId,
+                accountId,
+                businessId,
+                branchId,
+                title: String(v.title || ''),
+                propertyType: (v.propertyType as any) || 'Appartement',
+                listingType: 'Rental',
+                cityWilaya: String(v.wilaya || '16 Alger'),
+                address: String(v.wilaya || ''),
+                surfaceM2: Number(v.surfaceM2 || 0),
+                roomsCount: 3,
+                priceDzd: Number(v.priceDzd || 0),
+                ownerName: '',
+                ownerPhone: String(v.ownerPhone || ''),
+                status: 'Disponible',
+                mandateNumber: String(v.reference || ''),
+                createdAt: nowIso,
+              }),
+              mandateNumber: String(v.reference || existing?.mandateNumber || ''),
+              title: String(v.title || existing?.title || ''),
+              propertyType: ((v.propertyType as any) || existing?.propertyType || 'Appartement') as any,
+              cityWilaya: String(v.wilaya || existing?.cityWilaya || '16 Alger'),
+              surfaceM2:
+                v.surfaceM2 !== undefined ? Number(v.surfaceM2) : existing?.surfaceM2 || 0,
+              priceDzd:
+                v.priceDzd !== undefined ? Number(v.priceDzd) : existing?.priceDzd || 0,
+              ownerPhone: String(v.ownerPhone || existing?.ownerPhone || ''),
+            };
+            const nextList = existing
+              ? list.map((p) => (p.id === recId ? prop : p))
+              : [prop, ...list];
+            writeGroupB(groupBKey, nextList);
+            if (isSupabaseConfigured()) {
+              realEstateService.upsertProperty(prop).catch(() => {});
+            }
+            chunkIds.push(recId);
+          }
+        }
+        return { ok: true, createdIds: chunkIds };
+      },
+      rollbackCreatedIds: () => {
+        restoreStoreSlices(writeSnapshot);
+        if (groupBKey && prevGroupBRows) {
+          writeGroupB(groupBKey, prevGroupBRows);
+        }
+      },
+    });
+
+    const job: ImportJob = {
+      id: generateClientUuid(),
+      accountId,
+      businessId,
+      branchId: branchId || undefined,
+      entityType: input.entityType,
+      mappingId: input.mappingId,
+      fileName: input.fileName,
+      encoding: input.encoding || 'utf-8',
+      delimiter: input.delimiter || ',',
+      duplicatePolicy: input.duplicatePolicy,
+      status: commitRes.status,
+      totalRows: dryRun.totalRows,
+      validRows: dryRun.validRows,
+      insertedRows: commitRes.insertedCount,
+      updatedRows: commitRes.updatedCount,
+      mergedRows: commitRes.mergedCount,
+      skippedRows: commitRes.skippedCount,
+      errorRows: dryRun.errorCount,
+      chunkSize: input.chunkSize || 500,
+      chunksTotal: commitRes.chunksTotal,
+      chunksCommitted: commitRes.chunksCommitted,
+      errorSummary: [...dryRun.errors, ...commitRes.errors].slice(0, 200),
+      createdRecordIds: commitRes.createdIds,
+      startedAt: nowIso,
+      completedAt: new Date().toISOString(),
+      createdByStaffId: globalState.currentUser?.id,
+      createdByName: globalState.currentUser?.fullName,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      importJobs: [job, ...(globalState.importJobs || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      importService.upsertJob(job, globalState.currentUser?.id).catch(() => {});
+    }
+
+    if (job.status === 'committed') {
+      const afterSnapshot = captureStoreSlices([
+        'members',
+        'crmParties',
+        'products',
+        'b2bClients',
+        'b2bSuppliers',
+        'staff',
+        'eduStudents',
+      ]);
+      registerUndoEntry({
+        vertical: 'settings',
+        operationType: 'bulk',
+        summary: ul(
+          `Imported ${job.insertedRows + job.updatedRows + job.mergedRows} ${job.entityType} rows`,
+          `Importé ${job.insertedRows + job.updatedRows + job.mergedRows} lignes (${job.entityType})`,
+          `تم استيراد ${job.insertedRows + job.updatedRows + job.mergedRows} سجل (${job.entityType})`
+        ),
+        entityLabel: job.fileName,
+        toastType: 'success',
+        undo: () => {
+          restoreStoreSlices(writeSnapshot);
+          if (groupBKey && prevGroupBRows) writeGroupB(groupBKey, prevGroupBRows);
+          globalState = {
+            ...globalState,
+            importJobs: (globalState.importJobs || []).map((j) =>
+              j.id === job.id ? { ...j, status: 'rolled_back', updatedAt: new Date().toISOString() } : j
+            ),
+          };
+          notify();
+          if (isSupabaseConfigured()) {
+            importService.markJobRolledBack(job.id, 'User undo rollback').catch(() => {});
+          }
+        },
+        redo: () => {
+          restoreStoreSlices(afterSnapshot);
+          globalState = {
+            ...globalState,
+            importJobs: (globalState.importJobs || []).map((j) =>
+              j.id === job.id ? { ...j, status: 'committed', updatedAt: new Date().toISOString() } : j
+            ),
+          };
+          notify();
+        },
+      });
+    }
+
+    return job;
+  };
+
+  const rollbackDataImportJob = (jobId: string, reason?: string) => {
+    const job = (globalState.importJobs || []).find((j) => j.id === jobId);
+    if (!job || job.status === 'rolled_back') return;
+    const idSet = new Set(job.createdRecordIds || []);
+    const removeById = <T extends { id: string }>(arr: T[]): T[] =>
+      arr.filter((item) => !idSet.has(item.id));
+
+    const groupBKey =
+      job.entityType === 'patients'
+        ? 'atrium_medical_patients_v2'
+        : job.entityType === 'vehicles'
+        ? 'atrium_garage_vehicles_v2'
+        : job.entityType === 'parcels'
+        ? 'atrium_logistics_shipments_v2'
+        : job.entityType === 'properties'
+        ? 'atrium_realestate_props_v2'
+        : null;
+    if (groupBKey && typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(groupBKey);
+        const list = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(list)) {
+          localStorage.setItem(
+            groupBKey,
+            JSON.stringify(list.filter((item: any) => !idSet.has(String(item?.id || ''))))
+          );
+        }
+      } catch {
+        // Ignore storage errors in restricted contexts
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      members: job.entityType === 'members' ? removeById(globalState.members) : globalState.members,
+      products: job.entityType === 'products' ? removeById(globalState.products) : globalState.products,
+      crmParties:
+        job.entityType === 'clients' ? removeById(globalState.crmParties || []) : globalState.crmParties,
+      b2bSuppliers:
+        job.entityType === 'suppliers'
+          ? removeById(globalState.b2bSuppliers || [])
+          : globalState.b2bSuppliers,
+      staff: job.entityType === 'staff' ? removeById(globalState.staff) : globalState.staff,
+      eduStudents:
+        job.entityType === 'students'
+          ? removeById(globalState.eduStudents || [])
+          : globalState.eduStudents,
+      importJobs: (globalState.importJobs || []).map((j) =>
+        j.id === jobId
+          ? {
+              ...j,
+              status: 'rolled_back',
+              updatedAt: new Date().toISOString(),
+            }
+          : j
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      importService.markJobRolledBack(jobId, reason || 'Manual rollback').catch(() => {});
+    }
+  };
+
   return {
     setScreen,
     setTheme,
@@ -21730,6 +23998,28 @@ function createAtriumActions() {
     resetReminderSeedForBusiness,
     runReminderEngineScan,
     flushDeferredReminders,
+    setWmsNegativeStockPolicy,
+    upsertWmsBin,
+    upsertWmsStockLot,
+    setWmsLotRecallStatus,
+    consumeWmsStockAtomic,
+    registerWmsSerialNumber,
+    updateWmsSerialStatus,
+    upsertWmsUnitConversion,
+    upsertWmsReorderRule,
+    createPurchaseOrdersFromReorderSuggestions,
+    createWmsCycleCount,
+    updateWmsCycleCountLine,
+    postWmsCycleCount,
+    createWmsStockTransfer,
+    transitionWmsStockTransfer,
+    createLandedCostAllocation,
+    applyLandedCostAllocation,
+    recordWmsConsignmentEntry,
+    saveImportColumnMapping,
+    deleteImportColumnMapping,
+    commitDataImportBatch,
+    rollbackDataImportJob,
   };
 }
 
@@ -21832,6 +24122,16 @@ export function useAtriumStore() {
   const currentReminderQuietHours = selectCurrentReminderQuietHoursFromState(state);
   const currentReminderRules = selectCurrentReminderRulesFromState(state);
   const currentReminderDeliveryLogs = selectCurrentReminderDeliveryLogsFromState(state);
+  const currentWmsNegativeStockPolicy = selectCurrentWmsNegativeStockPolicyFromState(state);
+  const currentWmsBins = selectCurrentWmsBinsFromState(state);
+  const currentWmsStockLots = selectCurrentWmsStockLotsFromState(state);
+  const currentWmsSerialNumbers = selectCurrentWmsSerialNumbersFromState(state);
+  const currentWmsUnitConversions = selectCurrentWmsUnitConversionsFromState(state);
+  const currentWmsReorderRules = selectCurrentWmsReorderRulesFromState(state);
+  const currentWmsCycleCounts = selectCurrentWmsCycleCountsFromState(state);
+  const currentWmsStockTransfers = selectCurrentWmsStockTransfersFromState(state);
+  const currentWmsLandedCostAllocations = selectCurrentWmsLandedCostAllocationsFromState(state);
+  const currentWmsConsignmentEntries = selectCurrentWmsConsignmentEntriesFromState(state);
   const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
   const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
   const selectedMember = selectSelectedMemberFromState(state);
@@ -21976,6 +24276,16 @@ export function useAtriumStore() {
     reminderQuietHours: currentReminderQuietHours,
     reminderRules: currentReminderRules,
     reminderDeliveryLogs: currentReminderDeliveryLogs,
+    wmsNegativeStockPolicy: currentWmsNegativeStockPolicy,
+    wmsBins: currentWmsBins,
+    wmsStockLots: currentWmsStockLots,
+    wmsSerialNumbers: currentWmsSerialNumbers,
+    wmsUnitConversions: currentWmsUnitConversions,
+    wmsReorderRules: currentWmsReorderRules,
+    wmsCycleCounts: currentWmsCycleCounts,
+    wmsStockTransfers: currentWmsStockTransfers,
+    wmsLandedCostAllocations: currentWmsLandedCostAllocations,
+    wmsConsignmentEntries: currentWmsConsignmentEntries,
     // Operational Role State
     activeGarageRole: state.activeGarageRole || 'gerant',
     activeRealEstateRole: state.activeRealEstateRole || 'direction',

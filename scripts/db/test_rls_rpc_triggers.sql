@@ -904,6 +904,161 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- SECTION 14: Phase 2 Step 5 (6.6) — Shared WMS RLS, FEFO & Atomic RPCs
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_wh1 uuid := gen_random_uuid();
+  v_wh2 uuid := gen_random_uuid();
+  v_prod uuid := gen_random_uuid();
+  v_lot_exp uuid := gen_random_uuid();
+  v_lot_ok uuid := gen_random_uuid();
+  v_cc_id uuid := gen_random_uuid();
+  v_trf_id uuid := gen_random_uuid();
+  v_res jsonb;
+  v_count int;
+  v_blocked boolean := false;
+BEGIN
+  INSERT INTO public.trading_warehouses (id, account_id, business_id, branch_id, code, name)
+  VALUES (v_wh1, v_acc_a, v_biz_a, v_br_a, 'DEP-A', 'Dépôt Alger'),
+         (v_wh2, v_acc_a, v_biz_a, v_br_a, 'DEP-B', 'Dépôt Oran');
+
+  INSERT INTO public.pos_products (id, account_id, business_id, branch_id, name, stock_quantity, price_amount, cost_amount)
+  VALUES (v_prod, v_acc_a, v_biz_a, v_br_a, 'Filtre Gasoil', 25, 1800, 1200);
+
+  INSERT INTO public.wms_stock_lots (
+    id, account_id, business_id, branch_id, warehouse_id, product_id, product_name,
+    lot_number, expiry_date, qty_on_hand, unit_cost_centimes, recall_status
+  ) VALUES
+    (v_lot_exp, v_acc_a, v_biz_a, v_br_a, v_wh1, v_prod, 'Filtre Gasoil', 'LOT-EXP', CURRENT_DATE - 5, 10, 120000, 'active'),
+    (v_lot_ok,  v_acc_a, v_biz_a, v_br_a, v_wh1, v_prod, 'Filtre Gasoil', 'LOT-OK',  CURRENT_DATE + 90, 15, 120000, 'active');
+
+  -- Tenant B cannot read Tenant A WMS lots
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.wms_stock_lots WHERE id = v_lot_ok;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A wms_stock_lots';
+  END IF;
+  RESET ROLE;
+
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- Explicit expired lot consumption MUST fail
+  BEGIN
+    PERFORM public.wms_atomic_consume_stock(v_biz_a, v_br_a, v_prod, 2, v_wh1, v_lot_exp, 'allow', 'SALE-EXP');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected expired lot consumption to be blocked';
+  END IF;
+
+  -- Negative stock policy = block MUST fail when qty > available
+  v_blocked := false;
+  BEGIN
+    PERFORM public.wms_atomic_consume_stock(v_biz_a, v_br_a, v_prod, 99, v_wh1, NULL, 'block', 'SALE-NEG');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected WMS_NEGATIVE_STOCK_BLOCKED';
+  END IF;
+
+  -- FEFO valid consume picks active non-expired lot
+  v_res := public.wms_atomic_consume_stock(v_biz_a, v_br_a, v_prod, 5, v_wh1, NULL, 'block', 'SALE-OK');
+  IF jsonb_array_length(v_res -> 'allocations') <> 1 THEN
+    RAISE EXCEPTION 'Expected 1 FEFO lot allocation, got %', v_res;
+  END IF;
+
+  -- Cycle count variance posting
+  INSERT INTO public.wms_cycle_counts (id, account_id, business_id, branch_id, warehouse_id, count_number, status)
+  VALUES (v_cc_id, v_acc_a, v_biz_a, v_br_a, v_wh1, 'INV-TEST-01', 'counting');
+  INSERT INTO public.wms_cycle_count_lines (
+    account_id, business_id, branch_id, cycle_count_id, product_id, product_name, lot_id, lot_number,
+    system_qty, active_sales_delta_qty, counted_qty, unit_cost_centimes
+  ) VALUES (
+    v_acc_a, v_biz_a, v_br_a, v_cc_id, v_prod, 'Filtre Gasoil', v_lot_ok, 'LOT-OK',
+    10, 1, 8, 120000
+  );
+  v_res := public.wms_post_cycle_count(v_cc_id);
+  IF (v_res ->> 'status') <> 'posted' OR (v_res ->> 'totalVarianceUnits')::numeric <> -1 THEN
+    RAISE EXCEPTION 'Unexpected cycle count variance result %', v_res;
+  END IF;
+
+  -- Transfer in transit dispatch -> receive
+  INSERT INTO public.wms_stock_transfers (
+    id, account_id, business_id, branch_id, transfer_number, from_warehouse_id, to_warehouse_id, status, items
+  ) VALUES (
+    v_trf_id, v_acc_a, v_biz_a, v_br_a, 'TRF-TEST-01', v_wh1, v_wh2, 'draft',
+    jsonb_build_array(jsonb_build_object('productId', v_prod, 'productName', 'Filtre Gasoil', 'lotId', v_lot_ok, 'lotNumber', 'LOT-OK', 'quantity', 3))
+  );
+  v_res := public.wms_transition_stock_transfer(v_trf_id, 'dispatch');
+  IF (v_res ->> 'status') <> 'in_transit' THEN
+    RAISE EXCEPTION 'Expected in_transit, got %', v_res;
+  END IF;
+  v_res := public.wms_transition_stock_transfer(v_trf_id, 'receive');
+  IF (v_res ->> 'status') <> 'received' THEN
+    RAISE EXCEPTION 'Expected received, got %', v_res;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
+-- ============================================================================
+-- SECTION 15: Phase 2 Step 6 (6.7) — CSV / Excel Import RLS & Rollback RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_map_id uuid := gen_random_uuid();
+  v_job_id uuid := gen_random_uuid();
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.import_column_mappings (
+    id, account_id, business_id, entity_type, template_name, column_map
+  ) VALUES (
+    v_map_id, v_acc_a, v_biz_a, 'products', 'Sage Products FR', '{"Désignation": "name", "Prix": "priceAmount"}'::jsonb
+  );
+
+  INSERT INTO public.import_jobs (
+    id, account_id, business_id, entity_type, mapping_id, file_name,
+    status, total_rows, valid_rows, inserted_rows, created_record_ids
+  ) VALUES (
+    v_job_id, v_acc_a, v_biz_a, 'products', v_map_id, 'catalogue_test.csv',
+    'committed', 2, 2, 2, '["11111111-0000-0000-0000-000000000001","11111111-0000-0000-0000-000000000002"]'::jsonb
+  );
+
+  -- Tenant B must not read Tenant A import mappings or jobs
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.import_jobs WHERE id = v_job_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A import_jobs';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A can mark import job rolled_back via RPC
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.mark_import_job_rolled_back(v_job_id, 'Chunk verification rollback');
+  IF (v_res ->> 'status') <> 'rolled_back' OR (v_res ->> 'rolledBackCount')::int <> 2 THEN
+    RAISE EXCEPTION 'Unexpected rollback RPC result %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 
 

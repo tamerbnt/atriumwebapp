@@ -4038,6 +4038,7 @@ export type SettingsTabId =
   | 'formules'
   | 'reference_rates'
   | 'reminders'
+  | 'data_import'
   | 'branches_devices'
   | 'license'
   | 'cloud_backup';
@@ -4826,4 +4827,347 @@ export interface ReminderDeliveryLog {
   updatedAt: string;
   deletedAt?: string;
 }
+
+// ============================================================================
+// PHASE 2 SECTION 6.6: SHARED INVENTORY / WMS SERVICES
+// ============================================================================
+
+export type WmsNegativeStockPolicy = 'block' | 'warn' | 'allow';
+export type WmsLotRecallStatus = 'active' | 'quarantined' | 'recalled' | 'expired';
+export type WmsSerialStatus = 'in_stock' | 'reserved' | 'sold' | 'returned' | 'damaged' | 'recalled';
+export type WmsCycleCountStatus = 'open' | 'counting' | 'posted' | 'cancelled';
+export type WmsTransferStatus = 'draft' | 'in_transit' | 'received' | 'partial' | 'cancelled';
+export type WmsLandedCostMethod = 'by_value' | 'by_quantity';
+export type WmsConsignmentMovementType = 'issued' | 'returned' | 'lost_charged';
+
+export interface WmsBin {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  warehouseId: string;
+  code: string;
+  name: string;
+  zone?: string;
+  aisle?: string;
+  rack?: string;
+  isDefault: boolean;
+  capacityUnits?: number;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsStockLot {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  warehouseId?: string;
+  binId?: string;
+  productId: string;
+  productName: string;
+  sku?: string;
+  lotNumber: string;
+  manufactureDate?: string;
+  expiryDate?: string;
+  qtyOnHand: number;
+  qtyReserved: number;
+  unitCostCentimes: number;
+  recallStatus: WmsLotRecallStatus;
+  recallReason?: string;
+  supplierName?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsSerialNumber {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  warehouseId?: string;
+  binId?: string;
+  lotId?: string;
+  productId: string;
+  productName: string;
+  serialNumber: string;
+  status: WmsSerialStatus;
+  sourceDocId?: string;
+  saleId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsUnitConversion {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  productId?: string;
+  productName?: string;
+  fromUnit: string;
+  toBaseUnit: string;
+  conversionFactor: number;
+  barcode?: string;
+  isDefaultPurchase: boolean;
+  isDefaultSale: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsReorderRule {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  warehouseId?: string;
+  productId: string;
+  productName: string;
+  minQty: number;
+  maxQty: number;
+  reorderQty: number;
+  preferredSupplierId?: string;
+  preferredSupplierName?: string;
+  leadTimeDays: number;
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsCycleCountLine {
+  id: string;
+  cycleCountId: string;
+  productId: string;
+  productName: string;
+  lotId?: string;
+  lotNumber?: string;
+  binId?: string;
+  systemQty: number;
+  activeSalesDeltaQty: number;
+  countedQty: number;
+  varianceQty: number;
+  unitCostCentimes: number;
+  varianceCentimes: number;
+  reason?: string;
+}
+
+export interface WmsCycleCount {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  warehouseId?: string;
+  countNumber: string;
+  status: WmsCycleCountStatus;
+  startedAt: string;
+  postedAt?: string;
+  countedByStaffId?: string;
+  countedByName?: string;
+  snapshotTakenAt: string;
+  totalVarianceUnits: number;
+  totalVarianceCentimes: number;
+  lines: WmsCycleCountLine[];
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsStockTransferItem {
+  productId: string;
+  productName: string;
+  sku?: string;
+  lotId?: string;
+  lotNumber?: string;
+  quantity: number;
+  receivedQuantity?: number;
+  unit?: string;
+  unitCostCentimes?: number;
+}
+
+export interface WmsStockTransfer {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  transferNumber: string;
+  fromWarehouseId?: string;
+  fromWarehouseName?: string;
+  toWarehouseId?: string;
+  toWarehouseName?: string;
+  status: WmsTransferStatus;
+  dispatchedAt?: string;
+  receivedAt?: string;
+  carrierName?: string;
+  items: WmsStockTransferItem[];
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsLandedCostLine {
+  productId: string;
+  productName: string;
+  lotId?: string;
+  lotNumber?: string;
+  quantity: number;
+  baseUnitCostCentimes: number;
+  allocatedExtraCentimes: number;
+  newUnitCostCentimes: number;
+}
+
+export interface WmsLandedCostAllocation {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  purchaseDocId?: string;
+  referenceNumber: string;
+  allocationMethod: WmsLandedCostMethod;
+  currency: string;
+  fxRate: number;
+  freightCentimes: number;
+  customsCentimes: number;
+  insuranceCentimes: number;
+  otherCentimes: number;
+  totalLandedCentimes: number;
+  lines: WmsLandedCostLine[];
+  status: 'draft' | 'applied';
+  appliedAt?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface WmsConsignmentEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  partyId?: string;
+  partyName: string;
+  packagingCode: string;
+  packagingName: string;
+  movementType: WmsConsignmentMovementType;
+  quantity: number;
+  unitDepositCentimes: number;
+  totalDepositCentimes: number;
+  referenceDoc?: string;
+  movementDate: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+// ============================================================================
+// PHASE 2 SECTION 6.7: CSV / EXCEL IMPORT & ONBOARDING DATA TOOLS
+// ============================================================================
+
+export type ImportEntityType =
+  | 'members'
+  | 'clients'
+  | 'patients'
+  | 'products'
+  | 'suppliers'
+  | 'staff'
+  | 'vehicles'
+  | 'parcels'
+  | 'properties'
+  | 'students';
+
+export type ImportEncoding = 'auto' | 'utf-8' | 'utf-16le' | 'windows-1256' | 'iso-8859-1';
+export type ImportDelimiter = 'auto' | ',' | ';' | '\t';
+export type ImportDuplicatePolicy = 'skip' | 'update' | 'merge';
+export type ImportJobStatus =
+  | 'previewed'
+  | 'dry_run'
+  | 'committing'
+  | 'committed'
+  | 'rolled_back'
+  | 'partial_failed'
+  | 'failed';
+
+export interface ImportRowError {
+  rowNumber: number; // 1-indexed data row (excluding header)
+  column?: string;
+  errorCode: string;
+  messageEn: string;
+  messageFr: string;
+  messageAr: string;
+  rawValue?: string;
+}
+
+export interface ImportColumnMapping {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  entityType: ImportEntityType;
+  templateName: string;
+  encoding: ImportEncoding;
+  delimiter: ImportDelimiter;
+  duplicatePolicy: ImportDuplicatePolicy;
+  columnMap: Record<string, string>; // sourceHeader -> targetFieldKey
+  createdByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface ImportJob {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  entityType: ImportEntityType;
+  mappingId?: string;
+  fileName: string;
+  encoding: ImportEncoding;
+  delimiter: ImportDelimiter;
+  duplicatePolicy: ImportDuplicatePolicy;
+  status: ImportJobStatus;
+  totalRows: number;
+  validRows: number;
+  insertedRows: number;
+  updatedRows: number;
+  mergedRows: number;
+  skippedRows: number;
+  errorRows: number;
+  chunkSize: number;
+  chunksTotal: number;
+  chunksCommitted: number;
+  errorSummary: ImportRowError[];
+  createdRecordIds: string[];
+  startedAt: string;
+  completedAt?: string;
+  createdByStaffId?: string;
+  createdByName?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+
 
