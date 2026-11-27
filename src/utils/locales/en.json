@@ -3244,7 +3244,21 @@
   "venue_inv_btn_edit": "Edit",
   "venue_inv_space_name": "Space / Asset Name",
   "venue_inv_code": "Reference Code",
-  "venue_inv_desc": "Description & Specifications"
+  "venue_inv_desc": "Description & Specifications",
+  "edu_no_cohorts_found": "No cohorts found",
+  "edu_drawer_issue_certificate": "Issue Certificate",
+  "edu_btn_report_card": "Report Card",
+  "edu_field_grade_scale": "Grade Scale",
+  "edu_field_waitlist_enabled": "Waitlist Enabled",
+  "edu_field_trade_mode": "Institution Mode",
+  "edu_btn_dunning_dispatch": "Send Dunning Reminders",
+  "edu_btn_discount_refund": "Discount / Refund",
+  "edu_btn_enrollment_contract": "Enrollment Contract",
+  "edu_btn_parent_comms": "Parent Portal",
+  "edu_btn_issue_card_qr": "Student Card QR",
+  "edu_btn_transfer_cohort": "Transfer Cohort",
+  "edu_tab_driving_school": "Driving School",
+  "edu_tab_k12_services": "Canteen & Transport"
 }
 
 

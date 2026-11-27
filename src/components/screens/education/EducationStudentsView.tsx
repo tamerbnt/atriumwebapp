@@ -11,6 +11,10 @@ import {
   Trash2,
   Phone,
   Mail,
+  QrCode,
+  FileText,
+  ArrowRightLeft,
+  MessageSquare,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -21,6 +25,8 @@ import {
   selectCurrentEduAttendanceFromState,
   selectCurrentEduGradesFromState,
   selectCurrentEduCertificatesFromState,
+  selectCurrentEduParentCommsFromState,
+  selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
@@ -28,8 +34,16 @@ import { runUndoBatch } from '../../../services/undoEngine';
 import { EduStudent, StudentStatus } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import {
+  buildStudentCardQrPayload,
+  buildStudentTermReportCard,
+  checkCohortCapacity,
+  computeCohortTransferProration,
+} from '../../../utils/educationDepth';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -66,14 +80,14 @@ import {
 } from '../../ui/kinetic';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
-type StudentDrawerTab = 'academic' | 'financial' | 'guardian' | 'certificates';
+type StudentDrawerTab = 'academic' | 'financial' | 'guardian' | 'portal' | 'certificates';
 
 export const EducationStudentsView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { eduStudents, eduCohorts, eduEnrollments, eduAttendance, eduGrades, eduCertificates, currentBranch, branches, activeEducationRole, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { eduStudents, eduCohorts, eduEnrollments, eduAttendance, eduGrades, eduCertificates, eduParentComms, currentBusiness, currentBranch, branches, activeEducationRole, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       eduStudents: selectCurrentEduStudentsFromState(s),
       eduCohorts: selectCurrentEduCohortsFromState(s),
@@ -81,6 +95,8 @@ export const EducationStudentsView: React.FC = () => {
       eduAttendance: selectCurrentEduAttendanceFromState(s),
       eduGrades: selectCurrentEduGradesFromState(s),
       eduCertificates: selectCurrentEduCertificatesFromState(s),
+      eduParentComms: selectCurrentEduParentCommsFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       activeEducationRole: s.activeEducationRole || 'owner',
@@ -96,6 +112,10 @@ export const EducationStudentsView: React.FC = () => {
     updateEduStudent,
     deleteEduStudent,
     addEduEnrollment,
+    transferStudentCohort,
+    issueStudentCardQr,
+    sendEduParentCommunication,
+    markEduParentCommRead,
     setScreen,
     retryCloudSync,
   } = useAtriumActions();
@@ -117,6 +137,16 @@ export const EducationStudentsView: React.FC = () => {
   const [studentToEdit, setStudentToEdit] = useState<EduStudent | null>(null);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [selectedCertForPreview, setSelectedCertForPreview] = useState<any>(null);
+  const [qrCardStudent, setQrCardStudent] = useState<EduStudent | null>(null);
+  const [reportCardPages, setReportCardPages] = useState<PrintSheetPage[] | null>(null);
+  const [transferSourceEnrollmentId, setTransferSourceEnrollmentId] = useState<string | null>(null);
+  const [transferTargetCohortId, setTransferTargetCohortId] = useState<string>(eduCohorts[0]?.id || '');
+  const [transferAllowWaitlist, setTransferAllowWaitlist] = useState(false);
+  const [transferReason, setTransferReason] = useState('');
+  const [allowInitialWaitlist, setAllowInitialWaitlist] = useState(false);
+  const [parentMsgSubject, setParentMsgSubject] = useState('');
+  const [parentMsgBody, setParentMsgBody] = useState('');
+  const [parentMsgChannel, setParentMsgChannel] = useState<'portal' | 'sms' | 'whatsapp'>('portal');
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedStudentIds, setPinnedStudentIds] = useState<Set<string>>(() => new Set<string>());
@@ -278,33 +308,110 @@ export const EducationStudentsView: React.FC = () => {
       if (formData.initialCohortId) {
         const cohort = eduCohorts.find((c) => c.id === formData.initialCohortId);
         if (cohort) {
-          addEduEnrollment({
-            studentId: newStudent.id,
-            studentName: newStudent.fullName,
-            cohortId: cohort.id,
-            cohortName: cohort.name,
-            agreedTuition: cohort.tuitionFee,
-            discountAmount: 0,
-            paidAmount: 0,
-            balanceDue: cohort.tuitionFee,
-            currency: cohort.currency,
-            paymentStatus: 'Pending',
-            status: 'Active',
-            installments: [
-              { dueDate: cohort.startDate, amount: Math.round(cohort.tuitionFee * 0.5), isPaid: false },
-              {
-                dueDate: cohort.endDate,
-                amount: cohort.tuitionFee - Math.round(cohort.tuitionFee * 0.5),
-                isPaid: false,
-              },
-            ],
-          });
+          const enrResult = addEduEnrollment(
+            {
+              studentId: newStudent.id,
+              studentName: newStudent.fullName,
+              cohortId: cohort.id,
+              cohortName: cohort.name,
+              agreedTuition: cohort.tuitionFee,
+              discountAmount: 0,
+              paidAmount: 0,
+              balanceDue: cohort.tuitionFee,
+              currency: cohort.currency,
+              paymentStatus: 'Pending',
+              status: 'Active',
+              installments: [
+                { dueDate: cohort.startDate, amount: Math.round(cohort.tuitionFee * 0.5), isPaid: false },
+                {
+                  dueDate: cohort.endDate,
+                  amount: cohort.tuitionFee - Math.round(cohort.tuitionFee * 0.5),
+                  isPaid: false,
+                },
+              ],
+            },
+            { allowWaitlist: allowInitialWaitlist }
+          );
+          if (!enrResult) {
+            setSelectedStudent(newStudent);
+            return;
+          }
         }
       }
       setSelectedStudent(newStudent);
     }
+    setAllowInitialWaitlist(false);
     setIsAddModalOpen(false);
   };
+
+  const handleOpenReportCard = useCallback(
+    (st: EduStudent) => {
+      const enr = eduEnrollments.find((e) => e.studentId === st.id && e.status === 'Active') || eduEnrollments.find((e) => e.studentId === st.id);
+      const cohort = (enr && eduCohorts.find((c) => c.id === enr.cohortId)) || eduCohorts[0];
+      if (!cohort) return;
+      const card = buildStudentTermReportCard({
+        student: st,
+        cohort,
+        cohortGrades: eduGrades.filter((g) => g.cohortId === cohort.id),
+        studentAttendance: eduAttendance.filter((a) => a.studentId === st.id),
+        language,
+      });
+      setReportCardPages([
+        {
+          id: `report-${st.id}-${cohort.id}`,
+          title: isAr
+            ? `كشف النقاط الرسمي — ${st.fullName}`
+            : isEn
+            ? `Term Report Card — ${st.fullName}`
+            : `Bulletin Scolaire — ${st.fullName}`,
+          subtitle: `${currentBusiness?.displayName || ''} · ${cohort.name} (/${card.gradeScale})`,
+          badgeText: `${card.weightedAverageOnScale} / ${card.gradeScale}`,
+          sections: [
+            {
+              rows: [
+                {
+                  label: isAr ? 'المعدل العام' : isEn ? 'Weighted Average' : 'Moyenne Pondérée',
+                  value: `${card.weightedAverageOnScale} / ${card.gradeScale}`,
+                },
+                {
+                  label: isAr ? 'معدل الفوج' : isEn ? 'Class Average' : 'Moyenne Classe',
+                  value: `${card.classAverageOnScale} / ${card.gradeScale}`,
+                },
+                {
+                  label: isAr ? 'المواظبة' : isEn ? 'Attendance Rate' : 'Assiduité',
+                  value: `${card.attendanceRatePercent}%`,
+                },
+                {
+                  label: isAr ? 'القرار' : isEn ? 'Decision' : 'Décision',
+                  value: card.decisionLabel,
+                },
+              ],
+            },
+          ],
+          tableHeaders: [
+            isAr ? 'التقييم' : isEn ? 'Assessment' : 'Évaluation',
+            isAr ? 'العلامة' : isEn ? 'Score' : 'Note',
+            `/${card.gradeScale}`,
+            isAr ? 'المعامل' : isEn ? 'Weight' : 'Coeff.',
+            isAr ? 'الملاحظة' : isEn ? 'Remarks' : 'Appréciation',
+          ],
+          tableRows:
+            card.lines.length > 0
+              ? card.lines.map((l) => [
+                  l.assessmentTitle,
+                  `${l.rawScore}/${l.rawMaxScore}`,
+                  `${l.scaledScore}/${card.gradeScale}`,
+                  `${l.weightPercent}%`,
+                  l.teacherRemarks || '—',
+                ])
+              : [['—', '—', '—', '—', isAr ? 'لا توجد علامات مسجلة' : isEn ? 'No grades yet' : 'Aucune note']],
+          signatureLeft: isAr ? 'الإدارة البيداغوجية' : isEn ? 'Academic Director' : 'Direction Pédagogique',
+          signatureRight: st.guardianName || st.fullName,
+        },
+      ]);
+    },
+    [eduEnrollments, eduCohorts, eduGrades, eduAttendance, language, isAr, isEn, currentBusiness?.displayName]
+  );
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -684,9 +791,9 @@ export const EducationStudentsView: React.FC = () => {
           label: isAr ? 'معدل الحضور العام' : isEn ? 'Attendance Rate' : "Taux d'assiduité",
           count: averageAttendance,
           formatValue: (v) => `${v}%`,
-          badgeText: `${activeMinorsCount} ${isAr ? 'قاصر' : 'mineurs'}`,
+          badgeText: `${activeMinorsCount} ${isAr ? 'قاصر' : isEn ? 'minors' : 'mineurs'}`,
           tone: 'terracotta',
-          title: isAr ? 'تصفية الطلبة القصر' : 'Filtrer les étudiants mineurs',
+          title: isAr ? 'تصفية الطلبة القصر' : isEn ? 'Filter minor students' : 'Filtrer les étudiants mineurs',
           isActive: filterKey === 'minors',
           onToggle: () => setFilterKey((p) => (p === 'minors' ? 'all' : 'minors')),
         }}
@@ -696,11 +803,11 @@ export const EducationStudentsView: React.FC = () => {
                 label: isAr ? 'الأفواج والبرامج' : isEn ? 'Cohorts & Programs' : 'Promotions & Cohortes',
                 valueCount: eduCohorts.length,
                 valuePrefix: '',
-                valueSuffix: isAr ? ' فوج' : ' cohortes',
+                valueSuffix: isAr ? ' فوج' : isEn ? ' cohorts' : ' cohortes',
                 badgeCount: activeMinorsCount,
                 badgePrefix: '',
-                badgeSuffix: isAr ? 'قاصر' : 'mineurs',
-                caption: isAr ? 'أفواج دراسية تحت الإشراف' : "Programmes d'enseignement en cours",
+                badgeSuffix: isAr ? 'قاصر' : isEn ? 'minors' : 'mineurs',
+                caption: isAr ? 'أفواج دراسية تحت الإشراف' : isEn ? 'Active teaching programs' : "Programmes d'enseignement en cours",
               }
             : {
                 label: isAr ? 'إجمالي التحصيل الدراسي' : isEn ? 'Collected Tuition' : 'Frais Scolaires Encaissés',
@@ -902,10 +1009,11 @@ export const EducationStudentsView: React.FC = () => {
             : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
         }
         tabs={[
-          { id: 'academic', label: t('edu_drawer_academic') },
-          ...(!isStaff ? [{ id: 'financial', label: t('edu_drawer_financial') }] : []),
-          { id: 'guardian', label: t('edu_drawer_guardian') },
-          { id: 'certificates', label: t('edu_drawer_certificates') },
+          { id: 'academic', label: isAr ? 'الأكاديمي' : isEn ? 'Profile' : 'Profil' },
+          ...(!isStaff ? [{ id: 'financial', label: isAr ? 'الرسوم' : isEn ? 'Tuition' : 'Scolarité' }] : []),
+          { id: 'guardian', label: isAr ? 'الولي' : isEn ? 'Guardian' : 'Tuteur' },
+          { id: 'portal', label: isAr ? 'البوابة' : isEn ? 'Portal' : 'Portail' },
+          { id: 'certificates', label: isAr ? 'الشهادات' : isEn ? 'Certs' : 'Diplômes' },
         ]}
         activeTab={activeDrawerTab}
         onTabChange={(id) => setActiveDrawerTab(id as StudentDrawerTab)}
@@ -1078,6 +1186,105 @@ export const EducationStudentsView: React.FC = () => {
             );
           }
 
+          if (tab === 'portal') {
+            const stComms = eduParentComms.filter((c) => c.studentId === st.id);
+            return (
+              <>
+                <InspectorSection index={0} title={t('edu_btn_parent_comms')}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'رمز بوابة الولي' : isEn ? 'Parent Portal Token' : 'Jeton Portail Parent'}
+                      value={st.portalToken || (isAr ? 'يصدر مع البطاقة' : isEn ? 'Issued with Card' : 'Généré à l’envoi')}
+                      copyText={st.portalToken}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المجموعة العائلية' : isEn ? 'Family Group' : 'Famille / Fratrie'}
+                      value={st.familyGroupId || '—'}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'إرسال إشعار جديد' : isEn ? 'Send Parent Message' : 'Nouveau Message Parent'}>
+                  <div className="space-y-3">
+                    <LabelSelect
+                      field="ParentCommChannel"
+                      label={isAr ? 'القناة' : isEn ? 'Channel' : 'Canal'}
+                      value={parentMsgChannel}
+                      onChange={(v) => setParentMsgChannel(v as 'portal' | 'sms' | 'whatsapp')}
+                      options={[
+                        { value: 'portal', label: isAr ? 'بوابة الولي' : isEn ? 'Parent Portal' : 'Portail Parent' },
+                        { value: 'sms', label: 'SMS' },
+                        { value: 'whatsapp', label: 'WhatsApp' },
+                      ]}
+                      width="100%"
+                      height={38}
+                      corner={10}
+                    />
+                    <LabelInput
+                      field="ParentMsgSubject"
+                      label={isAr ? 'الموضوع' : isEn ? 'Subject' : 'Objet'}
+                      value={parentMsgSubject}
+                      onChange={setParentMsgSubject}
+                      placeholder={isAr ? 'متابعة الحضور أو النتائج' : isEn ? 'Attendance or term update' : 'Suivi assiduité / résultats'}
+                      width="100%"
+                      height={38}
+                      corner={10}
+                    />
+                    <LabelTextarea
+                      field="ParentMsgBody"
+                      label={isAr ? 'نص الرسالة' : isEn ? 'Message' : 'Message'}
+                      rows={3}
+                      value={parentMsgBody}
+                      onChange={setParentMsgBody}
+                      width="100%"
+                      corner={10}
+                    />
+                    <InspectorWideButton
+                      label={isAr ? 'إرسال للولي' : isEn ? 'Send Notice' : 'Envoyer au Parent'}
+                      icon={<MessageSquare size={15} />}
+                      tone="accent"
+                      onClick={() => {
+                        if (!parentMsgSubject.trim() || !parentMsgBody.trim()) return;
+                        sendEduParentCommunication({
+                          studentId: st.id,
+                          channel: parentMsgChannel,
+                          category: 'general',
+                          subject: parentMsgSubject,
+                          body: parentMsgBody,
+                        });
+                        setParentMsgSubject('');
+                        setParentMsgBody('');
+                      }}
+                    />
+                  </div>
+                </InspectorSection>
+                <InspectorSection index={2} title={isAr ? 'سجل المراسلات' : isEn ? 'Communication Log' : 'Historique Échanges'}>
+                  {stComms.length === 0 ? (
+                    <InspectorCard>
+                      <InspectorListItem title={isAr ? 'لا توجد رسائل بعد' : isEn ? 'No messages sent yet' : 'Aucun message envoyé'} isLast />
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      {stComms.map((cm, idx) => (
+                        <InspectorListItem
+                          key={cm.id}
+                          title={cm.subject}
+                          subtitle={`${cm.channel.toUpperCase()} · ${cm.body.slice(0, 60)}`}
+                          badge={{
+                            label: cm.readAt ? (isAr ? 'مقروء' : isEn ? 'Read' : 'Lu') : (isAr ? 'جديد' : isEn ? 'Unread' : 'Non lu'),
+                            tone: cm.readAt ? 'ok' : 'warn',
+                          }}
+                          onClick={() => markEduParentCommRead(cm.id)}
+                          isLast={idx === stComms.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  )}
+                </InspectorSection>
+              </>
+            );
+          }
+
           return (
             <>
               <InspectorSection index={0}>
@@ -1090,6 +1297,37 @@ export const EducationStudentsView: React.FC = () => {
                       primary: true,
                       onClick: () => handleOpenEdit(st),
                     },
+                    {
+                      id: 'qr_card',
+                      label: t('edu_btn_issue_card_qr'),
+                      icon: <QrCode size={16} />,
+                      onClick: () => {
+                        const updated = issueStudentCardQr(st.id);
+                        setQrCardStudent(updated || st);
+                      },
+                    },
+                    {
+                      id: 'bulletin',
+                      label: t('edu_btn_report_card'),
+                      icon: <FileText size={16} />,
+                      onClick: () => handleOpenReportCard(st),
+                    },
+                    ...(studentEnrollments.some((e) => e.status === 'Active')
+                      ? [
+                          {
+                            id: 'transfer',
+                            label: t('edu_btn_transfer_cohort'),
+                            icon: <ArrowRightLeft size={16} />,
+                            onClick: () => {
+                              const activeEnr = studentEnrollments.find((e) => e.status === 'Active');
+                              if (!activeEnr) return;
+                              const otherCohort = eduCohorts.find((c) => c.id !== activeEnr.cohortId) || eduCohorts[0];
+                              setTransferSourceEnrollmentId(activeEnr.id);
+                              setTransferTargetCohortId(otherCohort?.id || '');
+                            },
+                          },
+                        ]
+                      : []),
                     {
                       id: 'cert',
                       label: t('edu_btn_issue_certificate'),
@@ -1313,23 +1551,49 @@ export const EducationStudentsView: React.FC = () => {
                 />
               </div>
               {!studentToEdit && eduCohorts.length > 0 && (
-                <LabelSelect
-                  field="InitialCohort"
-                  label={t('edu_field_initial_cohort')}
-                  value={formData.initialCohortId}
-                  onChange={(val) => setFormData({ ...formData, initialCohortId: val })}
-                  options={[
-                    { value: '', label: 'No immediate cohort assignment' },
-                    ...eduCohorts.map((c) => ({
-                      value: c.id,
-                      label: `${c.name} (${c.cohortCode || c.courseTitle})`,
-                    })),
-                  ]}
-                  placeholder="Select Cohort..."
-                  width="100%"
-                  height={40}
-                  corner={12}
-                />
+                <>
+                  <LabelSelect
+                    field="InitialCohort"
+                    label={t('edu_field_initial_cohort')}
+                    value={formData.initialCohortId}
+                    onChange={(val) => setFormData({ ...formData, initialCohortId: val })}
+                    options={[
+                      { value: '', label: 'No immediate cohort assignment' },
+                      ...eduCohorts.map((c) => ({
+                        value: c.id,
+                        label: `${c.name} (${c.enrolledCount}/${c.maxStudents})`,
+                      })),
+                    ]}
+                    placeholder="Select Cohort..."
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                  {(() => {
+                    const chosen = eduCohorts.find((c) => c.id === formData.initialCohortId);
+                    if (!chosen || checkCohortCapacity(chosen, false).allowed) return null;
+                    return (
+                      <div
+                        data-sq="card"
+                        data-sq-border="solid"
+                        className="p-3 bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between gap-3"
+                      >
+                        <span className="t-cap text-amber-800 dark:text-amber-300 font-medium">
+                          {isAr
+                            ? `الفوج ممتلئ (${chosen.enrolledCount}/${chosen.maxStudents}). وضع في قائمة الانتظار؟`
+                            : isEn
+                            ? `Cohort full (${chosen.enrolledCount}/${chosen.maxStudents}). Place on waitlist?`
+                            : `Cohorte complète (${chosen.enrolledCount}/${chosen.maxStudents}). Liste d’attente ?`}
+                        </span>
+                        <LiveSwitch
+                          checked={allowInitialWaitlist}
+                          onCheckedChange={setAllowInitialWaitlist}
+                          aria-label="Waitlist"
+                        />
+                      </div>
+                    );
+                  })()}
+                </>
               )}
               <div
                 data-sq="card"
@@ -1419,6 +1683,194 @@ export const EducationStudentsView: React.FC = () => {
           setIsCertModalOpen(false);
           setSelectedCertForPreview(null);
         }}
+      />
+
+      <KineticModalShell
+        isOpen={Boolean(qrCardStudent)}
+        onClose={() => setQrCardStudent(null)}
+        maxWidthClass="max-w-sm"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {qrCardStudent && (() => {
+          const qrCode = qrCardStudent.studentCardQr || buildStudentCardQrPayload(qrCardStudent);
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+                <h2 className="t-card font-semibold text-black dark:text-white">{t('edu_btn_issue_card_qr')}</h2>
+                <button
+                  type="button"
+                  onClick={() => setQrCardStudent(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 hover:bg-neutral-100 cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#22201E] text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)]">
+                  <QrCode size={32} />
+                </div>
+                <div className="t-label font-semibold text-black dark:text-white">{qrCardStudent.fullName}</div>
+                <div className="t-cap text-black/65 dark:text-white/65">{qrCardStudent.schoolGrade || 'Learner'}</div>
+                <div className="t-small font-mono font-semibold text-[var(--brand-text,#BF431F)] break-all" data-testid="student-qr-payload">
+                  {qrCode}
+                </div>
+                {qrCardStudent.portalToken && (
+                  <div className="t-cap text-black/60 dark:text-white/60">
+                    Portal Token: <b className="font-mono">{qrCardStudent.portalToken}</b>
+                  </div>
+                )}
+              </div>
+              <Button
+                tone="accent"
+                size={40}
+                className="w-full justify-center"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && typeof window.print === 'function') {
+                    window.print();
+                  }
+                }}
+              >
+                {t('edu_cert_print')}
+              </Button>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(transferSourceEnrollmentId)}
+        onClose={() => setTransferSourceEnrollmentId(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {transferSourceEnrollmentId && (() => {
+          const srcEnr = eduEnrollments.find((e) => e.id === transferSourceEnrollmentId);
+          const srcCohort = srcEnr ? eduCohorts.find((c) => c.id === srcEnr.cohortId) : undefined;
+          const tgtCohort = eduCohorts.find((c) => c.id === transferTargetCohortId);
+          if (!srcEnr || !srcCohort) return null;
+          const proration = tgtCohort
+            ? computeCohortTransferProration({
+                sourceCohortStart: srcCohort.startDate,
+                sourceCohortEnd: srcCohort.endDate,
+                transferDate: new Date().toISOString().slice(0, 10),
+                sourceAgreedTuitionDzd: srcEnr.agreedTuition,
+                sourcePaidDzd: srcEnr.paidAmount,
+                targetTuitionDzd: tgtCohort.tuitionFee,
+              })
+            : null;
+          const targetFull = tgtCohort ? !checkCohortCapacity(tgtCohort, false).allowed : false;
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+                <h2 className="t-card font-semibold text-black dark:text-white">{t('edu_btn_transfer_cohort')}</h2>
+                <button
+                  type="button"
+                  onClick={() => setTransferSourceEnrollmentId(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 hover:bg-neutral-100 cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-3 t-cap">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-[#22201E]">
+                  <div className="font-semibold text-black dark:text-white">{srcEnr.studentName}</div>
+                  <div className="text-black/60 dark:text-white/60">{srcCohort.name}</div>
+                </div>
+                <LabelSelect
+                  field="TransferTargetCohort"
+                  label={isAr ? 'الفوج الجديد' : isEn ? 'Target Cohort' : 'Nouvelle Cohorte'}
+                  value={transferTargetCohortId}
+                  onChange={setTransferTargetCohortId}
+                  options={eduCohorts
+                    .filter((c) => c.id !== srcCohort.id)
+                    .map((c) => ({
+                      value: c.id,
+                      label: `${c.name} (${c.enrolledCount}/${c.maxStudents}) · ${c.tuitionFee.toLocaleString()} DZD`,
+                    }))}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                {targetFull && (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between gap-2">
+                    <span className="text-amber-800 dark:text-amber-300 font-medium">
+                      {isAr ? 'الفوج مكتمل — تفعيل قائمة الانتظار؟' : isEn ? 'Target cohort full — allow waitlist?' : 'Cohorte pleine — liste d’attente ?'}
+                    </span>
+                    <LiveSwitch
+                      checked={transferAllowWaitlist}
+                      onCheckedChange={setTransferAllowWaitlist}
+                      aria-label="Waitlist on transfer"
+                    />
+                  </div>
+                )}
+                {proration && (
+                  <div className="p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 t-small">
+                    <div className="flex justify-between">
+                      <span>{isAr ? 'الرصيد المحول التناسبي:' : isEn ? 'Carried Prorated Credit:' : 'Crédit proratisé reporté :'}</span>
+                      <b className="tabular-nums text-emerald-600">{formatMoney(proration.carriedCreditDzd)}</b>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{isAr ? 'المتبقي للدفع:' : isEn ? 'New Balance Due:' : 'Nouveau solde dû :'}</span>
+                      <b className="tabular-nums">{formatMoney(proration.newBalanceDueDzd)}</b>
+                    </div>
+                  </div>
+                )}
+                <LabelInput
+                  field="TransferReason"
+                  label={isAr ? 'سبب التحويل' : isEn ? 'Reason' : 'Motif du transfert'}
+                  value={transferReason}
+                  onChange={setTransferReason}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="pt-3 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
+                  <Button tone="soft" size={40} type="button" onClick={() => setTransferSourceEnrollmentId(null)}>
+                    {t('common_cancel')}
+                  </Button>
+                  <Button
+                    tone="accent"
+                    size={40}
+                    type="button"
+                    data-testid="confirm-transfer-cohort-btn"
+                    onClick={() => {
+                      const moved = transferStudentCohort(srcEnr.id, transferTargetCohortId, {
+                        allowWaitlist: transferAllowWaitlist,
+                        reason: transferReason || undefined,
+                      });
+                      if (moved) {
+                        setTransferSourceEnrollmentId(null);
+                        setTransferAllowWaitlist(false);
+                        setTransferReason('');
+                      }
+                    }}
+                  >
+                    {t('edu_btn_transfer_cohort')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(reportCardPages)}
+        onClose={() => setReportCardPages(null)}
+        language={language}
+        format="a4"
+        title={t('edu_btn_report_card')}
+        pages={reportCardPages || []}
       />
     </div>
   );

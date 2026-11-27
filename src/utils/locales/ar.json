@@ -3244,7 +3244,21 @@
   "venue_inv_btn_edit": "تعديل",
   "venue_inv_space_name": "اسم المساحة أو الأصل",
   "venue_inv_code": "الرمز المرجعي",
-  "venue_inv_desc": "الوصف والمواصفات"
+  "venue_inv_desc": "الوصف والمواصفات",
+  "edu_no_cohorts_found": "لا توجد أفواج مطابقة",
+  "edu_drawer_issue_certificate": "إصدار شهادة",
+  "edu_btn_report_card": "كشف النقاط",
+  "edu_field_grade_scale": "سلم التنقيط",
+  "edu_field_waitlist_enabled": "تفعيل قائمة الانتظار",
+  "edu_field_trade_mode": "نمط المؤسسة",
+  "edu_btn_dunning_dispatch": "إرسال تذكيرات الدفع",
+  "edu_btn_discount_refund": "تخفيض / استرداد",
+  "edu_btn_enrollment_contract": "عقد التسجيل",
+  "edu_btn_parent_comms": "بوابة الأولياء",
+  "edu_btn_issue_card_qr": "بطاقة الطالب QR",
+  "edu_btn_transfer_cohort": "تحويل الفوج",
+  "edu_tab_driving_school": "مدرسة السياقة",
+  "edu_tab_k12_services": "المطعم والنقل"
 }
 
 

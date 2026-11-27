@@ -25,8 +25,10 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
+import { checkCohortCapacity } from '../../../utils/educationDepth';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -99,6 +101,7 @@ export const EducationAdmissionsView: React.FC = () => {
   const [conversionLead, setConversionLead] = useState<EduAdmissionLead | null>(null);
   const [targetCohortId, setTargetCohortId] = useState<string>(eduCohorts[0]?.id || '');
   const [conversionDeposit, setConversionDeposit] = useState<number>(0);
+  const [allowWaitlistConversion, setAllowWaitlistConversion] = useState<boolean>(false);
 
   const [selectedLead, setSelectedLead] = useState<EduAdmissionLead | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -206,9 +209,13 @@ export const EducationAdmissionsView: React.FC = () => {
 
   const handleConfirmConversion = () => {
     if (!conversionLead || !targetCohortId) return;
-    convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit);
+    const res = convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit, {
+      allowWaitlist: allowWaitlistConversion,
+    });
+    if (!res) return;
     setConversionLead(null);
     setConversionDeposit(0);
+    setAllowWaitlistConversion(false);
   };
 
   const handleExportCSV = useCallback(() => {
@@ -739,7 +746,7 @@ export const EducationAdmissionsView: React.FC = () => {
           label: isAr ? 'معدل التحويل للقبول' : isEn ? 'Admission Conversion' : "Taux d'admission",
           count: conversionRate,
           formatValue: (v) => `${v}%`,
-          badgeText: `${admittedCount} ${isAr ? 'مقبول' : 'admis'}`,
+          badgeText: `${admittedCount} ${isAr ? 'مقبول' : isEn ? 'admitted' : 'admis'}`,
           tone: 'emerald',
           isActive: stageFilter === 'Admitted',
           onToggle: () => setStageFilter((p) => (p === 'Admitted' ? 'All' : 'Admitted')),
@@ -753,8 +760,8 @@ export const EducationAdmissionsView: React.FC = () => {
           valueCount: projectedPipeline,
           valueSuffix: ' DZD',
           badgeCount: admittedCount,
-          badgeSuffix: isAr ? ' مقبول' : ' admis',
-          caption: isAr ? 'إجمالي الرسوم المتوقعة' : "Potentiel d'encaissement rentrée",
+          badgeSuffix: isAr ? ' مقبول' : isEn ? ' admitted' : ' admis',
+          caption: isAr ? 'إجمالي الرسوم المتوقعة' : isEn ? 'Projected tuition recovery' : "Potentiel d'encaissement rentrée",
         }}
       />
 
@@ -1220,13 +1227,39 @@ export const EducationAdmissionsView: React.FC = () => {
                 onChange={setTargetCohortId}
                 options={eduCohorts.map((c) => ({
                   value: c.id,
-                  label: `${c.name} (${c.cohortCode || c.courseTitle}) — ${c.tuitionFee.toLocaleString()} DZD`,
+                  label: `${c.name} (${c.enrolledCount}/${c.maxStudents}) — ${c.tuitionFee.toLocaleString()} DZD`,
                 }))}
                 placeholder="Select Starting Cohort..."
                 width="100%"
                 height={40}
                 corner={12}
               />
+              {(() => {
+                const chosen = eduCohorts.find((c) => c.id === targetCohortId);
+                if (!chosen) return null;
+                const cap = checkCohortCapacity(chosen, false);
+                if (cap.allowed) return null;
+                return (
+                  <div
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3 bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between gap-3"
+                  >
+                    <div className="t-cap text-amber-800 dark:text-amber-300 font-medium">
+                      {isAr
+                        ? `الفوج مكتمل (${chosen.enrolledCount}/${chosen.maxStudents}). تسجيل في قائمة الانتظار؟`
+                        : isEn
+                        ? `Cohort full (${chosen.enrolledCount}/${chosen.maxStudents}). Enqueue on waitlist?`
+                        : `Cohorte complète (${chosen.enrolledCount}/${chosen.maxStudents}). Mettre en liste d’attente ?`}
+                    </div>
+                    <LiveSwitch
+                      checked={allowWaitlistConversion}
+                      onCheckedChange={setAllowWaitlistConversion}
+                      aria-label="Allow Waitlist"
+                    />
+                  </div>
+                );
+              })()}
               <LabelInput
                 field="InitialDeposit"
                 label="Acompte Initial Reçu (DZD)"

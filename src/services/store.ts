@@ -75,6 +75,14 @@ import {
   StudentStatus,
   AttendanceStatus,
   EnrollmentPaymentStatus,
+  EduDiscountType,
+  EduTradeMode,
+  EduGradeScale,
+  EduParentCommunication,
+  EduVacataireLog,
+  EduDrivingLog,
+  EduK12Service,
+  EduTransferHistoryEntry,
   PMRole,
   GarageRole,
   RealEstateRole,
@@ -291,6 +299,10 @@ import {
   INITIAL_EDU_GRADES,
   INITIAL_EDU_CERTIFICATES,
   INITIAL_EDU_ADMISSIONS,
+  INITIAL_EDU_PARENT_COMMS,
+  INITIAL_EDU_VACATAIRE_LOGS,
+  INITIAL_EDU_DRIVING_LOGS,
+  INITIAL_EDU_K12_SERVICES,
   INITIAL_PM_CLIENTS,
   INITIAL_PM_PROJECTS,
   INITIAL_PM_MILESTONES,
@@ -443,6 +455,10 @@ import {
   mapEduGradeFromDb,
   mapEduCertificateFromDb,
   mapEduAdmissionFromDb,
+  mapEduParentCommFromDb,
+  mapEduVacataireLogFromDb,
+  mapEduDrivingLogFromDb,
+  mapEduK12ServiceFromDb,
   mapPmClientFromDb,
   mapPmProjectFromDb,
   mapPmMilestoneFromDb,
@@ -517,6 +533,18 @@ import {
   applyPaymentToStagedSchedule,
   parseIcsBookings,
 } from '../utils/rentalDepth';
+import {
+  checkCohortCapacity,
+  computeTuitionWithDiscountsAndRefund,
+  computeCohortTransferProration,
+  detectEduSessionConflicts,
+  computeSessionDurationHours,
+  computeVacataireSessionPay,
+  evaluateEnrollmentDunning,
+  buildReissuedCertificatePayload,
+  buildStudentCardQrPayload,
+  detectDrivingVehicleOrInstructorConflict,
+} from '../utils/educationDepth';
 import {
   canApprovePmExpense,
   evaluateDeliverableRevisionDecision,
@@ -814,6 +842,10 @@ interface AppState {
   eduGrades: EduGrade[];
   eduCertificates: EduCertificate[];
   eduAdmissions: EduAdmissionLead[];
+  eduParentComms: EduParentCommunication[];
+  eduVacataireLogs: EduVacataireLog[];
+  eduDrivingLogs: EduDrivingLog[];
+  eduK12Services: EduK12Service[];
   // Project & Milestone (Category 13)
   activePmRole: PMRole;
   activePmSubScreen: string;
@@ -1081,6 +1113,10 @@ const DEFAULT_STATE: AppState = {
   eduGrades: INITIAL_EDU_GRADES,
   eduCertificates: INITIAL_EDU_CERTIFICATES,
   eduAdmissions: INITIAL_EDU_ADMISSIONS,
+  eduParentComms: INITIAL_EDU_PARENT_COMMS,
+  eduVacataireLogs: INITIAL_EDU_VACATAIRE_LOGS,
+  eduDrivingLogs: INITIAL_EDU_DRIVING_LOGS,
+  eduK12Services: INITIAL_EDU_K12_SERVICES,
   // Project & Milestone
   activePmRole: 'direction',
   activePmSubScreen: 'dashboard',
@@ -1259,6 +1295,10 @@ function backfillTraceability(state: AppState): AppState {
     eduCertificates: (state.eduCertificates || []).map(patch),
     eduEnrollments: (state.eduEnrollments || []).map(patch),
     eduAdmissions: (state.eduAdmissions || []).map(patch),
+    eduParentComms: (state.eduParentComms || []).map(patch),
+    eduVacataireLogs: (state.eduVacataireLogs || []).map(patch),
+    eduDrivingLogs: (state.eduDrivingLogs || []).map(patch),
+    eduK12Services: (state.eduK12Services || []).map(patch),
     pmClients: (state.pmClients || []).map(patch),
     pmProjects: (state.pmProjects || []).map(patch),
     pmPrintOrders: (state.pmPrintOrders || []).map(patch),
@@ -1445,6 +1485,10 @@ let globalState: AppState = backfillTraceability((() => {
           eduGrades: Array.isArray(parsed.eduGrades) ? parsed.eduGrades : INITIAL_EDU_GRADES,
           eduCertificates: Array.isArray(parsed.eduCertificates) ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
           eduAdmissions: Array.isArray(parsed.eduAdmissions) ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
+          eduParentComms: Array.isArray(parsed.eduParentComms) ? parsed.eduParentComms : INITIAL_EDU_PARENT_COMMS,
+          eduVacataireLogs: Array.isArray(parsed.eduVacataireLogs) ? parsed.eduVacataireLogs : INITIAL_EDU_VACATAIRE_LOGS,
+          eduDrivingLogs: Array.isArray(parsed.eduDrivingLogs) ? parsed.eduDrivingLogs : INITIAL_EDU_DRIVING_LOGS,
+          eduK12Services: Array.isArray(parsed.eduK12Services) ? parsed.eduK12Services : INITIAL_EDU_K12_SERVICES,
           // PM Hydration
           activePmRole: parsed.activePmRole || 'direction',
           pmClients: Array.isArray(parsed.pmClients) ? parsed.pmClients : INITIAL_PM_CLIENTS,
@@ -2162,6 +2206,22 @@ export const selectCurrentEduCertificatesFromState = createBranchSelector<EduCer
 export const selectCurrentEduAdmissionsFromState = createBranchSelector<EduAdmissionLead>(
   (s) => s.eduAdmissions,
   (ad, b) => ad.facilityId === b
+);
+export const selectCurrentEduParentCommsFromState = createBranchSelector<EduParentCommunication>(
+  (s) => s.eduParentComms || [],
+  (pc, b) => (pc.branchId || pc.facilityId) === b
+);
+export const selectCurrentEduVacataireLogsFromState = createBranchSelector<EduVacataireLog>(
+  (s) => s.eduVacataireLogs || [],
+  (vl, b) => (vl.branchId || vl.facilityId) === b
+);
+export const selectCurrentEduDrivingLogsFromState = createBranchSelector<EduDrivingLog>(
+  (s) => s.eduDrivingLogs || [],
+  (dl, b) => (dl.branchId || dl.facilityId) === b
+);
+export const selectCurrentEduK12ServicesFromState = createBranchSelector<EduK12Service>(
+  (s) => s.eduK12Services || [],
+  (ks, b) => (ks.branchId || ks.facilityId) === b
 );
 
 const pmBranchMatch = (item: { facilityId?: string; branchId?: string }, b: string) =>
@@ -4399,6 +4459,10 @@ function pruneDeletedRecords(
     edu_grades: 'eduGrades',
     edu_certificates: 'eduCertificates',
     edu_admissions: 'eduAdmissions',
+    edu_parent_communications: 'eduParentComms',
+    edu_vacataire_logs: 'eduVacataireLogs',
+    edu_driving_logs: 'eduDrivingLogs',
+    edu_k12_services: 'eduK12Services',
     pm_clients: 'pmClients',
     pm_projects: 'pmProjects',
     pm_milestones: 'pmMilestones',
@@ -5532,6 +5596,30 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           if (rows.length > 0) updates.eduAdmissions = mergeById(globalState.eduAdmissions || [], rows);
         });
       }
+      if (shouldSyncTable('edu_parent_communications')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchParentCommunications(branchId);
+          if (rows.length > 0) updates.eduParentComms = mergeById(globalState.eduParentComms || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_vacataire_logs')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchVacataireLogs(branchId);
+          if (rows.length > 0) updates.eduVacataireLogs = mergeById(globalState.eduVacataireLogs || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_driving_logs')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchDrivingLogs(branchId);
+          if (rows.length > 0) updates.eduDrivingLogs = mergeById(globalState.eduDrivingLogs || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_k12_services')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchK12Services(branchId);
+          if (rows.length > 0) updates.eduK12Services = mergeById(globalState.eduK12Services || [], rows);
+        });
+      }
     } else if (activeCategory === 'project_milestone') {
       if (shouldSyncTable('pm_clients')) {
         tasks.push(async () => {
@@ -6236,6 +6324,14 @@ export function applyResolvedRowToSlice(
       return { eduCertificates: patchList(globalState.eduCertificates, mapEduCertificateFromDb) };
     case 'edu_admissions':
       return { eduAdmissions: patchList(globalState.eduAdmissions, mapEduAdmissionFromDb) };
+    case 'edu_parent_communications':
+      return { eduParentComms: patchList(globalState.eduParentComms || [], mapEduParentCommFromDb) };
+    case 'edu_vacataire_logs':
+      return { eduVacataireLogs: patchList(globalState.eduVacataireLogs || [], mapEduVacataireLogFromDb) };
+    case 'edu_driving_logs':
+      return { eduDrivingLogs: patchList(globalState.eduDrivingLogs || [], mapEduDrivingLogFromDb) };
+    case 'edu_k12_services':
+      return { eduK12Services: patchList(globalState.eduK12Services || [], mapEduK12ServiceFromDb) };
     case 'pm_clients':
       return { pmClients: patchList(globalState.pmClients, mapPmClientFromDb) };
     case 'pm_projects':
@@ -9667,9 +9763,27 @@ function createAtriumActions() {
         (sum, c) => sum + centimesToDzd(c.commissionCentimes),
         0
       );
+      const postedVacataireLogs = (globalState.eduVacataireLogs || []).filter(
+        (v) =>
+          v.instructorId === member.id &&
+          v.status === 'posted_to_payroll' &&
+          !v.deletedAt &&
+          (!v.payrollRunId || v.payrollRunId === runId)
+      );
+      const postedVacataireDzd = postedVacataireLogs.reduce(
+        (sum, v) => sum + centimesToDzd(v.grossAmountCentimes),
+        0
+      );
       const baseServiceComm = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
       const coachingCommission = baseServiceComm + postedCommissionDzd;
-      const primesCotisables = coachingCommission > 0 ? [{ label: 'Commissions Séances & Pass', amount: Math.round(coachingCommission) }] : [];
+      const primesCotisables = [
+        ...(coachingCommission > 0
+          ? [{ label: 'Commissions Séances & Pass', amount: Math.round(coachingCommission) }]
+          : []),
+        ...(postedVacataireDzd > 0
+          ? [{ label: 'Vacations Enseignement', amount: Math.round(postedVacataireDzd) }]
+          : []),
+      ];
 
       const calc = calculateAlgerianGrossToNet({
         baseSalary: member.salary || 50000,
@@ -9764,12 +9878,18 @@ function createAtriumActions() {
         ? { ...c, payrollRunId: runId }
         : c
     );
+    const boundVacataireLogs = (globalState.eduVacataireLogs || []).map((v) =>
+      v.status === 'posted_to_payroll' && !v.payrollRunId && staffPoolIds.has(v.instructorId)
+        ? { ...v, payrollRunId: runId }
+        : v
+    );
 
     globalState = {
       ...globalState,
       staffPayrollRuns: [newRun, ...existingRuns],
       staffPayrollSlips: [...slips, ...existingSlips],
       trainerCommissions: boundTrainerCommissions,
+      eduVacataireLogs: boundVacataireLogs,
     };
     notify();
 
@@ -16654,6 +16774,10 @@ function createAtriumActions() {
       'eduGrades',
       'eduCertificates',
       'eduAdmissions',
+      'eduParentComms',
+      'eduVacataireLogs',
+      'eduDrivingLogs',
+      'eduK12Services',
     ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_edu_main';
     const targetAccountId =
@@ -16735,6 +16859,10 @@ function createAtriumActions() {
       eduGrades: freshGrades,
       eduCertificates: freshCerts,
       eduAdmissions: freshAdmissions,
+      eduParentComms: INITIAL_EDU_PARENT_COMMS,
+      eduVacataireLogs: INITIAL_EDU_VACATAIRE_LOGS,
+      eduDrivingLogs: INITIAL_EDU_DRIVING_LOGS,
+      eduK12Services: INITIAL_EDU_K12_SERVICES,
     };
     notify();
 
@@ -16747,6 +16875,10 @@ function createAtriumActions() {
       'eduGrades',
       'eduCertificates',
       'eduAdmissions',
+      'eduParentComms',
+      'eduVacataireLogs',
+      'eduDrivingLogs',
+      'eduK12Services',
     ]);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
@@ -17112,11 +17244,54 @@ function createAtriumActions() {
     });
   };
 
-  const addEduSession = (sessionData: Omit<EduSession, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+  const addEduSession = (
+    sessionData: Omit<EduSession, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>,
+    options?: { forceOverride?: boolean }
+  ) => {
+    const branchSessions = (globalState.eduSessions || []).filter(
+      (s) => s.facilityId === globalState.currentBranchId
+    );
+    const conflict = detectEduSessionConflicts(sessionData, branchSessions);
+    if (conflict.hasConflict && !options?.forceOverride) {
+      const reasonLabels: Record<string, { en: string; fr: string; ar: string }> = {
+        INVALID_TIME_WINDOW: {
+          en: 'End time must be after start time.',
+          fr: 'L’heure de fin doit être postérieure au début.',
+          ar: 'يجب أن يكون وقت النهاية بعد البداية.',
+        },
+        INSTRUCTOR_CONFLICT: {
+          en: `Instructor conflict with ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          fr: `Conflit formateur avec ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          ar: `تعارض الأستاذ مع ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+        },
+        CLASSROOM_CONFLICT: {
+          en: `Classroom conflict with ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          fr: `Conflit de salle avec ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          ar: `تعارض القاعة مع ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+        },
+        VEHICLE_CONFLICT: {
+          en: `Vehicle conflict with ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          fr: `Conflit véhicule avec ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+          ar: `تعارض المركبة مع ${conflict.conflictingSession?.cohortName || ''} (${conflict.conflictingSession?.startTime}-${conflict.conflictingSession?.endTime}).`,
+        },
+      };
+      const msg = reasonLabels[conflict.reasonCode || 'INSTRUCTOR_CONFLICT'];
+      showToast({
+        type: 'error',
+        title: ul('Schedule Conflict', 'Conflit d’horaire', 'تعارض في الجدول'),
+        message: ul(msg.en, msg.fr, msg.ar),
+      });
+      return null;
+    }
+
     const before = captureStoreSlices(['eduSessions']);
+    const computedHours =
+      sessionData.durationHours ??
+      computeSessionDurationHours(sessionData.startTime, sessionData.endTime);
     const newSession: EduSession = {
       ...getTraceContext(),
       ...sessionData,
+      durationHours: computedHours > 0 ? computedHours : 2,
       id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
@@ -17159,12 +17334,53 @@ function createAtriumActions() {
     return newSession;
   };
 
-  const updateEduSession = (sessionId: string, updates: Partial<EduSession>) => {
+  const updateEduSession = (
+    sessionId: string,
+    updates: Partial<EduSession>,
+    options?: { forceOverride?: boolean }
+  ) => {
     const prev = (globalState.eduSessions || []).find((se) => se.id === sessionId);
-    if (!prev) return;
+    if (!prev) return false;
+    const candidate: EduSession = { ...prev, ...updates };
+    if (
+      (updates.date !== undefined ||
+        updates.startTime !== undefined ||
+        updates.endTime !== undefined ||
+        updates.instructorId !== undefined ||
+        updates.classroomId !== undefined ||
+        updates.vehicleId !== undefined) &&
+      !options?.forceOverride
+    ) {
+      const branchSessions = (globalState.eduSessions || []).filter(
+        (s) => s.facilityId === prev.facilityId
+      );
+      const conflict = detectEduSessionConflicts(candidate, branchSessions);
+      if (conflict.hasConflict) {
+        showToast({
+          type: 'error',
+          title: ul('Schedule Conflict', 'Conflit d’horaire', 'تعارض في الجدول'),
+          message: ul(
+            `Schedule overlap detected (${conflict.reasonCode}).`,
+            `Chevauchement détecté (${conflict.reasonCode}).`,
+            `تم رصد تداخل في المواعيد (${conflict.reasonCode}).`
+          ),
+        });
+        return false;
+      }
+    }
     const before = captureStoreSlices(['eduSessions']);
     const updatedSessions = (globalState.eduSessions || []).map((se) =>
-      se.id === sessionId ? { ...se, ...updates } : se
+      se.id === sessionId
+        ? {
+            ...se,
+            ...updates,
+            durationHours:
+              updates.durationHours ??
+              (updates.startTime || updates.endTime
+                ? computeSessionDurationHours(candidate.startTime, candidate.endTime)
+                : se.durationHours),
+          }
+        : se
     );
     globalState = {
       ...globalState,
@@ -17199,6 +17415,7 @@ function createAtriumActions() {
         }
       },
     });
+    return true;
   };
 
   const deleteEduSession = (sessionId: string) => {
@@ -17523,9 +17740,32 @@ function createAtriumActions() {
     });
   };
 
-  const addEduEnrollment = (enrollmentData: Omit<EduEnrollment, 'id' | 'tenantId' | 'facilityId' | 'enrolledAt'>) => {
-    const before = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+  const addEduEnrollment = (
+    enrollmentData: Omit<EduEnrollment, 'id' | 'tenantId' | 'facilityId' | 'enrolledAt'>,
+    options?: { allowWaitlist?: boolean }
+  ) => {
     const prevCohort = (globalState.eduCohorts || []).find((c) => c.id === enrollmentData.cohortId);
+    if (prevCohort) {
+      const cap = checkCohortCapacity(prevCohort, Boolean(options?.allowWaitlist));
+      if (!cap.allowed) {
+        showToast({
+          type: 'error',
+          title: ul('Cohort Full', 'Cohorte complète', 'الفوج مكتمل'),
+          message: ul(
+            `${prevCohort.name} has reached capacity (${prevCohort.enrolledCount}/${prevCohort.maxStudents}). Enable waitlist to queue students.`,
+            `${prevCohort.name} a atteint sa capacité (${prevCohort.enrolledCount}/${prevCohort.maxStudents}). Activez la liste d’attente.`,
+            `${prevCohort.name} بلغ السعة القصوى (${prevCohort.enrolledCount}/${prevCohort.maxStudents}). فعّل قائمة الانتظار.`
+          ),
+        });
+        return null;
+      }
+      if (cap.waitlisted) {
+        enrollmentData = { ...enrollmentData, status: 'Waitlisted' };
+      }
+    }
+
+    const before = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+    const isWaitlisted = enrollmentData.status === 'Waitlisted';
     const newEnrollment: EduEnrollment = {
       ...getTraceContext(),
       ...enrollmentData,
@@ -17536,7 +17776,7 @@ function createAtriumActions() {
     };
 
     const updatedCohorts = (globalState.eduCohorts || []).map((c) =>
-      c.id === newEnrollment.cohortId
+      c.id === newEnrollment.cohortId && !isWaitlisted
         ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 }
         : c
     );
@@ -17550,24 +17790,30 @@ function createAtriumActions() {
     const targetCohort = updatedCohorts.find((c) => c.id === newEnrollment.cohortId);
     if (isSupabaseConfigured()) {
       educationService.upsertEnrollment(newEnrollment).catch(() => {});
-      if (targetCohort) educationService.upsertCohort(targetCohort).catch(() => {});
+      if (targetCohort && !isWaitlisted) educationService.upsertCohort(targetCohort).catch(() => {});
     }
     const after = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'create',
       summary: ul(
-        `Enrolled: ${newEnrollment.studentName} → ${newEnrollment.cohortName}`,
-        `Inscription confirmée : ${newEnrollment.studentName}`,
-        `تسجيل طالب: ${newEnrollment.studentName}`
+        isWaitlisted
+          ? `Waitlisted: ${newEnrollment.studentName} → ${newEnrollment.cohortName}`
+          : `Enrolled: ${newEnrollment.studentName} → ${newEnrollment.cohortName}`,
+        isWaitlisted
+          ? `Liste d’attente : ${newEnrollment.studentName}`
+          : `Inscription confirmée : ${newEnrollment.studentName}`,
+        isWaitlisted
+          ? `قائمة الانتظار: ${newEnrollment.studentName}`
+          : `تسجيل طالب: ${newEnrollment.studentName}`
       ),
       entityLabel: newEnrollment.studentName,
-      toastType: 'success',
+      toastType: isWaitlisted ? 'info' : 'success',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
           syncCoordinator.softDeleteRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id).catch(() => {});
-          if (prevCohort) educationService.upsertCohort(prevCohort).catch(() => {});
+          if (prevCohort && !isWaitlisted) educationService.upsertCohort(prevCohort).catch(() => {});
         }
       },
       redo: () => {
@@ -17576,7 +17822,7 @@ function createAtriumActions() {
           syncCoordinator.restoreRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id)
             .then(() => educationService.upsertEnrollment(newEnrollment))
             .catch(() => {});
-          if (targetCohort) educationService.upsertCohort(targetCohort).catch(() => {});
+          if (targetCohort && !isWaitlisted) educationService.upsertCohort(targetCohort).catch(() => {});
         }
       },
     });
@@ -17752,10 +17998,29 @@ function createAtriumActions() {
     });
   };
 
-  const convertAdmissionToStudent = (leadId: string, cohortId: string, initialDeposit: number = 0) => {
+  const convertAdmissionToStudent = (
+    leadId: string,
+    cohortId: string,
+    initialDeposit: number = 0,
+    options?: { allowWaitlist?: boolean }
+  ) => {
     const lead = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
     const cohort = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
-    if (!lead || !cohort) return;
+    if (!lead || !cohort) return null;
+
+    const cap = checkCohortCapacity(cohort, Boolean(options?.allowWaitlist));
+    if (!cap.allowed) {
+      showToast({
+        type: 'error',
+        title: ul('Cohort Full', 'Cohorte complète', 'الفوج مكتمل'),
+        message: ul(
+          `${cohort.name} is full (${cohort.enrolledCount}/${cohort.maxStudents}). Enable waitlist or select another cohort.`,
+          `${cohort.name} est complet (${cohort.enrolledCount}/${cohort.maxStudents}). Activez la liste d’attente ou choisissez une autre cohorte.`,
+          `${cohort.name} مكتمل (${cohort.enrolledCount}/${cohort.maxStudents}). فعّل قائمة الانتظار أو اختر فوجاً آخر.`
+        ),
+      });
+      return null;
+    }
 
     const before = captureStoreSlices(['eduStudents', 'eduEnrollments', 'eduCohorts', 'eduAdmissions']);
     const trace = getTraceContext();
@@ -17781,6 +18046,7 @@ function createAtriumActions() {
     const isFirstPaid = paid >= tranche1;
     const isFullyPaid = paid >= tuition;
 
+    const enrollmentStatus = cap.waitlisted ? ('Waitlisted' as const) : ('Active' as const);
     const newEnrollment: EduEnrollment = {
       ...trace,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -17797,7 +18063,7 @@ function createAtriumActions() {
       balanceDue: Math.max(0, tuition - paid),
       currency: cohort.currency,
       paymentStatus: isFullyPaid ? 'Paid' : paid > 0 ? 'Partial' : 'Pending',
-      status: 'Active',
+      status: enrollmentStatus,
       installments: [
         { dueDate: cohort.startDate, amount: tranche1, isPaid: isFirstPaid },
         { dueDate: cohort.endDate, amount: tranche2, isPaid: isFullyPaid },
@@ -17805,7 +18071,9 @@ function createAtriumActions() {
     };
 
     const updatedCohorts = (globalState.eduCohorts || []).map((c) =>
-      c.id === cohort.id ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 } : c
+      c.id === cohort.id && !cap.waitlisted
+        ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 }
+        : c
     );
     const updatedAdmissions = (globalState.eduAdmissions || []).map((l) =>
       l.id === leadId ? { ...l, stage: 'Enrolled' as const } : l
@@ -17827,7 +18095,7 @@ function createAtriumActions() {
         [
           () => educationService.upsertStudent(newStudent),
           () => educationService.upsertEnrollment(newEnrollment),
-          ...(updatedCohort ? [() => educationService.upsertCohort(updatedCohort)] : []),
+          ...(updatedCohort && !cap.waitlisted ? [() => educationService.upsertCohort(updatedCohort)] : []),
           ...(updatedLead ? [() => educationService.upsertAdmission(updatedLead)] : []),
         ],
         4
@@ -17839,12 +18107,18 @@ function createAtriumActions() {
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'status',
       summary: ul(
-        `Enrolled applicant: ${newStudent.fullName} → ${cohort.name}`,
-        `Candidat inscrit : ${newStudent.fullName} → ${cohort.name}`,
-        `تسجيل متقدم: ${newStudent.fullName}`
+        cap.waitlisted
+          ? `Waitlisted applicant: ${newStudent.fullName} → ${cohort.name}`
+          : `Enrolled applicant: ${newStudent.fullName} → ${cohort.name}`,
+        cap.waitlisted
+          ? `Candidat en attente : ${newStudent.fullName} → ${cohort.name}`
+          : `Candidat inscrit : ${newStudent.fullName} → ${cohort.name}`,
+        cap.waitlisted
+          ? `قائمة الانتظار: ${newStudent.fullName}`
+          : `تسجيل متقدم: ${newStudent.fullName}`
       ),
       entityLabel: newStudent.fullName,
-      toastType: 'success',
+      toastType: cap.waitlisted ? 'info' : 'success',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
@@ -17866,7 +18140,7 @@ function createAtriumActions() {
             [
               () => syncCoordinator.restoreRow('edu_students', newStudent.id, globalState.currentUser?.id).then(() => educationService.upsertStudent(newStudent)),
               () => syncCoordinator.restoreRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id).then(() => educationService.upsertEnrollment(newEnrollment)),
-              ...(updatedCohort ? [() => educationService.upsertCohort(updatedCohort)] : []),
+              ...(updatedCohort && !cap.waitlisted ? [() => educationService.upsertCohort(updatedCohort)] : []),
               ...(updatedLead ? [() => educationService.upsertAdmission(updatedLead)] : []),
             ],
             4
@@ -17874,6 +18148,7 @@ function createAtriumActions() {
         }
       },
     });
+    return newEnrollment;
   };
 
   const issueEduCertificate = (certData: Omit<EduCertificate, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'certificateNumber' | 'verificationHash'>) => {
@@ -18019,6 +18294,928 @@ function createAtriumActions() {
       },
     });
     return newCourse;
+  };
+
+  // --- Phase 3 Step 6 (7.6 education_cohort) Depth Actions ---
+
+  const transferStudentCohort = (
+    enrollmentId: string,
+    targetCohortId: string,
+    options?: { transferDate?: string; allowWaitlist?: boolean; reason?: string }
+  ): EduEnrollment | null => {
+    const sourceEn = (globalState.eduEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!sourceEn) return null;
+    if (sourceEn.cohortId === targetCohortId) return null;
+    const sourceCohort = (globalState.eduCohorts || []).find((c) => c.id === sourceEn.cohortId);
+    const targetCohort = (globalState.eduCohorts || []).find((c) => c.id === targetCohortId);
+    if (!sourceCohort || !targetCohort) return null;
+
+    const cap = checkCohortCapacity(targetCohort, Boolean(options?.allowWaitlist));
+    if (!cap.allowed) {
+      showToast({
+        type: 'error',
+        title: ul('Cohort Full', 'Cohorte complète', 'الفوج مكتمل'),
+        message: ul(
+          `${targetCohort.name} is at full capacity.`,
+          `${targetCohort.name} a atteint sa capacité maximale.`,
+          `${targetCohort.name} بلغ السعة القصوى.`
+        ),
+      });
+      return null;
+    }
+
+    const before = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+    const transferDate = options?.transferDate || new Date().toISOString().slice(0, 10);
+    const proration = computeCohortTransferProration({
+      sourceCohortStart: sourceCohort.startDate,
+      sourceCohortEnd: sourceCohort.endDate,
+      transferDate,
+      sourceAgreedTuitionDzd: sourceEn.agreedTuition,
+      sourcePaidDzd: sourceEn.paidAmount,
+      targetTuitionDzd: targetCohort.tuitionFee,
+    });
+
+    const historyEntry: EduTransferHistoryEntry = {
+      fromCohortId: sourceCohort.id,
+      fromCohortName: sourceCohort.name,
+      toCohortId: targetCohort.id,
+      toCohortName: targetCohort.name,
+      transferredAt: new Date().toISOString(),
+      proratedCreditDzd: proration.carriedCreditDzd,
+      reason: options?.reason,
+    };
+
+    const nextStatus = cap.waitlisted ? ('Waitlisted' as const) : ('Active' as const);
+    const newEnrollmentId = generateClientUuid();
+    const paidCarried = Math.min(targetCohort.tuitionFee, proration.carriedCreditDzd);
+    const newBalance = Math.max(0, targetCohort.tuitionFee - paidCarried);
+    const newEnrollment: EduEnrollment = {
+      ...getTraceContext(),
+      id: newEnrollmentId,
+      tenantId: sourceEn.tenantId,
+      facilityId: sourceEn.facilityId,
+      studentId: sourceEn.studentId,
+      studentName: sourceEn.studentName,
+      cohortId: targetCohort.id,
+      cohortName: targetCohort.name,
+      enrolledAt: new Date().toISOString(),
+      agreedTuition: targetCohort.tuitionFee,
+      discountAmount: 0,
+      discountType: 'none',
+      paidAmount: paidCarried,
+      balanceDue: newBalance,
+      currency: targetCohort.currency,
+      paymentStatus: newBalance === 0 ? 'Paid' : paidCarried > 0 ? 'Partial' : 'Pending',
+      status: nextStatus,
+      transferredFromCohortId: sourceCohort.id,
+      transferHistory: [...(sourceEn.transferHistory || []), historyEntry],
+      installments:
+        newBalance > 0
+          ? [{ dueDate: targetCohort.endDate, amount: newBalance, isPaid: false }]
+          : [{ dueDate: transferDate, amount: targetCohort.tuitionFee, isPaid: true, paidAt: new Date().toISOString() }],
+    };
+
+    const updatedSourceEn: EduEnrollment = {
+      ...sourceEn,
+      status: 'Transferred',
+      transferHistory: [...(sourceEn.transferHistory || []), historyEntry],
+    };
+
+    const wasSourceActive = sourceEn.status === 'Active';
+    const updatedCohorts = (globalState.eduCohorts || []).map((c) => {
+      if (c.id === sourceCohort.id && wasSourceActive) {
+        return { ...c, enrolledCount: Math.max(0, (c.enrolledCount || 0) - 1) };
+      }
+      if (c.id === targetCohort.id && !cap.waitlisted) {
+        return { ...c, enrolledCount: (c.enrolledCount || 0) + 1 };
+      }
+      return c;
+    });
+
+    globalState = {
+      ...globalState,
+      eduEnrollments: [
+        newEnrollment,
+        ...(globalState.eduEnrollments || []).map((e) => (e.id === sourceEn.id ? updatedSourceEn : e)),
+      ],
+      eduCohorts: updatedCohorts,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      educationService
+        .transferCohortAtomic({
+          enrollmentId: sourceEn.id,
+          targetCohortId: targetCohort.id,
+          transferDate,
+          allowWaitlist: Boolean(options?.allowWaitlist),
+          reason: options?.reason,
+        })
+        .catch(() => {});
+    }
+
+    const after = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Transferred ${sourceEn.studentName} → ${targetCohort.name} (credit ${proration.carriedCreditDzd.toLocaleString()} DZD)`,
+        `Transfert ${sourceEn.studentName} → ${targetCohort.name} (crédit ${proration.carriedCreditDzd.toLocaleString()} DZD)`,
+        `نقل ${sourceEn.studentName} إلى ${targetCohort.name} (رصيد ${proration.carriedCreditDzd.toLocaleString()} دج)`
+      ),
+      entityLabel: sourceEn.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
+    return newEnrollment;
+  };
+
+  const createEnrollmentUnifiedInvoice = (
+    enrollmentId: string,
+    options?: { issueImmediately?: boolean }
+  ): UnifiedDocument | null => {
+    const en = (globalState.eduEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!en) return null;
+    if (en.unifiedDocumentId) {
+      const existing = (globalState.unifiedDocuments || []).find((d) => d.id === en.unifiedDocumentId);
+      if (existing) return existing;
+    }
+    const student = (globalState.eduStudents || []).find((s) => s.id === en.studentId);
+    const partyRes = ensurePartyForEntity({
+      sourceVertical: 'education_cohort',
+      entityType: 'edu_student',
+      entityId: en.studentId,
+      displayName: student?.guardianName || en.studentName,
+      phone: student?.guardianPhone || student?.phone,
+      email: student?.email,
+    });
+    const doc = createUnifiedDocument({
+      docType: 'facture',
+      sourceVertical: 'education_cohort',
+      partyId: partyRes.party.id,
+      partyName: student?.guardianName || en.studentName,
+      partyPhone: student?.guardianPhone || student?.phone,
+      sourceEntityType: 'edu_enrollment',
+      sourceEntityId: en.id,
+      items: [
+        {
+          description: `${en.cohortName} — ${en.studentName}`,
+          isService: true,
+          quantity: 1,
+          unit: 'inscription',
+          unitPriceHt: en.agreedTuition,
+          tvaPercent: 0,
+        },
+      ],
+      issueImmediately: options?.issueImmediately !== false,
+    });
+    globalState = {
+      ...globalState,
+      eduEnrollments: (globalState.eduEnrollments || []).map((e) =>
+        e.id === en.id ? { ...e, unifiedDocumentId: doc.id } : e
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      const updated = (globalState.eduEnrollments || []).find((e) => e.id === en.id);
+      if (updated) educationService.upsertEnrollment(updated).catch(() => {});
+    }
+    return doc;
+  };
+
+  const applyEnrollmentDiscountOrRefund = (
+    enrollmentId: string,
+    input: {
+      discountType?: EduDiscountType;
+      siblingDiscountDzd?: number;
+      scholarshipDzd?: number;
+      customDiscountDzd?: number;
+      discountReason?: string;
+      refundDzd?: number;
+      refundReason?: string;
+      refundMethod?: string;
+    }
+  ): { enrollment: EduEnrollment; creditNote?: UnifiedDocument | null } | null => {
+    const en = (globalState.eduEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!en) return null;
+    const cohort = (globalState.eduCohorts || []).find((c) => c.id === en.cohortId);
+    const baseTuitionDzd = cohort ? cohort.tuitionFee : en.agreedTuition + (en.discountAmount || 0);
+
+    const before = captureStoreSlices(['eduEnrollments', 'unifiedDocuments', 'unifiedPayments']);
+    const prevRefundedDzd = Number(en.refundedAmount || 0);
+    const additionalRefundDzd = Math.max(0, Number(input.refundDzd || 0));
+    const totalRefundDzd = prevRefundedDzd + additionalRefundDzd;
+
+    const summary = computeTuitionWithDiscountsAndRefund({
+      baseTuitionDzd,
+      discountType: input.discountType ?? en.discountType,
+      siblingDiscountDzd: input.siblingDiscountDzd ?? en.siblingDiscountAmount ?? 0,
+      scholarshipDzd: input.scholarshipDzd ?? en.scholarshipAmount ?? 0,
+      customDiscountDzd: input.customDiscountDzd ?? 0,
+      paidDzd: en.paidAmount,
+      refundedDzd: totalRefundDzd,
+    });
+
+    let linkedDocId = en.unifiedDocumentId;
+    let creditNote: UnifiedDocument | null = null;
+
+    if (additionalRefundDzd > 0) {
+      if (!linkedDocId) {
+        const created = createEnrollmentUnifiedInvoice(en.id, { issueImmediately: true });
+        linkedDocId = created?.id;
+      }
+      if (linkedDocId) {
+        const srcDoc = (globalState.unifiedDocuments || []).find((d) => d.id === linkedDocId);
+        if (srcDoc && srcDoc.items.length > 0) {
+          creditNote = createCreditNoteForDocument(
+            linkedDocId,
+            input.refundReason || 'Tuition refund / Remboursement scolarité',
+            [{ lineId: srcDoc.items[0].id, quantity: Math.min(1, Math.max(0.01, additionalRefundDzd / Math.max(1, srcDoc.items[0].unitPriceHt || en.agreedTuition || 1))) }],
+            true
+          );
+        }
+      }
+      const student = (globalState.eduStudents || []).find((s) => s.id === en.studentId);
+      const partyRes = ensurePartyForEntity({
+        sourceVertical: 'education_cohort',
+        entityType: 'edu_student',
+        entityId: en.studentId,
+        displayName: student?.guardianName || en.studentName,
+        phone: student?.guardianPhone || student?.phone,
+      });
+      recordUnifiedPayment({
+        sourceVertical: 'education_cohort',
+        partyId: partyRes.party.id,
+        partyName: student?.guardianName || en.studentName,
+        method: input.refundMethod || 'cash',
+        direction: 'outflow',
+        amountDzd: additionalRefundDzd,
+        notes: input.refundReason || `Tuition refund (${en.cohortName})`,
+      });
+    }
+
+    const updatedEn: EduEnrollment = {
+      ...en,
+      agreedTuition: summary.agreedTuitionDzd,
+      discountAmount: summary.discountDzd,
+      discountType: input.discountType ?? en.discountType ?? 'custom',
+      discountReason: input.discountReason ?? en.discountReason,
+      siblingDiscountAmount: input.siblingDiscountDzd ?? en.siblingDiscountAmount ?? 0,
+      scholarshipAmount: input.scholarshipDzd ?? en.scholarshipAmount ?? 0,
+      refundedAmount: centimesToDzd(summary.refundedCentimes),
+      refundedAmountCentimes: summary.refundedCentimes,
+      paidAmount: summary.paidCentimes / 100,
+      balanceDue: summary.balanceDueDzd,
+      paymentStatus:
+        summary.balanceDueDzd <= 0
+          ? 'Paid'
+          : summary.paidCentimes > 0
+          ? 'Partial'
+          : 'Pending',
+      unifiedDocumentId: linkedDocId,
+      creditNoteDocumentId: creditNote?.id || en.creditNoteDocumentId,
+    };
+
+    globalState = {
+      ...globalState,
+      eduEnrollments: (globalState.eduEnrollments || []).map((e) =>
+        e.id === en.id ? updatedEn : e
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertEnrollment(updatedEn).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['eduEnrollments', 'unifiedDocuments', 'unifiedPayments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        additionalRefundDzd > 0
+          ? `Tuition refund ${additionalRefundDzd.toLocaleString()} DZD (${en.studentName})`
+          : `Updated tuition discount (${en.studentName})`,
+        additionalRefundDzd > 0
+          ? `Remboursement scolarité ${additionalRefundDzd.toLocaleString()} DZD (${en.studentName})`
+          : `Remise / bourse appliquée (${en.studentName})`,
+        additionalRefundDzd > 0
+          ? `استرداد رسوم ${additionalRefundDzd.toLocaleString()} دج (${en.studentName})`
+          : `تطبيق تخفيض / منحة (${en.studentName})`
+      ),
+      entityLabel: en.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
+    return { enrollment: updatedEn, creditNote };
+  };
+
+  const signEduEnrollmentContract = (enrollmentId: string, signerName: string): EduEnrollment | null => {
+    const en = (globalState.eduEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!en) return null;
+    const before = captureStoreSlices(['eduEnrollments']);
+    const updated: EduEnrollment = {
+      ...en,
+      contractNumber: en.contractNumber || `CTR-EDU-${en.id.slice(-6).toUpperCase()}`,
+      contractSignedAt: new Date().toISOString(),
+      contractSignerName: signerName.trim() || en.studentName,
+    };
+    globalState = {
+      ...globalState,
+      eduEnrollments: (globalState.eduEnrollments || []).map((e) => (e.id === en.id ? updated : e)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertEnrollment(updated).catch(() => {});
+    }
+    const after = captureStoreSlices(['eduEnrollments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Signed enrollment contract #${updated.contractNumber}`,
+        `Contrat d’inscription signé #${updated.contractNumber}`,
+        `توقيع عقد التسجيل #${updated.contractNumber}`
+      ),
+      entityLabel: en.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return updated;
+  };
+
+  const issueStudentCardQr = (studentId: string): EduStudent | null => {
+    const student = (globalState.eduStudents || []).find((s) => s.id === studentId);
+    if (!student) return null;
+    const before = captureStoreSlices(['eduStudents']);
+    const cardNumber = student.studentCardNumber || `STU-${student.id.slice(-6).toUpperCase()}`;
+    const cardQr = buildStudentCardQrPayload({ ...student, studentCardNumber: cardNumber });
+    const portalToken =
+      student.portalToken ||
+      `PRT-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const updated: EduStudent = {
+      ...student,
+      studentCardNumber: cardNumber,
+      studentCardQr: cardQr,
+      portalAccessEnabled: true,
+      portalToken,
+    };
+    globalState = {
+      ...globalState,
+      eduStudents: (globalState.eduStudents || []).map((s) => (s.id === studentId ? updated : s)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertStudent(updated).catch(() => {});
+    }
+    const after = captureStoreSlices(['eduStudents']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Issued Student ID Card #${cardNumber}`,
+        `Carte étudiant émise #${cardNumber}`,
+        `إصدار بطاقة الطالب #${cardNumber}`
+      ),
+      entityLabel: student.fullName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return updated;
+  };
+
+  const sendEduParentCommunication = (input: {
+    studentId: string;
+    channel: 'portal' | 'sms' | 'whatsapp' | 'email';
+    category?: 'announcement' | 'attendance' | 'dunning' | 'report_card' | 'general';
+    subject: string;
+    body: string;
+    direction?: 'outbound' | 'inbound_parent';
+  }): EduParentCommunication | null => {
+    const student = (globalState.eduStudents || []).find((s) => s.id === input.studentId);
+    if (!student) return null;
+    const before = captureStoreSlices(['eduParentComms', 'crmParties', 'crmPartyLinks', 'crmCommunicationLogs']);
+    const trace = getTraceContext();
+    const nowIso = new Date().toISOString();
+
+    const partyRes = ensurePartyForEntity({
+      sourceVertical: 'education_cohort',
+      entityType: 'edu_student',
+      entityId: student.id,
+      displayName: student.guardianName || student.fullName,
+      phone: student.guardianPhone || student.phone,
+      email: student.email,
+    });
+
+    if (input.channel === 'sms' || input.channel === 'whatsapp' || input.channel === 'email') {
+      sendCrmCommunication({
+        partyId: partyRes.party.id,
+        channel: input.channel,
+        language: globalState.language || 'fr',
+        customSubject: input.subject,
+        customBody: input.body,
+        allowMissingVariables: true,
+        providerConfigured: true,
+      });
+    }
+
+    const portalToken =
+      student.portalToken ||
+      `PRT-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const comm: EduParentCommunication = {
+      ...trace,
+      id: generateClientUuid(),
+      studentId: student.id,
+      studentName: student.fullName,
+      guardianName: student.guardianName,
+      guardianPhone: student.guardianPhone || student.phone,
+      crmPartyId: partyRes.party.id,
+      direction: input.direction || 'outbound',
+      channel: input.channel,
+      category: input.category || 'general',
+      subject: input.subject.trim(),
+      body: input.body.trim(),
+      portalToken,
+      sentAt: nowIso,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      eduParentComms: [comm, ...(globalState.eduParentComms || [])],
+      eduStudents: (globalState.eduStudents || []).map((s) =>
+        s.id === student.id && (!s.portalToken || !s.crmPartyId)
+          ? { ...s, portalToken, crmPartyId: partyRes.party.id, portalAccessEnabled: true }
+          : s
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      educationService.upsertParentCommunication(comm).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['eduParentComms', 'crmParties', 'crmPartyLinks', 'crmCommunicationLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Message sent to ${student.guardianName || student.fullName}`,
+        `Message envoyé aux parents de ${student.fullName}`,
+        `إرسال إشعار لولي أمر ${student.fullName}`
+      ),
+      entityLabel: student.fullName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
+    return comm;
+  };
+
+  const markEduParentCommRead = (commId: string) => {
+    const nowIso = new Date().toISOString();
+    globalState = {
+      ...globalState,
+      eduParentComms: (globalState.eduParentComms || []).map((c) =>
+        c.id === commId && !c.readAt ? { ...c, readAt: nowIso, updatedAt: nowIso } : c
+      ),
+    };
+    notify();
+    const updated = (globalState.eduParentComms || []).find((c) => c.id === commId);
+    if (updated && isSupabaseConfigured()) {
+      educationService.upsertParentCommunication(updated).catch(() => {});
+    }
+  };
+
+  const dispatchEducationDunningReminders = (
+    enrollmentIds?: string[],
+    referenceDateIso?: string
+  ): { dispatchedCount: number; logs: ReminderDeliveryLog[] } => {
+    const branchId = globalState.currentBranchId;
+    const allEnrollments = (globalState.eduEnrollments || []).filter((e) => e.facilityId === branchId);
+    const targets = enrollmentIds && enrollmentIds.length > 0
+      ? allEnrollments.filter((e) => enrollmentIds.includes(e.id))
+      : allEnrollments.filter((e) => Number(e.balanceDue || 0) > 0);
+
+    const refDay = (referenceDateIso || new Date().toISOString()).slice(0, 10);
+    const nowIso = new Date().toISOString();
+    const evals = targets
+      .map((en) => ({ en, ev: evaluateEnrollmentDunning(en, refDay) }))
+      .filter((item) => item.en.balanceDue > 0);
+
+    if (evals.length === 0) {
+      showToast({
+        type: 'info',
+        title: ul('Dunning Check', 'Relance scolarité', 'تذكير الأقساط'),
+        message: ul('No unpaid balances to remind.', 'Aucun impayé à relancer.', 'لا توجد مستحقات غير مدفوعة.'),
+      });
+      return { dispatchedCount: 0, logs: [] };
+    }
+
+    const before = captureStoreSlices([
+      'eduEnrollments',
+      'eduParentComms',
+      'reminderDeliveryLogs',
+      'crmParties',
+      'crmPartyLinks',
+      'crmCommunicationLogs',
+    ]);
+
+    const scanRes = runReminderEngineScan({ nowIso, showSummaryToast: false });
+    const createdLogs: ReminderDeliveryLog[] = [...scanRes.logs];
+    const updatedMap = new Map<string, EduEnrollment>();
+
+    for (const { en, ev } of evals) {
+      const level = Math.max(1, ev.escalationLevel) as 1 | 2 | 3;
+      const student = (globalState.eduStudents || []).find((s) => s.id === en.studentId);
+      if (student) {
+        sendEduParentCommunication({
+          studentId: student.id,
+          channel: ev.recommendedChannel === 'in_app' ? 'sms' : ev.recommendedChannel,
+          category: 'dunning',
+          subject: ul(
+            `Tuition Reminder (Level ${level}) — ${en.cohortName}`,
+            `Relance scolarité (Niveau ${level}) — ${en.cohortName}`,
+            `تذكير بدفع الرسوم (مستوى ${level}) — ${en.cohortName}`
+          ),
+          body: ul(
+            `Outstanding tuition balance: ${ev.overdueAmountDzd.toLocaleString()} DZD for ${en.studentName}.`,
+            `Solde scolarité restant dû : ${ev.overdueAmountDzd.toLocaleString()} DZD pour ${en.studentName}.`,
+            `المبلغ المتبقي المستحق: ${ev.overdueAmountDzd.toLocaleString()} دج للطالب ${en.studentName}.`
+          ),
+        });
+      }
+      updatedMap.set(en.id, {
+        ...en,
+        dunningLevel: level,
+        lastDunningAt: nowIso,
+      });
+    }
+
+    globalState = {
+      ...globalState,
+      eduEnrollments: (globalState.eduEnrollments || []).map((e) => updatedMap.get(e.id) || e),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      for (const updated of updatedMap.values()) {
+        educationService.upsertEnrollment(updated).catch(() => {});
+      }
+    }
+
+    const after = captureStoreSlices([
+      'eduEnrollments',
+      'eduParentComms',
+      'reminderDeliveryLogs',
+      'crmParties',
+      'crmPartyLinks',
+      'crmCommunicationLogs',
+    ]);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: evals.length,
+      summary: ul(
+        `Sent ${evals.length} tuition dunning notice(s)`,
+        `${evals.length} relance(s) scolarité envoyée(s)`,
+        `إرسال ${evals.length} إشعار(ات) تحصيل`
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
+    return { dispatchedCount: evals.length, logs: createdLogs };
+  };
+
+  const recordEduVacataireLog = (input: {
+    instructorId: string;
+    instructorName: string;
+    sessionId?: string;
+    cohortId?: string;
+    cohortName?: string;
+    workDate: string;
+    hoursWorked: number;
+    hourlyRateDzd: number;
+    notes?: string;
+  }): EduVacataireLog => {
+    const before = captureStoreSlices(['eduVacataireLogs']);
+    const trace = getTraceContext();
+    const calc = computeVacataireSessionPay(input.hoursWorked, input.hourlyRateDzd);
+    const nowIso = new Date().toISOString();
+    const newLog: EduVacataireLog = {
+      ...trace,
+      id: generateClientUuid(),
+      instructorId: input.instructorId,
+      instructorName: input.instructorName,
+      sessionId: input.sessionId,
+      cohortId: input.cohortId,
+      cohortName: input.cohortName,
+      workDate: input.workDate,
+      hoursWorked: calc.hoursWorked,
+      hourlyRateCentimes: calc.hourlyRateCentimes,
+      grossAmountCentimes: calc.grossAmountCentimes,
+      status: 'pending',
+      notes: input.notes,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      eduVacataireLogs: [newLog, ...(globalState.eduVacataireLogs || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertVacataireLog(newLog).catch(() => {});
+    }
+    const after = captureStoreSlices(['eduVacataireLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Logged vacataire hours: ${newLog.instructorName} (${newLog.hoursWorked}h)`,
+        `Vacation saisie : ${newLog.instructorName} (${newLog.hoursWorked}h)`,
+        `تسجيل ساعات التعاقد: ${newLog.instructorName} (${newLog.hoursWorked} سا)`
+      ),
+      entityLabel: newLog.instructorName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return newLog;
+  };
+
+  const postVacataireLogsToPayroll = (
+    logIds: string[],
+    payrollRunId?: string
+  ): EduVacataireLog[] => {
+    const idSet = new Set(logIds);
+    const posted: EduVacataireLog[] = [];
+    const nowIso = new Date().toISOString();
+    const nextLogs = (globalState.eduVacataireLogs || []).map((v) => {
+      if (!idSet.has(v.id) || v.status !== 'pending') return v;
+      const updated: EduVacataireLog = {
+        ...v,
+        status: 'posted_to_payroll',
+        payrollRunId: payrollRunId || v.payrollRunId,
+        updatedAt: nowIso,
+      };
+      posted.push(updated);
+      return updated;
+    });
+    if (posted.length === 0) return [];
+    const postedSessionIds = new Set(posted.map((p) => p.sessionId).filter(Boolean) as string[]);
+    globalState = {
+      ...globalState,
+      eduVacataireLogs: nextLogs,
+      eduSessions: (globalState.eduSessions || []).map((s) =>
+        postedSessionIds.has(s.id)
+          ? { ...s, payrollPosted: true, payrollRunId: payrollRunId || s.payrollRunId }
+          : s
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.postVacataireLogsToPayroll(posted.map((p) => p.id), payrollRunId).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: ul('Vacataire Payroll Ready', 'Vacations transférées en paie', 'تم تحويل الساعات للرواتب'),
+      message: ul(
+        `${posted.length} vacataire log(s) posted to Workforce Payroll.`,
+        `${posted.length} vacation(s) envoyée(s) vers la paie RH.`,
+        `تم ترحيل ${posted.length} سجل(ات) إلى كشف الرواتب.`
+      ),
+    });
+    return posted;
+  };
+
+  const reissueEduCertificate = (certificateId: string): EduCertificate | null => {
+    const source = (globalState.eduCertificates || []).find((c) => c.id === certificateId);
+    if (!source) return null;
+    if (source.status === 'revoked') {
+      showToast({
+        type: 'error',
+        title: ul('Certificate Revoked', 'Certificat révoqué', 'الشهادة ملغاة'),
+        message: ul(
+          'Revoked certificates cannot be reissued. Issue a fresh certificate after clearance.',
+          'Un certificat révoqué ne peut pas être réédité.',
+          'لا يمكن إعادة إصدار شهادة ملغاة.'
+        ),
+      });
+      return null;
+    }
+    const before = captureStoreSlices(['eduCertificates']);
+    const reissued = buildReissuedCertificatePayload(source, generateClientUuid());
+    globalState = {
+      ...globalState,
+      eduCertificates: [reissued, ...(globalState.eduCertificates || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService
+        .reissueOrRevokeCertificate({ certificateId: source.id, action: 'reissue' })
+        .catch(() => {});
+    }
+    const after = captureStoreSlices(['eduCertificates']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Reissued certificate #${reissued.certificateNumber} (hash preserved)`,
+        `Certificat réédité #${reissued.certificateNumber}`,
+        `إعادة إصدار الشهادة #${reissued.certificateNumber}`
+      ),
+      entityLabel: reissued.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return reissued;
+  };
+
+  const revokeEduCertificate = (certificateId: string, reason: string): boolean => {
+    const source = (globalState.eduCertificates || []).find((c) => c.id === certificateId);
+    if (!source || source.status === 'revoked') return false;
+    const before = captureStoreSlices(['eduCertificates']);
+    const nowIso = new Date().toISOString();
+    const updated: EduCertificate = {
+      ...source,
+      status: 'revoked',
+      revokedAt: nowIso,
+      revokedReason: reason.trim() || 'Revoked',
+    };
+    globalState = {
+      ...globalState,
+      eduCertificates: (globalState.eduCertificates || []).map((c) =>
+        c.id === certificateId ? updated : c
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService
+        .reissueOrRevokeCertificate({ certificateId, action: 'revoke', reason })
+        .catch(() => {});
+    }
+    const after = captureStoreSlices(['eduCertificates']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Revoked certificate #${source.certificateNumber}`,
+        `Certificat révoqué #${source.certificateNumber}`,
+        `إلغاء الشهادة #${source.certificateNumber}`
+      ),
+      entityLabel: source.studentName,
+      toastType: 'warning',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return true;
+  };
+
+  const addEduDrivingLog = (
+    input: Omit<EduDrivingLog, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'createdAt' | 'updatedAt'>
+  ): EduDrivingLog | null => {
+    const branchLogs = (globalState.eduDrivingLogs || []).filter(
+      (l) => (l.branchId || l.facilityId) === globalState.currentBranchId
+    );
+    const conflict = detectDrivingVehicleOrInstructorConflict(input, branchLogs);
+    if (conflict.hasConflict) {
+      showToast({
+        type: 'error',
+        title: ul('Driving Slot Conflict', 'Conflit auto-école', 'تعارض حصة السياقة'),
+        message: ul(
+          `${conflict.reason} on ${input.scheduledDate} (${input.startTime}-${input.endTime}).`,
+          `${conflict.reason} le ${input.scheduledDate} (${input.startTime}-${input.endTime}).`,
+          `${conflict.reason} بتاريخ ${input.scheduledDate} (${input.startTime}-${input.endTime}).`
+        ),
+      });
+      return null;
+    }
+    const before = captureStoreSlices(['eduDrivingLogs']);
+    const trace = getTraceContext();
+    const nowIso = new Date().toISOString();
+    const log: EduDrivingLog = {
+      ...trace,
+      ...input,
+      id: generateClientUuid(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      eduDrivingLogs: [log, ...(globalState.eduDrivingLogs || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertDrivingLog(log).catch(() => {});
+    }
+    const after = captureStoreSlices(['eduDrivingLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Driving log: ${log.studentName} (${log.logKind})`,
+        `Suivi auto-école : ${log.studentName} (${log.logKind})`,
+        `سجل السياقة: ${log.studentName}`
+      ),
+      entityLabel: log.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return log;
+  };
+
+  const updateEduDrivingLog = (logId: string, updates: Partial<EduDrivingLog>) => {
+    const prev = (globalState.eduDrivingLogs || []).find((l) => l.id === logId);
+    if (!prev) return;
+    const nowIso = new Date().toISOString();
+    const updated: EduDrivingLog = { ...prev, ...updates, updatedAt: nowIso };
+    globalState = {
+      ...globalState,
+      eduDrivingLogs: (globalState.eduDrivingLogs || []).map((l) => (l.id === logId ? updated : l)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertDrivingLog(updated).catch(() => {});
+    }
+  };
+
+  const upsertEduK12Service = (
+    input: Omit<EduK12Service, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'createdAt' | 'updatedAt'> & { id?: string }
+  ): EduK12Service => {
+    const before = captureStoreSlices(['eduK12Services']);
+    const trace = getTraceContext();
+    const nowIso = new Date().toISOString();
+    const existing = input.id
+      ? (globalState.eduK12Services || []).find((s) => s.id === input.id)
+      : undefined;
+    const record: EduK12Service = existing
+      ? { ...existing, ...input, updatedAt: nowIso }
+      : {
+          ...trace,
+          ...input,
+          id: generateClientUuid(),
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+    globalState = {
+      ...globalState,
+      eduK12Services: existing
+        ? (globalState.eduK12Services || []).map((s) => (s.id === existing.id ? record : s))
+        : [record, ...(globalState.eduK12Services || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertK12Service(record).catch(() => {});
+    }
+    const after = captureStoreSlices(['eduK12Services']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: existing ? 'edit' : 'create',
+      summary: ul(
+        `K-12 ${record.serviceType}: ${record.studentName}`,
+        `Service K-12 (${record.serviceType}) : ${record.studentName}`,
+        `خدمة مدرسية: ${record.studentName}`
+      ),
+      entityLabel: record.studentName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return record;
+  };
+
+  const toggleK12ServiceCheckIn = (serviceId: string) => {
+    const prev = (globalState.eduK12Services || []).find((s) => s.id === serviceId);
+    if (!prev) return;
+    const nowIso = new Date().toISOString();
+    const nextVal = !prev.checkInToday;
+    const updated: EduK12Service = {
+      ...prev,
+      checkInToday: nextVal,
+      lastCheckInAt: nextVal ? nowIso : prev.lastCheckInAt,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      eduK12Services: (globalState.eduK12Services || []).map((s) => (s.id === serviceId ? updated : s)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertK12Service(updated).catch(() => {});
+    }
   };
 
   // ============================================================
@@ -20301,6 +21498,10 @@ function createAtriumActions() {
         eduGrades: INITIAL_EDU_GRADES,
         eduCertificates: INITIAL_EDU_CERTIFICATES,
         eduAdmissions: INITIAL_EDU_ADMISSIONS,
+        eduParentComms: INITIAL_EDU_PARENT_COMMS,
+        eduVacataireLogs: INITIAL_EDU_VACATAIRE_LOGS,
+        eduDrivingLogs: INITIAL_EDU_DRIVING_LOGS,
+        eduK12Services: INITIAL_EDU_K12_SERVICES,
       };
     } else if (targetCategory === 'freelance_solo') {
       updates = {
@@ -21460,6 +22661,10 @@ function createAtriumActions() {
       rentalContractTemplates: Array.isArray(parsed.rentalContractTemplates) ? parsed.rentalContractTemplates : [],
       rentalAssetLogs: Array.isArray(parsed.rentalAssetLogs) ? parsed.rentalAssetLogs : [],
       rentalCoworkingSubscriptions: Array.isArray(parsed.rentalCoworkingSubscriptions) ? parsed.rentalCoworkingSubscriptions : [],
+      eduParentComms: Array.isArray(parsed.eduParentComms) ? parsed.eduParentComms : [],
+      eduVacataireLogs: Array.isArray(parsed.eduVacataireLogs) ? parsed.eduVacataireLogs : [],
+      eduDrivingLogs: Array.isArray(parsed.eduDrivingLogs) ? parsed.eduDrivingLogs : [],
+      eduK12Services: Array.isArray(parsed.eduK12Services) ? parsed.eduK12Services : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -29635,6 +30840,22 @@ function createAtriumActions() {
     issueEduCertificate,
     addEduClassroom,
     addEduCourse,
+    transferStudentCohort,
+    applyEnrollmentDiscountOrRefund,
+    createEnrollmentUnifiedInvoice,
+    signEduEnrollmentContract,
+    issueStudentCardQr,
+    sendEduParentCommunication,
+    markEduParentCommRead,
+    dispatchEducationDunningReminders,
+    recordEduVacataireLog,
+    postVacataireLogsToPayroll,
+    reissueEduCertificate,
+    revokeEduCertificate,
+    addEduDrivingLog,
+    updateEduDrivingLog,
+    upsertEduK12Service,
+    toggleK12ServiceCheckIn,
     setActivePmRole,
     setActiveGarageRole,
     setActiveRealEstateRole,
@@ -29934,6 +31155,10 @@ export function useAtriumStore() {
   const currentEduGrades = selectCurrentEduGradesFromState(state);
   const currentEduCertificates = selectCurrentEduCertificatesFromState(state);
   const currentEduAdmissions = selectCurrentEduAdmissionsFromState(state);
+  const currentEduParentComms = selectCurrentEduParentCommsFromState(state);
+  const currentEduVacataireLogs = selectCurrentEduVacataireLogsFromState(state);
+  const currentEduDrivingLogs = selectCurrentEduDrivingLogsFromState(state);
+  const currentEduK12Services = selectCurrentEduK12ServicesFromState(state);
   const currentPmProjects = selectCurrentPmProjectsFromState(state);
   const currentPmMilestones = selectCurrentPmMilestonesFromState(state);
   const currentPmPrintOrders = selectCurrentPmPrintOrdersFromState(state);
@@ -30078,6 +31303,10 @@ export function useAtriumStore() {
     eduGrades: currentEduGrades,
     eduCertificates: currentEduCertificates,
     eduAdmissions: currentEduAdmissions,
+    eduParentComms: currentEduParentComms,
+    eduVacataireLogs: currentEduVacataireLogs,
+    eduDrivingLogs: currentEduDrivingLogs,
+    eduK12Services: currentEduK12Services,
     selectedMember,
     isDetailOpen: state.isDetailOpen,
     salonWorkstations: state.salonWorkstations || INITIAL_SALON_WORKSTATIONS,

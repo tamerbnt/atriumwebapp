@@ -1442,6 +1442,10 @@ export interface AppNotification {
 // Education, Academy & Training Types (Category 15)
 // ==========================================
 
+export type EduGradeScale = 20 | 100;
+export type EduTradeMode = 'academy' | 'k12' | 'driving_school' | 'tutoring';
+export type EduDiscountType = 'none' | 'sibling' | 'scholarship' | 'merit' | 'custom';
+
 export interface EduCourse {
   id: string;
   accountId?: string;
@@ -1458,6 +1462,8 @@ export interface EduCourse {
   totalHours: number;
   defaultPrice: number;
   currency: string;
+  gradeScale?: EduGradeScale;
+  tradeMode?: EduTradeMode;
   version?: number;
   createdAt: string;
 }
@@ -1505,6 +1511,9 @@ export interface EduCohort {
   currency: string;
   scheduleSummary: string; // e.g. "Mon & Wed 18:00 - 20:00"
   status: CohortStatus;
+  gradeScale?: EduGradeScale;
+  tradeMode?: EduTradeMode;
+  waitlistEnabled?: boolean;
   syllabusMilestones?: { title: string; completed: boolean }[];
   version?: number;
   createdAt: string;
@@ -1528,6 +1537,15 @@ export interface EduStudent {
   guardianRelation?: 'Father' | 'Mother' | 'Sponsor' | 'Self' | string;
   birthDate?: string;
   rfidBadgeCode?: string;
+  studentCardNumber?: string;
+  studentCardQr?: string;
+  familyGroupId?: string;
+  crmPartyId?: string;
+  portalAccessEnabled?: boolean;
+  portalToken?: string;
+  drivingCategory?: string;
+  k12TransportRoute?: string;
+  k12CanteenPlan?: string;
   schoolGrade?: string; // e.g. "Terminal (BAC)", "Adult Learner", "High School"
   status: StudentStatus;
   attendanceRatePercent?: number;
@@ -1537,6 +1555,16 @@ export interface EduStudent {
 }
 
 export type EnrollmentPaymentStatus = 'Paid' | 'Partial' | 'Pending' | 'Overdue';
+
+export interface EduTransferHistoryEntry {
+  fromCohortId: string;
+  fromCohortName?: string;
+  toCohortId: string;
+  toCohortName?: string;
+  transferDate: string;
+  carriedCreditCentimes: number;
+  reason?: string;
+}
 
 export interface EduEnrollment {
   id: string;
@@ -1554,11 +1582,25 @@ export interface EduEnrollment {
   agreedTuition: number;
   discountAmount: number;
   discountReason?: string;
+  discountType?: EduDiscountType;
+  scholarshipAmount?: number;
+  siblingDiscountAmount?: number;
+  refundedAmount?: number;
+  refundedAmountCentimes?: number;
   paidAmount: number;
   balanceDue: number;
   currency: string;
   paymentStatus: EnrollmentPaymentStatus;
-  status: 'Active' | 'Dropped' | 'Completed';
+  status: 'Active' | 'Dropped' | 'Completed' | 'Transferred' | 'Waitlisted';
+  contractNumber?: string;
+  contractSignedAt?: string;
+  contractSignerName?: string;
+  unifiedDocumentId?: string;
+  creditNoteDocumentId?: string;
+  transferredFromCohortId?: string;
+  transferHistory?: EduTransferHistoryEntry[];
+  dunningLevel?: number;
+  lastDunningAt?: string;
   installments?: {
     dueDate: string;
     amount: number;
@@ -1587,6 +1629,14 @@ export interface EduSession {
   endTime: string;   // "11:00"
   topic?: string;
   status: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled';
+  isVacataire?: boolean;
+  hourlyRateDzd?: number;
+  durationHours?: number;
+  payrollPosted?: boolean;
+  payrollRunId?: string;
+  vehicleId?: string;
+  vehicleLabel?: string;
+  sessionKind?: 'lecture' | 'driving_lesson' | 'code_exam' | 'practical_exam' | 'lab';
   version?: number;
   createdAt: string;
 }
@@ -1661,6 +1711,11 @@ export interface EduCertificate {
   signatoryName: string;
   signatoryTitle: string;
   verificationHash: string;
+  status?: 'active' | 'revoked';
+  revokedAt?: string;
+  revokedReason?: string;
+  reissuedFromId?: string;
+  reissueCount?: number;
   version?: number;
   createdAt: string;
 }
@@ -1687,6 +1742,147 @@ export interface EduAdmissionLead {
   notes?: string;
   version?: number;
   createdAt: string;
+}
+
+export interface EduParentCommunication {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  studentId: string;
+  studentName: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  crmPartyId?: string;
+  direction: 'outbound' | 'portal_announcement' | 'reply';
+  channel: 'portal' | 'sms' | 'whatsapp' | 'email' | 'in_app';
+  category: 'general' | 'attendance' | 'grades' | 'dunning' | 'announcement';
+  subject: string;
+  body: string;
+  portalToken?: string;
+  readAt?: string;
+  sentAt: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface EduVacataireLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  instructorId: string;
+  instructorName: string;
+  sessionId?: string;
+  cohortId?: string;
+  cohortName?: string;
+  workDate: string;
+  hoursWorked: number;
+  hourlyRateCentimes: number;
+  grossAmountCentimes: number;
+  status: 'pending' | 'posted_to_payroll' | 'cancelled';
+  payrollRunId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export type EduDrivingLogKind =
+  | 'driving_hours'
+  | 'code_session'
+  | 'code_exam'
+  | 'circuit_exam'
+  | 'road_exam';
+
+export interface EduDrivingLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  studentId: string;
+  studentName: string;
+  instructorId: string;
+  instructorName: string;
+  vehicleId?: string;
+  vehicleLabel?: string;
+  vehiclePlate?: string;
+  logKind: EduDrivingLogKind;
+  scheduledDate: string;
+  startTime: string;
+  endTime: string;
+  hoursLogged: number;
+  examResult: 'pending' | 'passed' | 'failed' | 'absent';
+  dossierRef?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface EduK12Service {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  studentId: string;
+  studentName: string;
+  serviceType: 'canteen' | 'transport';
+  planName: string;
+  routeOrDiet?: string;
+  pickupStop?: string;
+  monthlyFeeCentimes: number;
+  status: 'active' | 'paused' | 'cancelled';
+  startDate: string;
+  endDate?: string;
+  checkInToday?: boolean;
+  lastCheckInAt?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface EduTermReportCard {
+  studentId: string;
+  studentName: string;
+  cohortId: string;
+  cohortName: string;
+  gradeScale: EduGradeScale;
+  weightedAverageOnScale: number;
+  normalizedPercent: number;
+  classAverageOnScale: number;
+  attendanceRatePercent: number;
+  presentCount: number;
+  lateCount: number;
+  absentCount: number;
+  decisionLabel: string;
+  lines: Array<{
+    assessmentTitle: string;
+    rawScore: number;
+    rawMaxScore: number;
+    scaledScore: number;
+    weightPercent: number;
+    teacherRemarks?: string;
+    gradedAt: string;
+  }>;
 }
 
 // ============================================================================

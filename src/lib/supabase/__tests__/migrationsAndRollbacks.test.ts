@@ -551,4 +551,35 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP CONSTRAINT IF EXISTS excl_rental_bookings_no_overlap');
     expect(downSql).toContain('DROP CONSTRAINT IF EXISTS chk_rental_deposit_deduction');
   });
+
+  it('verifies Phase 3 Step 6 (7.6) education_cohort depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280006_phase3_education_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280006_phase3_education_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS grade_scale int');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS trade_mode text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS discount_type text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS refunded_amount_centimes bigint');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS reissue_count int');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.edu_parent_communications');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.edu_vacataire_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.edu_driving_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.edu_k12_services');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.edu_transfer_student_cohort_atomic(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.edu_reissue_or_revoke_certificate(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.edu_post_vacataire_hours_to_payroll(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.edu_post_vacataire_hours_to_payroll(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.edu_reissue_or_revoke_certificate(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.edu_transfer_student_cohort_atomic(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.edu_k12_services');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.edu_driving_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.edu_vacataire_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.edu_parent_communications');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS reissue_count');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS grade_scale');
+  });
 });

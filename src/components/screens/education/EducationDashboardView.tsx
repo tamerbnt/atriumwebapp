@@ -298,12 +298,17 @@ export const EducationDashboardView: React.FC = () => {
         <DashboardPodGrid layout="equal">
           <HistogramChart
             className={POD_SPAN.full}
-            title={localizeText(language, 'Distribution des notes (/20)', 'Grade Distribution (/20)', 'توزيع النقاط والنتائج (/20)')}
+            title={localizeText(
+              language,
+              `Distribution des notes (/${data.gradeScale})`,
+              `Grade Distribution (/${data.gradeScale})`,
+              `توزيع النقاط والنتائج (/${data.gradeScale})`
+            )}
             subtitle={localizeText(
               language,
-              'Évaluations normalisées sur 20 points',
-              'Normalized assessment scores out of 20',
-              'نتائج التقييمات مصنفة على 20'
+              `Évaluations normalisées sur ${data.gradeScale} points`,
+              `Normalized assessment scores out of ${data.gradeScale}`,
+              `نتائج التقييمات مصنفة على ${data.gradeScale}`
             )}
             helpText={getDashboardHelpText('education', 'grades', language)}
             locale={locale}

@@ -1819,4 +1819,158 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 24. Phase 3 Step 6 (7.6 education_cohort): Tenant B RLS Isolation,
+--     Atomic Cohort Transfer + Proration + Capacity Guard, and
+--     Certificate Reissue (Stable Hash) & Revocation RPCs
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_biz_a uuid := '11111111-0000-4000-8000-000000000001';
+  v_br_a  uuid := '33333333-0000-4000-8000-000000000001';
+  v_user_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_user_b uuid := 'bbbbbbbb-0000-4000-8000-000000000002';
+  v_course_id uuid := gen_random_uuid();
+  v_coh_a uuid := gen_random_uuid();
+  v_coh_b uuid := gen_random_uuid();
+  v_coh_full uuid := gen_random_uuid();
+  v_stu_id uuid := gen_random_uuid();
+  v_enr_id uuid := gen_random_uuid();
+  v_cert_id uuid := gen_random_uuid();
+  v_comm_id uuid := gen_random_uuid();
+  v_vac_id uuid := gen_random_uuid();
+  v_drv_id uuid := gen_random_uuid();
+  v_k12_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean := false;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.edu_courses (
+    id, account_id, business_id, branch_id, code, title, category, default_price, grade_scale, trade_mode
+  ) VALUES (
+    v_course_id, v_acc_a, v_biz_a, v_br_a, 'ENG-100', 'English Intensive', 'Language', 30000, 100, 'academy'
+  );
+
+  INSERT INTO public.edu_cohorts (
+    id, account_id, business_id, branch_id, code, name, course_id, course_title,
+    start_date, end_date, max_students, enrolled_count, tuition_fee, grade_scale, trade_mode
+  ) VALUES
+  (
+    v_coh_a, v_acc_a, v_biz_a, v_br_a, 'COH-A', 'Evening Cohort A', v_course_id, 'English Intensive',
+    CURRENT_DATE - 15, CURRENT_DATE + 15, 20, 1, 30000, 100, 'academy'
+  ),
+  (
+    v_coh_b, v_acc_a, v_biz_a, v_br_a, 'COH-B', 'Weekend Cohort B', v_course_id, 'English Intensive',
+    CURRENT_DATE, CURRENT_DATE + 30, 20, 0, 36000, 20, 'academy'
+  ),
+  (
+    v_coh_full, v_acc_a, v_biz_a, v_br_a, 'COH-FULL', 'Full Cohort', v_course_id, 'English Intensive',
+    CURRENT_DATE, CURRENT_DATE + 30, 1, 1, 30000, 20, 'academy'
+  );
+
+  INSERT INTO public.edu_students (
+    id, account_id, business_id, branch_id, full_name, phone, guardian_name, guardian_phone
+  ) VALUES (
+    v_stu_id, v_acc_a, v_biz_a, v_br_a, 'Meriem Boudjemaa', '+213550760001', 'Salim Boudjemaa', '+213550760002'
+  );
+
+  INSERT INTO public.edu_enrollments (
+    id, account_id, business_id, branch_id, student_id, student_name, cohort_id, cohort_name,
+    agreed_tuition, paid_amount, balance_due, payment_status, status
+  ) VALUES (
+    v_enr_id, v_acc_a, v_biz_a, v_br_a, v_stu_id, 'Meriem Boudjemaa', v_coh_a, 'Evening Cohort A',
+    30000, 30000, 0, 'Paid', 'Active'
+  );
+
+  INSERT INTO public.edu_certificates (
+    id, account_id, business_id, branch_id, student_id, student_name, cohort_id, course_title,
+    certificate_number, verification_hash, issue_date
+  ) VALUES (
+    v_cert_id, v_acc_a, v_biz_a, v_br_a, v_stu_id, 'Meriem Boudjemaa', v_coh_a, 'English Intensive',
+    'ATRIUM-CERT-2026-7601', '0xdeadbeef7601cafe', CURRENT_DATE
+  );
+
+  INSERT INTO public.edu_parent_communications (
+    id, account_id, business_id, branch_id, student_id, student_name, subject, body
+  ) VALUES (
+    v_comm_id, v_acc_a, v_biz_a, v_br_a, v_stu_id, 'Meriem Boudjemaa', 'Mid-term update', 'Progress is excellent.'
+  );
+
+  INSERT INTO public.edu_vacataire_logs (
+    id, account_id, business_id, branch_id, instructor_id, instructor_name, cohort_id, cohort_name,
+    work_date, hours_worked, hourly_rate_centimes, gross_amount_centimes
+  ) VALUES (
+    v_vac_id, v_acc_a, v_biz_a, v_br_a, 'inst_01', 'Prof. Karim', v_coh_a, 'Evening Cohort A',
+    CURRENT_DATE, 4, 250000, 1000000
+  );
+
+  INSERT INTO public.edu_driving_logs (
+    id, account_id, business_id, branch_id, student_id, student_name, instructor_id, instructor_name,
+    vehicle_label, log_kind, hours_logged
+  ) VALUES (
+    v_drv_id, v_acc_a, v_biz_a, v_br_a, v_stu_id, 'Meriem Boudjemaa', 'inst_01', 'Prof. Karim',
+    'Clio 5 #01', 'driving_hours', 2
+  );
+
+  INSERT INTO public.edu_k12_services (
+    id, account_id, business_id, branch_id, student_id, student_name, service_type, plan_name, monthly_fee_centimes
+  ) VALUES (
+    v_k12_id, v_acc_a, v_biz_a, v_br_a, v_stu_id, 'Meriem Boudjemaa', 'transport', 'Line North', 450000
+  );
+
+  -- Tenant B must NOT read any 7.6 education table
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.edu_parent_communications WHERE id = v_comm_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read edu_parent_communications'; END IF;
+  SELECT count(*) INTO v_count FROM public.edu_vacataire_logs WHERE id = v_vac_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read edu_vacataire_logs'; END IF;
+  SELECT count(*) INTO v_count FROM public.edu_driving_logs WHERE id = v_drv_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read edu_driving_logs'; END IF;
+  SELECT count(*) INTO v_count FROM public.edu_k12_services WHERE id = v_k12_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read edu_k12_services'; END IF;
+  RESET ROLE;
+
+  -- Tenant A exercises over-capacity block, mid-term cohort transfer proration, vacataire posting & cert reissue/revoke
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.edu_transfer_student_cohort_atomic(v_enr_id, v_coh_full, CURRENT_DATE, false, 'Full check');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected cohort transfer into full cohort (waitlist=false) to block';
+  END IF;
+
+  v_res := public.edu_transfer_student_cohort_atomic(v_enr_id, v_coh_b, CURRENT_DATE, false, 'Schedule switch');
+  IF (v_res ->> 'carried_credit_centimes')::bigint <= 0 THEN
+    RAISE EXCEPTION 'Expected positive carried credit centimes on mid-term transfer, got %', v_res;
+  END IF;
+
+  -- Certificate reissue MUST preserve original verification_hash
+  v_res := public.edu_reissue_or_revoke_certificate(v_cert_id, 'reissue', 'Duplicate diploma copy');
+  IF (v_res ->> 'verification_hash') <> '0xdeadbeef7601cafe' THEN
+    RAISE EXCEPTION 'Expected certificate reissue to preserve verification_hash, got %', v_res;
+  END IF;
+  IF (v_res ->> 'reissue_count')::int <> 1 THEN
+    RAISE EXCEPTION 'Expected reissue_count=1, got %', v_res;
+  END IF;
+
+  v_res := public.edu_reissue_or_revoke_certificate(v_cert_id, 'revoke', 'Grade audit correction');
+  IF (v_res ->> 'status') <> 'revoked' THEN
+    RAISE EXCEPTION 'Expected status=revoked, got %', v_res;
+  END IF;
+
+  v_res := public.edu_post_vacataire_hours_to_payroll(ARRAY[v_vac_id], NULL);
+  IF (v_res ->> 'posted_count')::int <> 1 OR (v_res ->> 'total_centimes')::bigint <> 1000000 THEN
+    RAISE EXCEPTION 'Unexpected vacataire payroll post result: %', v_res;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;

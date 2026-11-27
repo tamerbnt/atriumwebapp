@@ -3,11 +3,12 @@ import { ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
 import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
-import { GraduationCap, BookOpen, CheckCircle } from 'lucide-react';
+import { VacatairePayrollPanel } from './VacatairePayrollPanel';
 
 export const EducationStaffView: React.FC = () => {
   const foundation = useStaffFoundation({ category: 'education_cohort' });
-  const { isAr, isEn, language } = foundation;
+  const { isAr, isEn, language, staffPayrollRuns } = foundation;
+  const payrollRuns = staffPayrollRuns;
 
   const columns: ColumnDefinition<StaffMember>[] = [
     {
@@ -107,6 +108,8 @@ export const EducationStaffView: React.FC = () => {
               : 'Vacataire (CDD)'
             : isAr
             ? 'ساعات إضافية'
+            : isEn
+            ? 'Vacataire Hours'
             : 'Heures Vacations'}
         </span>
       ),
@@ -134,12 +137,19 @@ export const EducationStaffView: React.FC = () => {
   ];
 
   return (
-    <StandardStaffScreen
-      foundation={foundation}
-      category="education_cohort"
-      columns={columns}
-      categoryTitle={isAr ? 'هيئة التدريس والمؤطرون' : isEn ? 'Faculty & Instructors' : 'Corps Enseignant & Pédagogique'}
-      newStaffButtonLabel={isAr ? 'إضافة أستاذ / مؤطر' : isEn ? 'Add Instructor' : 'Nouvel Enseignant'}
-    />
+    <div className="space-y-6">
+      <StandardStaffScreen
+        foundation={foundation}
+        category="education_cohort"
+        columns={columns}
+        categoryTitle={isAr ? 'هيئة التدريس والمؤطرون' : isEn ? 'Faculty & Instructors' : 'Corps Enseignant & Pédagogique'}
+        newStaffButtonLabel={isAr ? 'إضافة أستاذ / مؤطر' : isEn ? 'Add Instructor' : 'Nouvel Enseignant'}
+      />
+      <VacatairePayrollPanel
+        staffList={foundation.facilityStaff}
+        payrollRuns={payrollRuns}
+        language={language}
+      />
+    </div>
   );
 };

@@ -3244,7 +3244,21 @@
   "venue_inv_btn_edit": "Modifier",
   "venue_inv_space_name": "Nom de l'espace / du bien",
   "venue_inv_code": "Code référence",
-  "venue_inv_desc": "Description & Spécifications"
+  "venue_inv_desc": "Description & Spécifications",
+  "edu_no_cohorts_found": "Aucune cohorte trouvée",
+  "edu_drawer_issue_certificate": "Délivrer Attestation",
+  "edu_btn_report_card": "Bulletin de Notes",
+  "edu_field_grade_scale": "Barème de Notation",
+  "edu_field_waitlist_enabled": "Liste d'Attente Activée",
+  "edu_field_trade_mode": "Type d'Établissement",
+  "edu_btn_dunning_dispatch": "Relances Échéances",
+  "edu_btn_discount_refund": "Remise / Remboursement",
+  "edu_btn_enrollment_contract": "Contrat d'Inscription",
+  "edu_btn_parent_comms": "Portail Parents",
+  "edu_btn_issue_card_qr": "Carte Étudiant QR",
+  "edu_btn_transfer_cohort": "Transférer de Cohorte",
+  "edu_tab_driving_school": "Auto-École",
+  "edu_tab_k12_services": "Cantine & Transport"
 }
 
 

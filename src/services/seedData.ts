@@ -37,6 +37,10 @@ import {
   EduGrade,
   EduCertificate,
   EduAdmissionLead,
+  EduParentCommunication,
+  EduVacataireLog,
+  EduDrivingLog,
+  EduK12Service,
   SalonWorkstation,
   StylistPayout,
   B2bClient,
@@ -905,6 +909,10 @@ export const INITIAL_EDU_ATTENDANCE: EduAttendance[] = [];
 export const INITIAL_EDU_GRADES: EduGrade[] = [];
 export const INITIAL_EDU_CERTIFICATES: EduCertificate[] = [];
 export const INITIAL_EDU_ADMISSIONS: EduAdmissionLead[] = [];
+export const INITIAL_EDU_PARENT_COMMS: EduParentCommunication[] = [];
+export const INITIAL_EDU_VACATAIRE_LOGS: EduVacataireLog[] = [];
+export const INITIAL_EDU_DRIVING_LOGS: EduDrivingLog[] = [];
+export const INITIAL_EDU_K12_SERVICES: EduK12Service[] = [];
 
 export const INITIAL_PM_CLIENTS: PMClient[] = [];
 export const INITIAL_PM_PROJECTS: PMProject[] = [];

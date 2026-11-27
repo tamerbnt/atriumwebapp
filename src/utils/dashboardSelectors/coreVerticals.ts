@@ -1016,24 +1016,51 @@ export function selectEducationDashboard(input: EducationDashboardInput) {
     })
     .filter((r) => r.values.length > 0);
 
-  // Real grade distribution histogram from eduGrades
+  // Real grade distribution histogram from eduGrades (configurable /20 vs /100 scale)
+  const scale100Count = cohorts.filter((c) => c.gradeScale === 100).length;
+  const targetScale: 20 | 100 =
+    cardFilters.gradeScale === '100'
+      ? 100
+      : cardFilters.gradeScale === '20'
+      ? 20
+      : scale100Count > cohorts.length / 2
+      ? 100
+      : 20;
+
   const windowGrades = filterByScope(grades, (g) => g.gradedAt, gradesScope, period, anchorDate);
   const gradeBinCounts = [0, 0, 0, 0, 0];
   for (const g of windowGrades) {
-    const norm20 = g.maxScore > 0 ? (g.score / g.maxScore) * 20 : 0;
-    if (norm20 < 10) gradeBinCounts[0] += 1;
-    else if (norm20 < 13) gradeBinCounts[1] += 1;
-    else if (norm20 < 16) gradeBinCounts[2] += 1;
-    else if (norm20 < 18.5) gradeBinCounts[3] += 1;
-    else if (norm20 <= 20) gradeBinCounts[4] += 1;
+    const norm = g.maxScore > 0 ? Math.min(targetScale, Math.max(0, (g.score / g.maxScore) * targetScale)) : 0;
+    if (targetScale === 100) {
+      if (norm < 50) gradeBinCounts[0] += 1;
+      else if (norm < 60) gradeBinCounts[1] += 1;
+      else if (norm < 70) gradeBinCounts[2] += 1;
+      else if (norm < 85) gradeBinCounts[3] += 1;
+      else gradeBinCounts[4] += 1;
+    } else {
+      if (norm < 10) gradeBinCounts[0] += 1;
+      else if (norm < 13) gradeBinCounts[1] += 1;
+      else if (norm < 16) gradeBinCounts[2] += 1;
+      else if (norm < 18.5) gradeBinCounts[3] += 1;
+      else gradeBinCounts[4] += 1;
+    }
   }
-  const binsDef = [
-    { id: 'b1', label: '0–9' },
-    { id: 'b2', label: '10–12' },
-    { id: 'b3', label: '13–15' },
-    { id: 'b4', label: '16–18' },
-    { id: 'b5', label: '18.5–20' },
-  ];
+  const binsDef =
+    targetScale === 100
+      ? [
+          { id: 'b1', label: '0–49' },
+          { id: 'b2', label: '50–59' },
+          { id: 'b3', label: '60–69' },
+          { id: 'b4', label: '70–84' },
+          { id: 'b5', label: '85–100' },
+        ]
+      : [
+          { id: 'b1', label: '0–9' },
+          { id: 'b2', label: '10–12' },
+          { id: 'b3', label: '13–15' },
+          { id: 'b4', label: '16–18' },
+          { id: 'b5', label: '18.5–20' },
+        ];
   const gradeBins: HistogramBin[] = windowGrades.length > 0
     ? binsDef.map((b, idx) => ({
         id: b.id,
@@ -1089,6 +1116,7 @@ export function selectEducationDashboard(input: EducationDashboardInput) {
     absenceSpark,
     funnelStages,
     cohortRows,
+    gradeScale: targetScale,
     gradeBins,
     attBuckets,
     cohortFillBullets,

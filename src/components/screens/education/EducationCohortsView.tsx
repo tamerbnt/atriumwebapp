@@ -23,10 +23,11 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { CohortStatus, EduCohort } from '../../../types';
+import { CohortStatus, EduCohort, EduGradeScale, EduTradeMode } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { Button } from '@/atrium/core';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -88,6 +89,8 @@ export const EducationCohortsView: React.FC = () => {
     addEduCohort,
     updateEduCohort,
     deleteEduCohort,
+    addEduCourse,
+    addEduClassroom,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -111,15 +114,21 @@ export const EducationCohortsView: React.FC = () => {
 
   const [formData, setFormData] = useState({
     courseId: eduCourses[0]?.id || '',
+    newCourseTitle: '',
+    newCourseCategory: 'Academic' as string,
     name: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7776e6).toISOString().split('T')[0],
     maxStudents: 20,
     instructorId: staff[0]?.id || '',
     classroomId: eduClassrooms[0]?.id || '',
+    newClassroomName: '',
     scheduleSummary: 'Mon & Wed 18:00 - 20:00',
     tuitionFee: 35000,
     status: 'Enrolling',
+    gradeScale: 20 as EduGradeScale,
+    tradeMode: 'academy' as EduTradeMode,
+    waitlistEnabled: true,
   });
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -190,10 +199,34 @@ export const EducationCohortsView: React.FC = () => {
 
   const handleCreateCohort = (e: React.FormEvent) => {
     e.preventDefault();
-    const course = eduCourses.find((co) => co.id === formData.courseId);
-    const room = eduClassrooms.find((r) => r.id === formData.classroomId);
+    let course = eduCourses.find((co) => co.id === formData.courseId);
+    if (!course) {
+      const courseTitle = formData.newCourseTitle.trim() || formData.name.trim();
+      if (!courseTitle) return;
+      course = addEduCourse({
+        title: courseTitle,
+        code: `CRS-${Math.floor(100 + Math.random() * 900)}`,
+        category: formData.newCourseCategory || 'Academic',
+        description: courseTitle,
+        durationWeeks: 12,
+        totalHours: 48,
+        defaultPrice: formData.tuitionFee || 35000,
+        currency: 'DZD',
+        gradeScale: formData.gradeScale,
+        tradeMode: formData.tradeMode,
+      });
+    }
+    let room = eduClassrooms.find((r) => r.id === formData.classroomId);
+    if (!room && formData.newClassroomName.trim()) {
+      room = addEduClassroom({
+        name: formData.newClassroomName.trim(),
+        capacity: formData.maxStudents || 20,
+        hasProjector: true,
+        hasComputers: false,
+        colorHex: '#d4522f',
+      });
+    }
     const instructor = staff.find((s) => s.id === formData.instructorId);
-    if (!course) return;
     const newCohort = addEduCohort({
       courseId: course.id,
       courseTitle: course.title,
@@ -209,6 +242,9 @@ export const EducationCohortsView: React.FC = () => {
       currency: 'DZD',
       scheduleSummary: formData.scheduleSummary,
       status: formData.status as CohortStatus,
+      gradeScale: formData.gradeScale,
+      tradeMode: formData.tradeMode,
+      waitlistEnabled: formData.waitlistEnabled,
       syllabusMilestones: [
         { title: 'Orientation & Core Fundamentals', completed: true },
         { title: 'Intermediate Hands-on Labs & Projects', completed: false },
@@ -589,9 +625,9 @@ export const EducationCohortsView: React.FC = () => {
         primaryCard={{
           label: isAr ? 'الأفواج النشطة' : isEn ? 'Active Cohorts' : 'Cohortes en Cycle Actif',
           count: eduCohorts.length,
-          badgeText: `${eduCourses.length} ${isAr ? 'برامج' : 'programmes'}`,
+          badgeText: `${eduCourses.length} ${isAr ? 'برامج' : isEn ? 'programs' : 'programmes'}`,
           tone: 'emerald',
-          title: isAr ? 'إظهار جميع الأفواج' : 'Afficher toutes les cohortes',
+          title: isAr ? 'إظهار جميع الأفواج' : isEn ? 'Show all cohorts' : 'Afficher toutes les cohortes',
           isActive: statusFilter === 'InProgress',
           onToggle: () => setStatusFilter((p) => (p === 'InProgress' ? 'all' : 'InProgress')),
         }}
@@ -599,9 +635,9 @@ export const EducationCohortsView: React.FC = () => {
           label: isAr ? 'نسبة امتلاء المقاعد' : isEn ? 'Seat Fill Rate' : 'Taux de remplissage',
           count: globalOccupancy,
           formatValue: (v) => `${v}%`,
-          badgeText: `${totalEnrolled} / ${totalSeats} places`,
+          badgeText: `${totalEnrolled} / ${totalSeats} ${isAr ? 'مقعد' : isEn ? 'seats' : 'places'}`,
           tone: 'terracotta',
-          title: isAr ? 'الأفواج المفتوحة للتسجيل' : 'Filtrer inscriptions ouvertes',
+          title: isAr ? 'الأفواج المفتوحة للتسجيل' : isEn ? 'Filter open enrollments' : 'Filtrer inscriptions ouvertes',
           isActive: statusFilter === 'Enrolling',
           onToggle: () => setStatusFilter((p) => (p === 'Enrolling' ? 'all' : 'Enrolling')),
         }}
@@ -612,8 +648,8 @@ export const EducationCohortsView: React.FC = () => {
           formatValue: (v) => formatMoney(v),
           badgeCount: totalEnrolled,
           badgePrefix: '',
-          badgeSuffix: isAr ? 'مسجل' : 'inscrits',
-          caption: isAr ? 'إجمالي الرسوم التعاقدية' : 'Volume scolarité engagé',
+          badgeSuffix: isAr ? ' مسجل' : isEn ? ' enrolled' : ' inscrits',
+          caption: isAr ? 'إجمالي الرسوم التعاقدية' : isEn ? 'Committed tuition volume' : 'Volume scolarité engagé',
         }}
       />
 
@@ -964,6 +1000,15 @@ export const EducationCohortsView: React.FC = () => {
                     value={`${cohort.startDate} → ${cohort.endDate}`}
                   />
                   <InspectorKeyValue
+                    label={t('edu_field_grade_scale')}
+                    value={`/${cohort.gradeScale || 20}`}
+                  />
+                  <InspectorKeyValue
+                    label={t('edu_field_waitlist_enabled')}
+                    value={cohort.waitlistEnabled !== false ? (isAr ? 'مفعّلة' : isEn ? 'Enabled' : 'Activée') : (isAr ? 'مغلقة' : isEn ? 'Blocked' : 'Fermée')}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
                     label={isAr ? 'رسوم التسجيل' : isEn ? 'Tuition Fee' : "Frais d'inscription"}
                     value={formatMoney(cohort.tuitionFee)}
                     tone="accent"
@@ -1013,17 +1058,31 @@ export const EducationCohortsView: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleCreateCohort} className="space-y-4 pt-4 t-cap">
-              <LabelSelect
-                field="CourseCurriculum"
-                label={t('edu_field_course_title')}
-                value={formData.courseId}
-                onChange={(val) => setFormData({ ...formData, courseId: val })}
-                options={eduCourses.map((co) => ({ value: co.id, label: co.title, sublabel: co.category }))}
-                searchable
-                width="100%"
-                height={40}
-                corner={12}
-              />
+              {eduCourses.length > 0 ? (
+                <LabelSelect
+                  field="CourseCurriculum"
+                  label={t('edu_field_course_title')}
+                  value={formData.courseId}
+                  onChange={(val) => setFormData({ ...formData, courseId: val })}
+                  options={eduCourses.map((co) => ({ value: co.id, label: co.title, sublabel: co.category }))}
+                  searchable
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              ) : (
+                <LabelInput
+                  field="CourseCurriculumTitle"
+                  label={t('edu_field_course_title')}
+                  required
+                  value={formData.newCourseTitle}
+                  onChange={(val) => setFormData({ ...formData, newCourseTitle: val })}
+                  placeholder={isAr ? 'مثال: تطوير الويب Full-Stack' : isEn ? 'e.g. Full-Stack Engineering' : 'Ex : Développement Full-Stack'}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              )}
               <LabelInput
                 field="CohortName"
                 label={t('edu_field_cohort_code')}
@@ -1047,17 +1106,30 @@ export const EducationCohortsView: React.FC = () => {
                   height={40}
                   corner={12}
                 />
-                <LabelSelect
-                  field="AssignedClassroom"
-                  label={t('edu_field_classroom')}
-                  value={formData.classroomId}
-                  onChange={(val) => setFormData({ ...formData, classroomId: val })}
-                  options={eduClassrooms.map((r) => ({ value: r.id, label: r.name, sublabel: `Cap: ${r.capacity}` }))}
-                  searchable
-                  width="100%"
-                  height={40}
-                  corner={12}
-                />
+                {eduClassrooms.length > 0 ? (
+                  <LabelSelect
+                    field="AssignedClassroom"
+                    label={t('edu_field_classroom')}
+                    value={formData.classroomId}
+                    onChange={(val) => setFormData({ ...formData, classroomId: val })}
+                    options={eduClassrooms.map((r) => ({ value: r.id, label: r.name, sublabel: `Cap: ${r.capacity}` }))}
+                    searchable
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                ) : (
+                  <LabelInput
+                    field="NewClassroomName"
+                    label={t('edu_field_classroom')}
+                    value={formData.newClassroomName}
+                    onChange={(val) => setFormData({ ...formData, newClassroomName: val })}
+                    placeholder={isAr ? 'مثال: القاعة A1' : isEn ? 'e.g. Room A1' : 'Ex : Salle A1'}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
@@ -1105,6 +1177,50 @@ export const EducationCohortsView: React.FC = () => {
                   width="100%"
                   height={40}
                   corner={12}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelSelect
+                  field="GradeScale"
+                  label={t('edu_field_grade_scale')}
+                  value={String(formData.gradeScale)}
+                  onChange={(val) => setFormData({ ...formData, gradeScale: (Number(val) === 100 ? 100 : 20) as EduGradeScale })}
+                  options={[
+                    { value: '20', label: isAr ? 'سلم /20 (النظام الجزائري/الفرنسي)' : isEn ? '/20 (Algerian / French Scale)' : '/20 (Barème Algérie / France)' },
+                    { value: '100', label: isAr ? 'سلم /100 (نسبة مئوية)' : isEn ? '/100 (Percentage Scale)' : '/100 (Pourcentage)' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelSelect
+                  field="TradeMode"
+                  label={t('edu_field_trade_mode')}
+                  value={formData.tradeMode}
+                  onChange={(val) => setFormData({ ...formData, tradeMode: val as EduTradeMode })}
+                  options={[
+                    { value: 'academy', label: isAr ? 'أكاديمية / معهد تكوين' : isEn ? 'Training Academy' : 'Centre de Formation' },
+                    { value: 'k12', label: isAr ? 'مدرسة خاصة (K-12)' : isEn ? 'Private School (K-12)' : 'École Privée (K-12)' },
+                    { value: 'driving_school', label: isAr ? 'مدرسة تعليم السياقة' : isEn ? 'Driving School' : 'Auto-École' },
+                    { value: 'tutoring', label: isAr ? 'دروس الدعم والتقوية' : isEn ? 'Tutoring Center' : 'Soutien Scolaire' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3 bg-[#F3EDE7] dark:bg-[#22201E] flex items-center justify-between gap-3"
+              >
+                <span className="font-medium text-black dark:text-white">
+                  {t('edu_field_waitlist_enabled')}
+                </span>
+                <LiveSwitch
+                  checked={formData.waitlistEnabled}
+                  onCheckedChange={(checked) => setFormData({ ...formData, waitlistEnabled: checked })}
+                  aria-label={t('edu_field_waitlist_enabled')}
                 />
               </div>
               <LabelInput

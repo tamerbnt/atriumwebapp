@@ -23,6 +23,11 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import {
+  buildStudentTermReportCard,
+  computeWeightedAverageOnScale,
+} from '../../../utils/educationDepth';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -98,6 +103,7 @@ export const EducationAttendanceView: React.FC = () => {
 
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+  const [reportCardPages, setReportCardPages] = useState<PrintSheetPage[] | null>(null);
 
   const [selectedStudent, setSelectedStudent] = useState<EduStudent | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -297,6 +303,7 @@ export const EducationAttendanceView: React.FC = () => {
     });
   }, [activeTab, sortedStudents, cohortAttendance, cohortGrades, activeCohort, branchesById, currentBranch, language]);
 
+  const activeScale = activeCohort?.gradeScale === 100 ? 100 : 20;
   const totalAttRecords = cohortAttendance.length;
   const presentAttRecords = cohortAttendance.filter(
     (a) => a.status === 'Present' || a.status === 'Late'
@@ -304,8 +311,83 @@ export const EducationAttendanceView: React.FC = () => {
   const cohortAttRate = totalAttRecords > 0 ? Math.round((presentAttRecords / totalAttRecords) * 100) : 95;
   const avgGrade =
     cohortGrades.length > 0
-      ? Math.round(cohortGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0) / cohortGrades.length)
-      : 88;
+      ? computeWeightedAverageOnScale(cohortGrades, activeScale)
+      : activeScale === 100
+      ? 88
+      : 16.5;
+
+  const openReportCardPrint = useCallback(
+    (student: EduStudent) => {
+      const targetCohort =
+        activeCohort ||
+        eduCohorts.find((c) =>
+          eduEnrollments.some((e) => e.studentId === student.id && e.cohortId === c.id)
+        ) ||
+        eduCohorts[0];
+      if (!targetCohort) return;
+      const card = buildStudentTermReportCard({
+        student,
+        cohort: targetCohort,
+        cohortGrades: eduGrades.filter((g) => g.cohortId === targetCohort.id),
+        studentAttendance: eduAttendance.filter((a) => a.studentId === student.id),
+        language,
+      });
+      setReportCardPages([
+        {
+          id: `bulletin-${student.id}-${targetCohort.id}`,
+          title: isAr
+            ? `كشف النقاط والنتائج — ${student.fullName}`
+            : isEn
+            ? `Term Report Card — ${student.fullName}`
+            : `Bulletin Scolaire — ${student.fullName}`,
+          subtitle: `${targetCohort.name} · ${isAr ? 'سلم' : 'Barème'} /${card.gradeScale}`,
+          badgeText: `${card.weightedAverageOnScale} / ${card.gradeScale}`,
+          sections: [
+            {
+              rows: [
+                {
+                  label: isAr ? 'المعدل الفصلي المرجح' : isEn ? 'Weighted Average' : 'Moyenne Pondérée',
+                  value: `${card.weightedAverageOnScale} / ${card.gradeScale} (${card.normalizedPercent}%)`,
+                },
+                {
+                  label: isAr ? 'معدل الفوج' : isEn ? 'Class Average' : 'Moyenne Classe',
+                  value: `${card.classAverageOnScale} / ${card.gradeScale}`,
+                },
+                {
+                  label: isAr ? 'نسبة الحضور' : isEn ? 'Attendance Rate' : 'Assiduité',
+                  value: `${card.attendanceRatePercent}%`,
+                },
+                {
+                  label: isAr ? 'قرار المجلس' : isEn ? 'Academic Decision' : 'Décision Pédagogique',
+                  value: card.decisionLabel,
+                },
+              ],
+            },
+          ],
+          tableHeaders: [
+            isAr ? 'التقييم / المادة' : isEn ? 'Assessment' : 'Évaluation',
+            isAr ? 'العلامة الخام' : isEn ? 'Raw Score' : 'Note Brute',
+            `${isAr ? 'المعدل' : isEn ? 'Normalized' : 'Note'} /${card.gradeScale}`,
+            isAr ? 'المعامل' : isEn ? 'Weight' : 'Coeff.',
+            isAr ? 'ملاحظة الأستاذ' : isEn ? 'Remarks' : 'Appréciation',
+          ],
+          tableRows:
+            card.lines.length > 0
+              ? card.lines.map((l) => [
+                  l.assessmentTitle,
+                  `${l.rawScore} / ${l.rawMaxScore}`,
+                  `${l.scaledScore} / ${card.gradeScale}`,
+                  `${l.weightPercent}%`,
+                  l.teacherRemarks || '—',
+                ])
+              : [['—', '—', '—', '—', isAr ? 'لا توجد علامات مسجلة' : isEn ? 'No assessments recorded' : 'Aucune note']],
+          signatureLeft: isAr ? 'توقيع الإدارة' : isEn ? 'Academic Dean' : 'Direction Pédagogique',
+          signatureRight: isAr ? 'اطلاع ولي الأمر' : isEn ? 'Parent / Student' : 'Visa Parent / Apprenant',
+        },
+      ]);
+    },
+    [activeCohort, eduCohorts, eduEnrollments, eduGrades, eduAttendance, language, isAr, isEn]
+  );
 
   const filterSections: KineticFilterSection[] = useMemo(() => {
     const branchOpts = [
@@ -698,10 +780,10 @@ export const EducationAttendanceView: React.FC = () => {
         darkCard={{
           label: t('edu_kpi_academic_perf'),
           valueCount: avgGrade,
-          valueSuffix: '%',
+          valueSuffix: `/${activeScale}`,
           badgeCount: cohortGrades.length,
           badgeSuffix: isAr ? ' تقييم' : ' notes',
-          caption: isAr ? 'المعدل العام التراكمي' : 'Moyenne générale pondérée',
+          caption: isAr ? `المعدل العام (سلم /${activeScale})` : `Moyenne pondérée (/${activeScale})`,
         }}
       />
 
@@ -922,23 +1004,23 @@ export const EducationAttendanceView: React.FC = () => {
               })),
               {
                 key: 'avgScore',
-                header: t('edu_avg_weighted'),
+                header: `${t('edu_avg_weighted')} (/${activeScale})`,
                 width: '1.2*',
                 renderCell: (st) => {
                   const stGrades = cohortGrades.filter((g) => g.studentId === st.id);
-                  const totalScore = stGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0);
-                  const avgScore = stGrades.length > 0 ? Math.round(totalScore / stGrades.length) : 0;
+                  const avgOnScale = computeWeightedAverageOnScale(stGrades, activeScale);
+                  const avgPct = activeScale > 0 ? Math.round((avgOnScale / activeScale) * 100) : 0;
                   return stGrades.length > 0 ? (
                     <span
                       className={`font-semibold tabular-nums t-small ${
-                        avgScore >= 80
+                        avgPct >= 80
                           ? 'text-emerald-600 dark:text-emerald-400'
-                          : avgScore >= 60
+                          : avgPct >= 50
                           ? 'text-amber-600 dark:text-amber-400'
                           : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
-                      {avgScore}%
+                      {avgOnScale} / {activeScale}
                     </span>
                   ) : (
                     <span className="text-black/55 dark:text-white/55 italic t-cap">—</span>
@@ -948,31 +1030,45 @@ export const EducationAttendanceView: React.FC = () => {
               {
                 key: 'actions',
                 header: t('edu_col_actions'),
-                width: '1.2*',
+                width: '1.5*',
                 renderCell: (st) => (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setGradeForm((prev) => ({
-                        ...prev,
-                        studentId: st.id,
-                      }));
-                      setIsGradeModalOpen(true);
-                    }}
-                    data-sq="ctl-sm"
-                    data-sq-border="none"
-                    className="px-2.5 py-2 bg-neutral-100 dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
-                  >
-                    {t('edu_btn_record_grade')}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setGradeForm((prev) => ({
+                          ...prev,
+                          studentId: st.id,
+                        }));
+                        setIsGradeModalOpen(true);
+                      }}
+                      data-sq="ctl-sm"
+                      data-sq-border="none"
+                      className="px-2.5 py-2 bg-neutral-100 dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
+                    >
+                      {t('edu_btn_record_grade')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openReportCardPrint(st);
+                      }}
+                      data-sq="ctl-sm"
+                      data-sq-border="solid"
+                      className="px-2.5 py-2 bg-white dark:bg-[#22201E] text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
+                    >
+                      {t('edu_btn_report_card')}
+                    </button>
+                  </div>
                 ),
               },
             ]}
             getRowMeta={(st): KineticRowMeta => {
               const stGrades = cohortGrades.filter((g) => g.studentId === st.id);
-              const totalScore = stGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0);
-              const avgScore = stGrades.length > 0 ? Math.round(totalScore / stGrades.length) : 0;
+              const avgOnScale = computeWeightedAverageOnScale(stGrades, activeScale);
+              const avgScore = activeScale > 0 ? Math.round((avgOnScale / activeScale) * 100) : 0;
               const summaryScores = stGrades
                 .slice(0, 3)
                 .map((g) => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`)
@@ -981,9 +1077,9 @@ export const EducationAttendanceView: React.FC = () => {
                 avatarText: st.fullName.slice(0, 2).toUpperCase(),
                 subline: st.schoolGrade || 'Standard',
                 categoryLabel: `${stGrades.length} ${isAr ? 'تقييمات' : 'notes'}`,
-                statusVariant: stGrades.length === 0 ? 'warning' : avgScore >= 80 ? 'active' : avgScore >= 60 ? 'warning' : 'blocked',
-                statusLabel: stGrades.length > 0 ? `${avgScore}%` : '—',
-                metricPrimary: stGrades.length > 0 ? `${avgScore}%` : '—',
+                statusVariant: stGrades.length === 0 ? 'warning' : avgScore >= 80 ? 'active' : avgScore >= 50 ? 'warning' : 'blocked',
+                statusLabel: stGrades.length > 0 ? `${avgOnScale}/${activeScale}` : '—',
+                metricPrimary: stGrades.length > 0 ? `${avgOnScale}/${activeScale}` : '—',
                 metricSecondary: `${stGrades.length} évaluations`,
                 isPinned: pinnedStudentIds.has(st.id),
                 detailCol1: {
@@ -997,7 +1093,7 @@ export const EducationAttendanceView: React.FC = () => {
                 },
                 detailCol3: {
                   heading: t('edu_avg_weighted'),
-                  primaryText: stGrades.length > 0 ? `${avgScore}%` : '—',
+                  primaryText: stGrades.length > 0 ? `${avgOnScale}/${activeScale}` : '—',
                   secondaryText: localizeStatus(st.status, language),
                 },
               };
@@ -1296,6 +1392,15 @@ export const EducationAttendanceView: React.FC = () => {
         isOpen={isRollCallOpen}
         cohortId={selectedCohortId === 'all' ? eduCohorts[0]?.id : selectedCohortId}
         onClose={() => setIsRollCallOpen(false)}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(reportCardPages)}
+        onClose={() => setReportCardPages(null)}
+        language={language}
+        format="a4"
+        title={t('edu_btn_report_card')}
+        pages={reportCardPages || []}
       />
     </div>
   );

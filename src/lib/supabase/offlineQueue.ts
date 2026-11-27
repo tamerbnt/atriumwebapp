@@ -105,8 +105,11 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   gym_plans: 18,
   members: 20,
   gym_schedule_events: 22,
+  edu_courses: 18,
+  edu_classrooms: 18,
   edu_cohorts: 20,
   edu_students: 20,
+  edu_enrollments: 25,
   edu_sessions: 24,
   freelance_clients: 20,
   freelance_projects: 24,
@@ -125,6 +128,12 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   gym_class_enrollments: 40,
   edu_attendance: 40,
   edu_grades: 40,
+  edu_certificates: 42,
+  edu_admissions: 22,
+  edu_parent_communications: 41,
+  edu_vacataire_logs: 42,
+  edu_driving_logs: 41,
+  edu_k12_services: 40,
   pos_optical_prescriptions: 38,
   pos_kitchen_orders: 39,
   pos_sales: 40,
@@ -555,6 +564,9 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'mark_import_job_rolled_back') return 485;
     if (item.fn === 'process_data_subject_request') return 395;
     if (item.fn === 'cancel_and_promote_gym_class_enrollment') return 405;
+    if (item.fn === 'edu_transfer_student_cohort_atomic') return 410;
+    if (item.fn === 'edu_reissue_or_revoke_certificate') return 425;
+    if (item.fn === 'edu_post_vacataire_hours_to_payroll') return 435;
     if (item.fn === 'record_bi_report_snapshot') return 520;
     if (item.fn === 'log_sensitive_read_event') return 500;
   }

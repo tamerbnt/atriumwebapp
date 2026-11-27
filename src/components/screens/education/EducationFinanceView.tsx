@@ -9,19 +9,29 @@ import {
   Receipt,
   Eye,
   CreditCard,
+  Percent,
+  FileSignature,
 } from 'lucide-react';
 import {
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduCohortsFromState,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
-import { EduEnrollment } from '../../../types';
+import { EduDiscountType, EduEnrollment } from '../../../types';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
+import {
+  computeTuitionWithDiscountsAndRefund,
+  evaluateEnrollmentDunning,
+  renderEduEnrollmentContract,
+} from '../../../utils/educationDepth';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
@@ -64,9 +74,11 @@ export const EducationFinanceView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { eduEnrollments, currentBusiness, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { eduEnrollments, eduStudents, eduCohorts, currentBusiness, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
@@ -77,7 +89,14 @@ export const EducationFinanceView: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { recordTuitionPayment, retryCloudSync } = useAtriumActions();
+  const {
+    recordTuitionPayment,
+    dispatchEducationDunningReminders,
+    applyEnrollmentDiscountOrRefund,
+    signEduEnrollmentContract,
+    createEnrollmentUnifiedInvoice,
+    retryCloudSync,
+  } = useAtriumActions();
 
   const [filterKey, setFilterKey] = useState<PaymentFilterKey>('all');
   const [branchFilter, setBranchFilter] = useState<string>('All');
@@ -106,6 +125,19 @@ export const EducationFinanceView: React.FC = () => {
     date: string;
     receiptNumber: string;
   } | null>(null);
+  const [discountModalEnrollment, setDiscountModalEnrollment] = useState<EduEnrollment | null>(null);
+  const [discountForm, setDiscountForm] = useState({
+    discountType: 'sibling' as EduDiscountType,
+    siblingDiscountDzd: 0,
+    scholarshipDzd: 0,
+    customDiscountDzd: 0,
+    discountReason: '',
+    refundDzd: 0,
+    refundReason: '',
+  });
+  const [contractModalEnrollment, setContractModalEnrollment] = useState<EduEnrollment | null>(null);
+  const [contractSignerName, setContractSignerName] = useState('');
+  const [contractPrintPages, setContractPrintPages] = useState<PrintSheetPage[] | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -230,11 +262,49 @@ export const EducationFinanceView: React.FC = () => {
     setSelectedEnrollmentIds(new Set<string>());
   };
 
+  const handleOpenDiscountModal = useCallback((enr: EduEnrollment) => {
+    setDiscountForm({
+      discountType: enr.discountType || 'sibling',
+      siblingDiscountDzd: enr.siblingDiscountAmount || 0,
+      scholarshipDzd: enr.scholarshipAmount || 0,
+      customDiscountDzd: 0,
+      discountReason: enr.discountReason || '',
+      refundDzd: 0,
+      refundReason: '',
+    });
+    setDiscountModalEnrollment(enr);
+  }, []);
+
+  const handleSaveDiscountOrRefund = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!discountModalEnrollment) return;
+    applyEnrollmentDiscountOrRefund(discountModalEnrollment.id, {
+      discountType: discountForm.discountType,
+      siblingDiscountDzd: discountForm.siblingDiscountDzd,
+      scholarshipDzd: discountForm.scholarshipDzd,
+      customDiscountDzd: discountForm.customDiscountDzd,
+      discountReason: discountForm.discountReason || undefined,
+      refundDzd: discountForm.refundDzd,
+      refundReason: discountForm.refundReason || undefined,
+    });
+    setDiscountModalEnrollment(null);
+  };
+
+  const handleOpenContractModal = useCallback(
+    (enr: EduEnrollment) => {
+      const stu = eduStudents.find((s) => s.id === enr.studentId);
+      setContractSignerName(enr.contractSignerName || stu?.guardianName || enr.studentName);
+      setContractModalEnrollment(enr);
+    },
+    [eduStudents]
+  );
+
   const handleBatchSendReminder = () => {
+    const res = dispatchEducationDunningReminders(Array.from(selectedEnrollmentIds));
     showToast({
-      type: 'info',
-      title: isAr ? 'تم إرسال التنبيهات' : 'Rappels Émis',
-      message: `${selectedEnrollmentIds.size} rappels de paiement transmis via SMS & WhatsApp.`,
+      type: res.dispatchedCount > 0 ? 'success' : 'info',
+      title: isAr ? 'تم إرسال التنبيهات' : isEn ? 'Dunning Notices Dispatched' : 'Relances Émises',
+      message: `${res.dispatchedCount} ${isAr ? 'تذكير مستحق' : isEn ? 'overdue reminder(s) logged & dispatched' : 'relance(s) transmise(s)'}.`,
     });
     setSelectedEnrollmentIds(new Set<string>());
   };
@@ -663,9 +733,20 @@ export const EducationFinanceView: React.FC = () => {
         icon={<Wallet size={22} />}
         title={t('edu_finance_title')}
         secondaryActions={
-          <AtriumButton variant="outline" size="sm" icon={<Printer size={14} />} onClick={() => window.print()}>
-            <span>{isAr ? 'طباعة كشف الحساب' : isEn ? 'Print Ledger' : 'Grand Livre'}</span>
-          </AtriumButton>
+          <div className="flex items-center gap-2">
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              icon={<Bell size={14} />}
+              onClick={() => dispatchEducationDunningReminders()}
+              data-testid="edu-dunning-scan-btn"
+            >
+              <span>{t('edu_btn_dunning_dispatch')}</span>
+            </AtriumButton>
+            <AtriumButton variant="outline" size="sm" icon={<Printer size={14} />} onClick={() => window.print()}>
+              <span>{isAr ? 'طباعة كشف الحساب' : isEn ? 'Print Ledger' : 'Grand Livre'}</span>
+            </AtriumButton>
+          </div>
         }
         primaryAction={
           eduEnrollments.length > 0
@@ -746,7 +827,7 @@ export const EducationFinanceView: React.FC = () => {
           label: t('edu_fin_receivables'),
           count: totalOutstanding,
           formatValue: (v) => formatMoney(v),
-          badgeText: `${eduEnrollments.filter((e) => e.balanceDue > 0).length} en attente`,
+          badgeText: `${eduEnrollments.filter((e) => e.balanceDue > 0).length} ${isAr ? 'معلق' : isEn ? 'pending' : 'en attente'}`,
           tone: 'terracotta',
           isActive: filterKey === 'pending',
           onToggle: () => setFilterKey((p) => (p === 'pending' ? 'all' : 'pending')),
@@ -756,8 +837,8 @@ export const EducationFinanceView: React.FC = () => {
           valueCount: overdueBalance,
           formatValue: (v) => formatMoney(v),
           badgeCount: eduEnrollments.filter((e) => e.paymentStatus === 'Overdue').length,
-          badgeSuffix: isAr ? ' متأخر' : ' retards',
-          caption: isAr ? 'متأخرات تستوجب المتابعة' : 'Créances échues avec relance',
+          badgeSuffix: isAr ? ' متأخر' : isEn ? ' overdue' : ' retards',
+          caption: isAr ? 'متأخرات تستوجب المتابعة' : isEn ? 'Overdue receivables with reminders' : 'Créances échues avec relance',
         }}
       />
 
@@ -951,6 +1032,24 @@ export const EducationFinanceView: React.FC = () => {
                           ]
                         : []),
                       {
+                        id: 'discount',
+                        label: t('edu_btn_discount_refund'),
+                        icon: <Percent size={16} />,
+                        onClick: () => {
+                          handleOpenDiscountModal(enr);
+                          setDetailEnrollment(null);
+                        },
+                      },
+                      {
+                        id: 'contract',
+                        label: t('edu_btn_enrollment_contract'),
+                        icon: <FileSignature size={16} />,
+                        onClick: () => {
+                          handleOpenContractModal(enr);
+                          setDetailEnrollment(null);
+                        },
+                      },
+                      {
                         id: 'print',
                         label: isAr ? 'طباعة الوصل' : isEn ? 'Print Receipt' : 'Imprimer Reçu',
                         icon: <Printer size={16} />,
@@ -1006,10 +1105,28 @@ export const EducationFinanceView: React.FC = () => {
                   <InspectorProgressBar percent={pct} tone={pct >= 100 ? 'ok' : 'accent'} animateKey={enr.id} />
                 </InspectorCard>
               </InspectorSection>
-              <InspectorSection index={2} title={isAr ? 'معلومات العقد' : isEn ? 'Contract Info' : 'Contrat'}>
+              <InspectorSection index={2} title={isAr ? 'معلومات العقد والتخفيضات' : isEn ? 'Contract & Dunning Info' : 'Contrat & Relances'}>
                 <InspectorCard>
                   <InspectorKeyValue label={t('edu_col_student')} value={enr.studentName} mono={false} />
-                  <InspectorKeyValue label={t('edu_col_cohort')} value={enr.cohortName} mono={false} isLast />
+                  <InspectorKeyValue label={t('edu_col_cohort')} value={enr.cohortName} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'التخفيض / المنحة' : isEn ? 'Discounts / Scholarship' : 'Remise / Bourse'}
+                    value={formatMoney(enr.discountAmount || 0)}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'المبلغ المسترد' : isEn ? 'Refunded' : 'Remboursé'}
+                    value={formatMoney(enr.refundedAmount || 0)}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'مستوى التذكير' : isEn ? 'Dunning Level' : 'Niveau Relance'}
+                    value={`L${enr.dunningLevel || evaluateEnrollmentDunning(enr).escalationLevel}`}
+                  />
+                  <InspectorKeyValue
+                    label={t('edu_btn_enrollment_contract')}
+                    value={enr.contractSignedAt ? `${enr.contractNumber || 'CTR'} · ✓` : (isAr ? 'غير موقع' : isEn ? 'Unsigned' : 'Non signé')}
+                    mono={false}
+                    isLast
+                  />
                 </InspectorCard>
               </InspectorSection>
             </>
@@ -1210,6 +1327,271 @@ export const EducationFinanceView: React.FC = () => {
           </div>
         )}
       </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(discountModalEnrollment)}
+        onClose={() => setDiscountModalEnrollment(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {discountModalEnrollment && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                {t('edu_btn_discount_refund')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setDiscountModalEnrollment(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 hover:bg-neutral-100 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveDiscountOrRefund} className="space-y-3 t-cap">
+              <div className="p-3 bg-[#F3EDE7] dark:bg-[#22201E] rounded-xl font-semibold text-black dark:text-white">
+                {discountModalEnrollment.studentName} · {discountModalEnrollment.cohortName}
+              </div>
+              <LabelSelect
+                field="DiscountType"
+                label={isAr ? 'نوع التخفيض' : isEn ? 'Discount Type' : 'Type de remise'}
+                value={discountForm.discountType}
+                onChange={(v) => setDiscountForm({ ...discountForm, discountType: v as EduDiscountType })}
+                options={[
+                  { value: 'sibling', label: isAr ? 'تخفيض الإخوة' : isEn ? 'Sibling Discount' : 'Remise Fratrie' },
+                  { value: 'scholarship', label: isAr ? 'منحة دراسية' : isEn ? 'Scholarship' : 'Bourse d’études' },
+                  { value: 'merit', label: isAr ? 'منحة تفوق' : isEn ? 'Merit Grant' : 'Bourse Mérite' },
+                  { value: 'custom', label: isAr ? 'تخفيض استثنائي' : isEn ? 'Custom Discount' : 'Remise exceptionnelle' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  field="SiblingDiscount"
+                  label={isAr ? 'تخفيض الإخوة (دج)' : isEn ? 'Sibling Discount (DZD)' : 'Remise fratrie (DZD)'}
+                  type="number"
+                  min="0"
+                  value={discountForm.siblingDiscountDzd}
+                  onChange={(v) => setDiscountForm({ ...discountForm, siblingDiscountDzd: Math.max(0, Number(v) || 0) })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="Scholarship"
+                  label={isAr ? 'مبلغ المنحة (دج)' : isEn ? 'Scholarship (DZD)' : 'Bourse (DZD)'}
+                  type="number"
+                  min="0"
+                  value={discountForm.scholarshipDzd}
+                  onChange={(v) => setDiscountForm({ ...discountForm, scholarshipDzd: Math.max(0, Number(v) || 0) })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  field="CustomDiscount"
+                  label={isAr ? 'تخفيض إضافي (دج)' : isEn ? 'Additional Discount (DZD)' : 'Remise additionnelle (DZD)'}
+                  type="number"
+                  min="0"
+                  value={discountForm.customDiscountDzd}
+                  onChange={(v) => setDiscountForm({ ...discountForm, customDiscountDzd: Math.max(0, Number(v) || 0) })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="RefundAmount"
+                  label={isAr ? 'مبلغ الاسترداد (دج)' : isEn ? 'Tuition Refund (DZD)' : 'Remboursement (DZD)'}
+                  type="number"
+                  min="0"
+                  max={discountModalEnrollment.paidAmount}
+                  value={discountForm.refundDzd}
+                  onChange={(v) => setDiscountForm({ ...discountForm, refundDzd: Math.max(0, Number(v) || 0) })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <LabelInput
+                field="DiscountRefundReason"
+                label={isAr ? 'السبب / الملاحظة' : isEn ? 'Reason / Note' : 'Motif'}
+                value={discountForm.refundDzd > 0 ? discountForm.refundReason : discountForm.discountReason}
+                onChange={(v) =>
+                  setDiscountForm(
+                    discountForm.refundDzd > 0
+                      ? { ...discountForm, refundReason: v }
+                      : { ...discountForm, discountReason: v }
+                  )
+                }
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              {(() => {
+                const cohort = eduCohorts.find((c) => c.id === discountModalEnrollment.cohortId);
+                const preview = computeTuitionWithDiscountsAndRefund({
+                  baseTuitionDzd: cohort ? cohort.tuitionFee : discountModalEnrollment.agreedTuition + (discountModalEnrollment.discountAmount || 0),
+                  discountType: discountForm.discountType,
+                  siblingDiscountDzd: discountForm.siblingDiscountDzd,
+                  scholarshipDzd: discountForm.scholarshipDzd,
+                  customDiscountDzd: discountForm.customDiscountDzd,
+                  paidDzd: discountModalEnrollment.paidAmount,
+                  refundedDzd: (discountModalEnrollment.refundedAmount || 0) + discountForm.refundDzd,
+                });
+                return (
+                  <div className="p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 t-small">
+                    <div className="flex justify-between">
+                      <span>{isAr ? 'المبلغ الصافي الجديد:' : isEn ? 'New Net Tuition:' : 'Net convenu :'}</span>
+                      <b className="tabular-nums">{formatMoney(preview.agreedTuitionDzd)}</b>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{isAr ? 'الرصيد المتبقي:' : isEn ? 'New Balance Due:' : 'Nouveau solde :'}</span>
+                      <b className="tabular-nums text-[var(--brand-text,#BF431F)]">{formatMoney(preview.balanceDueDzd)}</b>
+                    </div>
+                  </div>
+                );
+              })()}
+              <div className="pt-3 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
+                <Button tone="soft" size={40} type="button" onClick={() => setDiscountModalEnrollment(null)}>
+                  {t('common_cancel')}
+                </Button>
+                <Button tone="accent" size={40} type="submit" data-testid="save-discount-refund-btn">
+                  {t('common_save')}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(contractModalEnrollment)}
+        onClose={() => setContractModalEnrollment(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {contractModalEnrollment && (() => {
+          const stu = eduStudents.find((s) => s.id === contractModalEnrollment.studentId);
+          const coh = eduCohorts.find((c) => c.id === contractModalEnrollment.cohortId);
+          const contractText = stu
+            ? renderEduEnrollmentContract({
+                institutionName: currentBusiness?.displayName || (isAr ? 'المؤسسة' : 'Établissement'),
+                student: stu,
+                enrollment: contractModalEnrollment,
+                cohort: coh,
+                language,
+              })
+            : '';
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+                <h2 className="t-card font-semibold text-black dark:text-white">
+                  {t('edu_btn_enrollment_contract')}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setContractModalEnrollment(null)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 hover:bg-neutral-100 cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <pre className="p-4 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] text-xs whitespace-pre-wrap font-sans leading-relaxed text-black dark:text-white">
+                {contractText}
+              </pre>
+              <LabelInput
+                field="ContractSigner"
+                label={isAr ? 'اسم الموقع (الولي / الطالب)' : isEn ? 'Signer Name' : 'Nom du signataire'}
+                value={contractSignerName}
+                onChange={setContractSignerName}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <div className="flex flex-wrap justify-between gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <div className="flex gap-2">
+                  <Button
+                    tone="soft"
+                    size={36}
+                    type="button"
+                    onClick={() => {
+                      createEnrollmentUnifiedInvoice(contractModalEnrollment.id, { issueImmediately: true });
+                    }}
+                  >
+                    {isAr ? 'إصدار فاتورة 6.1' : isEn ? 'Issue 6.1 Invoice' : 'Facture 6.1'}
+                  </Button>
+                  <Button
+                    tone="soft"
+                    size={36}
+                    type="button"
+                    leading={<Printer size={14} />}
+                    onClick={() => {
+                      setContractPrintPages([
+                        {
+                          id: `ctr-${contractModalEnrollment.id}`,
+                          title: t('edu_btn_enrollment_contract'),
+                          subtitle: `${contractModalEnrollment.studentName} · ${contractModalEnrollment.cohortName}`,
+                          badgeText: contractModalEnrollment.contractNumber || 'CTR-EDU',
+                          sections: [
+                            {
+                              rows: contractText.split('\n').map((line) => {
+                                const parts = line.split(/[:：]/);
+                                return {
+                                  label: parts[0]?.trim() || '',
+                                  value: parts.slice(1).join(':').trim() || line,
+                                };
+                              }),
+                            },
+                          ],
+                          signatureLeft: isAr ? 'المؤسسة' : isEn ? 'Institution' : 'Établissement',
+                          signatureRight: contractSignerName || contractModalEnrollment.studentName,
+                        },
+                      ]);
+                    }}
+                  >
+                    {isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
+                  </Button>
+                </div>
+                <Button
+                  tone="accent"
+                  size={36}
+                  type="button"
+                  onClick={() => {
+                    const updated = signEduEnrollmentContract(contractModalEnrollment.id, contractSignerName);
+                    if (updated) setContractModalEnrollment(updated);
+                  }}
+                  data-testid="sign-edu-contract-btn"
+                >
+                  {isAr ? 'توقيع العقد' : isEn ? 'Sign Contract' : 'Signer le Contrat'}
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
+
+      <PrintSheetModal
+        isOpen={Boolean(contractPrintPages)}
+        onClose={() => setContractPrintPages(null)}
+        language={language}
+        format="a4"
+        title={t('edu_btn_enrollment_contract')}
+        pages={contractPrintPages || []}
+      />
     </div>
   );
 };

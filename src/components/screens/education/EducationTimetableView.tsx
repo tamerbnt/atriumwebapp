@@ -12,6 +12,9 @@ import {
   Printer,
   Trash2,
   ClipboardList,
+  Car,
+  Bus,
+  Utensils,
 } from 'lucide-react';
 import {
   showToast,
@@ -22,6 +25,8 @@ import {
   selectCurrentEduClassroomsFromState,
   selectCurrentEduStudentsFromState,
   selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduDrivingLogsFromState,
+  selectCurrentEduK12ServicesFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
@@ -29,10 +34,20 @@ import {
 import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { EduSession } from '../../../types';
+import { EduDrivingLogKind, EduSession } from '../../../types';
+import {
+  computeSessionDurationHours,
+  detectDrivingVehicleOrInstructorConflict,
+  detectEduSessionConflicts,
+  summarizeDrivingStudentProgress,
+  summarizeK12Services,
+} from '../../../utils/educationDepth';
+import { centimesToDzd, dzdToCentimes } from '../../../utils/money';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { Button } from '@/atrium/core';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -68,13 +83,15 @@ export const EducationTimetableView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { eduSessions, eduCohorts, eduClassrooms, eduStudents, eduEnrollments, staff, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+  const { eduSessions, eduCohorts, eduClassrooms, eduStudents, eduEnrollments, eduDrivingLogs, eduK12Services, staff, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
     (s) => ({
       eduSessions: selectCurrentEduSessionsFromState(s),
       eduCohorts: selectCurrentEduCohortsFromState(s),
       eduClassrooms: selectCurrentEduClassroomsFromState(s),
       eduStudents: selectCurrentEduStudentsFromState(s),
       eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduDrivingLogs: selectCurrentEduDrivingLogsFromState(s),
+      eduK12Services: selectCurrentEduK12ServicesFromState(s),
       staff: selectCurrentStaffFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
@@ -85,7 +102,16 @@ export const EducationTimetableView: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { addEduSession, deleteEduSession, retryCloudSync } = useAtriumActions();
+  const {
+    addEduSession,
+    deleteEduSession,
+    recordEduVacataireLog,
+    addEduDrivingLog,
+    updateEduDrivingLog,
+    upsertEduK12Service,
+    toggleK12ServiceCheckIn,
+    retryCloudSync,
+  } = useAtriumActions();
 
   const [branchFilter, setBranchFilter] = useState<string>('All');
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>('all');
@@ -170,6 +196,51 @@ export const EducationTimetableView: React.FC = () => {
     startTime: '09:00',
     endTime: '11:00',
     topic: '',
+    vehicleId: '',
+    vehicleLabel: '',
+    isVacataire: false,
+    hourlyRateDzd: '1800',
+  });
+
+  const [activeMode, setActiveMode] = useState<'timetable' | 'driving' | 'k12'>('timetable');
+  const [drivingForm, setDrivingForm] = useState<{
+    studentId: string;
+    instructorId: string;
+    logKind: EduDrivingLogKind;
+    scheduledDate: string;
+    startTime: string;
+    endTime: string;
+    vehicleLabel: string;
+    vehiclePlate: string;
+    hoursLogged: string;
+    examResult: 'pending' | 'passed' | 'failed' | 'absent';
+  }>({
+    studentId: eduStudents[0]?.id || '',
+    instructorId: staff[0]?.id || '',
+    logKind: 'driving_hours',
+    scheduledDate: new Date().toISOString().split('T')[0],
+    startTime: '10:00',
+    endTime: '12:00',
+    vehicleLabel: 'Clio 5 Auto-École #01',
+    vehiclePlate: '00421-125-16',
+    hoursLogged: '2',
+    examResult: 'pending',
+  });
+
+  const [k12Form, setK12Form] = useState<{
+    studentId: string;
+    serviceType: 'canteen' | 'transport';
+    planName: string;
+    routeOrDiet: string;
+    pickupStop: string;
+    monthlyFeeDzd: string;
+  }>({
+    studentId: eduStudents[0]?.id || '',
+    serviceType: 'transport',
+    planName: 'Bus Scolaire Matin & Soir',
+    routeOrDiet: 'Circuit Hydra — Ben Aknoun',
+    pickupStop: 'Arrêt Val d’Hydra',
+    monthlyFeeDzd: '6500',
   });
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -249,13 +320,49 @@ export const EducationTimetableView: React.FC = () => {
     return eduSessions.find((s) => s.id === selectedSession.id) || selectedSession;
   }, [selectedSession, eduSessions]);
 
+  const sessionConflictPreview = useMemo(() => {
+    const cohort = eduCohorts.find((c) => c.id === formData.cohortId) || eduCohorts[0];
+    const instructorId = formData.instructorId || cohort?.instructorId || '';
+    return detectEduSessionConflicts(
+      {
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        classroomId: formData.classroomId || undefined,
+        instructorId,
+        vehicleId: formData.vehicleId.trim() || undefined,
+        status: 'Scheduled',
+      },
+      eduSessions
+    );
+  }, [formData, eduCohorts, eduSessions]);
+
+  const drivingConflictPreview = useMemo(() => {
+    const instructorId = drivingForm.instructorId || staff[0]?.id || '';
+    const vehicleId = drivingForm.vehiclePlate.trim() || drivingForm.vehicleLabel.trim() || undefined;
+    return detectDrivingVehicleOrInstructorConflict(
+      {
+        scheduledDate: drivingForm.scheduledDate,
+        startTime: drivingForm.startTime,
+        endTime: drivingForm.endTime,
+        instructorId,
+        vehicleId,
+      },
+      eduDrivingLogs
+    );
+  }, [drivingForm, eduDrivingLogs, staff]);
+
+  const k12Summary = useMemo(() => summarizeK12Services(eduK12Services), [eduK12Services]);
+
   const handleCreateSession = (e: React.FormEvent) => {
     e.preventDefault();
-    const cohort = eduCohorts.find((c) => c.id === formData.cohortId);
-    const room = eduClassrooms.find((r) => r.id === formData.classroomId);
-    const instructor = staff.find((s) => s.id === formData.instructorId);
+    const cohort = eduCohorts.find((c) => c.id === formData.cohortId) || eduCohorts[0];
+    const room = eduClassrooms.find((r) => r.id === formData.classroomId) || eduClassrooms[0];
+    const instructor = staff.find((s) => s.id === formData.instructorId) || staff[0];
     if (!cohort) return;
-    addEduSession({
+    const durationHours = computeSessionDurationHours(formData.startTime, formData.endTime);
+    const hourlyRate = Math.max(0, Number(formData.hourlyRateDzd || 0));
+    const created = addEduSession({
       cohortId: cohort.id,
       cohortName: cohort.name,
       classroomId: room?.id,
@@ -266,9 +373,78 @@ export const EducationTimetableView: React.FC = () => {
       startTime: formData.startTime,
       endTime: formData.endTime,
       topic: formData.topic || undefined,
+      vehicleId: formData.vehicleId.trim() || undefined,
+      vehicleLabel: formData.vehicleLabel.trim() || undefined,
+      isVacataire: formData.isVacataire,
+      hourlyRateDzd: formData.isVacataire ? hourlyRate : undefined,
+      durationHours: durationHours > 0 ? durationHours : undefined,
       status: 'Scheduled',
     });
+    if (!created) return;
+    if (formData.isVacataire && hourlyRate > 0 && durationHours > 0) {
+      recordEduVacataireLog({
+        instructorId: created.instructorId,
+        instructorName: created.instructorName,
+        sessionId: created.id,
+        cohortId: created.cohortId,
+        cohortName: created.cohortName,
+        workDate: created.date,
+        hoursWorked: durationHours,
+        hourlyRateDzd: hourlyRate,
+        notes: created.topic || created.cohortName,
+      });
+    }
     setIsAddSessionModalOpen(false);
+  };
+
+  const handleAddDrivingLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stu = eduStudents.find((s) => s.id === drivingForm.studentId) || eduStudents[0];
+    const inst = staff.find((s) => s.id === drivingForm.instructorId) || staff[0];
+    if (!stu || !inst) return;
+    const hours =
+      Number(drivingForm.hoursLogged || 0) > 0
+        ? Number(drivingForm.hoursLogged)
+        : computeSessionDurationHours(drivingForm.startTime, drivingForm.endTime) || 1;
+    const created = addEduDrivingLog({
+      studentId: stu.id,
+      studentName: stu.fullName,
+      instructorId: inst.id,
+      instructorName: inst.fullName,
+      vehicleId: drivingForm.vehiclePlate.trim() || drivingForm.vehicleLabel.trim() || undefined,
+      vehicleLabel: drivingForm.vehicleLabel.trim() || undefined,
+      vehiclePlate: drivingForm.vehiclePlate.trim() || undefined,
+      logKind: drivingForm.logKind,
+      scheduledDate: drivingForm.scheduledDate,
+      startTime: drivingForm.startTime,
+      endTime: drivingForm.endTime,
+      hoursLogged: hours,
+      examResult: drivingForm.examResult,
+    });
+    if (created) {
+      setDrivingForm((prev) => ({
+        ...prev,
+        examResult: 'pending',
+      }));
+    }
+  };
+
+  const handleSaveK12Service = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stu = eduStudents.find((s) => s.id === k12Form.studentId) || eduStudents[0];
+    if (!stu || !k12Form.planName.trim()) return;
+    upsertEduK12Service({
+      studentId: stu.id,
+      studentName: stu.fullName,
+      serviceType: k12Form.serviceType,
+      planName: k12Form.planName.trim(),
+      routeOrDiet: k12Form.routeOrDiet.trim() || undefined,
+      pickupStop: k12Form.pickupStop.trim() || undefined,
+      monthlyFeeCentimes: dzdToCentimes(Math.max(0, Number(k12Form.monthlyFeeDzd || 0))),
+      status: 'active',
+      startDate: new Date().toISOString().split('T')[0],
+      checkInToday: false,
+    });
   };
 
   const handleExportCSV = useCallback(() => {
@@ -555,7 +731,7 @@ export const EducationTimetableView: React.FC = () => {
           <EmptyState
             variant="island"
             icon={<CalendarIcon />}
-            title={isAr ? 'لا توجد حصص مجدولة حالياً' : 'Aucune séance programmée dans le planning'}
+            title={isAr ? 'لا توجد حصص مجدولة حالياً' : isEn ? 'No sessions scheduled yet' : 'Aucune séance programmée dans le planning'}
           />
         </KineticEmptyStateMotion>
       );
@@ -579,7 +755,7 @@ export const EducationTimetableView: React.FC = () => {
                   <span className="tabular-nums t-small font-semibold text-black dark:text-white">{dateStr}</span>
                 </div>
                 <span className="t-small font-semibold text-black/55 dark:text-white/55 px-2 py-1 bg-neutral-100 dark:bg-[#2B2825] rounded-full">
-                  {daySessions.length} {isAr ? 'حصص' : 'séances'}
+                  {daySessions.length} {isAr ? 'حصص' : isEn ? 'sessions' : 'séances'}
                 </span>
               </div>
               <div className="space-y-2">
@@ -609,7 +785,7 @@ export const EducationTimetableView: React.FC = () => {
                         </span>
                         {hasConflict && (
                           <span className="px-2 py-1 rounded-full t-small font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-                            Conflit
+                            {isAr ? 'تعارض' : isEn ? 'Conflict' : 'Conflit'}
                           </span>
                         )}
                       </div>
@@ -662,16 +838,29 @@ export const EducationTimetableView: React.FC = () => {
         icon={<CalendarIcon size={22} />}
         title={t('edu_timetable_title')}
         secondaryActions={
-          conflicts.size > 0 ? (
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 t-small font-semibold"
-            >
-              <AlertTriangle size={14} />
-              <span>{conflicts.size} Conflits détectés</span>
-            </div>
-          ) : undefined
+          <div className="flex items-center gap-2 flex-wrap">
+            {conflicts.size > 0 && (
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 t-small font-semibold"
+              >
+                <AlertTriangle size={14} />
+                <span>{conflicts.size} {isAr ? 'تعارضات مكتشفة' : isEn ? 'conflicts detected' : 'Conflits détectés'}</span>
+              </div>
+            )}
+            <LiveSegmentedControl
+              size="md"
+              value={activeMode}
+              onValueChange={(val) => setActiveMode(val as 'timetable' | 'driving' | 'k12')}
+              options={[
+                { value: 'timetable', label: isAr ? 'الجدول' : isEn ? 'Timetable' : 'Planning' },
+                { value: 'driving', label: t('edu_tab_driving_school'), count: eduDrivingLogs.length },
+                { value: 'k12', label: t('edu_tab_k12_services'), count: eduK12Services.length },
+              ]}
+              aria-label="Timetable Trade Mode"
+            />
+          </div>
         }
         primaryAction={{
           label: t('edu_btn_add_session'),
@@ -680,6 +869,368 @@ export const EducationTimetableView: React.FC = () => {
         }}
       />
 
+      {activeMode === 'driving' ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-5 space-y-3 lg:col-span-1">
+              <div className="flex items-center gap-2 font-semibold text-black dark:text-white">
+                <Car size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span>{t('edu_tab_driving_school')}</span>
+              </div>
+              {drivingConflictPreview.hasConflict && (
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 t-small font-medium flex items-center gap-2">
+                  <AlertTriangle size={14} />
+                  <span>{drivingConflictPreview.reason}</span>
+                </div>
+              )}
+              <form onSubmit={handleAddDrivingLog} className="space-y-3">
+                <LabelSelect
+                  field="DrivingStudent"
+                  label={t('edu_col_student')}
+                  value={drivingForm.studentId}
+                  onChange={(v) => setDrivingForm({ ...drivingForm, studentId: v })}
+                  options={eduStudents.map((st) => ({ value: st.id, label: st.fullName }))}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelSelect
+                  field="DrivingInstructor"
+                  label={t('edu_field_instructor')}
+                  value={drivingForm.instructorId}
+                  onChange={(v) => setDrivingForm({ ...drivingForm, instructorId: v })}
+                  options={staff.map((st) => ({ value: st.id, label: st.fullName }))}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelSelect
+                  field="DrivingKind"
+                  label={isAr ? 'النوع' : isEn ? 'Session / Exam Type' : 'Type de séance / examen'}
+                  value={drivingForm.logKind}
+                  onChange={(v) => setDrivingForm({ ...drivingForm, logKind: v as EduDrivingLogKind })}
+                  options={[
+                    { value: 'driving_hours', label: isAr ? 'ساعات سياقة عملية' : isEn ? 'Practical Driving Hours' : 'Heures de conduite' },
+                    { value: 'code_session', label: isAr ? 'حصة قانون المرور' : isEn ? 'Code Theory Class' : 'Cours Code' },
+                    { value: 'code_exam', label: isAr ? 'امتحان القانون' : isEn ? 'Code Exam' : 'Examen Code' },
+                    { value: 'circuit_exam', label: isAr ? 'امتحان المناورة (الكرينو)' : isEn ? 'Circuit / Créneau Exam' : 'Examen Créneau' },
+                    { value: 'road_exam', label: isAr ? 'امتحان السياقة (الطريق)' : isEn ? 'Road Driving Exam' : 'Examen Conduite' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <LabelInput
+                    field="DrivingVehicle"
+                    label={isAr ? 'المركبة' : isEn ? 'Vehicle' : 'Véhicule'}
+                    value={drivingForm.vehicleLabel}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, vehicleLabel: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                  <LabelInput
+                    field="DrivingPlate"
+                    label={isAr ? 'الترقيم' : isEn ? 'Plate / ID' : 'Matricule'}
+                    value={drivingForm.vehiclePlate}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, vehiclePlate: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+                <LabelInput
+                  field="DrivingDate"
+                  label="Date"
+                  type="date"
+                  value={drivingForm.scheduledDate}
+                  onChange={(v) => setDrivingForm({ ...drivingForm, scheduledDate: v })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <LabelInput
+                    field="DrivingStart"
+                    label={isAr ? 'من' : isEn ? 'Start' : 'Début'}
+                    type="time"
+                    value={drivingForm.startTime}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, startTime: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                  <LabelInput
+                    field="DrivingEnd"
+                    label={isAr ? 'إلى' : isEn ? 'End' : 'Fin'}
+                    type="time"
+                    value={drivingForm.endTime}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, endTime: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <LabelInput
+                    field="DrivingHours"
+                    label={isAr ? 'الساعات' : isEn ? 'Hours' : 'Heures'}
+                    type="number"
+                    value={drivingForm.hoursLogged}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, hoursLogged: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                  <LabelSelect
+                    field="DrivingExamResult"
+                    label={isAr ? 'النتيجة' : isEn ? 'Result' : 'Résultat'}
+                    value={drivingForm.examResult}
+                    onChange={(v) => setDrivingForm({ ...drivingForm, examResult: v as 'pending' | 'passed' | 'failed' | 'absent' })}
+                    options={[
+                      { value: 'pending', label: isAr ? 'قيد الانتظار' : isEn ? 'Pending' : 'En attente' },
+                      { value: 'passed', label: isAr ? 'ناجح' : isEn ? 'Passed' : 'Admis' },
+                      { value: 'failed', label: isAr ? 'مؤجل / راسب' : isEn ? 'Failed' : 'Ajourné' },
+                      { value: 'absent', label: isAr ? 'غائب' : isEn ? 'Absent' : 'Absent' },
+                    ]}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+                <Button tone="accent" size={40} type="submit" className="w-full" disabled={drivingConflictPreview.hasConflict}>
+                  {isAr ? 'حفظ حصة السياقة / الامتحان' : isEn ? 'Save Driving Log' : 'Enregistrer séance / examen'}
+                </Button>
+              </form>
+            </div>
+
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-5 space-y-4 lg:col-span-2">
+              <div className="font-semibold text-black dark:text-white">
+                {isAr ? 'متابعة المترشحين والامتحانات (قانون / كرينو / طريق)' : isEn ? 'Candidate Progress & Exam Log' : 'Suivi Candidats & Examens (Code · Créneau · Conduite)'}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {eduStudents.slice(0, 6).map((st) => {
+                  const prog = summarizeDrivingStudentProgress(eduDrivingLogs, st.id);
+                  return (
+                    <div key={st.id} data-sq="ctl" data-sq-border="solid" className="p-3 bg-[#FBF9F6] dark:bg-[#191716] space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold t-small text-black dark:text-white truncate">{st.fullName}</span>
+                        <span className="tabular-nums t-cap font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {prog.totalDrivingHours}h / 20h
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap t-cap">
+                        <span className={prog.codePassed ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-black/50 dark:text-white/50'}>
+                          Code: {prog.codePassed ? 'OK' : '—'}
+                        </span>
+                        <span className={prog.circuitPassed ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-black/50 dark:text-white/50'}>
+                          {isAr ? 'الكرينو' : isEn ? 'Circuit' : 'Créneau'}: {prog.circuitPassed ? 'OK' : '—'}
+                        </span>
+                        <span className={prog.roadPassed ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-black/50 dark:text-white/50'}>
+                          {isAr ? 'الطريق' : isEn ? 'Road' : 'Conduite'}: {prog.roadPassed ? 'OK' : '—'}
+                        </span>
+                        {prog.readyForRoadExam && (
+                          <span className="text-emerald-700 dark:text-emerald-300 font-semibold">
+                            · {isAr ? 'جاهز للطريق' : isEn ? 'Road Ready' : 'Prêt Conduite'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-2 max-h-[340px] overflow-y-auto">
+                {eduDrivingLogs.length === 0 ? (
+                  <div className="p-6 text-center t-small text-black/55 dark:text-white/55">
+                    {isAr ? 'لا توجد سجلات سياقة مسجلة بعد.' : isEn ? 'No driving logs recorded yet.' : 'Aucune séance ou examen enregistré.'}
+                  </div>
+                ) : (
+                  eduDrivingLogs.map((log) => (
+                    <div key={log.id} data-sq="ctl" data-sq-border="solid" className="p-3 bg-[#FBF9F6] dark:bg-[#191716] flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold t-small text-black dark:text-white">
+                          {log.studentName} · <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{log.logKind}</span>
+                        </div>
+                        <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
+                          {log.scheduledDate} · {log.startTime}-{log.endTime} · {log.vehicleLabel || '—'} ({log.hoursLogged}h) · {log.instructorName}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          tone={log.examResult === 'passed' ? 'accent' : 'soft'}
+                          size={32}
+                          onClick={() => updateEduDrivingLog(log.id, { examResult: 'passed' })}
+                        >
+                          {isAr ? 'ناجح' : isEn ? 'Pass' : 'Admis'}
+                        </Button>
+                        <Button
+                          tone={log.examResult === 'failed' ? 'danger' : 'soft'}
+                          size={32}
+                          onClick={() => updateEduDrivingLog(log.id, { examResult: 'failed' })}
+                        >
+                          {isAr ? 'مؤجل' : isEn ? 'Fail' : 'Ajourné'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : activeMode === 'k12' ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-4">
+              <div className="t-cap text-black/55 dark:text-white/55">{isAr ? 'النقل المدرسي' : isEn ? 'Transport Plans' : 'Transport Scolaire'}</div>
+              <div className="text-xl font-bold text-black dark:text-white tabular-nums">{k12Summary.activeTransportCount}</div>
+            </div>
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-4">
+              <div className="t-cap text-black/55 dark:text-white/55">{isAr ? 'الإطعام المدرسي' : isEn ? 'Canteen Plans' : 'Cantine & Demi-pension'}</div>
+              <div className="text-xl font-bold text-black dark:text-white tabular-nums">{k12Summary.activeCanteenCount}</div>
+            </div>
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-4">
+              <div className="t-cap text-black/55 dark:text-white/55">{isAr ? 'تسجيل الحضور اليوم' : isEn ? 'Checked In Today' : 'Pointages du Jour'}</div>
+              <div className="text-xl font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{k12Summary.checkedInTodayCount}</div>
+            </div>
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-4">
+              <div className="t-cap text-black/55 dark:text-white/55">{isAr ? 'العائد الشهري' : isEn ? 'Monthly Recurring' : 'Mensuel K-12'}</div>
+              <div className="text-xl font-bold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                {k12Summary.monthlyRecurringDzd.toLocaleString()} DZD
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-5 space-y-3 lg:col-span-1">
+              <div className="flex items-center gap-2 font-semibold text-black dark:text-white">
+                {k12Form.serviceType === 'transport' ? <Bus size={18} /> : <Utensils size={18} />}
+                <span>{t('edu_tab_k12_services')}</span>
+              </div>
+              <form onSubmit={handleSaveK12Service} className="space-y-3">
+                <LabelSelect
+                  field="K12Student"
+                  label={t('edu_col_student')}
+                  value={k12Form.studentId}
+                  onChange={(v) => setK12Form({ ...k12Form, studentId: v })}
+                  options={eduStudents.map((st) => ({ value: st.id, label: st.fullName }))}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelSelect
+                  field="K12Type"
+                  label={isAr ? 'نوع الخدمة' : isEn ? 'Service Type' : 'Type de service'}
+                  value={k12Form.serviceType}
+                  onChange={(v) => setK12Form({ ...k12Form, serviceType: v as 'canteen' | 'transport' })}
+                  options={[
+                    { value: 'transport', label: isAr ? 'النقل المدرسي (الحافلة)' : isEn ? 'School Bus Transport' : 'Transport Scolaire' },
+                    { value: 'canteen', label: isAr ? 'المطعم المدرسي' : isEn ? 'Canteen Meal Plan' : 'Cantine Scolaire' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="K12PlanName"
+                  label={isAr ? 'الباقة / الاشتراك' : isEn ? 'Plan Name' : 'Formule'}
+                  value={k12Form.planName}
+                  onChange={(v) => setK12Form({ ...k12Form, planName: v })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                  required
+                />
+                <LabelInput
+                  field="K12Route"
+                  label={isAr ? 'المسار أو النظام الغذائي' : isEn ? 'Route or Diet' : 'Circuit ou Régime'}
+                  value={k12Form.routeOrDiet}
+                  onChange={(v) => setK12Form({ ...k12Form, routeOrDiet: v })}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <LabelInput
+                    field="K12Stop"
+                    label={isAr ? 'محطة التوقف' : isEn ? 'Pickup Stop' : 'Arrêt'}
+                    value={k12Form.pickupStop}
+                    onChange={(v) => setK12Form({ ...k12Form, pickupStop: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                  <LabelInput
+                    field="K12Fee"
+                    label={isAr ? 'الرسم الشهري (دج)' : isEn ? 'Monthly Fee (DZD)' : 'Tarif Mensuel (DZD)'}
+                    type="number"
+                    value={k12Form.monthlyFeeDzd}
+                    onChange={(v) => setK12Form({ ...k12Form, monthlyFeeDzd: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+                <Button tone="accent" size={40} type="submit" className="w-full">
+                  {isAr ? 'تفعيل الخدمة للطالب' : isEn ? 'Assign K-12 Service' : 'Affecter Service K-12'}
+                </Button>
+              </form>
+            </div>
+
+            <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-[#22201E] p-5 space-y-3 lg:col-span-2">
+              <div className="font-semibold text-black dark:text-white">
+                {isAr ? 'قوائم النقل والمطعم اليومية' : isEn ? 'Active K-12 Subscriptions & Daily Check-In' : 'Abonnements Cantine & Ramassage Scolaire'}
+              </div>
+              <div className="space-y-2 max-h-[380px] overflow-y-auto">
+                {eduK12Services.length === 0 ? (
+                  <div className="p-6 text-center t-small text-black/55 dark:text-white/55">
+                    {isAr ? 'لا توجد اشتراكات نقل أو مطعم حالياً.' : isEn ? 'No K-12 canteen or transport services yet.' : 'Aucun abonnement cantine ou transport enregistré.'}
+                  </div>
+                ) : (
+                  eduK12Services.map((svc) => (
+                    <div key={svc.id} data-sq="ctl" data-sq-border="solid" className="p-3 bg-[#FBF9F6] dark:bg-[#191716] flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2">
+                          {svc.serviceType === 'transport' ? <Bus size={14} /> : <Utensils size={14} />}
+                          <span>{svc.studentName}</span>
+                          <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">· {svc.planName}</span>
+                        </div>
+                        <div className="t-cap text-black/55 dark:text-white/55">
+                          {svc.routeOrDiet || '—'} {svc.pickupStop ? `· ${svc.pickupStop}` : ''} · {centimesToDzd(svc.monthlyFeeCentimes).toLocaleString()} DZD/mois
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          tone={svc.checkInToday ? 'accent' : 'soft'}
+                          size={32}
+                          onClick={() => toggleK12ServiceCheckIn(svc.id)}
+                        >
+                          {svc.checkInToday ? (isAr ? 'حاضر اليوم ✓' : isEn ? 'Checked In ✓' : 'Pointé ✓') : (isAr ? 'تسجيل اليوم' : isEn ? 'Check In' : 'Pointer')}
+                        </Button>
+                        <Button
+                          tone="soft"
+                          size={32}
+                          onClick={() =>
+                            upsertEduK12Service({
+                              ...svc,
+                              status: svc.status === 'active' ? 'paused' : 'active',
+                            })
+                          }
+                        >
+                          {svc.status === 'active' ? (isAr ? 'إيقاف' : isEn ? 'Pause' : 'Pause') : (isAr ? 'تفعيل' : isEn ? 'Activate' : 'Activer')}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <>
       <ScreenKpiBanner
         heading={isAr ? 'تخطيط واستخدام القاعات' : isEn ? 'Timetable & Classroom Utilization' : 'Planning & Utilisation des Espaces'}
         language={language}
@@ -848,6 +1399,8 @@ export const EducationTimetableView: React.FC = () => {
           }}
         />
       </ScreenPod>
+      </>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -1023,12 +1576,33 @@ export const EducationTimetableView: React.FC = () => {
                 </button>
               </div>
             <form onSubmit={handleCreateSession} className="space-y-4">
+              {sessionConflictPreview.hasConflict && (
+                <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 t-small font-semibold flex items-center gap-2">
+                  <AlertTriangle size={16} />
+                  <span>
+                    {sessionConflictPreview.reasonCode}
+                    {sessionConflictPreview.conflictingSession
+                      ? ` · ${sessionConflictPreview.conflictingSession.cohortName} (${sessionConflictPreview.conflictingSession.startTime}-${sessionConflictPreview.conflictingSession.endTime})`
+                      : ''}
+                  </span>
+                </div>
+              )}
               <LabelSelect
                 field="Cohort"
                 label={t('edu_label_cohort')}
                 value={formData.cohortId}
                 onChange={(v) => setFormData({ ...formData, cohortId: v })}
                 options={eduCohorts.map((c) => ({ value: c.id, label: c.name }))}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="SessionInstructor"
+                label={t('edu_field_instructor')}
+                value={formData.instructorId}
+                onChange={(v) => setFormData({ ...formData, instructorId: v })}
+                options={staff.map((st) => ({ value: st.id, label: st.fullName }))}
                 width="100%"
                 height={40}
                 corner={12}
@@ -1061,7 +1635,7 @@ export const EducationTimetableView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <LabelInput
                     field="StartTime"
-                    label="Début"
+                    label={isAr ? 'البداية' : isEn ? 'Start' : 'Début'}
                     type="time"
                     value={formData.startTime}
                     onChange={(v) => setFormData({ ...formData, startTime: v })}
@@ -1072,7 +1646,7 @@ export const EducationTimetableView: React.FC = () => {
                   />
                   <LabelInput
                     field="EndTime"
-                    label="Fin"
+                    label={isAr ? 'النهاية' : isEn ? 'End' : 'Fin'}
                     type="time"
                     value={formData.endTime}
                     onChange={(v) => setFormData({ ...formData, endTime: v })}
@@ -1083,12 +1657,62 @@ export const EducationTimetableView: React.FC = () => {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  field="SessionVehicleId"
+                  label={isAr ? 'معرف المركبة (اختياري)' : isEn ? 'Vehicle ID (optional)' : 'ID Véhicule (optionnel)'}
+                  value={formData.vehicleId}
+                  onChange={(v) => setFormData({ ...formData, vehicleId: v })}
+                  placeholder="VEH-01"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="SessionVehicleLabel"
+                  label={isAr ? 'اسم المركبة' : isEn ? 'Vehicle Label' : 'Véhicule'}
+                  value={formData.vehicleLabel}
+                  onChange={(v) => setFormData({ ...formData, vehicleLabel: v })}
+                  placeholder="Clio 5"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3 bg-[#F3EDE7] dark:bg-[#22201E] space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="t-small font-medium text-black dark:text-white">
+                    {isAr ? 'تسجيل ساعات الأستاذ المتعاقد تلقائياً' : isEn ? 'Auto-log Vacataire Hourly Pay' : 'Enregistrer Vacation Horaire'}
+                  </span>
+                  <LiveSwitch
+                    checked={formData.isVacataire}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isVacataire: checked })}
+                    aria-label="Vacataire Auto Log"
+                  />
+                </div>
+                {formData.isVacataire && (
+                  <LabelInput
+                    field="VacataireHourlyRate"
+                    label={isAr ? 'الأجر الساعي (دج)' : isEn ? 'Hourly Rate (DZD)' : 'Taux Horaire (DZD)'}
+                    type="number"
+                    value={formData.hourlyRateDzd}
+                    onChange={(v) => setFormData({ ...formData, hourlyRateDzd: v })}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                )}
+              </div>
               <LabelInput
                 field="SessionTopic"
-                label="Module / Thème du cours"
+                label={isAr ? 'الموضوع / المحور' : isEn ? 'Module / Course Topic' : 'Module / Thème du cours'}
                 value={formData.topic}
                 onChange={(v) => setFormData({ ...formData, topic: v })}
-                placeholder="Ex: Programmation Web Avancée"
+                placeholder={isAr ? 'مثال: برمجة الويب المتقدمة' : isEn ? 'e.g. Advanced Web Programming' : 'Ex: Programmation Web Avancée'}
                 width="100%"
                 height={40}
                 corner={12}
@@ -1097,8 +1721,8 @@ export const EducationTimetableView: React.FC = () => {
                 <Button tone="soft" size={40} type="button" onClick={() => setIsAddSessionModalOpen(false)}>
                   {t('common_cancel')}
                 </Button>
-                <Button tone="accent" size={40} type="submit">
-                  Ajouter au Planning
+                <Button tone="accent" size={40} type="submit" disabled={sessionConflictPreview.hasConflict}>
+                  {isAr ? 'إضافة إلى الجدول' : isEn ? 'Add to Schedule' : 'Ajouter au Planning'}
                 </Button>
               </div>
             </form>
