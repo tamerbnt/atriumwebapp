@@ -1094,7 +1094,16 @@ export interface ActiveTimerState {
 // Rentals & Venue Management Types
 // ==========================================
 
-export type RentableUnitType = 'Hall' | 'Room' | 'Court' | 'Studio' | 'Desk' | 'Equipment';
+export type RentalMode = 'venue' | 'vehicle' | 'gear' | 'coworking_desk';
+export type RentableUnitType =
+  | 'Hall'
+  | 'Room'
+  | 'Court'
+  | 'Studio'
+  | 'Desk'
+  | 'Equipment'
+  | 'Vehicle'
+  | 'Gear';
 export type RentableUnitStatus = 'Available' | 'Occupied' | 'Maintenance';
 
 export interface RentableUnit {
@@ -1108,6 +1117,7 @@ export interface RentableUnit {
   name: string;
   code: string;
   type: RentableUnitType;
+  rentalMode?: RentalMode;
   capacity: number;
   surfaceAreaSqm?: number;
   hourlyRate: number;
@@ -1117,8 +1127,133 @@ export interface RentableUnit {
   status: RentableUnitStatus;
   description: string;
   colorHex?: string;
+  serialNumber?: string;
+  plateNumber?: string;
+  vin?: string;
+  makeModel?: string;
+  odometerKm?: number;
+  fuelLevelPct?: number;
+  insuranceExpiry?: string;
+  techControlExpiry?: string;
+  lastMaintenanceAt?: string;
+  maintenanceIntervalKm?: number;
+  weekendMultiplier?: number;
+  graceMinutes?: number;
+  lateHourlyRate?: number;
   version?: number;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface RentalPricingRule {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  name: string;
+  unitType?: RentableUnitType | 'All';
+  rentalMode?: RentalMode | 'all';
+  unitId?: string;
+  weekendMultiplier: number;
+  weekendDays: number[]; // 0=Sun..6=Sat (Algeria Fri=5, Sat=6)
+  seasonStartDate?: string; // YYYY-MM-DD
+  seasonEndDate?: string;   // YYYY-MM-DD
+  seasonalMultiplier: number;
+  flatDailyOverride?: number;
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentalPricingBreakdown {
+  durationHours: number;
+  totalDaysBilled: number;
+  weekendHours: number;
+  appliedRuleId?: string;
+  appliedRuleName?: string;
+  weekendMultiplier: number;
+  seasonalMultiplier: number;
+  baseBeforeRulesDzd: number;
+  adjustedBaseDzd: number;
+  addonsTotalDzd: number;
+  totalDzd: number;
+}
+
+export interface RentalStagedPayment {
+  id: string;
+  label: string;
+  percentage: number;
+  amountDzd: number;
+  dueDate: string; // YYYY-MM-DD
+  status: 'pending' | 'partial' | 'paid';
+  paidDzd: number;
+  paidAt?: string;
+  unifiedPaymentId?: string;
+}
+
+export interface RentalContractTemplate {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  name: string;
+  rentalMode: RentalMode | 'all';
+  bodyTemplate: string;
+  requireSignature: boolean;
+  isDefault?: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentalAssetCheckLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  unitId: string;
+  unitName: string;
+  bookingId?: string;
+  logType: 'checkout' | 'checkin' | 'maintenance';
+  mileageKm?: number;
+  fuelLevelPct?: number;
+  serialNumber?: string;
+  conditionNotes?: string;
+  damageDetected?: boolean;
+  damageAmountDzd?: number;
+  performedBy?: string;
+  loggedAt: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentalCoworkingSubscription {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  renterId: string;
+  renterName: string;
+  unitId?: string;
+  unitName?: string;
+  planName: string;
+  planKind: 'monthly_pass' | 'hour_pack';
+  includedHours: number;
+  usedHours: number;
+  monthlyFeeDzd: number;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'expired' | 'paused';
+  autoRenew?: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type BookingStatus = 'Tentative' | 'Confirmed' | 'CheckedIn' | 'Completed' | 'Cancelled';
@@ -1148,6 +1283,7 @@ export interface RentalBooking {
   unitId: string;
   unitName: string;
   unitType: RentableUnitType;
+  rentalMode?: RentalMode;
   purpose: string;
   startDateTime: string; // ISO 8601
   endDateTime: string;   // ISO 8601
@@ -1164,6 +1300,24 @@ export interface RentalBooking {
   balanceDue: number;
   addons: BookingAddon[];
   contractSigned: boolean;
+  contractTemplateId?: string;
+  contractSignedAt?: string;
+  contractSignerName?: string;
+  contractSignatureData?: string;
+  pricingBreakdown?: RentalPricingBreakdown;
+  seasonalRuleId?: string;
+  lateFeeDzd?: number;
+  actualReturnAt?: string;
+  stagedPaymentSchedule?: RentalStagedPayment[];
+  icalUid?: string;
+  unifiedDocumentId?: string;
+  driverLicenseNumber?: string;
+  driverLicenseExpiry?: string;
+  mileageOut?: number;
+  mileageIn?: number;
+  fuelOutPct?: number;
+  fuelInPct?: number;
+  inspectionNotes?: string;
   notes?: string;
   version?: number;
   createdAt: string;
@@ -1183,6 +1337,9 @@ export interface RentalRenter {
   email: string;
   phone: string;
   idDocNumber?: string;
+  driverLicenseNumber?: string;
+  driverLicenseExpiry?: string;
+  crmPartyId?: string;
   totalBookings: number;
   totalSpent: number;
   currency: 'DZD' | 'EUR' | 'USD' | string;
@@ -1203,6 +1360,8 @@ export interface SecurityDepositRecord {
   renterName: string;
   unitName: string;
   amount: number;
+  originalAmount?: number;
+  deductedAmount?: number;
   currency: 'DZD' | 'EUR' | 'USD' | string;
   paymentMethod: 'Cash' | 'Card' | 'Check';
   status: 'Held' | 'Released' | 'Deducted';

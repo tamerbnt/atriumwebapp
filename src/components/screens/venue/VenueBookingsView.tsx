@@ -10,21 +10,37 @@ import {
   LogIn,
   LogOut,
   Edit2,
+  FileText,
+  CreditCard,
+  PenTool,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentRentalBookingsFromState,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalRentersFromState,
+  selectCurrentRentalContractTemplatesFromState,
+  selectCurrentUnifiedDocumentsFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
+import {
+  computeLateReturnFee,
+  renderRentalContractDocument,
+} from '../../../utils/rentalDepth';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal, useCanAccessVenueCloudDiagnostics } from './VenueCloudSyncModal';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -85,9 +101,26 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-  const { rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const {
+    rentalBookings,
+    rentableUnits,
+    rentalRenters,
+    rentalContractTemplates,
+    unifiedDocuments,
+    businessName,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+  } = useAtriumSelector(
     (s) => ({
       rentalBookings: selectCurrentRentalBookingsFromState(s),
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalRenters: selectCurrentRentalRentersFromState(s),
+      rentalContractTemplates: selectCurrentRentalContractTemplatesFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      businessName:
+        s.businesses.find((b) => b.id === s.currentBusinessId)?.name || 'Atrium Venue & Fleet',
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -100,6 +133,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
     checkOutBooking,
     updateRentalBooking,
     deleteRentalBooking,
+    signRentalBookingContract,
+    createRentalUnifiedInvoice,
+    recordRentalUnifiedPayment,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -119,9 +155,74 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [printedBooking, setPrintedBooking] = useState<RentalBooking | null>(null);
 
+  // 7.5 Return Inspection & Late Fee modal state
+  const [checkoutTarget, setCheckoutTarget] = useState<RentalBooking | null>(null);
+  const [checkoutReturnAt, setCheckoutReturnAt] = useState<string>('');
+  const [checkoutMileageIn, setCheckoutMileageIn] = useState<string>('');
+  const [checkoutFuelIn, setCheckoutFuelIn] = useState<string>('');
+  const [checkoutDamageDetected, setCheckoutDamageDetected] = useState<boolean>(false);
+  const [checkoutDamageAmount, setCheckoutDamageAmount] = useState<string>('0');
+  const [checkoutConditionNotes, setCheckoutConditionNotes] = useState<string>('');
+
+  // 7.5 Contract & E-Sign modal state
+  const [contractTarget, setContractTarget] = useState<RentalBooking | null>(null);
+  const [contractTemplatePick, setContractTemplatePick] = useState<string>('');
+  const [contractSignerName, setContractSignerName] = useState<string>('');
+  const [contractSigPath, setContractSigPath] = useState<string>('');
+  const [isDrawingContractSig, setIsDrawingContractSig] = useState<boolean>(false);
+  const contractSigSvgRef = useRef<SVGSVGElement | null>(null);
+
+  // 6.2 Unified Payment collection modal state
+  const [paymentTarget, setPaymentTarget] = useState<RentalBooking | null>(null);
+  const [paymentAmountDzd, setPaymentAmountDzd] = useState<string>('0');
+  const [paymentMethod, setPaymentMethod] = useState<string>('cash');
+
   const [inspectedBooking, setInspectedBooking] = useState<RentalBooking | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
+  const openCheckoutModal = useCallback(
+    (b: RentalBooking) => {
+      const unit = rentableUnits.find((u) => u.id === b.unitId);
+      setCheckoutTarget(b);
+      setCheckoutReturnAt(new Date().toISOString().slice(0, 16));
+      setCheckoutMileageIn(
+        b.mileageOut !== undefined
+          ? String(b.mileageOut)
+          : unit?.odometerKm !== undefined
+          ? String(unit.odometerKm)
+          : ''
+      );
+      setCheckoutFuelIn(
+        b.fuelOutPct !== undefined
+          ? String(b.fuelOutPct)
+          : unit?.fuelLevelPct !== undefined
+          ? String(unit.fuelLevelPct)
+          : ''
+      );
+      setCheckoutDamageDetected(false);
+      setCheckoutDamageAmount('0');
+      setCheckoutConditionNotes(b.inspectionNotes || '');
+    },
+    [rentableUnits]
+  );
+
+  const openContractModal = useCallback((b: RentalBooking) => {
+    setContractTarget(b);
+    setContractTemplatePick(b.contractTemplateId || '');
+    setContractSignerName(b.contractSignerName || b.renterName);
+    setContractSigPath(b.contractSignatureData || '');
+  }, []);
+
+  const openPaymentModal = useCallback((b: RentalBooking) => {
+    const nextStage = b.stagedPaymentSchedule?.find((s) => s.status !== 'paid');
+    const suggested = nextStage
+      ? Math.max(0, nextStage.amountDzd - nextStage.paidDzd)
+      : b.balanceDue || b.totalAmount;
+    setPaymentTarget(b);
+    setPaymentAmountDzd(String(suggested));
+    setPaymentMethod('cash');
+  }, []);
 
   const [selectedBookingIds, setSelectedBookingIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedBookingIds, setPinnedBookingIds] = useState<Set<string>>(() => new Set<string>());
@@ -337,6 +438,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
           { value: 'Room', label: t('venue_type_room') },
           { value: 'Court', label: t('venue_type_court') },
           { value: 'Desk', label: t('venue_type_desk') },
+          { value: 'Vehicle', label: t('venue_type_vehicle') },
+          { value: 'Gear', label: t('venue_type_gear') },
         ],
       },
     ],
@@ -849,10 +952,16 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     id: 'checkout',
                     label: t('venue_btn_checkout_space'),
                     icon: <LogOut size={14} />,
-                    onClick: () => checkOutBooking(b.id),
+                    onClick: () => openCheckoutModal(b),
                   },
                 ]
               : []),
+            {
+              id: 'contract',
+              label: t('venue_depth_view_contract_btn'),
+              icon: <PenTool size={14} />,
+              onClick: () => openContractModal(b),
+            },
             {
               id: 'print',
               label: t('venue_btn_print_voucher'),
@@ -882,7 +991,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     id: 'checkout',
                     label: t('venue_btn_checkout_space'),
                     icon: <LogOut size={13} />,
-                    onClick: () => checkOutBooking(b.id),
+                    onClick: () => openCheckoutModal(b),
                   },
                 ]
               : []),
@@ -969,6 +1078,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               : 100;
 
           if (tab === 'financials') {
+            const linkedDoc = booking.unifiedDocumentId
+              ? unifiedDocuments.find((d) => d.id === booking.unifiedDocumentId)
+              : undefined;
             return (
               <div className="space-y-4">
                 <InspectorSection
@@ -1000,6 +1112,14 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                       mono
                       tone="ok"
                     />
+                    {Number(booking.lateFeeDzd || 0) > 0 && (
+                      <InspectorKeyValue
+                        label={t('venue_depth_late_fee_line')}
+                        value={formatCurrencyAmount(booking.lateFeeDzd || 0, booking.currency)}
+                        mono
+                        tone="danger"
+                      />
+                    )}
                     <InspectorKeyValue
                       label={t('venue_modal_field_paid_amount')}
                       value={formatCurrencyAmount(booking.paidAmount, booking.currency)}
@@ -1010,17 +1130,84 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                       value={formatCurrencyAmount(booking.balanceDue, booking.currency)}
                       mono
                       tone={booking.balanceDue > 0 ? 'danger' : 'ok'}
+                    />
+                    <InspectorKeyValue
+                      label={t('venue_depth_issue_invoice_btn')}
+                      value={linkedDoc ? `${linkedDoc.docNumber} (${linkedDoc.status})` : '--'}
+                      mono
                       isLast
                     />
                   </InspectorCard>
                 </InspectorSection>
 
-                <InspectorWideButton
-                  label={t('venue_btn_print_voucher')}
-                  icon={<Printer size={14} />}
-                  tone="neutral"
-                  onClick={() => setPrintedBooking(booking)}
-                />
+                {booking.stagedPaymentSchedule && booking.stagedPaymentSchedule.length > 0 && (
+                  <InspectorSection index={1} title={t('venue_depth_wedding_schedule_title')}>
+                    <InspectorCard>
+                      {booking.stagedPaymentSchedule.map((stage, idx) => (
+                        <InspectorListItem
+                          key={stage.id}
+                          title={stage.label}
+                          subtitle={`${stage.dueDate} · ${formatCurrencyAmount(stage.paidDzd, booking.currency)} / ${formatCurrencyAmount(stage.amountDzd, booking.currency)}`}
+                          metaRight={formatCurrencyAmount(stage.amountDzd, booking.currency)}
+                          badge={{
+                            label: stage.status,
+                            tone:
+                              stage.status === 'paid'
+                                ? 'ok'
+                                : stage.status === 'partial'
+                                ? 'warn'
+                                : 'neutral',
+                          }}
+                          isLast={idx === booking.stagedPaymentSchedule!.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
+
+                <div className="space-y-2">
+                  <InspectorWideButton
+                    label={
+                      linkedDoc
+                        ? `${linkedDoc.docNumber} (${linkedDoc.status})`
+                        : t('venue_depth_issue_invoice_btn')
+                    }
+                    icon={<FileText size={14} />}
+                    tone="accent"
+                    onClick={() => {
+                      if (!linkedDoc) {
+                        const created = createRentalUnifiedInvoice(booking.id);
+                        if (created) {
+                          showToast({
+                            type: 'success',
+                            title: t('venue_depth_issue_invoice_btn'),
+                            message: created.docNumber || created.draftNumber,
+                          });
+                        }
+                      }
+                    }}
+                  />
+                  {booking.balanceDue > 0 && (
+                    <InspectorWideButton
+                      label={t('venue_depth_collect_payment_btn')}
+                      icon={<CreditCard size={14} />}
+                      tone="neutral"
+                      onClick={() => openPaymentModal(booking)}
+                    />
+                  )}
+                  <InspectorWideButton
+                    label={t('venue_depth_view_contract_btn')}
+                    icon={<PenTool size={14} />}
+                    tone="neutral"
+                    onClick={() => openContractModal(booking)}
+                  />
+                  <InspectorWideButton
+                    label={t('venue_btn_print_voucher')}
+                    icon={<Printer size={14} />}
+                    tone="neutral"
+                    onClick={() => setPrintedBooking(booking)}
+                  />
+                </div>
               </div>
             );
           }
@@ -1085,10 +1272,16 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                           label: t('venue_btn_checkout_space'),
                           icon: <LogOut size={15} />,
                           primary: true,
-                          onClick: () => checkOutBooking(booking.id),
+                          onClick: () => openCheckoutModal(booking),
                         },
                       ]
                     : []),
+                  {
+                    id: 'contract',
+                    label: t('venue_depth_view_contract_btn'),
+                    icon: <PenTool size={15} />,
+                    onClick: () => openContractModal(booking),
+                  },
                   {
                     id: 'edit',
                     label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
@@ -1129,9 +1322,23 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                     value={`${booking.attendeeCount}`}
                     mono
                   />
+                  {booking.driverLicenseNumber && (
+                    <InspectorKeyValue
+                      label={t('venue_depth_driver_license')}
+                      value={booking.driverLicenseNumber}
+                      mono
+                    />
+                  )}
+                  {(booking.mileageOut !== undefined || booking.mileageIn !== undefined) && (
+                    <InspectorKeyValue
+                      label="Odometer (km)"
+                      value={`${booking.mileageOut ?? '--'} → ${booking.mileageIn ?? '--'}`}
+                      mono
+                    />
+                  )}
                   <InspectorKeyValue
                     label={t('venue_voucher_window')}
-                    value={`${booking.startDateTime.replace('T', ' ').slice(0, 16)} → ${booking.endDateTime.split('T')[1]?.slice(0, 5)} (${booking.durationHours}h)`}
+                    value={`${booking.startDateTime.replace('T', ' ').slice(0, 16)} → ${booking.endDateTime.replace('T', ' ').slice(0, 16)} (${booking.durationHours}h)`}
                     mono
                     isLast
                   />
@@ -1296,6 +1503,325 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
           onClose={() => setIsCloudSyncModalOpen(false)}
         />
       )}
+
+      {/* Return Inspection & Late Fee Check-out Modal */}
+      <KineticModalShell
+        isOpen={Boolean(checkoutTarget)}
+        onClose={() => setCheckoutTarget(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {checkoutTarget && (() => {
+          const unit = rentableUnits.find((u) => u.id === checkoutTarget.unitId);
+          const actualIso = checkoutReturnAt ? `${checkoutReturnAt}:00Z` : new Date().toISOString();
+          const feePreview = computeLateReturnFee({
+            scheduledEndDateTime: checkoutTarget.endDateTime,
+            actualReturnDateTime: actualIso,
+            hourlyRate: unit?.lateHourlyRate || unit?.hourlyRate || 0,
+            dailyRate: unit?.dailyRate || 0,
+            graceMinutes: unit?.graceMinutes ?? 15,
+          });
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+                <h3 className="font-semibold t-card text-black dark:text-white">
+                  {t('venue_depth_checkout_modal_title')}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutTarget(null)}
+                  className="text-black/55 dark:text-white/55 p-1"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <LabelInput
+                label={t('venue_depth_actual_return')}
+                type="datetime-local"
+                value={checkoutReturnAt}
+                onChange={setCheckoutReturnAt}
+              />
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1"
+              >
+                <div className="flex justify-between">
+                  <span>{t('venue_depth_late_fee_preview')}</span>
+                  <strong className="tabular-nums text-[#d4522f]">
+                    {formatCurrencyAmount(feePreview.lateFeeDzd, checkoutTarget.currency)}
+                  </strong>
+                </div>
+                <div className="text-black/60 dark:text-white/60">
+                  Overdue: {feePreview.overdueMinutes} min ({feePreview.billableLateHours}h billed after {unit?.graceMinutes ?? 15}m grace)
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={t('venue_depth_odometer_in')}
+                  type="number"
+                  value={checkoutMileageIn}
+                  onChange={setCheckoutMileageIn}
+                />
+                <LabelInput
+                  label={t('venue_depth_fuel_in')}
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={checkoutFuelIn}
+                  onChange={setCheckoutFuelIn}
+                />
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 bg-[#F5F1EC] dark:bg-[#292624]">
+                <span className="t-cap font-medium flex items-center gap-1.5">
+                  <AlertTriangle size={14} className="text-amber-500" />
+                  {t('venue_depth_damage_detected')}
+                </span>
+                <LiveSwitch
+                  checked={checkoutDamageDetected}
+                  onCheckedChange={setCheckoutDamageDetected}
+                  aria-label={t('venue_depth_damage_detected')}
+                />
+              </div>
+              {checkoutDamageDetected && (
+                <LabelInput
+                  label={t('venue_depth_damage_charge')}
+                  type="number"
+                  value={checkoutDamageAmount}
+                  onChange={setCheckoutDamageAmount}
+                />
+              )}
+              <LabelInput
+                label={t('venue_depth_condition_notes')}
+                value={checkoutConditionNotes}
+                onChange={setCheckoutConditionNotes}
+              />
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton variant="secondary" onClick={() => setCheckoutTarget(null)}>
+                  {t('action_cancel')}
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  onClick={() => {
+                    checkOutBooking(checkoutTarget.id, {
+                      actualReturnAt: actualIso,
+                      mileageIn: checkoutMileageIn ? Number(checkoutMileageIn) : undefined,
+                      fuelInPct: checkoutFuelIn ? Number(checkoutFuelIn) : undefined,
+                      conditionNotes: checkoutConditionNotes.trim() || undefined,
+                      damageDetected: checkoutDamageDetected,
+                      damageAmountDzd: checkoutDamageDetected ? Number(checkoutDamageAmount) || 0 : 0,
+                    });
+                    setCheckoutTarget(null);
+                  }}
+                >
+                  {t('venue_depth_confirm_checkout')}
+                </AtriumButton>
+              </div>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
+
+      {/* Contract Preview & E-Sign Modal */}
+      <KineticModalShell
+        isOpen={Boolean(contractTarget)}
+        onClose={() => setContractTarget(null)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {contractTarget && (() => {
+          const unit = rentableUnits.find((u) => u.id === contractTarget.unitId);
+          const renter = rentalRenters.find((r) => r.id === contractTarget.renterId);
+          const tpl = rentalContractTemplates.find((tplItem) => tplItem.id === contractTemplatePick) || null;
+          const renderedDoc = renderRentalContractDocument({
+            template: tpl,
+            booking: contractTarget,
+            unit,
+            renter,
+            businessName,
+          });
+          const getPt = (e: React.PointerEvent<SVGSVGElement>): [number, number] | null => {
+            const svg = contractSigSvgRef.current;
+            if (!svg) return null;
+            const rect = svg.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+            return [
+              Math.round(((e.clientX - rect.left) / rect.width) * 320),
+              Math.round(((e.clientY - rect.top) / rect.height) * 80),
+            ];
+          };
+          return (
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+                <h3 className="font-semibold t-card text-black dark:text-white">
+                  {t('venue_depth_contract_title')}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setContractTarget(null)}
+                  className="text-black/55 dark:text-white/55 p-1"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <LabelSelect
+                label={t('venue_depth_contract_template')}
+                value={contractTemplatePick}
+                onChange={setContractTemplatePick}
+                options={[
+                  { value: '', label: t('venue_depth_default_template') },
+                  ...rentalContractTemplates.map((item) => ({ value: item.id, label: item.name })),
+                ]}
+              />
+              <pre className="p-3 bg-[#F5F1EC] dark:bg-[#191716] rounded-lg t-cap whitespace-pre-wrap text-black dark:text-white max-h-48 overflow-y-auto">
+                {renderedDoc}
+              </pre>
+              <LabelInput
+                label={t('venue_depth_signer_name')}
+                value={contractSignerName}
+                onChange={setContractSignerName}
+              />
+              <div className="space-y-1.5">
+                <div className="flex justify-between t-cap text-black/65 dark:text-white/65">
+                  <span>{t('venue_depth_signature_pad')}</span>
+                  <button
+                    type="button"
+                    onClick={() => setContractSigPath('')}
+                    className="hover:text-[#d4522f] cursor-pointer"
+                  >
+                    {t('venue_depth_clear_sig')}
+                  </button>
+                </div>
+                <svg
+                  ref={contractSigSvgRef}
+                  viewBox="0 0 320 80"
+                  onPointerDown={(e) => {
+                    const pt = getPt(e);
+                    if (!pt) return;
+                    setIsDrawingContractSig(true);
+                    setContractSigPath((p) => `${p ? `${p} ` : ''}M${pt[0]},${pt[1]}`);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!isDrawingContractSig) return;
+                    const pt = getPt(e);
+                    if (pt) setContractSigPath((p) => `${p} L${pt[0]},${pt[1]}`);
+                  }}
+                  onPointerUp={() => setIsDrawingContractSig(false)}
+                  onPointerLeave={() => setIsDrawingContractSig(false)}
+                  className="w-full h-20 bg-[#F5F1EC] dark:bg-[#191716] border border-[var(--atr-divider)] rounded-lg touch-none cursor-crosshair"
+                >
+                  {contractSigPath && (
+                    <path
+                      d={contractSigPath}
+                      fill="none"
+                      stroke="#d4522f"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+                </svg>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton variant="secondary" onClick={() => setContractTarget(null)}>
+                  {t('action_cancel')}
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  onClick={() => {
+                    const ok = signRentalBookingContract(contractTarget.id, {
+                      signerName: contractSignerName,
+                      signatureData: contractSigPath,
+                      templateId: contractTemplatePick || undefined,
+                    });
+                    if (ok) setContractTarget(null);
+                  }}
+                >
+                  {t('venue_depth_sign_contract_btn')}
+                </AtriumButton>
+              </div>
+            </div>
+          );
+        })()}
+      </KineticModalShell>
+
+      {/* 6.2 Unified Payment Collection Modal */}
+      <KineticModalShell
+        isOpen={Boolean(paymentTarget)}
+        onClose={() => setPaymentTarget(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        {paymentTarget && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h3 className="font-semibold t-card text-black dark:text-white">
+                {t('venue_depth_payment_modal_title')}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setPaymentTarget(null)}
+                className="text-black/55 dark:text-white/55 p-1"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <LabelInput
+              label={t('venue_depth_payment_amount')}
+              type="number"
+              min={1}
+              value={paymentAmountDzd}
+              onChange={setPaymentAmountDzd}
+            />
+            <LabelSelect
+              label={t('venue_depth_payment_method')}
+              value={paymentMethod}
+              onChange={setPaymentMethod}
+              options={[
+                { value: 'cash', label: 'Cash / Espèces' },
+                { value: 'bank_transfer', label: 'Bank Transfer / Virement' },
+                { value: 'ccp', label: 'CCP' },
+                { value: 'cib_edahabia', label: 'CIB / Edahabia' },
+                { value: 'cheque', label: 'Cheque' },
+              ]}
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <AtriumButton variant="secondary" onClick={() => setPaymentTarget(null)}>
+                {t('action_cancel')}
+              </AtriumButton>
+              <AtriumButton
+                variant="primary"
+                onClick={() => {
+                  const amt = Number(paymentAmountDzd) || 0;
+                  if (amt <= 0) return;
+                  recordRentalUnifiedPayment(paymentTarget.id, {
+                    amountDzd: amt,
+                    method: paymentMethod,
+                  });
+                  setPaymentTarget(null);
+                }}
+              >
+                {t('venue_depth_collect_payment_btn')}
+              </AtriumButton>
+            </div>
+          </div>
+        )}
+      </KineticModalShell>
     </div>
   );
 };

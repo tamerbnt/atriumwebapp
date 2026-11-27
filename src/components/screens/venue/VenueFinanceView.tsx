@@ -12,11 +12,14 @@ import {
   shallowEqualObjects,
   selectCurrentSecurityDepositsFromState,
   selectCurrentRentalBookingsFromState,
+  selectCurrentUnifiedDocumentsFromState,
+  selectCurrentUnifiedPaymentsFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
+import { validateDepositDeduction } from '../../../utils/rentalDepth';
 import { t as i18nT } from '../../../utils/i18n';
 import { useTranslation } from '../../../utils/useTranslation';
 import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
@@ -64,10 +67,21 @@ export const VenueFinanceView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-  const { securityDeposits, rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const {
+    securityDeposits,
+    rentalBookings,
+    unifiedDocuments,
+    unifiedPayments,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+  } = useAtriumSelector(
     (s) => ({
       securityDeposits: selectCurrentSecurityDepositsFromState(s),
       rentalBookings: selectCurrentRentalBookingsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -236,15 +250,29 @@ export const VenueFinanceView: React.FC = () => {
 
   const handleOpenDeduct = useCallback((dep: SecurityDepositRecord) => {
     setDeductionTarget(dep);
-    setDeductionAmount(dep.amount);
+    setDeductionAmount(dep.originalAmount ?? dep.amount);
     setDeductionReason('');
   }, []);
 
+  const heldCapForModal = deductionTarget
+    ? deductionTarget.originalAmount ?? deductionTarget.amount
+    : 0;
+  const deductionValidation = useMemo(
+    () => validateDepositDeduction(heldCapForModal, deductionAmount, deductionReason),
+    [heldCapForModal, deductionAmount, deductionReason]
+  );
+
   const handleConfirmDeduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!deductionTarget || !deductionReason.trim()) return;
-    deductSecurityDeposit(deductionTarget.id, deductionReason.trim(), deductionAmount);
-    setDeductionTarget(null);
+    if (!deductionTarget) return;
+    const ok = deductSecurityDeposit(
+      deductionTarget.id,
+      deductionReason.trim(),
+      deductionAmount
+    );
+    if (ok) {
+      setDeductionTarget(null);
+    }
   };
 
   const handleResetFilters = useCallback(() => {
@@ -540,7 +568,7 @@ export const VenueFinanceView: React.FC = () => {
         }}
         secondaryCard={{
           label: t('venue_fin_kpi_released'),
-          badgeText: isAr ? 'مستردة بالكامل' : 'Restitué',
+          badgeText: isAr ? 'مستردة بالكامل' : isFr ? 'Restitué' : 'Released',
           count: totalReleased,
           formatValue: (v) => formatCurrencyAmount(v, 'DZD'),
           tone: 'terracotta',
@@ -736,6 +764,69 @@ export const VenueFinanceView: React.FC = () => {
           hasActiveFilters={activeFiltersCount > 0 || searchQuery.trim().length > 0}
           onResetFilters={handleResetFilters}
         />
+      </ScreenPod>
+
+      <ScreenPod>
+        <div className="p-5 space-y-4">
+          <h3 className="t-pod font-semibold text-black dark:text-white">
+            {t('venue_depth_ledger_title')}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] space-y-2"
+            >
+              <div className="t-small font-semibold text-black dark:text-white">
+                {t('venue_depth_issue_invoice_btn')} ({unifiedDocuments.filter((d) => d.sourceVertical === 'rental_booking').length})
+              </div>
+              {unifiedDocuments.filter((d) => d.sourceVertical === 'rental_booking').slice(0, 6).map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between py-1.5 border-b border-[var(--atr-divider)] last:border-b-0 t-cap"
+                >
+                  <div>
+                    <div className="font-semibold text-black dark:text-white">{doc.docNumber || doc.draftNumber} · {doc.partyName}</div>
+                    <div className="text-black/55 dark:text-white/55">{doc.status}</div>
+                  </div>
+                  <div className="font-semibold tabular-nums text-black dark:text-white">
+                    {formatCurrencyAmount(Math.round((doc.totalTtcCentimes || 0) / 100), doc.currency)}
+                  </div>
+                </div>
+              ))}
+              {unifiedDocuments.filter((d) => d.sourceVertical === 'rental_booking').length === 0 && (
+                <div className="t-cap text-black/55 dark:text-white/55">--</div>
+              )}
+            </div>
+
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] space-y-2"
+            >
+              <div className="t-small font-semibold text-black dark:text-white">
+                {t('venue_depth_collect_payment_btn')} ({unifiedPayments.filter((p) => p.sourceVertical === 'rental_booking').length})
+              </div>
+              {unifiedPayments.filter((p) => p.sourceVertical === 'rental_booking').slice(0, 6).map((pay) => (
+                <div
+                  key={pay.id}
+                  className="flex items-center justify-between py-1.5 border-b border-[var(--atr-divider)] last:border-b-0 t-cap"
+                >
+                  <div>
+                    <div className="font-semibold text-black dark:text-white">{pay.partyName}</div>
+                    <div className="text-black/55 dark:text-white/55">{pay.method} · {pay.paymentDate}</div>
+                  </div>
+                  <div className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    +{formatCurrencyAmount(Math.round((pay.amountCentimes || 0) / 100), pay.currency)}
+                  </div>
+                </div>
+              ))}
+              {unifiedPayments.filter((p) => p.sourceVertical === 'rental_booking').length === 0 && (
+                <div className="t-cap text-black/55 dark:text-white/55">--</div>
+              )}
+            </div>
+          </div>
+        </div>
       </ScreenPod>
 
       <KineticFilterModal
@@ -964,34 +1055,62 @@ export const VenueFinanceView: React.FC = () => {
                 className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1"
               >
                 <div>
-                  Locataire: <strong className="text-black dark:text-white">{retainedDeductionTarget.renterName}</strong>
+                  {isAr ? 'المستأجر:' : isFr ? 'Locataire :' : 'Renter:'}{' '}
+                  <strong className="text-black dark:text-white">{retainedDeductionTarget.renterName}</strong>
                 </div>
                 <div>
-                  Montant Caution:{' '}
+                  {isAr ? 'مبلغ الضمان:' : isFr ? 'Montant Caution :' : 'Held Deposit:'}{' '}
                   <strong className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                    {formatCurrencyAmount(retainedDeductionTarget.amount, retainedDeductionTarget.currency)}
+                    {formatCurrencyAmount(
+                      retainedDeductionTarget.originalAmount ?? retainedDeductionTarget.amount,
+                      retainedDeductionTarget.currency
+                    )}
                   </strong>
                 </div>
               </div>
               <LabelInput
-                label="Montant à Retenir (DZD)"
+                label={isAr ? 'المبلغ المقتطع (دج)' : isFr ? 'Montant à Retenir (DZD)' : 'Deduction Amount (DZD)'}
                 type="number"
                 value={deductionAmount.toString()}
                 onChange={(v) => setDeductionAmount(parseFloat(extractStr(v)) || 0)}
                 required
               />
               <LabelInput
-                label="Motif des Dégradations / Réparations"
+                label={
+                  isAr
+                    ? 'سبب الاقتطاع / الأضرار'
+                    : isFr
+                    ? 'Motif des Dégradations / Réparations'
+                    : 'Deduction / Repair Reason'
+                }
                 value={deductionReason}
                 onChange={(v) => setDeductionReason(extractStr(v))}
-                placeholder="Ex: Nettoyage spécifique moquette, serrure cassée..."
+                placeholder={
+                  isAr
+                    ? 'مثال: تنظيف خاص، إصلاح عطب...'
+                    : isFr
+                    ? 'Ex: Nettoyage spécifique moquette, serrure cassée...'
+                    : 'e.g. Deep carpet cleaning, broken lock replacement...'
+                }
                 required
               />
+              {!deductionValidation.valid && (
+                <div
+                  role="alert"
+                  className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-200 t-cap font-medium"
+                >
+                  {deductionValidation.errorCode === 'DEDUCTION_EXCEEDS_DEPOSIT'
+                    ? t('venue_depth_deposit_exceeds_msg')
+                    : deductionValidation.errorCode === 'DEDUCTION_REASON_REQUIRED'
+                    ? t('venue_depth_deposit_reason_required_msg')
+                    : t('venue_depth_deposit_positive_msg')}
+                </div>
+              )}
               <div className="flex justify-end gap-2 pt-2">
                 <AtriumButton variant="secondary" onClick={() => setDeductionTarget(null)}>
                   {t('venue_action_cancel')}
                 </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
+                <AtriumButton variant="primary" type="submit" disabled={!deductionValidation.valid}>
                   {t('venue_action_confirm_deduct')}
                 </AtriumButton>
               </div>

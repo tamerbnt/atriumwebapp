@@ -3,7 +3,11 @@ import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   RentableUnit,
+  RentalAssetCheckLog,
   RentalBooking,
+  RentalContractTemplate,
+  RentalCoworkingSubscription,
+  RentalPricingRule,
   RentalRenter,
   SecurityDepositRecord,
 } from '../../../types/index';
@@ -27,6 +31,7 @@ export const mapRentalUnitFromDb = (row: any): RentableUnit => ({
   name: row.name,
   code: row.code,
   type: row.type || 'Room',
+  rentalMode: row.rental_mode || undefined,
   capacity: Number(row.capacity || 10),
   surfaceAreaSqm: row.surface_area_sqm ? Number(row.surface_area_sqm) : undefined,
   hourlyRate: Number(row.hourly_rate || 0),
@@ -36,8 +41,23 @@ export const mapRentalUnitFromDb = (row: any): RentableUnit => ({
   status: row.status || 'Available',
   description: row.description || '',
   colorHex: row.color_hex || '#8B5CF6',
+  serialNumber: row.serial_number || undefined,
+  plateNumber: row.plate_number || undefined,
+  vin: row.vin || undefined,
+  makeModel: row.make_model || undefined,
+  odometerKm: row.odometer_km != null ? Number(row.odometer_km) : undefined,
+  fuelLevelPct: row.fuel_level_pct != null ? Number(row.fuel_level_pct) : undefined,
+  insuranceExpiry: row.insurance_expiry || undefined,
+  techControlExpiry: row.tech_control_expiry || undefined,
+  lastMaintenanceAt: row.last_maintenance_at || undefined,
+  maintenanceIntervalKm:
+    row.maintenance_interval_km != null ? Number(row.maintenance_interval_km) : undefined,
+  weekendMultiplier: row.weekend_multiplier != null ? Number(row.weekend_multiplier) : undefined,
+  graceMinutes: row.grace_minutes != null ? Number(row.grace_minutes) : undefined,
+  lateHourlyRate: row.late_hourly_rate != null ? Number(row.late_hourly_rate) : undefined,
   version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
+  updatedAt: row.updated_at || undefined,
 });
 
 export const mapRentalRenterFromDb = (row: any): RentalRenter => ({
@@ -53,6 +73,9 @@ export const mapRentalRenterFromDb = (row: any): RentalRenter => ({
   email: row.email,
   phone: row.phone,
   idDocNumber: row.id_doc_number || undefined,
+  driverLicenseNumber: row.driver_license_number || undefined,
+  driverLicenseExpiry: row.driver_license_expiry || undefined,
+  crmPartyId: row.crm_party_id || undefined,
   totalBookings: Number(row.total_bookings || 0),
   totalSpent: Number(row.total_spent || 0),
   currency: row.currency || 'DZD',
@@ -77,6 +100,7 @@ export const mapRentalBookingFromDb = (row: any): RentalBooking => ({
   unitId: row.unit_id,
   unitName: row.unit_name,
   unitType: row.unit_type || 'Room',
+  rentalMode: row.rental_mode || undefined,
   purpose: row.purpose,
   startDateTime: row.start_date_time,
   endDateTime: row.end_date_time,
@@ -93,6 +117,26 @@ export const mapRentalBookingFromDb = (row: any): RentalBooking => ({
   balanceDue: Number(row.balance_due || 0),
   addons: Array.isArray(row.addons) ? row.addons : [],
   contractSigned: Boolean(row.contract_signed),
+  contractTemplateId: row.contract_template_id || undefined,
+  contractSignedAt: row.contract_signed_at || undefined,
+  contractSignerName: row.contract_signer_name || undefined,
+  contractSignatureData: row.contract_signature_data || undefined,
+  pricingBreakdown: row.pricing_breakdown || undefined,
+  seasonalRuleId: row.seasonal_rule_id || undefined,
+  lateFeeDzd: row.late_fee_dzd != null ? Number(row.late_fee_dzd) : undefined,
+  actualReturnAt: row.actual_return_at || undefined,
+  stagedPaymentSchedule: Array.isArray(row.staged_payment_schedule)
+    ? row.staged_payment_schedule
+    : undefined,
+  icalUid: row.ical_uid || undefined,
+  unifiedDocumentId: row.unified_document_id || undefined,
+  driverLicenseNumber: row.driver_license_number || undefined,
+  driverLicenseExpiry: row.driver_license_expiry || undefined,
+  mileageOut: row.mileage_out != null ? Number(row.mileage_out) : undefined,
+  mileageIn: row.mileage_in != null ? Number(row.mileage_in) : undefined,
+  fuelOutPct: row.fuel_out_pct != null ? Number(row.fuel_out_pct) : undefined,
+  fuelInPct: row.fuel_in_pct != null ? Number(row.fuel_in_pct) : undefined,
+  inspectionNotes: row.inspection_notes || undefined,
   notes: row.notes || undefined,
   version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
@@ -111,6 +155,8 @@ export const mapRentalDepositFromDb = (row: any): SecurityDepositRecord => ({
   renterName: row.renter_name,
   unitName: row.unit_name,
   amount: Number(row.amount || 0),
+  originalAmount: row.original_amount != null ? Number(row.original_amount) : undefined,
+  deductedAmount: row.deducted_amount != null ? Number(row.deducted_amount) : undefined,
   currency: row.currency || 'DZD',
   paymentMethod: row.payment_method || 'Cash',
   status: row.status || 'Held',
@@ -120,6 +166,91 @@ export const mapRentalDepositFromDb = (row: any): SecurityDepositRecord => ({
   version: row.version != null ? Number(row.version) : undefined,
   collectedAt: row.collected_at,
   releasedAt: row.released_at || undefined,
+});
+
+export const mapRentalPricingRuleFromDb = (row: any): RentalPricingRule => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  name: row.name,
+  unitType: row.unit_type || 'All',
+  rentalMode: row.rental_mode || 'all',
+  unitId: row.unit_id || undefined,
+  weekendMultiplier: Number(row.weekend_multiplier || 1),
+  weekendDays: Array.isArray(row.weekend_days) ? row.weekend_days.map(Number) : [5, 6],
+  seasonStartDate: row.season_start_date || undefined,
+  seasonEndDate: row.season_end_date || undefined,
+  seasonalMultiplier: Number(row.seasonal_multiplier || 1),
+  flatDailyOverride: row.flat_daily_override != null ? Number(row.flat_daily_override) : undefined,
+  isActive: row.is_active !== false,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapRentalContractTemplateFromDb = (row: any): RentalContractTemplate => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  name: row.name,
+  rentalMode: row.rental_mode || 'all',
+  bodyTemplate: row.body_template || '',
+  requireSignature: row.require_signature !== false,
+  isDefault: Boolean(row.is_default),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapRentalAssetCheckLogFromDb = (row: any): RentalAssetCheckLog => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  unitId: row.unit_id,
+  unitName: row.unit_name,
+  bookingId: row.booking_id || undefined,
+  logType: row.log_type || 'checkout',
+  mileageKm: row.mileage_km != null ? Number(row.mileage_km) : undefined,
+  fuelLevelPct: row.fuel_level_pct != null ? Number(row.fuel_level_pct) : undefined,
+  serialNumber: row.serial_number || undefined,
+  conditionNotes: row.condition_notes || undefined,
+  damageDetected: Boolean(row.damage_detected),
+  damageAmountDzd: row.damage_amount_dzd != null ? Number(row.damage_amount_dzd) : undefined,
+  performedBy: row.performed_by || undefined,
+  loggedAt: row.logged_at,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapRentalCoworkingSubscriptionFromDb = (row: any): RentalCoworkingSubscription => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  renterId: row.renter_id,
+  renterName: row.renter_name,
+  unitId: row.unit_id || undefined,
+  unitName: row.unit_name || undefined,
+  planName: row.plan_name,
+  planKind: row.plan_kind || 'monthly_pass',
+  includedHours: Number(row.included_hours || 0),
+  usedHours: Number(row.used_hours || 0),
+  monthlyFeeDzd: Number(row.monthly_fee_dzd || 0),
+  startDate: row.start_date,
+  endDate: row.end_date,
+  status: row.status || 'active',
+  autoRenew: Boolean(row.auto_renew),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
 
 export const rentalService = {
@@ -136,9 +267,7 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_units')
-          .select(
-            'id, account_id, business_id, branch_id, staff_id, name, code, type, capacity, surface_area_sqm, hourly_rate, daily_rate, currency, amenities, status, description, color_hex, version, created_at'
-          )
+          .select('*')
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('created_at', { ascending: true })
@@ -169,6 +298,7 @@ export const rentalService = {
       name: unit.name,
       code: unit.code,
       type: unit.type,
+      rental_mode: unit.rentalMode || 'venue',
       capacity: unit.capacity,
       surface_area_sqm: unit.surfaceAreaSqm || null,
       hourly_rate: unit.hourlyRate,
@@ -178,6 +308,19 @@ export const rentalService = {
       status: unit.status,
       description: unit.description || null,
       color_hex: unit.colorHex || '#8B5CF6',
+      serial_number: unit.serialNumber || null,
+      plate_number: unit.plateNumber || null,
+      vin: unit.vin || null,
+      make_model: unit.makeModel || null,
+      odometer_km: unit.odometerKm ?? null,
+      fuel_level_pct: unit.fuelLevelPct ?? null,
+      insurance_expiry: unit.insuranceExpiry || null,
+      tech_control_expiry: unit.techControlExpiry || null,
+      last_maintenance_at: unit.lastMaintenanceAt || null,
+      maintenance_interval_km: unit.maintenanceIntervalKm ?? null,
+      weekend_multiplier: unit.weekendMultiplier ?? 1,
+      grace_minutes: unit.graceMinutes ?? 15,
+      late_hourly_rate: unit.lateHourlyRate ?? 0,
     };
 
     const res = await syncCoordinator.mutateOrQueueUpsert('rental_units', payload, {
@@ -212,9 +355,7 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_renters')
-          .select(
-            'id, account_id, business_id, branch_id, staff_id, full_name, company_name, email, phone, id_doc_number, total_bookings, total_spent, currency, notes, version, created_at'
-          )
+          .select('*')
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -247,6 +388,9 @@ export const rentalService = {
       email: renter.email,
       phone: renter.phone,
       id_doc_number: renter.idDocNumber || null,
+      driver_license_number: renter.driverLicenseNumber || null,
+      driver_license_expiry: renter.driverLicenseExpiry || null,
+      crm_party_id: renter.crmPartyId ? toValidUuid(renter.crmPartyId) : null,
       total_bookings: renter.totalBookings,
       total_spent: renter.totalSpent,
       currency: renter.currency,
@@ -285,9 +429,7 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_bookings')
-          .select(
-            'id, account_id, business_id, branch_id, staff_id, renter_id, renter_name, renter_phone, renter_email, renter_company, unit_id, unit_name, unit_type, purpose, start_date_time, end_date_time, duration_hours, attendee_count, status, base_amount, addons_amount, total_amount, currency, deposit_amount, deposit_status, paid_amount, balance_due, addons, contract_signed, notes, version, created_at, updated_at'
-          )
+          .select('*')
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('start_date_time', { ascending: true })
@@ -323,6 +465,7 @@ export const rentalService = {
       unit_id: toValidUuid(booking.unitId),
       unit_name: booking.unitName,
       unit_type: booking.unitType,
+      rental_mode: booking.rentalMode || 'venue',
       purpose: booking.purpose,
       start_date_time: booking.startDateTime,
       end_date_time: booking.endDateTime,
@@ -339,6 +482,24 @@ export const rentalService = {
       balance_due: booking.balanceDue,
       addons: booking.addons || [],
       contract_signed: booking.contractSigned,
+      contract_template_id: booking.contractTemplateId ? toValidUuid(booking.contractTemplateId) : null,
+      contract_signed_at: booking.contractSignedAt || null,
+      contract_signer_name: booking.contractSignerName || null,
+      contract_signature_data: booking.contractSignatureData || null,
+      pricing_breakdown: booking.pricingBreakdown || null,
+      seasonal_rule_id: booking.seasonalRuleId ? toValidUuid(booking.seasonalRuleId) : null,
+      late_fee_dzd: booking.lateFeeDzd ?? 0,
+      actual_return_at: booking.actualReturnAt || null,
+      staged_payment_schedule: booking.stagedPaymentSchedule || [],
+      ical_uid: booking.icalUid || `${booking.id}@atrium.local`,
+      unified_document_id: booking.unifiedDocumentId ? toValidUuid(booking.unifiedDocumentId) : null,
+      driver_license_number: booking.driverLicenseNumber || null,
+      driver_license_expiry: booking.driverLicenseExpiry || null,
+      mileage_out: booking.mileageOut ?? null,
+      mileage_in: booking.mileageIn ?? null,
+      fuel_out_pct: booking.fuelOutPct ?? null,
+      fuel_in_pct: booking.fuelInPct ?? null,
+      inspection_notes: booking.inspectionNotes || null,
       notes: booking.notes || null,
     };
 
@@ -374,9 +535,7 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_security_deposits')
-          .select(
-            'id, account_id, business_id, branch_id, staff_id, booking_id, renter_name, unit_name, amount, currency, payment_method, status, deduction_reason, deposit_receipt_number, printed_count, version, collected_at, released_at'
-          )
+          .select('*')
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('collected_at', { ascending: false })
@@ -408,6 +567,8 @@ export const rentalService = {
       renter_name: deposit.renterName,
       unit_name: deposit.unitName,
       amount: deposit.amount,
+      original_amount: deposit.originalAmount ?? deposit.amount,
+      deducted_amount: deposit.deductedAmount ?? 0,
       currency: deposit.currency,
       payment_method: deposit.paymentMethod,
       status: deposit.status,
@@ -438,6 +599,248 @@ export const rentalService = {
   },
 
   // ============================================================
+  // 7.5 Pricing Rules, Contract Templates, Asset Check Logs & Coworking Subs
+  // ============================================================
+  async fetchPricingRules(branchId: string, updatedAfter?: string | null): Promise<RentalPricingRule[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    const safeBranchId = toValidUuid(branchId);
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let q = (client as any)
+          .from('rental_pricing_rules')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) q = q.gt('updated_at', updatedAfter);
+        return q;
+      });
+      return data.map(mapRentalPricingRuleFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertPricingRule(rule: RentalPricingRule): Promise<RentalSyncResult> {
+    const trace = buildTraceEnvelope({
+      accountId: rule.accountId,
+      businessId: rule.businessId,
+      branchId: rule.branchId,
+      staffId: rule.staffId,
+    });
+    const payload = {
+      id: toValidUuid(rule.id),
+      ...trace,
+      name: rule.name,
+      unit_type: rule.unitType || 'All',
+      rental_mode: rule.rentalMode || 'all',
+      unit_id: rule.unitId ? toValidUuid(rule.unitId) : null,
+      weekend_multiplier: rule.weekendMultiplier,
+      weekend_days: rule.weekendDays || [5, 6],
+      season_start_date: rule.seasonStartDate || null,
+      season_end_date: rule.seasonEndDate || null,
+      seasonal_multiplier: rule.seasonalMultiplier,
+      flat_daily_override: rule.flatDailyOverride ?? null,
+      is_active: rule.isActive,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_pricing_rules', payload, {
+      expectedVersion: rule.version,
+      entityType: 'RentalPricingRule',
+      entityLabel: rule.name,
+      localData: payload,
+    });
+    return { success: res.success, queued: res.queued, error: res.error, table: 'rental_pricing_rules' };
+  },
+
+  async deletePricingRule(id: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_pricing_rules', id, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
+  },
+
+  async fetchContractTemplates(branchId: string, updatedAfter?: string | null): Promise<RentalContractTemplate[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    const safeBranchId = toValidUuid(branchId);
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let q = (client as any)
+          .from('rental_contract_templates')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) q = q.gt('updated_at', updatedAfter);
+        return q;
+      });
+      return data.map(mapRentalContractTemplateFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertContractTemplate(tpl: RentalContractTemplate): Promise<RentalSyncResult> {
+    const trace = buildTraceEnvelope({
+      accountId: tpl.accountId,
+      businessId: tpl.businessId,
+      branchId: tpl.branchId,
+      staffId: tpl.staffId,
+    });
+    const payload = {
+      id: toValidUuid(tpl.id),
+      ...trace,
+      name: tpl.name,
+      rental_mode: tpl.rentalMode || 'all',
+      body_template: tpl.bodyTemplate,
+      require_signature: tpl.requireSignature,
+      is_default: Boolean(tpl.isDefault),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_contract_templates', payload, {
+      expectedVersion: tpl.version,
+      entityType: 'RentalContractTemplate',
+      entityLabel: tpl.name,
+      localData: payload,
+    });
+    return { success: res.success, queued: res.queued, error: res.error, table: 'rental_contract_templates' };
+  },
+
+  async fetchAssetCheckLogs(branchId: string, updatedAfter?: string | null): Promise<RentalAssetCheckLog[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    const safeBranchId = toValidUuid(branchId);
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let q = (client as any)
+          .from('rental_asset_check_logs')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('logged_at', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) q = q.gt('updated_at', updatedAfter);
+        return q;
+      });
+      return data.map(mapRentalAssetCheckLogFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertAssetCheckLog(log: RentalAssetCheckLog): Promise<RentalSyncResult> {
+    const trace = buildTraceEnvelope({
+      accountId: log.accountId,
+      businessId: log.businessId,
+      branchId: log.branchId,
+      staffId: log.staffId,
+    });
+    const payload = {
+      id: toValidUuid(log.id),
+      ...trace,
+      unit_id: toValidUuid(log.unitId),
+      unit_name: log.unitName,
+      booking_id: log.bookingId ? toValidUuid(log.bookingId) : null,
+      log_type: log.logType,
+      mileage_km: log.mileageKm ?? null,
+      fuel_level_pct: log.fuelLevelPct ?? null,
+      serial_number: log.serialNumber || null,
+      condition_notes: log.conditionNotes || null,
+      damage_detected: Boolean(log.damageDetected),
+      damage_amount_dzd: log.damageAmountDzd ?? 0,
+      performed_by: log.performedBy || null,
+      logged_at: log.loggedAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_asset_check_logs', payload, {
+      expectedVersion: log.version,
+      entityType: 'RentalAssetCheckLog',
+      entityLabel: `${log.unitName} (${log.logType})`,
+      localData: payload,
+    });
+    return { success: res.success, queued: res.queued, error: res.error, table: 'rental_asset_check_logs' };
+  },
+
+  async fetchCoworkingSubscriptions(
+    branchId: string,
+    updatedAfter?: string | null
+  ): Promise<RentalCoworkingSubscription[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    const safeBranchId = toValidUuid(branchId);
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let q = (client as any)
+          .from('rental_coworking_subscriptions')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) q = q.gt('updated_at', updatedAfter);
+        return q;
+      });
+      return data.map(mapRentalCoworkingSubscriptionFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertCoworkingSubscription(
+    sub: RentalCoworkingSubscription
+  ): Promise<RentalSyncResult> {
+    const trace = buildTraceEnvelope({
+      accountId: sub.accountId,
+      businessId: sub.businessId,
+      branchId: sub.branchId,
+      staffId: sub.staffId,
+    });
+    const payload = {
+      id: toValidUuid(sub.id),
+      ...trace,
+      renter_id: toValidUuid(sub.renterId),
+      renter_name: sub.renterName,
+      unit_id: sub.unitId ? toValidUuid(sub.unitId) : null,
+      unit_name: sub.unitName || null,
+      plan_name: sub.planName,
+      plan_kind: sub.planKind,
+      included_hours: sub.includedHours,
+      used_hours: sub.usedHours,
+      monthly_fee_dzd: sub.monthlyFeeDzd,
+      start_date: sub.startDate,
+      end_date: sub.endDate,
+      status: sub.status,
+      auto_renew: Boolean(sub.autoRenew),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_coworking_subscriptions', payload, {
+      expectedVersion: sub.version,
+      entityType: 'RentalCoworkingSubscription',
+      entityLabel: `${sub.renterName} — ${sub.planName}`,
+      localData: payload,
+    });
+    return {
+      success: res.success,
+      queued: res.queued,
+      error: res.error,
+      table: 'rental_coworking_subscriptions',
+    };
+  },
+
+  async deleteContractTemplate(id: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_contract_templates', id, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
+  },
+
+  async deleteAssetCheckLog(id: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_asset_check_logs', id, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
+  },
+
+  async deleteCoworkingSubscription(id: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_coworking_subscriptions', id, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
+  },
+
+  // ============================================================
   // Cloud Sync Read Diagnostics (No unsafe write probes)
   // ============================================================
   async checkCloudTables(): Promise<{
@@ -452,7 +855,16 @@ export const rentalService = {
     }
 
     const tablesFound: string[] = [];
-    for (const tbl of ['rental_units', 'rental_renters', 'rental_bookings', 'rental_security_deposits']) {
+    for (const tbl of [
+      'rental_units',
+      'rental_renters',
+      'rental_bookings',
+      'rental_security_deposits',
+      'rental_pricing_rules',
+      'rental_contract_templates',
+      'rental_asset_check_logs',
+      'rental_coworking_subscriptions',
+    ]) {
       try {
         const { error } = await (client as any).from(tbl).select('id').limit(1);
         if (!error) tablesFound.push(tbl);
@@ -465,7 +877,7 @@ export const rentalService = {
     return {
       configured: true,
       tablesFound,
-      canWrite: Boolean(sessionData?.session?.user && tablesFound.length === 4),
+      canWrite: Boolean(sessionData?.session?.user && tablesFound.length >= 4),
     };
   },
 

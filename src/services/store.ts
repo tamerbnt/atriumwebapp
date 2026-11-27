@@ -44,10 +44,17 @@ import {
   ReceiptConfig,
   PaymentDetail,
   RentableUnit,
+  RentalMode,
   RentalBooking,
   RentalRenter,
   SecurityDepositRecord,
   BookingAddon,
+  RentalPricingRule,
+  RentalPricingBreakdown,
+  RentalStagedPayment,
+  RentalContractTemplate,
+  RentalAssetCheckLog,
+  RentalCoworkingSubscription,
   ToastNotification,
   ToastType,
   ToastSyncStatus,
@@ -422,6 +429,10 @@ import {
   mapRentalRenterFromDb,
   mapRentalBookingFromDb,
   mapRentalDepositFromDb,
+  mapRentalPricingRuleFromDb,
+  mapRentalContractTemplateFromDb,
+  mapRentalAssetCheckLogFromDb,
+  mapRentalCoworkingSubscriptionFromDb,
   mapEduCourseFromDb,
   mapEduClassroomFromDb,
   mapEduCohortFromDb,
@@ -495,6 +506,17 @@ import {
   normalizeUnifiedPaymentMethod,
   type UnifiedLineInput,
 } from '../utils/invoicingEngine';
+import {
+  resolveUnitRentalMode,
+  computeRentalDurationHours,
+  detectRentalBookingOverlap,
+  computeRentalPricingWithRules,
+  computeLateReturnFee,
+  validateDepositDeduction,
+  buildWeddingPaymentSchedule,
+  applyPaymentToStagedSchedule,
+  parseIcsBookings,
+} from '../utils/rentalDepth';
 import {
   canApprovePmExpense,
   evaluateDeliverableRevisionDecision,
@@ -777,6 +799,10 @@ interface AppState {
   rentalBookings: RentalBooking[];
   rentalRenters: RentalRenter[];
   securityDeposits: SecurityDepositRecord[];
+  rentalPricingRules: RentalPricingRule[];
+  rentalContractTemplates: RentalContractTemplate[];
+  rentalAssetLogs: RentalAssetCheckLog[];
+  rentalCoworkingSubscriptions: RentalCoworkingSubscription[];
   // Education & Training (Category 15)
   eduCourses: EduCourse[];
   eduClassrooms: EduClassroom[];
@@ -1040,6 +1066,10 @@ const DEFAULT_STATE: AppState = {
   rentalBookings: INITIAL_RENTAL_BOOKINGS,
   rentalRenters: INITIAL_RENTAL_RENTERS,
   securityDeposits: INITIAL_SECURITY_DEPOSITS,
+  rentalPricingRules: [],
+  rentalContractTemplates: [],
+  rentalAssetLogs: [],
+  rentalCoworkingSubscriptions: [],
   // Education & Training
   eduCourses: INITIAL_EDU_COURSES,
   eduClassrooms: INITIAL_EDU_CLASSROOMS,
@@ -1217,6 +1247,10 @@ function backfillTraceability(state: AppState): AppState {
     rentalBookings: (state.rentalBookings || []).map(patch),
     rentalRenters: (state.rentalRenters || []).map(patch),
     securityDeposits: (state.securityDeposits || []).map(patch),
+    rentalPricingRules: (state.rentalPricingRules || []).map(patch),
+    rentalContractTemplates: (state.rentalContractTemplates || []).map(patch),
+    rentalAssetLogs: (state.rentalAssetLogs || []).map(patch),
+    rentalCoworkingSubscriptions: (state.rentalCoworkingSubscriptions || []).map(patch),
     eduStudents: (state.eduStudents || []).map(patch),
     eduCohorts: (state.eduCohorts || []).map(patch),
     eduSessions: (state.eduSessions || []).map(patch),
@@ -1397,6 +1431,10 @@ let globalState: AppState = backfillTraceability((() => {
           rentalBookings: Array.isArray(parsed.rentalBookings) ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
           rentalRenters: Array.isArray(parsed.rentalRenters) ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
           securityDeposits: Array.isArray(parsed.securityDeposits) ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
+          rentalPricingRules: Array.isArray(parsed.rentalPricingRules) ? parsed.rentalPricingRules : [],
+          rentalContractTemplates: Array.isArray(parsed.rentalContractTemplates) ? parsed.rentalContractTemplates : [],
+          rentalAssetLogs: Array.isArray(parsed.rentalAssetLogs) ? parsed.rentalAssetLogs : [],
+          rentalCoworkingSubscriptions: Array.isArray(parsed.rentalCoworkingSubscriptions) ? parsed.rentalCoworkingSubscriptions : [],
           eduCourses: Array.isArray(parsed.eduCourses) ? parsed.eduCourses : INITIAL_EDU_COURSES,
           eduClassrooms: Array.isArray(parsed.eduClassrooms) ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
           eduCohorts: Array.isArray(parsed.eduCohorts) ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
@@ -2062,6 +2100,26 @@ export const selectCurrentRentalRentersFromState = createBranchSelector<RentalRe
 export const selectCurrentSecurityDepositsFromState = createBranchSelector<SecurityDepositRecord>(
   (s) => s.securityDeposits,
   (d, b) => d.facilityId === b || d.branchId === b,
+  'branch_venue_main'
+);
+export const selectCurrentRentalPricingRulesFromState = createBranchSelector<RentalPricingRule>(
+  (s) => s.rentalPricingRules || [],
+  (r, b) => r.branchId === b || (!r.branchId && b === 'branch_venue_main'),
+  'branch_venue_main'
+);
+export const selectCurrentRentalContractTemplatesFromState = createBranchSelector<RentalContractTemplate>(
+  (s) => s.rentalContractTemplates || [],
+  (tpl, b) => tpl.branchId === b || (!tpl.branchId && b === 'branch_venue_main'),
+  'branch_venue_main'
+);
+export const selectCurrentRentalAssetLogsFromState = createBranchSelector<RentalAssetCheckLog>(
+  (s) => s.rentalAssetLogs || [],
+  (l, b) => l.branchId === b || (!l.branchId && b === 'branch_venue_main'),
+  'branch_venue_main'
+);
+export const selectCurrentRentalCoworkingSubscriptionsFromState = createBranchSelector<RentalCoworkingSubscription>(
+  (s) => s.rentalCoworkingSubscriptions || [],
+  (sub, b) => sub.branchId === b || (!sub.branchId && b === 'branch_venue_main'),
   'branch_venue_main'
 );
 
@@ -4327,6 +4385,10 @@ function pruneDeletedRecords(
     rental_bookings: 'rentalBookings',
     rental_renters: 'rentalRenters',
     rental_security_deposits: 'securityDeposits',
+    rental_pricing_rules: 'rentalPricingRules',
+    rental_contract_templates: 'rentalContractTemplates',
+    rental_asset_check_logs: 'rentalAssetLogs',
+    rental_coworking_subscriptions: 'rentalCoworkingSubscriptions',
     edu_courses: 'eduCourses',
     edu_classrooms: 'eduClassrooms',
     edu_cohorts: 'eduCohorts',
@@ -5370,6 +5432,41 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           }
         });
       }
+      if (shouldSyncTable('rental_pricing_rules')) {
+        tasks.push(async () => {
+          const rows = await rentalService.fetchPricingRules(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.rentalPricingRules = mergeById(globalState.rentalPricingRules || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('rental_contract_templates')) {
+        tasks.push(async () => {
+          const rows = await rentalService.fetchContractTemplates(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.rentalContractTemplates = mergeById(globalState.rentalContractTemplates || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('rental_asset_check_logs')) {
+        tasks.push(async () => {
+          const rows = await rentalService.fetchAssetCheckLogs(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.rentalAssetLogs = mergeById(globalState.rentalAssetLogs || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('rental_coworking_subscriptions')) {
+        tasks.push(async () => {
+          const rows = await rentalService.fetchCoworkingSubscriptions(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.rentalCoworkingSubscriptions = mergeById(
+              globalState.rentalCoworkingSubscriptions || [],
+              rows
+            );
+          }
+        });
+      }
     } else if (activeCategory === 'education_cohort') {
       if (shouldSyncTable('edu_courses')) {
         tasks.push(async () => {
@@ -6111,6 +6208,14 @@ export function applyResolvedRowToSlice(
       return { rentalBookings: patchList(globalState.rentalBookings, mapRentalBookingFromDb) };
     case 'rental_security_deposits':
       return { securityDeposits: patchList(globalState.securityDeposits, mapRentalDepositFromDb) };
+    case 'rental_pricing_rules':
+      return { rentalPricingRules: patchList(globalState.rentalPricingRules || [], mapRentalPricingRuleFromDb) };
+    case 'rental_contract_templates':
+      return { rentalContractTemplates: patchList(globalState.rentalContractTemplates || [], mapRentalContractTemplateFromDb) };
+    case 'rental_asset_check_logs':
+      return { rentalAssetLogs: patchList(globalState.rentalAssetLogs || [], mapRentalAssetCheckLogFromDb) };
+    case 'rental_coworking_subscriptions':
+      return { rentalCoworkingSubscriptions: patchList(globalState.rentalCoworkingSubscriptions || [], mapRentalCoworkingSubscriptionFromDb) };
     case 'edu_courses':
       return { eduCourses: patchList(globalState.eduCourses, mapEduCourseFromDb) };
     case 'edu_classrooms':
@@ -14961,22 +15066,59 @@ function createAtriumActions() {
 
   const createRentalBooking = (
     bookingData: Omit<RentalBooking, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>
-  ) => {
-    const before = captureStoreSlices(['rentalBookings', 'securityDeposits', 'rentableUnits']);
-    const bookingId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bk_${Date.now()}`;
+  ): RentalBooking | null => {
+    const overlap = detectRentalBookingOverlap(
+      {
+        unitId: bookingData.unitId,
+        startDateTime: bookingData.startDateTime,
+        endDateTime: bookingData.endDateTime,
+        status: bookingData.status,
+      },
+      globalState.rentalBookings
+    );
+    if (overlap.hasOverlap) {
+      showToast({
+        type: 'error',
+        title: t('venue_depth_overlap_title', globalState.language),
+        message:
+          overlap.reasonCode === 'INVALID_WINDOW'
+            ? t('venue_depth_invalid_window_msg', globalState.language)
+            : t('venue_depth_overlap_msg', globalState.language),
+      });
+      return null;
+    }
+
+    const before = captureStoreSlices([
+      'rentalBookings',
+      'securityDeposits',
+      'rentableUnits',
+      'rentalAssetLogs',
+      'rentalRenters',
+    ]);
+    const bookingId =
+      typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bk_${Date.now()}`;
+    const targetUnit = globalState.rentableUnits.find((u) => u.id === bookingData.unitId);
+    const durInfo = computeRentalDurationHours(bookingData.startDateTime, bookingData.endDateTime);
+    const derivedMode = bookingData.rentalMode || (targetUnit ? resolveUnitRentalMode(targetUnit) : undefined);
+    const nowIso = new Date().toISOString();
+
     const newBooking: RentalBooking = {
       ...getTraceContext(),
       ...bookingData,
       id: bookingId,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      rentalMode: derivedMode,
+      durationHours: bookingData.durationHours || durInfo.durationHours || 1,
+      icalUid: bookingData.icalUid || `${bookingId}@atrium.local`,
+      createdAt: nowIso,
+      updatedAt: nowIso,
     };
 
     let newDeposit: SecurityDepositRecord | null = null;
     if (newBooking.depositAmount > 0 && newBooking.depositStatus === 'Held') {
-      const depositId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `dep_${Date.now()}`;
+      const depositId =
+        typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `dep_${Date.now()}`;
       newDeposit = {
         ...getTraceContext(),
         id: depositId,
@@ -14986,14 +15128,55 @@ function createAtriumActions() {
         renterName: newBooking.renterName,
         unitName: newBooking.unitName,
         amount: newBooking.depositAmount,
+        originalAmount: newBooking.depositAmount,
         currency: newBooking.currency,
         paymentMethod: 'Cash',
         status: 'Held',
-        collectedAt: new Date().toISOString(),
+        collectedAt: nowIso,
       };
     }
 
-    const prevUnit = globalState.rentableUnits.find((u) => u.id === newBooking.unitId);
+    let initialCheckLog: RentalAssetCheckLog | null = null;
+    if (
+      newBooking.status === 'CheckedIn' &&
+      (derivedMode === 'vehicle' || derivedMode === 'gear')
+    ) {
+      const logId =
+        typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `alog_${Date.now()}`;
+      initialCheckLog = {
+        ...getTraceContext(),
+        id: logId,
+        unitId: newBooking.unitId,
+        unitName: newBooking.unitName,
+        bookingId: newBooking.id,
+        logType: 'checkout',
+        mileageKm: newBooking.mileageOut ?? targetUnit?.odometerKm,
+        fuelLevelPct: newBooking.fuelOutPct ?? targetUnit?.fuelLevelPct,
+        serialNumber: targetUnit?.serialNumber,
+        conditionNotes: newBooking.inspectionNotes || 'Checked out at booking creation',
+        damageDetected: false,
+        damageAmountDzd: 0,
+        performedBy: globalState.currentUser?.fullName || 'Staff',
+        loggedAt: nowIso,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+    }
+
+    const updatedRenters =
+      newBooking.renterId && (newBooking.driverLicenseNumber || newBooking.driverLicenseExpiry)
+        ? globalState.rentalRenters.map((r) =>
+            r.id === newBooking.renterId
+              ? {
+                  ...r,
+                  driverLicenseNumber: r.driverLicenseNumber || newBooking.driverLicenseNumber,
+                  driverLicenseExpiry: r.driverLicenseExpiry || newBooking.driverLicenseExpiry,
+                }
+              : r
+          )
+        : globalState.rentalRenters;
+
+    const prevUnit = targetUnit;
     const updatedUnits = globalState.rentableUnits.map((u) => {
       if (u.id === newBooking.unitId && newBooking.status === 'CheckedIn') {
         return { ...u, status: 'Occupied' as const };
@@ -15007,6 +15190,10 @@ function createAtriumActions() {
       securityDeposits: newDeposit
         ? [newDeposit, ...globalState.securityDeposits]
         : globalState.securityDeposits,
+      rentalAssetLogs: initialCheckLog
+        ? [initialCheckLog, ...(globalState.rentalAssetLogs || [])]
+        : globalState.rentalAssetLogs || [],
+      rentalRenters: updatedRenters,
       rentableUnits: updatedUnits,
     };
     notify();
@@ -15016,6 +15203,9 @@ function createAtriumActions() {
       if (newDeposit) {
         rentalService.upsertDeposit(newDeposit).catch((err) => console.warn('[store] Supabase upsertDeposit notice:', err));
       }
+      if (initialCheckLog) {
+        rentalService.upsertAssetCheckLog(initialCheckLog).catch(() => {});
+      }
       const chgUnit = updatedUnits.find((u) => u.id === newBooking.unitId);
       if (chgUnit && newBooking.status === 'CheckedIn') {
         rentalService.upsertUnit(chgUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
@@ -15023,7 +15213,13 @@ function createAtriumActions() {
     }
 
     const chgUnit = updatedUnits.find((u) => u.id === newBooking.unitId);
-    const after = captureStoreSlices(['rentalBookings', 'securityDeposits', 'rentableUnits']);
+    const after = captureStoreSlices([
+      'rentalBookings',
+      'securityDeposits',
+      'rentableUnits',
+      'rentalAssetLogs',
+      'rentalRenters',
+    ]);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'create',
@@ -15039,6 +15235,7 @@ function createAtriumActions() {
         if (isSupabaseConfigured()) {
           rentalService.deleteBooking(newBooking.id, globalState.currentUser?.id).catch(() => {});
           if (newDeposit) rentalService.deleteDeposit(newDeposit.id, globalState.currentUser?.id).catch(() => {});
+          if (initialCheckLog) rentalService.deleteAssetCheckLog(initialCheckLog.id, globalState.currentUser?.id).catch(() => {});
           if (prevUnit && newBooking.status === 'CheckedIn') rentalService.upsertUnit(prevUnit).catch(() => {});
         }
       },
@@ -15053,6 +15250,9 @@ function createAtriumActions() {
               .then(() => rentalService.upsertDeposit(newDeposit!))
               .catch(() => {});
           }
+          if (initialCheckLog) {
+            rentalService.upsertAssetCheckLog(initialCheckLog).catch(() => {});
+          }
           if (chgUnit && newBooking.status === 'CheckedIn') {
             rentalService.upsertUnit(chgUnit).catch(() => {});
           }
@@ -15063,12 +15263,54 @@ function createAtriumActions() {
     return newBooking;
   };
 
-  const updateRentalBooking = (id: string, updates: Partial<RentalBooking>) => {
+  const updateRentalBooking = (id: string, updates: Partial<RentalBooking>): boolean => {
     const prev = globalState.rentalBookings.find((b) => b.id === id);
-    if (!prev) return;
+    if (!prev) return false;
+
+    const nextCandidate = { ...prev, ...updates };
+    if (
+      updates.unitId !== undefined ||
+      updates.startDateTime !== undefined ||
+      updates.endDateTime !== undefined ||
+      updates.status !== undefined
+    ) {
+      const overlap = detectRentalBookingOverlap(
+        {
+          id,
+          unitId: nextCandidate.unitId,
+          startDateTime: nextCandidate.startDateTime,
+          endDateTime: nextCandidate.endDateTime,
+          status: nextCandidate.status,
+        },
+        globalState.rentalBookings
+      );
+      if (overlap.hasOverlap) {
+        showToast({
+          type: 'error',
+          title: t('venue_depth_overlap_title', globalState.language),
+          message:
+            overlap.reasonCode === 'INVALID_WINDOW'
+              ? t('venue_depth_invalid_window_msg', globalState.language)
+              : t('venue_depth_overlap_msg', globalState.language),
+        });
+        return false;
+      }
+    }
+
+    const durInfo = computeRentalDurationHours(
+      nextCandidate.startDateTime,
+      nextCandidate.endDateTime
+    );
     const before = captureStoreSlices(['rentalBookings']);
     const updatedBookings = globalState.rentalBookings.map((b) =>
-      b.id === id ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b
+      b.id === id
+        ? {
+            ...b,
+            ...updates,
+            durationHours: updates.durationHours ?? (durInfo.valid ? durInfo.durationHours : b.durationHours),
+            updatedAt: new Date().toISOString(),
+          }
+        : b
     );
     globalState = {
       ...globalState,
@@ -15105,6 +15347,7 @@ function createAtriumActions() {
         }
       },
     });
+    return true;
   };
 
   const deleteRentalBooking = (id: string) => {
@@ -15202,23 +15445,101 @@ function createAtriumActions() {
     });
   };
 
-  const checkOutBooking = (id: string) => {
+  const checkOutBooking = (
+    id: string,
+    options?: {
+      actualReturnAt?: string;
+      mileageIn?: number;
+      fuelInPct?: number;
+      conditionNotes?: string;
+      damageDetected?: boolean;
+      damageAmountDzd?: number;
+      performedBy?: string;
+    }
+  ) => {
     const booking = globalState.rentalBookings.find((b) => b.id === id);
     if (!booking) return;
     const prevUnit = globalState.rentableUnits.find((u) => u.id === booking.unitId);
-    const before = captureStoreSlices(['rentalBookings', 'rentableUnits']);
+    const before = captureStoreSlices(['rentalBookings', 'rentableUnits', 'rentalAssetLogs']);
+    const nowIso = options?.actualReturnAt || new Date().toISOString();
+
+    const feeCalc = computeLateReturnFee({
+      scheduledEndDateTime: booking.endDateTime,
+      actualReturnDateTime: nowIso,
+      hourlyRate: prevUnit?.lateHourlyRate || prevUnit?.hourlyRate || 0,
+      dailyRate: prevUnit?.dailyRate || 0,
+      graceMinutes: prevUnit?.graceMinutes ?? 15,
+    });
+    const lateFeeDzd = feeCalc.lateFeeDzd;
+    const addedLateFee = Math.max(0, lateFeeDzd - Number(booking.lateFeeDzd || 0));
 
     const updatedBookings = globalState.rentalBookings.map((b) =>
-      b.id === id ? { ...b, status: 'Completed' as const, updatedAt: new Date().toISOString() } : b
+      b.id === id
+        ? {
+            ...b,
+            status: 'Completed' as const,
+            actualReturnAt: nowIso,
+            lateFeeDzd,
+            mileageIn: options?.mileageIn ?? b.mileageIn,
+            fuelInPct: options?.fuelInPct ?? b.fuelInPct,
+            inspectionNotes: options?.conditionNotes ?? b.inspectionNotes,
+            totalAmount: Number(b.totalAmount || 0) + addedLateFee,
+            balanceDue: Number(b.balanceDue || 0) + addedLateFee,
+            updatedAt: new Date().toISOString(),
+          }
+        : b
     );
     const updatedUnits = globalState.rentableUnits.map((u) =>
-      u.id === booking.unitId ? { ...u, status: 'Available' as const } : u
+      u.id === booking.unitId
+        ? {
+            ...u,
+            status: options?.damageDetected ? ('Maintenance' as const) : ('Available' as const),
+            odometerKm: options?.mileageIn != null ? options.mileageIn : u.odometerKm,
+            fuelLevelPct: options?.fuelInPct != null ? options.fuelInPct : u.fuelLevelPct,
+            updatedAt: new Date().toISOString(),
+          }
+        : u
     );
+
+    const mode = booking.rentalMode || (prevUnit ? resolveUnitRentalMode(prevUnit) : 'venue');
+    let checkInLog: RentalAssetCheckLog | null = null;
+    if (
+      mode === 'vehicle' ||
+      mode === 'gear' ||
+      options?.mileageIn != null ||
+      options?.fuelInPct != null ||
+      options?.conditionNotes ||
+      options?.damageDetected
+    ) {
+      const logId =
+        typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `alog_${Date.now()}`;
+      checkInLog = {
+        ...getTraceContext(),
+        id: logId,
+        unitId: booking.unitId,
+        unitName: booking.unitName,
+        bookingId: booking.id,
+        logType: 'checkin',
+        mileageKm: options?.mileageIn,
+        fuelLevelPct: options?.fuelInPct,
+        serialNumber: prevUnit?.serialNumber,
+        conditionNotes: options?.conditionNotes,
+        damageDetected: Boolean(options?.damageDetected),
+        damageAmountDzd: Number(options?.damageAmountDzd || 0),
+        performedBy: options?.performedBy || globalState.currentUser?.fullName || 'Staff',
+        loggedAt: nowIso,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
 
     globalState = {
       ...globalState,
       rentalBookings: updatedBookings,
       rentableUnits: updatedUnits,
+      rentalAssetLogs: checkInLog
+        ? [checkInLog, ...(globalState.rentalAssetLogs || [])]
+        : globalState.rentalAssetLogs || [],
     };
     notify();
 
@@ -15227,24 +15548,32 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       if (nextBooking) rentalService.upsertBooking(nextBooking).catch(console.warn);
       if (nextUnit) rentalService.upsertUnit(nextUnit).catch(console.warn);
+      if (checkInLog) rentalService.upsertAssetCheckLog(checkInLog).catch(console.warn);
     }
 
-    const after = captureStoreSlices(['rentalBookings', 'rentableUnits']);
+    const after = captureStoreSlices(['rentalBookings', 'rentableUnits', 'rentalAssetLogs']);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'status',
       summary: ul(
-        `Checked out: ${booking.renterName} (${booking.unitName})`,
-        `Sortie terminée : ${booking.renterName} (${booking.unitName})`,
-        `تسجيل خروج: ${booking.renterName} (${booking.unitName})`
+        lateFeeDzd > 0
+          ? `Checked out: ${booking.renterName} (+${lateFeeDzd.toLocaleString()} DZD late fee)`
+          : `Checked out: ${booking.renterName} (${booking.unitName})`,
+        lateFeeDzd > 0
+          ? `Sortie terminée : ${booking.renterName} (+${lateFeeDzd.toLocaleString()} DZD retard)`
+          : `Sortie terminée : ${booking.renterName} (${booking.unitName})`,
+        lateFeeDzd > 0
+          ? `تسجيل خروج: ${booking.renterName} (+${lateFeeDzd.toLocaleString()} دج تأخير)`
+          : `تسجيل خروج: ${booking.renterName} (${booking.unitName})`
       ),
       entityLabel: booking.unitName,
-      toastType: 'info',
+      toastType: lateFeeDzd > 0 ? 'warning' : 'info',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
           rentalService.upsertBooking(booking).catch(() => {});
           if (prevUnit) rentalService.upsertUnit(prevUnit).catch(() => {});
+          if (checkInLog) rentalService.deleteAssetCheckLog(checkInLog.id, globalState.currentUser?.id).catch(() => {});
         }
       },
       redo: () => {
@@ -15252,6 +15581,7 @@ function createAtriumActions() {
         if (isSupabaseConfigured()) {
           if (nextBooking) rentalService.upsertBooking(nextBooking).catch(() => {});
           if (nextUnit) rentalService.upsertUnit(nextUnit).catch(() => {});
+          if (checkInLog) rentalService.upsertAssetCheckLog(checkInLog).catch(() => {});
         }
       },
     });
@@ -15590,9 +15920,30 @@ function createAtriumActions() {
     });
   };
 
-  const deductSecurityDeposit = (depositId: string, reason: string, deductedAmount?: number) => {
+  const deductSecurityDeposit = (
+    depositId: string,
+    reason: string,
+    deductedAmount?: number
+  ): boolean => {
     const target = globalState.securityDeposits.find((d) => d.id === depositId);
-    if (!target) return;
+    if (!target) return false;
+    const heldAmount = target.originalAmount ?? target.amount;
+    const requestedAmount = deductedAmount !== undefined ? deductedAmount : heldAmount;
+    const validation = validateDepositDeduction(heldAmount, requestedAmount, reason);
+    if (!validation.valid) {
+      showToast({
+        type: 'error',
+        title: t('venue_depth_deposit_error_title', globalState.language),
+        message:
+          validation.errorCode === 'DEDUCTION_EXCEEDS_DEPOSIT'
+            ? t('venue_depth_deposit_exceeds_msg', globalState.language)
+            : validation.errorCode === 'DEDUCTION_REASON_REQUIRED'
+            ? t('venue_depth_deposit_reason_required_msg', globalState.language)
+            : t('venue_depth_deposit_positive_msg', globalState.language),
+      });
+      return false;
+    }
+
     const prevBooking = target.bookingId
       ? globalState.rentalBookings.find((b) => b.id === target.bookingId)
       : undefined;
@@ -15603,8 +15954,10 @@ function createAtriumActions() {
         ? {
             ...d,
             status: 'Deducted' as const,
-            deductionReason: reason,
-            amount: deductedAmount !== undefined ? deductedAmount : d.amount,
+            deductionReason: reason.trim(),
+            originalAmount: heldAmount,
+            deductedAmount: validation.clampedAmount,
+            amount: validation.clampedAmount,
             releasedAt: new Date().toISOString(),
           }
         : d
@@ -15655,6 +16008,7 @@ function createAtriumActions() {
         }
       },
     });
+    return true;
   };
 
   const issueDepositReceiptPrint = async (depositId: string) => {
@@ -15785,6 +16139,509 @@ function createAtriumActions() {
       undo: () => restoreStoreSlices(before),
       redo: () => restoreStoreSlices(after),
     });
+  };
+
+  // ==========================================
+  // 7.5 Rental Depth Actions (Pricing, Contracts, Fleet/Gear/Coworking, 6.1/6.2/6.4, iCal)
+  // ==========================================
+
+  const upsertRentalPricingRule = (
+    input: Omit<RentalPricingRule, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+  ): RentalPricingRule => {
+    const existing = input.id
+      ? (globalState.rentalPricingRules || []).find((r) => r.id === input.id)
+      : undefined;
+    const nowIso = new Date().toISOString();
+    const record: RentalPricingRule = {
+      ...getTraceContext(),
+      ...existing,
+      ...input,
+      id: existing?.id || input.id || generateClientUuid(),
+      weekendDays:
+        input.weekendDays && input.weekendDays.length > 0 ? input.weekendDays : [5, 6],
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    const nextList = existing
+      ? (globalState.rentalPricingRules || []).map((r) => (r.id === record.id ? record : r))
+      : [record, ...(globalState.rentalPricingRules || [])];
+    globalState = { ...globalState, rentalPricingRules: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.upsertPricingRule(record).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: record.name,
+      message: t('venue_depth_rule_saved', globalState.language),
+    });
+    return record;
+  };
+
+  const deleteRentalPricingRule = (id: string) => {
+    const existing = (globalState.rentalPricingRules || []).find((r) => r.id === id);
+    if (!existing) return;
+    globalState = {
+      ...globalState,
+      rentalPricingRules: (globalState.rentalPricingRules || []).filter((r) => r.id !== id),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.deletePricingRule(id, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const upsertRentalContractTemplate = (
+    input: Omit<RentalContractTemplate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+  ): RentalContractTemplate => {
+    const existing = input.id
+      ? (globalState.rentalContractTemplates || []).find((tpl) => tpl.id === input.id)
+      : undefined;
+    const nowIso = new Date().toISOString();
+    const record: RentalContractTemplate = {
+      ...getTraceContext(),
+      ...existing,
+      ...input,
+      id: existing?.id || input.id || generateClientUuid(),
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    const baseList = input.isDefault
+      ? (globalState.rentalContractTemplates || []).map((tpl) =>
+          tpl.id !== record.id && tpl.rentalMode === record.rentalMode
+            ? { ...tpl, isDefault: false }
+            : tpl
+        )
+      : globalState.rentalContractTemplates || [];
+    const nextList = existing
+      ? baseList.map((tpl) => (tpl.id === record.id ? record : tpl))
+      : [record, ...baseList];
+    globalState = { ...globalState, rentalContractTemplates: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.upsertContractTemplate(record).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: record.name,
+      message: t('venue_depth_template_saved', globalState.language),
+    });
+    return record;
+  };
+
+  const deleteRentalContractTemplate = (id: string) => {
+    const existing = (globalState.rentalContractTemplates || []).find((tpl) => tpl.id === id);
+    if (!existing) return;
+    globalState = {
+      ...globalState,
+      rentalContractTemplates: (globalState.rentalContractTemplates || []).filter(
+        (tpl) => tpl.id !== id
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.deleteContractTemplate(id, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const signRentalBookingContract = (
+    bookingId: string,
+    input: { signerName: string; signatureData: string; templateId?: string }
+  ): boolean => {
+    const signerName = String(input.signerName || '').trim();
+    const signatureData = String(input.signatureData || '').trim();
+    if (!signerName || !signatureData) {
+      showToast({
+        type: 'error',
+        title: t('venue_depth_contract_title', globalState.language),
+        message: t('venue_depth_signature_required', globalState.language),
+      });
+      return false;
+    }
+    const ok = updateRentalBooking(bookingId, {
+      contractSigned: true,
+      contractSignedAt: new Date().toISOString(),
+      contractSignerName: signerName,
+      contractSignatureData: signatureData,
+      contractTemplateId: input.templateId,
+    });
+    if (ok) {
+      showToast({
+        type: 'success',
+        title: signerName,
+        message: t('venue_depth_contract_signed_toast', globalState.language),
+      });
+    }
+    return ok;
+  };
+
+  const recordRentalAssetCheckLog = (
+    input: Omit<RentalAssetCheckLog, 'id' | 'createdAt' | 'updatedAt' | 'loggedAt'> & {
+      loggedAt?: string;
+    }
+  ): RentalAssetCheckLog => {
+    const nowIso = new Date().toISOString();
+    const log: RentalAssetCheckLog = {
+      ...getTraceContext(),
+      ...input,
+      id: generateClientUuid(),
+      loggedAt: input.loggedAt || nowIso,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    const nextLogs = [log, ...(globalState.rentalAssetLogs || [])];
+    const nextUnits = globalState.rentableUnits.map((u) => {
+      if (u.id !== log.unitId) return u;
+      return {
+        ...u,
+        odometerKm: log.mileageKm != null ? log.mileageKm : u.odometerKm,
+        fuelLevelPct: log.fuelLevelPct != null ? log.fuelLevelPct : u.fuelLevelPct,
+        lastMaintenanceAt:
+          log.logType === 'maintenance' ? log.loggedAt.slice(0, 10) : u.lastMaintenanceAt,
+        status:
+          log.logType === 'maintenance'
+            ? ('Maintenance' as const)
+            : log.logType === 'checkout'
+            ? ('Occupied' as const)
+            : log.damageDetected
+            ? ('Maintenance' as const)
+            : ('Available' as const),
+        updatedAt: nowIso,
+      };
+    });
+    globalState = {
+      ...globalState,
+      rentalAssetLogs: nextLogs,
+      rentableUnits: nextUnits,
+    };
+    notify();
+    const updatedUnit = nextUnits.find((u) => u.id === log.unitId);
+    if (isSupabaseConfigured()) {
+      rentalService.upsertAssetCheckLog(log).catch(() => {});
+      if (updatedUnit) rentalService.upsertUnit(updatedUnit).catch(() => {});
+    }
+    showToast({
+      type: log.damageDetected ? 'warning' : 'success',
+      title: log.unitName,
+      message: t('venue_depth_asset_log_saved', globalState.language),
+    });
+    return log;
+  };
+
+  const upsertRentalCoworkingSubscription = (
+    input: Omit<RentalCoworkingSubscription, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+  ): RentalCoworkingSubscription => {
+    const existing = input.id
+      ? (globalState.rentalCoworkingSubscriptions || []).find((s) => s.id === input.id)
+      : undefined;
+    const nowIso = new Date().toISOString();
+    const sub: RentalCoworkingSubscription = {
+      ...getTraceContext(),
+      ...existing,
+      ...input,
+      id: existing?.id || input.id || generateClientUuid(),
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    const nextSubs = existing
+      ? (globalState.rentalCoworkingSubscriptions || []).map((s) => (s.id === sub.id ? sub : s))
+      : [sub, ...(globalState.rentalCoworkingSubscriptions || [])];
+    globalState = { ...globalState, rentalCoworkingSubscriptions: nextSubs };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.upsertCoworkingSubscription(sub).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: sub.renterName,
+      message: t('venue_depth_coworking_saved', globalState.language),
+    });
+    return sub;
+  };
+
+  const consumeRentalCoworkingHours = (
+    subscriptionId: string,
+    hoursToConsume: number
+  ): { success: boolean; remainingHours: number; reason?: string } => {
+    const sub = (globalState.rentalCoworkingSubscriptions || []).find(
+      (s) => s.id === subscriptionId
+    );
+    if (!sub) return { success: false, remainingHours: 0, reason: 'NOT_FOUND' };
+    const req = Math.max(0.5, Number(hoursToConsume || 0));
+    const remaining = Math.max(0, Number(sub.includedHours) - Number(sub.usedHours));
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (sub.status !== 'active' || (sub.endDate && today > sub.endDate.slice(0, 10))) {
+      showToast({
+        type: 'error',
+        title: sub.renterName,
+        message: t('venue_depth_coworking_inactive_error', globalState.language),
+      });
+      return { success: false, remainingHours: remaining, reason: 'EXPIRED_OR_INACTIVE' };
+    }
+    if (sub.planKind === 'hour_pack' && remaining < req) {
+      showToast({
+        type: 'error',
+        title: sub.renterName,
+        message: t('venue_depth_coworking_insufficient_error', globalState.language),
+      });
+      return { success: false, remainingHours: remaining, reason: 'INSUFFICIENT_HOURS' };
+    }
+
+    const nextUsed = Math.round((Number(sub.usedHours) + req) * 100) / 100;
+    const updatedSub: RentalCoworkingSubscription = {
+      ...sub,
+      usedHours: nextUsed,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      rentalCoworkingSubscriptions: (globalState.rentalCoworkingSubscriptions || []).map((s) =>
+        s.id === subscriptionId ? updatedSub : s
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      rentalService.upsertCoworkingSubscription(updatedSub).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: sub.renterName,
+      message: `-${req}h`,
+    });
+    return {
+      success: true,
+      remainingHours: Math.max(0, Number(updatedSub.includedHours) - nextUsed),
+    };
+  };
+
+  const createRentalUnifiedInvoice = (
+    bookingId: string,
+    options?: {
+      docType?: UnifiedDocType;
+      tvaPercent?: number;
+      paymentMethod?: UnifiedPaymentMethod | string;
+      issueImmediately?: boolean;
+    }
+  ): UnifiedDocument | null => {
+    const booking = globalState.rentalBookings.find((b) => b.id === bookingId);
+    if (!booking) return null;
+    const renter = globalState.rentalRenters.find((r) => r.id === booking.renterId);
+    const partyLink = ensurePartyForEntity({
+      sourceVertical: 'rental_booking',
+      entityType: 'renter',
+      entityId: renter?.id || booking.renterId || booking.id,
+      partyKind: renter?.companyName || booking.renterCompany ? 'company' : 'person',
+      displayName: booking.renterName,
+      phone: booking.renterPhone || renter?.phone,
+      email: booking.renterEmail || renter?.email,
+    });
+
+    if (renter && renter.crmPartyId !== partyLink.party.id) {
+      updateRentalRenter(renter.id, { crmPartyId: partyLink.party.id });
+    }
+
+    const tvaPct = options?.tvaPercent ?? 19;
+    const divisor = 1 + tvaPct / 100;
+    const baseHt = Math.round(((Number(booking.baseAmount || 0)) / divisor) * 100) / 100;
+    const lines: UnifiedLineInput[] = [
+      {
+        description: `${booking.unitName} — ${booking.purpose} (${booking.durationHours}h)`,
+        isService: true,
+        quantity: 1,
+        unit: 'location',
+        unitPriceHt: baseHt,
+        tvaPercent: tvaPct,
+      },
+    ];
+    for (const addon of booking.addons || []) {
+      const addonHt = Math.round((Number(addon.unitPrice || 0) / divisor) * 100) / 100;
+      lines.push({
+        description: addon.name,
+        isService: true,
+        quantity: Number(addon.quantity || 1),
+        unit: 'u',
+        unitPriceHt: addonHt,
+        tvaPercent: tvaPct,
+      });
+    }
+    if (Number(booking.lateFeeDzd || 0) > 0) {
+      const lateHt = Math.round((Number(booking.lateFeeDzd || 0) / divisor) * 100) / 100;
+      lines.push({
+        description: t('venue_depth_late_fee_line', globalState.language),
+        isService: true,
+        quantity: 1,
+        unit: 'forfait',
+        unitPriceHt: lateHt,
+        tvaPercent: tvaPct,
+      });
+    }
+
+    const createdDoc = createUnifiedDocument({
+      docType: options?.docType || 'facture',
+      sourceVertical: 'rental_booking',
+      partyId: partyLink.party.id,
+      partyName: booking.renterName,
+      partyPhone: booking.renterPhone,
+      paymentMethod: options?.paymentMethod || 'bank_transfer',
+      currency: (booking.currency as UnifiedCurrency) || 'DZD',
+      sourceEntityType: 'rental_booking',
+      sourceEntityId: booking.id,
+      items: lines,
+      issueImmediately: options?.issueImmediately ?? true,
+    });
+
+    updateRentalBooking(booking.id, { unifiedDocumentId: createdDoc.id });
+    return createdDoc;
+  };
+
+  const recordRentalUnifiedPayment = (
+    bookingId: string,
+    input: {
+      amountDzd: number;
+      method: UnifiedPaymentMethod | string;
+      paymentDate?: string;
+      notes?: string;
+      instrumentNumber?: string;
+      instrumentBank?: string;
+    }
+  ): UnifiedPayment | null => {
+    const booking = globalState.rentalBookings.find((b) => b.id === bookingId);
+    if (!booking) return null;
+    const amountDzd = Math.max(0, Number(input.amountDzd || 0));
+    if (amountDzd <= 0) return null;
+
+    const renter = globalState.rentalRenters.find((r) => r.id === booking.renterId);
+    const partyLink = ensurePartyForEntity({
+      sourceVertical: 'rental_booking',
+      entityType: 'renter',
+      entityId: renter?.id || booking.renterId || booking.id,
+      partyKind: renter?.companyName || booking.renterCompany ? 'company' : 'person',
+      displayName: booking.renterName,
+      phone: booking.renterPhone || renter?.phone,
+      email: booking.renterEmail || renter?.email,
+    });
+
+    const linkedDoc = booking.unifiedDocumentId
+      ? (globalState.unifiedDocuments || []).find((d) => d.id === booking.unifiedDocumentId)
+      : undefined;
+
+    const payment = recordUnifiedPayment({
+      sourceVertical: 'rental_booking',
+      partyId: partyLink.party.id,
+      partyName: booking.renterName,
+      method: input.method,
+      direction: 'inflow',
+      amountDzd,
+      currency: (booking.currency as UnifiedCurrency) || 'DZD',
+      paymentDate: input.paymentDate,
+      allocations: linkedDoc ? [{ documentId: linkedDoc.id, requestedDzd: amountDzd }] : undefined,
+      instrumentNumber: input.instrumentNumber,
+      instrumentBank: input.instrumentBank,
+      notes: input.notes || `Rental booking ${booking.unitName} (${booking.id})`,
+    });
+
+    if (payment) {
+      const nextPaid = Number(booking.paidAmount || 0) + amountDzd;
+      const nextBalance = Math.max(0, Number(booking.totalAmount || 0) - nextPaid);
+      const nextSchedule =
+        booking.stagedPaymentSchedule && booking.stagedPaymentSchedule.length > 0
+          ? applyPaymentToStagedSchedule(
+              booking.stagedPaymentSchedule,
+              amountDzd,
+              payment.id,
+              new Date().toISOString()
+            )
+          : booking.stagedPaymentSchedule;
+      updateRentalBooking(booking.id, {
+        paidAmount: nextPaid,
+        balanceDue: nextBalance,
+        stagedPaymentSchedule: nextSchedule,
+      });
+    }
+    return payment;
+  };
+
+  const importRentalIcsBookings = (
+    icsText: string,
+    fallbackUnitId?: string
+  ): {
+    importedCount: number;
+    skippedDuplicates: number;
+    skippedConflicts: number;
+  } => {
+    const parsed = parseIcsBookings(icsText);
+    const existingUids = new Set(
+      globalState.rentalBookings.map((b) => b.icalUid).filter(Boolean) as string[]
+    );
+    let importedCount = 0;
+    let skippedDuplicates = 0;
+    let skippedConflicts = 0;
+
+    for (const ev of parsed) {
+      if (ev.uid && existingUids.has(ev.uid)) {
+        skippedDuplicates += 1;
+        continue;
+      }
+      const matchedUnit =
+        globalState.rentableUnits.find(
+          (u) =>
+            ev.location &&
+            (u.name.toLowerCase().includes(ev.location.toLowerCase()) ||
+              u.code.toLowerCase() === ev.location.toLowerCase())
+        ) ||
+        globalState.rentableUnits.find((u) => u.id === fallbackUnitId) ||
+        globalState.rentableUnits[0];
+
+      if (!matchedUnit) {
+        skippedConflicts += 1;
+        continue;
+      }
+
+      const pricing = computeRentalPricingWithRules({
+        unit: matchedUnit,
+        startDateTime: ev.startDateTime,
+        endDateTime: ev.endDateTime,
+        pricingRules: globalState.rentalPricingRules || [],
+      });
+
+      const created = createRentalBooking({
+        renterId: globalState.rentalRenters[0]?.id || '',
+        renterName: ev.summary || 'iCal Import',
+        renterPhone: '+213 550 00 00 00',
+        unitId: matchedUnit.id,
+        unitName: matchedUnit.name,
+        unitType: matchedUnit.type,
+        rentalMode: resolveUnitRentalMode(matchedUnit),
+        purpose: ev.summary || 'External Calendar Event',
+        startDateTime: ev.startDateTime,
+        endDateTime: ev.endDateTime,
+        durationHours: pricing.durationHours || 2,
+        attendeeCount: 1,
+        status: ev.status === 'Cancelled' ? 'Tentative' : ev.status,
+        baseAmount: pricing.adjustedBaseDzd,
+        addonsAmount: 0,
+        totalAmount: pricing.totalDzd,
+        currency: matchedUnit.currency || 'DZD',
+        depositAmount: 0,
+        depositStatus: 'Pending',
+        paidAmount: 0,
+        balanceDue: pricing.totalDzd,
+        addons: [],
+        contractSigned: false,
+        icalUid: ev.uid,
+        notes: ev.description,
+      });
+
+      if (created) {
+        importedCount += 1;
+        existingUids.add(ev.uid);
+      } else {
+        skippedConflicts += 1;
+      }
+    }
+
+    return { importedCount, skippedDuplicates, skippedConflicts };
   };
 
   const resetEduMockData = () => {
@@ -19427,6 +20284,10 @@ function createAtriumActions() {
         rentalBookings: INITIAL_RENTAL_BOOKINGS,
         rentalRenters: INITIAL_RENTAL_RENTERS,
         securityDeposits: INITIAL_SECURITY_DEPOSITS,
+        rentalPricingRules: [],
+        rentalContractTemplates: [],
+        rentalAssetLogs: [],
+        rentalCoworkingSubscriptions: [],
       };
     } else if (targetCategory === 'education_cohort') {
       updates = {
@@ -20595,6 +21456,10 @@ function createAtriumActions() {
       posKitchenOrders: Array.isArray(parsed.posKitchenOrders) ? parsed.posKitchenOrders : [],
       posCustomerCreditEntries: Array.isArray(parsed.posCustomerCreditEntries) ? parsed.posCustomerCreditEntries : [],
       posOpticalPrescriptions: Array.isArray(parsed.posOpticalPrescriptions) ? parsed.posOpticalPrescriptions : [],
+      rentalPricingRules: Array.isArray(parsed.rentalPricingRules) ? parsed.rentalPricingRules : [],
+      rentalContractTemplates: Array.isArray(parsed.rentalContractTemplates) ? parsed.rentalContractTemplates : [],
+      rentalAssetLogs: Array.isArray(parsed.rentalAssetLogs) ? parsed.rentalAssetLogs : [],
+      rentalCoworkingSubscriptions: Array.isArray(parsed.rentalCoworkingSubscriptions) ? parsed.rentalCoworkingSubscriptions : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -28734,6 +29599,17 @@ function createAtriumActions() {
     releaseSecurityDeposit,
     deductSecurityDeposit,
     issueDepositReceiptPrint,
+    upsertRentalPricingRule,
+    deleteRentalPricingRule,
+    upsertRentalContractTemplate,
+    deleteRentalContractTemplate,
+    signRentalBookingContract,
+    recordRentalAssetCheckLog,
+    upsertRentalCoworkingSubscription,
+    consumeRentalCoworkingHours,
+    createRentalUnifiedInvoice,
+    recordRentalUnifiedPayment,
+    importRentalIcsBookings,
     resetVenueMockData,
     resetEduMockData,
     resetFreelanceMockData,
@@ -29044,6 +29920,10 @@ export function useAtriumStore() {
   const currentRentalBookings = selectCurrentRentalBookingsFromState(state);
   const currentRentalRenters = selectCurrentRentalRentersFromState(state);
   const currentSecurityDeposits = selectCurrentSecurityDepositsFromState(state);
+  const currentRentalPricingRules = selectCurrentRentalPricingRulesFromState(state);
+  const currentRentalContractTemplates = selectCurrentRentalContractTemplatesFromState(state);
+  const currentRentalAssetLogs = selectCurrentRentalAssetLogsFromState(state);
+  const currentRentalCoworkingSubscriptions = selectCurrentRentalCoworkingSubscriptionsFromState(state);
   const currentEduCourses = selectCurrentEduCoursesFromState(state);
   const currentEduClassrooms = selectCurrentEduClassroomsFromState(state);
   const currentEduCohorts = selectCurrentEduCohortsFromState(state);
@@ -29183,6 +30063,10 @@ export function useAtriumStore() {
     rentalBookings: currentRentalBookings,
     rentalRenters: currentRentalRenters,
     securityDeposits: currentSecurityDeposits,
+    rentalPricingRules: currentRentalPricingRules,
+    rentalContractTemplates: currentRentalContractTemplates,
+    rentalAssetLogs: currentRentalAssetLogs,
+    rentalCoworkingSubscriptions: currentRentalCoworkingSubscriptions,
     // Education & Academy Collections (Strictly Scoped by Active Branch)
     eduCourses: currentEduCourses,
     eduClassrooms: currentEduClassrooms,

@@ -84,6 +84,7 @@ export const VenueRentersView: React.FC = () => {
     createRentalRenter,
     updateRentalRenter,
     deleteRentalRenter,
+    ensurePartyForEntity,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -114,6 +115,8 @@ export const VenueRentersView: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [idDocNumber, setIdDocNumber] = useState('');
+  const [driverLicenseNumber, setDriverLicenseNumber] = useState('');
+  const [driverLicenseExpiry, setDriverLicenseExpiry] = useState('');
   const [notes, setNotes] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -203,6 +206,8 @@ export const VenueRentersView: React.FC = () => {
     setEmail('');
     setPhone('+213 ');
     setIdDocNumber('');
+    setDriverLicenseNumber('');
+    setDriverLicenseExpiry('');
     setNotes('');
     setIsAddModalOpen(true);
   }, []);
@@ -214,6 +219,8 @@ export const VenueRentersView: React.FC = () => {
     setEmail(renter.email);
     setPhone(renter.phone);
     setIdDocNumber(renter.idDocNumber || '');
+    setDriverLicenseNumber(renter.driverLicenseNumber || '');
+    setDriverLicenseExpiry(renter.driverLicenseExpiry || '');
     setNotes(renter.notes || '');
     setIsAddModalOpen(true);
   }, []);
@@ -248,6 +255,8 @@ export const VenueRentersView: React.FC = () => {
         email: email.trim(),
         phone: phone.trim(),
         idDocNumber: idDocNumber.trim() || undefined,
+        driverLicenseNumber: driverLicenseNumber.trim() || undefined,
+        driverLicenseExpiry: driverLicenseExpiry.trim() || undefined,
         notes: notes.trim() || undefined,
       });
     } else {
@@ -257,6 +266,8 @@ export const VenueRentersView: React.FC = () => {
         email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, '.')}@client.local`,
         phone: phone.trim(),
         idDocNumber: idDocNumber.trim() || undefined,
+        driverLicenseNumber: driverLicenseNumber.trim() || undefined,
+        driverLicenseExpiry: driverLicenseExpiry.trim() || undefined,
         currency: 'DZD',
         notes: notes.trim() || undefined,
       });
@@ -911,6 +922,28 @@ export const VenueRentersView: React.FC = () => {
                     icon: <Edit2 size={15} />,
                     onClick: () => handleOpenEdit(renter),
                   },
+                  {
+                    id: 'sync_crm',
+                    label: renter.crmPartyId ? t('venue_depth_crm_linked') : t('venue_depth_sync_crm_btn'),
+                    icon: <Check size={15} />,
+                    onClick: () => {
+                      const res = ensurePartyForEntity({
+                        sourceVertical: 'rental_booking',
+                        entityType: 'renter',
+                        entityId: renter.id,
+                        partyKind: renter.companyName ? 'company' : 'person',
+                        displayName: renter.fullName,
+                        phone: renter.phone,
+                        email: renter.email,
+                      });
+                      updateRentalRenter(renter.id, { crmPartyId: res.party.id });
+                      showToast({
+                        type: 'success',
+                        title: t('venue_depth_crm_linked'),
+                        message: `${renter.fullName} → ${res.party.id}`,
+                      });
+                    },
+                  },
                 ]}
               />
 
@@ -936,6 +969,20 @@ export const VenueRentersView: React.FC = () => {
                     value={renter.idDocNumber || (isFr ? 'Non renseigné' : '--')}
                     mono
                     copyText={renter.idDocNumber}
+                  />
+                  <InspectorKeyValue
+                    label={t('venue_depth_driver_license')}
+                    value={
+                      renter.driverLicenseNumber
+                        ? `${renter.driverLicenseNumber}${renter.driverLicenseExpiry ? ` (${renter.driverLicenseExpiry})` : ''}`
+                        : '--'
+                    }
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label="CRM Party (6.4)"
+                    value={renter.crmPartyId || '--'}
+                    mono
                     isLast
                   />
                 </InspectorCard>
@@ -1042,6 +1089,20 @@ export const VenueRentersView: React.FC = () => {
                 value={idDocNumber}
                 onChange={(v) => setIdDocNumber(extractStr(v))}
               />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <LabelInput
+                  label={t('venue_depth_driver_license')}
+                  placeholder="16/987654-B"
+                  value={driverLicenseNumber}
+                  onChange={(v) => setDriverLicenseNumber(extractStr(v))}
+                />
+                <LabelInput
+                  label={t('venue_depth_driver_license_exp')}
+                  type="date"
+                  value={driverLicenseExpiry}
+                  onChange={(v) => setDriverLicenseExpiry(extractStr(v))}
+                />
+              </div>
               <LabelTextarea
                 label={
                   isAr

@@ -69,6 +69,11 @@ import {
   resolvePeriodKey,
   type DashboardPeriodKey,
 } from './common';
+import {
+  evaluateVehicleFleetAlerts,
+  filterBookingSegmentsForDate,
+  resolveUnitRentalMode,
+} from '../rentalDepth';
 
 const PALETTE = ['#d4522f', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#6b655f'];
 
@@ -788,11 +793,16 @@ export function selectVenueDashboard(input: VenueDashboardInput) {
     capacityScope === 'all'
       ? units
       : units.filter((u) => {
-          const isDesk = /desk|cowork|poste|open/i.test(u.type || '');
-          return capacityScope === 'cowork' ? isDesk : !isDesk;
+          const mode = resolveUnitRentalMode(u);
+          if (capacityScope === 'cowork') return mode === 'coworking_desk';
+          if (capacityScope === 'fleet') return mode === 'vehicle' || mode === 'gear';
+          return mode === 'venue';
         });
   const occupiedUnits = scopedUnits.filter((u) => u.status === 'Occupied').length;
   const occupancyPct = scopedUnits.length > 0 ? Math.round((occupiedUnits / scopedUnits.length) * 100) : 0;
+
+  const fleetAlerts = evaluateVehicleFleetAlerts(units, anchorDate.toISOString());
+  const fleetAttentionCount = fleetAlerts.filter((a) => a.needsAttention).length;
 
   const heldDepositsTotal = deposits.filter((d) => d.status === 'Held').reduce((sum, d) => sum + (d.amount || 0), 0);
   const windowBookings = filterByPeriod(activeBookings, (b) => b.startDateTime || b.createdAt, period, anchorDate);
@@ -812,22 +822,55 @@ export function selectVenueDashboard(input: VenueDashboardInput) {
 
   const timelineStartHour = timelineShift === 'pm' ? 13 : 8;
   const timelineEndHour = timelineShift === 'am' ? 14 : 22;
-  const blocks: TimelineBlock[] = windowBookings
-    .map((b) => {
-      const start = parseIsoDay(b.startDateTime);
-      const startH = start ? start.getHours() + start.getMinutes() / 60 : 9;
-      const endH = Math.min(23, Math.max(startH + 1, startH + (b.durationHours || 2)));
-      return {
-        id: b.id,
-        resourceId: b.unitId,
-        label: `${b.renterName} · ${b.purpose}`,
-        startHour: startH,
-        endHour: endH,
-        tone: (b.status === 'CheckedIn' ? 'primary' : b.status === 'Confirmed' ? 'secondary' : 'neutral') as TimelineBlock['tone'],
-        statusLabel: b.status,
-      };
-    })
-    .filter((b) => b.endHour > timelineStartHour && b.startHour < timelineEndHour);
+  const anchorYmd = anchorDate.toISOString().slice(0, 10);
+  const anchorDaySegments = filterBookingSegmentsForDate(
+    activeBookings,
+    anchorYmd,
+    timelineStartHour,
+    timelineEndHour
+  );
+  const blocks: TimelineBlock[] =
+    anchorDaySegments.length > 0
+      ? anchorDaySegments.map((seg) => ({
+          id: seg.booking.id,
+          resourceId: seg.booking.unitId,
+          label: `${seg.continuesFromPriorDay ? '← ' : ''}${seg.booking.renterName} · ${seg.booking.purpose}${seg.continuesToNextDay ? ' →' : ''}`,
+          startHour: seg.startHour,
+          endHour: seg.endHour,
+          tone: (seg.booking.status === 'CheckedIn'
+            ? 'primary'
+            : seg.booking.status === 'Confirmed'
+            ? 'secondary'
+            : 'neutral') as TimelineBlock['tone'],
+          statusLabel: seg.booking.status,
+        }))
+      : windowBookings
+          .map((b) => {
+            const start = parseIsoDay(b.startDateTime);
+            const end = parseIsoDay(b.endDateTime);
+            const startH = start ? start.getHours() + start.getMinutes() / 60 : 9;
+            const crossesDay =
+              b.startDateTime.slice(0, 10) !== (b.endDateTime || '').slice(0, 10);
+            const endH = crossesDay
+              ? timelineEndHour
+              : Math.min(
+                  timelineEndHour,
+                  Math.max(
+                    startH + 1,
+                    end ? end.getHours() + end.getMinutes() / 60 : startH + (b.durationHours || 2)
+                  )
+                );
+            return {
+              id: b.id,
+              resourceId: b.unitId,
+              label: `${b.renterName} · ${b.purpose}${crossesDay ? ' →' : ''}`,
+              startHour: Math.max(timelineStartHour, startH),
+              endHour: endH,
+              tone: (b.status === 'CheckedIn' ? 'primary' : b.status === 'Confirmed' ? 'secondary' : 'neutral') as TimelineBlock['tone'],
+              statusLabel: b.status,
+            };
+          })
+          .filter((b) => b.endHour > timelineStartHour && b.startHour < timelineEndHour);
 
   const donutBookings = filterByPeriod(activeBookings, (b) => b.startDateTime || b.createdAt, donutPeriod, anchorDate);
   const typeMap = new Map<string, number>();
@@ -869,6 +912,8 @@ export function selectVenueDashboard(input: VenueDashboardInput) {
     totalUnits: scopedUnits.length,
     heldDepositsTotal,
     outstandingBalance,
+    fleetUnitsCount: fleetAlerts.length,
+    fleetAttentionCount,
     gauges,
     resources,
     blocks,

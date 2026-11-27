@@ -7,6 +7,8 @@ import {
   X,
   Calendar,
   Power,
+  AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import {
   showToast,
@@ -14,12 +16,28 @@ import {
   shallowEqualObjects,
   selectCurrentRentableUnitsFromState,
   selectCurrentRentalBookingsFromState,
+  selectCurrentRentalPricingRulesFromState,
+  selectCurrentRentalContractTemplatesFromState,
+  selectCurrentRentalAssetLogsFromState,
+  selectCurrentRentalCoworkingSubscriptionsFromState,
+  selectCurrentRentalRentersFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
+import {
+  RentableUnit,
+  RentableUnitType,
+  RentableUnitStatus,
+  RentalMode,
+} from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
+import {
+  evaluateCoworkingSubscriptionUsage,
+  evaluateGearAssetAvailability,
+  evaluateVehicleFleetAlerts,
+  resolveUnitRentalMode,
+} from '../../../utils/rentalDepth';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { LabelInput } from '../../ui/LabelInput';
@@ -71,10 +89,27 @@ export const VenueInventoryView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-  const { rentableUnits, rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const {
+    rentableUnits,
+    rentalBookings,
+    rentalPricingRules,
+    rentalContractTemplates,
+    rentalAssetLogs,
+    rentalCoworkingSubscriptions,
+    rentalRenters,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+  } = useAtriumSelector(
     (s) => ({
       rentableUnits: selectCurrentRentableUnitsFromState(s),
       rentalBookings: selectCurrentRentalBookingsFromState(s),
+      rentalPricingRules: selectCurrentRentalPricingRulesFromState(s),
+      rentalContractTemplates: selectCurrentRentalContractTemplatesFromState(s),
+      rentalAssetLogs: selectCurrentRentalAssetLogsFromState(s),
+      rentalCoworkingSubscriptions: selectCurrentRentalCoworkingSubscriptionsFromState(s),
+      rentalRenters: selectCurrentRentalRentersFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -86,8 +121,19 @@ export const VenueInventoryView: React.FC = () => {
     createRentableUnit,
     updateRentableUnit,
     deleteRentableUnit,
+    upsertRentalPricingRule,
+    deleteRentalPricingRule,
+    upsertRentalContractTemplate,
+    deleteRentalContractTemplate,
+    recordRentalAssetCheckLog,
+    upsertRentalCoworkingSubscription,
+    consumeRentalCoworkingHours,
     retryCloudSync,
   } = useAtriumActions();
+
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<
+    'catalog' | 'fleet' | 'gear' | 'coworking' | 'rules'
+  >('catalog');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('All');
@@ -124,6 +170,45 @@ export const VenueInventoryView: React.FC = () => {
   const [amenitiesStr, setAmenitiesStr] = useState('');
   const [description, setDescription] = useState('');
   const [colorHex, setColorHex] = useState('#8B5CF6');
+  const [plateNumber, setPlateNumber] = useState('');
+  const [vin, setVin] = useState('');
+  const [makeModel, setMakeModel] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
+  const [odometerKm, setOdometerKm] = useState('');
+  const [fuelLevelPct, setFuelLevelPct] = useState('');
+  const [insuranceExpiry, setInsuranceExpiry] = useState('');
+  const [techControlExpiry, setTechControlExpiry] = useState('');
+  const [weekendMultiplier, setWeekendMultiplier] = useState('1');
+  const [graceMinutes, setGraceMinutes] = useState('15');
+  const [lateHourlyRate, setLateHourlyRate] = useState('');
+
+  // Sub-tab forms: Fleet / Gear Inspection
+  const [logUnitId, setLogUnitId] = useState('');
+  const [logType, setLogType] = useState<'checkout' | 'checkin' | 'maintenance'>('checkin');
+  const [logMileage, setLogMileage] = useState('');
+  const [logFuelPct, setLogFuelPct] = useState('');
+  const [logDamageDetected, setLogDamageDetected] = useState(false);
+  const [logDamageDzd, setLogDamageDzd] = useState('0');
+  const [logNotes, setLogNotes] = useState('');
+
+  // Sub-tab forms: Coworking Pass / Hour Pack
+  const [cwRenterId, setCwRenterId] = useState('');
+  const [cwPlanName, setCwPlanName] = useState('Pro Desk 40h Pack');
+  const [cwPlanKind, setCwPlanKind] = useState<'monthly_pass' | 'hour_pack'>('hour_pack');
+  const [cwIncludedHours, setCwIncludedHours] = useState('40');
+  const [cwMonthlyFeeDzd, setCwMonthlyFeeDzd] = useState('18000');
+
+  // Sub-tab forms: Pricing Rule & Contract Template
+  const [ruleName, setRuleName] = useState('');
+  const [ruleWeekendMult, setRuleWeekendMult] = useState('1.25');
+  const [ruleSeasonalMult, setRuleSeasonalMult] = useState('1.15');
+  const [ruleSeasonStart, setRuleSeasonStart] = useState('');
+  const [ruleSeasonEnd, setRuleSeasonEnd] = useState('');
+  const [tplName, setTplName] = useState('');
+  const [tplMode, setTplMode] = useState<RentalMode | 'all'>('all');
+  const [tplBody, setTplBody] = useState(
+    'RENTAL AGREEMENT — {{business_name}}\nLessee: {{renter_name}}\nUnit: {{unit_name}} ({{plate_or_serial}})\nPeriod: {{start_date}} -> {{end_date}}\nTotal: {{total_amount}}'
+  );
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -234,6 +319,17 @@ export const VenueInventoryView: React.FC = () => {
     setAmenitiesStr('');
     setDescription('');
     setColorHex('#3B82F6');
+    setPlateNumber('');
+    setVin('');
+    setMakeModel('');
+    setSerialNumber('');
+    setOdometerKm('');
+    setFuelLevelPct('');
+    setInsuranceExpiry('');
+    setTechControlExpiry('');
+    setWeekendMultiplier('1');
+    setGraceMinutes('15');
+    setLateHourlyRate('');
     setIsAddModalOpen(true);
   }, []);
 
@@ -249,6 +345,17 @@ export const VenueInventoryView: React.FC = () => {
     setAmenitiesStr(unit.amenities.join(', '));
     setDescription(unit.description);
     setColorHex(unit.colorHex || '#8B5CF6');
+    setPlateNumber(unit.plateNumber || '');
+    setVin(unit.vin || '');
+    setMakeModel(unit.makeModel || '');
+    setSerialNumber(unit.serialNumber || '');
+    setOdometerKm(unit.odometerKm !== undefined ? String(unit.odometerKm) : '');
+    setFuelLevelPct(unit.fuelLevelPct !== undefined ? String(unit.fuelLevelPct) : '');
+    setInsuranceExpiry(unit.insuranceExpiry || '');
+    setTechControlExpiry(unit.techControlExpiry || '');
+    setWeekendMultiplier(unit.weekendMultiplier !== undefined ? String(unit.weekendMultiplier) : '1');
+    setGraceMinutes(unit.graceMinutes !== undefined ? String(unit.graceMinutes) : '15');
+    setLateHourlyRate(unit.lateHourlyRate !== undefined ? String(unit.lateHourlyRate) : '');
     setIsAddModalOpen(true);
   }, []);
 
@@ -303,6 +410,21 @@ export const VenueInventoryView: React.FC = () => {
       .map((a) => a.trim())
       .filter(Boolean);
 
+    const extraFields: Partial<RentableUnit> = {
+      rentalMode: resolveUnitRentalMode({ type }),
+      plateNumber: plateNumber.trim() || undefined,
+      vin: vin.trim() || undefined,
+      makeModel: makeModel.trim() || undefined,
+      serialNumber: serialNumber.trim() || undefined,
+      odometerKm: odometerKm.trim() !== '' ? Number(odometerKm) : undefined,
+      fuelLevelPct: fuelLevelPct.trim() !== '' ? Number(fuelLevelPct) : undefined,
+      insuranceExpiry: insuranceExpiry.trim() || undefined,
+      techControlExpiry: techControlExpiry.trim() || undefined,
+      weekendMultiplier: weekendMultiplier.trim() !== '' ? Number(weekendMultiplier) : undefined,
+      graceMinutes: graceMinutes.trim() !== '' ? Number(graceMinutes) : undefined,
+      lateHourlyRate: lateHourlyRate.trim() !== '' ? Number(lateHourlyRate) : undefined,
+    };
+
     if (unitToEdit) {
       updateRentableUnit(unitToEdit.id, {
         name: name.trim(),
@@ -315,11 +437,12 @@ export const VenueInventoryView: React.FC = () => {
         amenities: amenitiesList,
         description: description.trim(),
         colorHex,
+        ...extraFields,
       });
     } else {
       createRentableUnit({
         name: name.trim(),
-        code: code.trim().toUpperCase() || `ROOM-${Date.now().toString().slice(-4)}`,
+        code: code.trim().toUpperCase() || `UNIT-${Date.now().toString().slice(-4)}`,
         type,
         capacity: parsedCapacity,
         surfaceAreaSqm: parsedSurface,
@@ -330,6 +453,7 @@ export const VenueInventoryView: React.FC = () => {
         amenities: amenitiesList,
         description: description.trim(),
         colorHex,
+        ...extraFields,
       });
     }
     setIsAddModalOpen(false);
@@ -417,6 +541,8 @@ export const VenueInventoryView: React.FC = () => {
           { value: 'Room', label: t('venue_type_room') },
           { value: 'Court', label: t('venue_type_court') },
           { value: 'Desk', label: t('venue_type_desk') },
+          { value: 'Vehicle', label: t('venue_type_vehicle') },
+          { value: 'Gear', label: t('venue_type_gear') },
         ],
       },
       {
@@ -515,6 +641,10 @@ export const VenueInventoryView: React.FC = () => {
               ? t('venue_type_room')
               : u.type === 'Court'
               ? t('venue_type_court')
+              : u.type === 'Vehicle'
+              ? t('venue_type_vehicle')
+              : u.type === 'Gear' || u.type === 'Equipment'
+              ? t('venue_type_gear')
               : t('venue_type_desk');
           return (
             <div className="flex items-center gap-3">
@@ -719,6 +849,35 @@ export const VenueInventoryView: React.FC = () => {
         }}
       />
 
+      {/* 7.5 Vertical Modes & Configuration Switcher */}
+      <div className="flex flex-wrap items-center gap-2 pb-1">
+        {(
+          [
+            { id: 'catalog', label: t('venue_depth_tab_catalog') },
+            { id: 'fleet', label: t('venue_depth_tab_fleet') },
+            { id: 'gear', label: t('venue_depth_tab_gear') },
+            { id: 'coworking', label: t('venue_depth_tab_coworking') },
+            { id: 'rules', label: t('venue_depth_tab_rules') },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveWorkspaceTab(tab.id)}
+            data-sq="ctl"
+            data-sq-border={activeWorkspaceTab === tab.id ? 'none' : 'solid'}
+            className={`px-4 py-2 t-small font-semibold transition-colors cursor-pointer ${
+              activeWorkspaceTab === tab.id
+                ? 'bg-[#d4522f] text-white'
+                : 'bg-white dark:bg-[#22201E] text-black/75 dark:text-white/80 [--sq-stroke:var(--sq-stroke-card)] hover:bg-[#F5F1EC] dark:hover:bg-[#2B2825]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeWorkspaceTab === 'catalog' && (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={
@@ -740,6 +899,8 @@ export const VenueInventoryView: React.FC = () => {
             { value: 'Room', label: isAr ? 'اجتماعات' : isFr ? 'Réunion' : 'Rooms' },
             { value: 'Court', label: isAr ? 'ملاعب' : isFr ? 'Terrains' : 'Courts' },
             { value: 'Desk', label: isAr ? 'مكاتب' : isFr ? 'Bureaux' : 'Desks' },
+            { value: 'Vehicle', label: t('venue_type_vehicle') },
+            { value: 'Gear', label: t('venue_type_gear') },
           ]}
           statusValue={selectedTypeFilter}
           onStatusChange={setSelectedTypeFilter}
@@ -850,6 +1011,10 @@ export const VenueInventoryView: React.FC = () => {
                 ? t('venue_type_room')
                 : unit.type === 'Court'
                 ? t('venue_type_court')
+                : unit.type === 'Vehicle'
+                ? t('venue_type_vehicle')
+                : unit.type === 'Gear' || unit.type === 'Equipment'
+                ? t('venue_type_gear')
                 : t('venue_type_desk');
             const localizedStatus =
               unit.status === 'Available'
@@ -948,6 +1113,424 @@ export const VenueInventoryView: React.FC = () => {
           onResetFilters={handleResetFilters}
         />
       </ScreenPod>
+      )}
+
+      {activeWorkspaceTab === 'fleet' && (() => {
+        const vehicleUnits = rentableUnits.filter((u) => resolveUnitRentalMode(u) === 'vehicle');
+        const alerts = evaluateVehicleFleetAlerts(rentableUnits);
+        return (
+          <ScreenPod>
+            <div className="p-6 space-y-6 pb-16">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h3 className="t-pod font-semibold text-black dark:text-white">
+                  {t('venue_depth_tab_fleet')} ({vehicleUnits.length})
+                </h3>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  icon={<Plus size={14} />}
+                  onClick={() => {
+                    handleOpenAdd();
+                    setType('Vehicle');
+                    setCapacity('5');
+                  }}
+                >
+                  {t('venue_type_vehicle')}
+                </AtriumButton>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {vehicleUnits.map((v) => {
+                  const al = alerts.find((a) => a.unitId === v.id);
+                  return (
+                    <div
+                      key={v.id}
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] [--sq-stroke:var(--sq-stroke-card)] space-y-2 t-cap"
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="t-small text-black dark:text-white">
+                          {v.name} {v.plateNumber ? `· ${v.plateNumber}` : ''}
+                        </strong>
+                        {al?.needsAttention && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 font-semibold">
+                            <AlertTriangle size={11} /> Attention
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-black/65 dark:text-white/70 tabular-nums">
+                        {v.makeModel || v.code} · {v.odometerKm ?? 0} km · Fuel {v.fuelLevelPct ?? 100}%
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[11px]">
+                        <span className={`px-2 py-0.5 rounded ${
+                          al?.insuranceState === 'expired' || al?.insuranceState === 'expiring_soon'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                            : al?.insuranceState === 'ok'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                            : 'bg-black/[0.06] text-black/65 dark:bg-white/[0.08] dark:text-white/65'
+                        }`}>
+                          Insurance: {v.insuranceExpiry || '--'} ({al?.insuranceState || 'unset'})
+                        </span>
+                        <span className={`px-2 py-0.5 rounded ${
+                          al?.techControlState === 'expired' || al?.techControlState === 'expiring_soon'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                            : al?.techControlState === 'ok'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                            : 'bg-black/[0.06] text-black/65 dark:bg-white/[0.08] dark:text-white/65'
+                        }`}>
+                          Tech Control: {v.techControlExpiry || '--'} ({al?.techControlState || 'unset'})
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {vehicleUnits.length === 0 && (
+                  <div className="t-cap text-black/55 dark:text-white/55">
+                    Add a Vehicle unit to track plate, odometer, fuel, insurance & contrôle technique.
+                  </div>
+                )}
+              </div>
+              {vehicleUnits.length > 0 && (
+                <div className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded-xl space-y-3">
+                  <div className="t-small font-semibold text-black dark:text-white">
+                    Log Fleet Inspection / Maintenance
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <LabelSelect
+                      label={t('venue_type_vehicle')}
+                      value={logUnitId || vehicleUnits[0]?.id || ''}
+                      onChange={setLogUnitId}
+                      options={vehicleUnits.map((v) => ({ value: v.id, label: v.name }))}
+                    />
+                    <LabelSelect
+                      label="Log Type"
+                      value={logType}
+                      onChange={(val) => setLogType(val as 'checkout' | 'checkin' | 'maintenance')}
+                      options={[
+                        { value: 'checkout', label: 'Check-out' },
+                        { value: 'checkin', label: 'Check-in' },
+                        { value: 'maintenance', label: 'Maintenance' },
+                      ]}
+                    />
+                    <LabelInput label="Odometer (km)" type="number" value={logMileage} onChange={setLogMileage} />
+                    <LabelInput label="Fuel (%)" type="number" value={logFuelPct} onChange={setLogFuelPct} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex-1 min-w-[200px]">
+                      <LabelInput label={t('venue_depth_condition_notes')} value={logNotes} onChange={setLogNotes} />
+                    </div>
+                    <AtriumButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        const target = vehicleUnits.find((v) => v.id === (logUnitId || vehicleUnits[0]?.id));
+                        if (!target) return;
+                        recordRentalAssetCheckLog({
+                          unitId: target.id,
+                          unitName: target.name,
+                          logType,
+                          mileageKm: logMileage ? Number(logMileage) : undefined,
+                          fuelLevelPct: logFuelPct ? Number(logFuelPct) : undefined,
+                          damageDetected: logDamageDetected,
+                          damageAmountDzd: Number(logDamageDzd) || 0,
+                          conditionNotes: logNotes.trim() || undefined,
+                        });
+                        setLogNotes('');
+                      }}
+                    >
+                      Save Log
+                    </AtriumButton>
+                  </div>
+                </div>
+              )}
+              {rentalAssetLogs.length > 0 && (
+                <div className="space-y-1.5 t-cap">
+                  {rentalAssetLogs.slice(0, 6).map((l) => (
+                    <div key={l.id} className="flex justify-between p-2.5 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded">
+                      <span>
+                        <strong>{l.unitName}</strong> · {l.logType} · {l.conditionNotes || '--'}
+                      </span>
+                      <span className="tabular-nums text-black/60 dark:text-white/60">
+                        {l.mileageKm !== undefined ? `${l.mileageKm} km` : ''} {l.loggedAt.slice(0, 10)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </ScreenPod>
+        );
+      })()}
+
+      {activeWorkspaceTab === 'gear' && (() => {
+        const gearUnits = rentableUnits.filter((u) => resolveUnitRentalMode(u) === 'gear');
+        return (
+          <ScreenPod>
+            <div className="p-6 space-y-5 pb-16">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h3 className="t-pod font-semibold text-black dark:text-white">
+                  {t('venue_depth_tab_gear')} ({gearUnits.length})
+                </h3>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  icon={<Plus size={14} />}
+                  onClick={() => {
+                    handleOpenAdd();
+                    setType('Gear');
+                    setCapacity('1');
+                  }}
+                >
+                  {t('venue_type_gear')}
+                </AtriumButton>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {gearUnits.map((g) => {
+                  const avail = evaluateGearAssetAvailability(g, rentalAssetLogs);
+                  return (
+                    <div
+                      key={g.id}
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] [--sq-stroke:var(--sq-stroke-card)] space-y-2 t-cap"
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="t-small text-black dark:text-white">
+                          {g.name} ({g.serialNumber || g.code})
+                        </strong>
+                        <span className="px-2 py-0.5 rounded-full bg-white dark:bg-[#2B2825] font-semibold">
+                          {avail.custodyState}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-black/65 dark:text-white/65">
+                        <span>Damage ledger: {formatCurrencyAmount(avail.totalDamageChargesDzd, g.currency)}</span>
+                        <button
+                          type="button"
+                          className="text-[#d4522f] font-semibold cursor-pointer"
+                          onClick={() =>
+                            recordRentalAssetCheckLog({
+                              unitId: g.id,
+                              unitName: g.name,
+                              serialNumber: g.serialNumber,
+                              logType: avail.custodyState === 'checked_out' ? 'checkin' : 'checkout',
+                              conditionNotes: 'Custody swap',
+                            })
+                          }
+                        >
+                          Toggle Custody
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {gearUnits.length === 0 && (
+                  <div className="t-cap text-black/55 dark:text-white/55">
+                    Add a Gear / Equipment unit to track serial numbers & custody logs.
+                  </div>
+                )}
+              </div>
+            </div>
+          </ScreenPod>
+        );
+      })()}
+
+      {activeWorkspaceTab === 'coworking' && (
+        <ScreenPod>
+          <div className="p-6 space-y-6 pb-16">
+            <h3 className="t-pod font-semibold text-black dark:text-white">
+              {t('venue_depth_tab_coworking')} ({rentalCoworkingSubscriptions.length})
+            </h3>
+            <div className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded-xl grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+              <LabelSelect
+                label={t('venue_voucher_renter_name')}
+                value={cwRenterId || rentalRenters[0]?.id || ''}
+                onChange={setCwRenterId}
+                options={rentalRenters.map((r) => ({ value: r.id, label: r.fullName }))}
+              />
+              <LabelInput label="Plan Name" value={cwPlanName} onChange={setCwPlanName} />
+              <LabelSelect
+                label="Kind"
+                value={cwPlanKind}
+                onChange={(v) => setCwPlanKind(v as 'monthly_pass' | 'hour_pack')}
+                options={[
+                  { value: 'hour_pack', label: 'Hour Pack' },
+                  { value: 'monthly_pass', label: 'Monthly Pass' },
+                ]}
+              />
+              <LabelInput
+                label="Included Hours"
+                type="number"
+                value={cwIncludedHours}
+                onChange={setCwIncludedHours}
+              />
+              <AtriumButton
+                variant="primary"
+                onClick={() => {
+                  const targetRenter =
+                    rentalRenters.find((r) => r.id === (cwRenterId || rentalRenters[0]?.id)) ||
+                    rentalRenters[0];
+                  if (!targetRenter || !cwPlanName.trim()) return;
+                  const today = new Date().toISOString().slice(0, 10);
+                  const endD = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+                  upsertRentalCoworkingSubscription({
+                    renterId: targetRenter.id,
+                    renterName: targetRenter.fullName,
+                    planName: cwPlanName.trim(),
+                    planKind: cwPlanKind,
+                    includedHours: Number(cwIncludedHours) || 40,
+                    usedHours: 0,
+                    monthlyFeeDzd: Number(cwMonthlyFeeDzd) || 18000,
+                    startDate: today,
+                    endDate: endD,
+                    status: 'active',
+                  });
+                }}
+              >
+                Create Pass
+              </AtriumButton>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {rentalCoworkingSubscriptions.map((sub) => {
+                const check = evaluateCoworkingSubscriptionUsage(sub, 1);
+                return (
+                  <div
+                    key={sub.id}
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] [--sq-stroke:var(--sq-stroke-card)] flex items-center justify-between gap-3 t-cap"
+                  >
+                    <div>
+                      <div className="font-semibold t-small text-black dark:text-white">
+                        {sub.renterName} — {sub.planName}
+                      </div>
+                      <div className="text-black/65 dark:text-white/65 tabular-nums">
+                        {sub.usedHours}h / {sub.includedHours}h ({check.remainingHours}h left) · {sub.status}
+                      </div>
+                    </div>
+                    <AtriumButton
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => consumeRentalCoworkingHours(sub.id, 2)}
+                    >
+                      -2h Session
+                    </AtriumButton>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </ScreenPod>
+      )}
+
+      {activeWorkspaceTab === 'rules' && (
+        <ScreenPod>
+          <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-16">
+            <div className="space-y-4">
+              <h3 className="t-pod font-semibold text-black dark:text-white">
+                {t('venue_depth_pricing_rule_label')} ({rentalPricingRules.length})
+              </h3>
+              <div className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded-xl space-y-3">
+                <LabelInput label="Rule Name" value={ruleName} onChange={setRuleName} placeholder="Summer / Fri-Sat Peak" />
+                <div className="grid grid-cols-2 gap-3">
+                  <LabelInput label={t('venue_depth_weekend_mult')} type="number" step={0.05} value={ruleWeekendMult} onChange={setRuleWeekendMult} />
+                  <LabelInput label={t('venue_depth_seasonal_mult')} type="number" step={0.05} value={ruleSeasonalMult} onChange={setRuleSeasonalMult} />
+                  <LabelInput label="Season Start" type="date" value={ruleSeasonStart} onChange={setRuleSeasonStart} />
+                  <LabelInput label="Season End" type="date" value={ruleSeasonEnd} onChange={setRuleSeasonEnd} />
+                </div>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    if (!ruleName.trim()) return;
+                    upsertRentalPricingRule({
+                      name: ruleName.trim(),
+                      unitType: 'All',
+                      rentalMode: 'all',
+                      weekendMultiplier: Number(ruleWeekendMult) || 1.25,
+                      weekendDays: [5, 6],
+                      seasonalMultiplier: Number(ruleSeasonalMult) || 1,
+                      seasonStartDate: ruleSeasonStart || undefined,
+                      seasonEndDate: ruleSeasonEnd || undefined,
+                      isActive: true,
+                    });
+                    setRuleName('');
+                  }}
+                >
+                  Save Pricing Rule
+                </AtriumButton>
+              </div>
+              {rentalPricingRules.map((r) => (
+                <div key={r.id} className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded t-cap">
+                  <div>
+                    <strong className="text-black dark:text-white">{r.name}</strong> · Wknd ×{r.weekendMultiplier} · Seas ×{r.seasonalMultiplier}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => deleteRentalPricingRule(r.id)}
+                    className="text-black/55 hover:text-red-500 cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="t-pod font-semibold text-black dark:text-white">
+                {t('venue_depth_contract_template')} ({rentalContractTemplates.length})
+              </h3>
+              <div className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded-xl space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <LabelInput label="Template Name" value={tplName} onChange={setTplName} placeholder="Wedding / Fleet Standard" />
+                  <LabelSelect
+                    label="Mode"
+                    value={tplMode}
+                    onChange={(v) => setTplMode(v as RentalMode | 'all')}
+                    options={[
+                      { value: 'all', label: 'All' },
+                      { value: 'venue', label: 'Venue' },
+                      { value: 'vehicle', label: 'Vehicle' },
+                      { value: 'gear', label: 'Gear' },
+                      { value: 'coworking_desk', label: 'Coworking' },
+                    ]}
+                  />
+                </div>
+                <LabelTextarea label="Contract Body ({{tokens}})" rows={3} value={tplBody} onChange={setTplBody} />
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    if (!tplName.trim() || !tplBody.trim()) return;
+                    upsertRentalContractTemplate({
+                      name: tplName.trim(),
+                      rentalMode: tplMode,
+                      bodyTemplate: tplBody,
+                      requireSignature: true,
+                    });
+                    setTplName('');
+                  }}
+                >
+                  Save Template
+                </AtriumButton>
+              </div>
+              {rentalContractTemplates.map((tpl) => (
+                <div key={tpl.id} className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B1A] rounded t-cap">
+                  <div>
+                    <strong className="text-black dark:text-white">{tpl.name}</strong> ({tpl.rentalMode})
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => deleteRentalContractTemplate(tpl.id)}
+                    className="text-black/55 hover:text-red-500 cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -1213,6 +1796,8 @@ export const VenueInventoryView: React.FC = () => {
                       { value: 'Room', label: t('venue_type_room') },
                       { value: 'Court', label: t('venue_type_court') },
                       { value: 'Desk', label: t('venue_type_desk') },
+                      { value: 'Vehicle', label: t('venue_type_vehicle') },
+                      { value: 'Gear', label: t('venue_type_gear') },
                     ]}
                   />
                 </div>
@@ -1239,7 +1824,7 @@ export const VenueInventoryView: React.FC = () => {
                   label={`${t('venue_inv_hourly_rate')} (DZD) *`}
                   type="number"
                   min={0}
-                  step={500}
+                  step="any"
                   placeholder="5000"
                   value={hourlyRate}
                   onChange={(v) => setHourlyRate(extractStr(v))}
@@ -1249,13 +1834,50 @@ export const VenueInventoryView: React.FC = () => {
                   label={`${t('venue_inv_daily_rate')} (DZD) *`}
                   type="number"
                   min={0}
-                  step={1000}
+                  step="any"
                   placeholder="35000"
                   value={dailyRate}
                   onChange={(v) => setDailyRate(extractStr(v))}
                   required
                 />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <LabelInput
+                  label={t('venue_depth_weekend_mult')}
+                  type="number"
+                  step={0.05}
+                  value={weekendMultiplier}
+                  onChange={(v) => setWeekendMultiplier(extractStr(v))}
+                />
+                <LabelInput
+                  label={t('venue_depth_grace_minutes')}
+                  type="number"
+                  value={graceMinutes}
+                  onChange={(v) => setGraceMinutes(extractStr(v))}
+                />
+                <LabelInput
+                  label="Late Rate /h (DZD)"
+                  type="number"
+                  value={lateHourlyRate}
+                  onChange={(v) => setLateHourlyRate(extractStr(v))}
+                />
+              </div>
+              {(type === 'Vehicle' || type === 'Gear' || type === 'Equipment') && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[var(--atr-divider)]">
+                  {type === 'Vehicle' ? (
+                    <>
+                      <LabelInput label="Plate Number" value={plateNumber} onChange={(v) => setPlateNumber(extractStr(v))} placeholder="00123-124-16" />
+                      <LabelInput label="Make & Model" value={makeModel} onChange={(v) => setMakeModel(extractStr(v))} placeholder="Renault Master / Dacia" />
+                      <LabelInput label="Odometer (km)" type="number" value={odometerKm} onChange={(v) => setOdometerKm(extractStr(v))} />
+                      <LabelInput label="Fuel Level (%)" type="number" min={0} max={100} value={fuelLevelPct} onChange={(v) => setFuelLevelPct(extractStr(v))} />
+                      <LabelInput label="Insurance Expiry" type="date" value={insuranceExpiry} onChange={(v) => setInsuranceExpiry(extractStr(v))} />
+                      <LabelInput label="Tech Control Expiry" type="date" value={techControlExpiry} onChange={(v) => setTechControlExpiry(extractStr(v))} />
+                    </>
+                  ) : (
+                    <LabelInput label="Serial Number" value={serialNumber} onChange={(v) => setSerialNumber(extractStr(v))} placeholder="SN-CAM-001" />
+                  )}
+                </div>
+              )}
               <LabelInput
                 label={t('venue_inv_amenities')}
                 placeholder="Wifi, Climatisation, Rétroprojecteur, Sonorisation"

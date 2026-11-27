@@ -301,8 +301,12 @@ export const CATEGORY_TABLE_MAP: Record<BusinessCategory, string[]> = {
     'rental_staff',
     'rental_units',
     'rental_renters',
+    'rental_pricing_rules',
+    'rental_contract_templates',
+    'rental_coworking_subscriptions',
     'rental_bookings',
     'rental_booking_addons',
+    'rental_asset_check_logs',
     'rental_security_deposits',
   ],
   education_cohort: [

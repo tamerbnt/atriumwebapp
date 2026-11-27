@@ -8,6 +8,9 @@ import {
   LogIn,
   LogOut,
   Edit2,
+  Download,
+  Upload,
+  X,
 } from 'lucide-react';
 import {
   showToast,
@@ -20,9 +23,15 @@ import {
 } from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
+import {
+  buildRentalBookingsIcs,
+  filterBookingSegmentsForDate,
+} from '../../../utils/rentalDepth';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal, useCanAccessVenueCloudDiagnostics } from './VenueCloudSyncModal';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -34,6 +43,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -76,6 +86,7 @@ export const VenueTimelineView: React.FC = () => {
     checkInBooking,
     checkOutBooking,
     deleteRentalBooking,
+    importRentalIcsBookings,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -91,6 +102,13 @@ export const VenueTimelineView: React.FC = () => {
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const [isIcsModalOpen, setIsIcsModalOpen] = useState(false);
+  const [icsInputText, setIcsInputText] = useState('');
+  const [icsResult, setIcsResult] = useState<{
+    importedCount: number;
+    skippedDuplicates: number;
+    skippedConflicts: number;
+  } | null>(null);
   const canAccessCloudDiagnostics = useCanAccessVenueCloudDiagnostics();
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [modalInitialUnitId, setModalInitialUnitId] = useState<string | undefined>(undefined);
@@ -130,11 +148,15 @@ export const VenueTimelineView: React.FC = () => {
       if (selectedTypeFilter !== 'All' && u.type !== selectedTypeFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const hasMatchingBooking = rentalBookings.some(
-          (b) =>
-            b.unitId === u.id &&
-            b.startDateTime.startsWith(selectedDate) &&
-            (b.purpose.toLowerCase().includes(q) || b.renterName.toLowerCase().includes(q))
+        const daySegments = filterBookingSegmentsForDate(
+          rentalBookings.filter((b) => b.unitId === u.id),
+          selectedDate,
+          8,
+          24
+        );
+        const hasMatchingBooking = daySegments.some(
+          ({ booking: b }) =>
+            b.purpose.toLowerCase().includes(q) || b.renterName.toLowerCase().includes(q)
         );
         if (!u.name.toLowerCase().includes(q) && !u.code.toLowerCase().includes(q) && !hasMatchingBooking) {
           return false;
@@ -232,12 +254,35 @@ export const VenueTimelineView: React.FC = () => {
     language,
   ]);
 
-  const selectedDateBookings = useMemo(
-    () => rentalBookings.filter((b) => b.startDateTime.startsWith(selectedDate)),
+  const selectedDateSegments = useMemo(
+    () => filterBookingSegmentsForDate(rentalBookings, selectedDate, 8, 24),
     [rentalBookings, selectedDate]
+  );
+  const selectedDateBookings = useMemo(
+    () => selectedDateSegments.map((s) => s.booking),
+    [selectedDateSegments]
   );
   const selectedDateVolume = selectedDateBookings.reduce((sum, b) => sum + b.totalAmount, 0);
   const occupiedSpacesCount = new Set(selectedDateBookings.map((b) => b.unitId)).size;
+
+  const handleExportIcs = useCallback(() => {
+    const icsText = buildRentalBookingsIcs(sortedBookings, currentBranch?.name || 'Atrium Rentals');
+    const blob = new Blob([icsText], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `atrium-rentals-${selectedDate}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast({
+      type: 'success',
+      title: t('venue_depth_ical_export'),
+      message: `${sortedBookings.length} events exported`,
+      category: 'rental_booking',
+    });
+  }, [sortedBookings, currentBranch?.name, selectedDate, t]);
 
   const handlePrevDay = () => {
     const d = new Date(selectedDate);
@@ -261,23 +306,6 @@ export const VenueTimelineView: React.FC = () => {
     setModalInitialUnitId(unitId);
     setModalInitialHour(hourStr);
     setIsBookingModalOpen(true);
-  };
-
-  const getBookingLayout = (booking: RentalBooking) => {
-    const startTimePart = (booking.startDateTime?.split('T')[1] || '08:00').slice(0, 5);
-    const endTimePart = (booking.endDateTime?.split('T')[1] || '12:00').slice(0, 5);
-    const startParts = startTimePart.includes(':') ? startTimePart.split(':').map(Number) : [8, 0];
-    const endParts = endTimePart.includes(':') ? endTimePart.split(':').map(Number) : [12, 0];
-    const startH = (startParts[0] || 8) + (startParts[1] || 0) / 60;
-    const endH = (endParts[0] || 12) + (endParts[1] || 0) / 60;
-    const clampedStart = Math.max(8, Math.min(24, startH));
-    const clampedEnd = Math.max(8, Math.min(24, endH));
-    const leftPercent = ((clampedStart - 8) / 16) * 100;
-    const widthPercent = Math.max(4, ((clampedEnd - clampedStart) / 16) * 100);
-    return {
-      left: `${leftPercent}%`,
-      width: `${widthPercent}%`,
-    };
   };
 
   const handleResetFilters = useCallback(() => {
@@ -353,6 +381,8 @@ export const VenueTimelineView: React.FC = () => {
           { value: 'Room', label: t('venue_type_room') },
           { value: 'Court', label: t('venue_type_court') },
           { value: 'Desk', label: t('venue_type_desk') },
+          { value: 'Vehicle', label: t('venue_type_vehicle') },
+          { value: 'Gear', label: t('venue_type_gear') },
         ],
       },
       {
@@ -565,8 +595,11 @@ export const VenueTimelineView: React.FC = () => {
                 </div>
               ) : (
                 filteredUnits.map((unit: RentableUnit) => {
-                  const unitBookings = rentalBookings.filter(
-                    (b) => b.unitId === unit.id && b.startDateTime.startsWith(selectedDate)
+                  const unitSegments = filterBookingSegmentsForDate(
+                    rentalBookings.filter((b) => b.unitId === unit.id),
+                    selectedDate,
+                    8,
+                    24
                   );
                   return (
                     <div
@@ -593,6 +626,10 @@ export const VenueTimelineView: React.FC = () => {
                               ? t('venue_type_room')
                               : unit.type === 'Court'
                               ? t('venue_type_court')
+                              : unit.type === 'Vehicle'
+                              ? t('venue_type_vehicle')
+                              : unit.type === 'Gear' || unit.type === 'Equipment'
+                              ? t('venue_type_gear')
                               : t('venue_type_desk')}
                           </span>
                           <span>·</span>
@@ -622,21 +659,23 @@ export const VenueTimelineView: React.FC = () => {
                             })}
                           />
                         ))}
-                        {unitBookings.map((booking) => {
-                          const layout = getBookingLayout(booking);
+                        {unitSegments.map((seg) => {
+                          const booking = seg.booking;
+                          const leftPercent = ((seg.startHour - 8) / 16) * 100;
+                          const widthPercent = Math.max(4, ((seg.endHour - seg.startHour) / 16) * 100);
                           const isCheckedIn = booking.status === 'CheckedIn';
                           const isConfirmed = booking.status === 'Confirmed';
                           const isTentative = booking.status === 'Tentative';
                           return (
                             <button
-                              key={booking.id}
+                              key={`${booking.id}-${selectedDate}`}
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setDrawerOpenerEl(e.currentTarget);
                                 setInspectedBooking(booking);
                               }}
-                              style={{ left: layout.left, width: layout.width }}
+                              style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}
                               data-sq="ctl"
                               data-sq-border="solid"
                               className={`absolute top-2 bottom-2 z-10 px-2.5 py-2 cursor-pointer transition-all flex flex-col justify-center overflow-hidden text-left ${
@@ -650,7 +689,9 @@ export const VenueTimelineView: React.FC = () => {
                               }`}
                             >
                               <div className="font-semibold t-small truncate leading-tight">
+                                {seg.continuesFromPriorDay ? '← ' : ''}
                                 {booking.purpose}
+                                {seg.continuesToNextDay ? ' →' : ''}
                               </div>
                               <div className="t-cap opacity-90 truncate mt-0.5">
                                 {booking.renterName}{' '}
@@ -693,20 +734,45 @@ export const VenueTimelineView: React.FC = () => {
         icon={<CalendarIcon size={22} />}
         title={t('venue_timeline_matrix_title')}
         secondaryActions={
-          canAccessCloudDiagnostics ? (
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsCloudSyncModalOpen(true)}
+              onClick={handleExportIcs}
               data-sq="ctl"
               data-sq-border="none"
-              className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
-              title="Inspect Supabase live tables and row writes"
+              className="h-10 px-3 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
-              <span className="hidden sm:inline">Supabase</span>
+              <Download size={14} />
+              <span>{t('venue_depth_ical_export')}</span>
             </button>
-          ) : undefined
+            <button
+              type="button"
+              onClick={() => {
+                setIcsResult(null);
+                setIsIcsModalOpen(true);
+              }}
+              data-sq="ctl"
+              data-sq-border="none"
+              className="h-10 px-3 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Upload size={14} />
+              <span>{t('venue_depth_ical_import')}</span>
+            </button>
+            {canAccessCloudDiagnostics && (
+              <button
+                type="button"
+                onClick={() => setIsCloudSyncModalOpen(true)}
+                data-sq="ctl"
+                data-sq-border="none"
+                className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
+                title="Inspect Supabase live tables and row writes"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+                <span className="hidden sm:inline">Supabase</span>
+              </button>
+            )}
+          </div>
         }
         primaryAction={{
           label: t('venue_btn_new_booking'),
@@ -796,6 +862,8 @@ export const VenueTimelineView: React.FC = () => {
             { value: 'Studio', label: isAr ? 'أستوديوهات' : 'Studios' },
             { value: 'Room', label: isAr ? 'اجتماعات' : isFr ? 'Réunion' : 'Rooms' },
             { value: 'Court', label: isAr ? 'ملاعب' : isFr ? 'Terrains' : 'Courts' },
+            { value: 'Vehicle', label: t('venue_type_vehicle') },
+            { value: 'Gear', label: t('venue_type_gear') },
           ]}
           statusValue={selectedTypeFilter}
           onStatusChange={setSelectedTypeFilter}
@@ -1167,6 +1235,77 @@ export const VenueTimelineView: React.FC = () => {
           onClose={() => setIsCloudSyncModalOpen(false)}
         />
       )}
+
+      <KineticModalShell
+        isOpen={isIcsModalOpen}
+        onClose={() => setIsIcsModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/50"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="font-semibold t-card text-black dark:text-white">
+              {t('venue_depth_ical_modal_title')}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsIcsModalOpen(false)}
+              className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white p-1"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <input
+            type="file"
+            accept=".ics,text/calendar"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              file.text().then((txt) => setIcsInputText(txt));
+            }}
+            className="block w-full t-cap text-black/70 dark:text-white/75"
+          />
+          <LabelTextarea
+            label={t('venue_depth_ical_paste_label')}
+            rows={6}
+            value={icsInputText}
+            onChange={setIcsInputText}
+            placeholder="BEGIN:VCALENDAR..."
+          />
+          {icsResult && (
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1 text-black dark:text-white"
+            >
+              <div className="font-semibold">{t('venue_depth_ical_result')}</div>
+              <div>
+                Imported: {icsResult.importedCount} · Duplicates skipped: {icsResult.skippedDuplicates} · Conflicts skipped: {icsResult.skippedConflicts}
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <AtriumButton variant="secondary" onClick={() => setIsIcsModalOpen(false)}>
+              {t('action_cancel')}
+            </AtriumButton>
+            <AtriumButton
+              variant="primary"
+              onClick={() => {
+                if (!icsInputText.trim()) return;
+                const res = importRentalIcsBookings(icsInputText);
+                setIcsResult(res);
+              }}
+            >
+              {t('venue_depth_ical_import_btn')}
+            </AtriumButton>
+          </div>
+        </div>
+      </KineticModalShell>
     </div>
   );
 };

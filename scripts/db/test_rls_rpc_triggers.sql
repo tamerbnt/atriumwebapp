@@ -1678,10 +1678,145 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 23. Phase 3 Step 5 (7.5 rental_booking): GiST Double-Booking Exclusion,
+--     Tenant B RLS Isolation, Deposit Deduction Cap & Coworking Consumption RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_biz_a uuid := '11111111-0000-4000-8000-000000000001';
+  v_br_a  uuid := '33333333-0000-4000-8000-000000000001';
+  v_user_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_user_b uuid := 'bbbbbbbb-0000-4000-8000-000000000002';
+  v_unit_id uuid := gen_random_uuid();
+  v_renter_id uuid := gen_random_uuid();
+  v_bk_1 uuid := gen_random_uuid();
+  v_bk_2 uuid := gen_random_uuid();
+  v_dep_id uuid := gen_random_uuid();
+  v_rule_id uuid := gen_random_uuid();
+  v_sub_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean := false;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.rental_units (
+    id, account_id, business_id, branch_id, name, code, type, rental_mode,
+    capacity, hourly_rate, daily_rate, weekend_multiplier
+  ) VALUES (
+    v_unit_id, v_acc_a, v_biz_a, v_br_a, 'Salle Zighoud', 'HAL-75', 'Hall', 'venue',
+    180, 12000, 90000, 1.2
+  );
+
+  INSERT INTO public.rental_renters (
+    id, account_id, business_id, branch_id, full_name, email, phone, driver_license_number
+  ) VALUES (
+    v_renter_id, v_acc_a, v_biz_a, v_br_a, 'Karim Event', 'karim@event.dz', '+213550750000', 'DL-16-99402'
+  );
+
+  INSERT INTO public.rental_pricing_rules (
+    id, account_id, business_id, branch_id, name, unit_type, weekend_multiplier, seasonal_multiplier
+  ) VALUES (
+    v_rule_id, v_acc_a, v_biz_a, v_br_a, 'Weekend Peak', 'Hall', 1.25, 1.1
+  );
+
+  INSERT INTO public.rental_coworking_subscriptions (
+    id, account_id, business_id, branch_id, renter_id, renter_name,
+    plan_name, plan_kind, included_hours, used_hours, monthly_fee_dzd, start_date, end_date, status
+  ) VALUES (
+    v_sub_id, v_acc_a, v_biz_a, v_br_a, v_renter_id, 'Karim Event',
+    'Flex 10h Pack', 'hour_pack', 10, 8, 8000, CURRENT_DATE, CURRENT_DATE + 30, 'active'
+  );
+
+  -- Tenant B must NOT read Tenant A pricing rules or coworking subscriptions
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.rental_pricing_rules WHERE id = v_rule_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A rental_pricing_rules';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.rental_coworking_subscriptions WHERE id = v_sub_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A rental_coworking_subscriptions';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A books overnight slot 18:00 -> +1 day 02:00
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.upsert_rental_booking_atomic(
+    v_bk_1, v_acc_a, v_biz_a, v_br_a, v_unit_id, 'Salle Zighoud', 'Hall',
+    v_renter_id, 'Karim Event', '+213550750000', 'Wedding Reception',
+    (CURRENT_DATE + 5)::timestamptz + interval '18 hours',
+    (CURRENT_DATE + 6)::timestamptz + interval '2 hours',
+    'Confirmed', 120000, 40000, '[]'::jsonb
+  );
+  IF (v_res ->> 'duration_hours')::numeric <> 8 THEN
+    RAISE EXCEPTION 'Expected overnight duration_hours=8, got %', v_res;
+  END IF;
+
+  -- Overlapping booking on same unit MUST fail via GiST/overlap guard
+  v_blocked := false;
+  BEGIN
+    PERFORM public.upsert_rental_booking_atomic(
+      v_bk_2, v_acc_a, v_biz_a, v_br_a, v_unit_id, 'Salle Zighoud', 'Hall',
+      v_renter_id, 'Concurrent Client', '+213550750001', 'Conflict Test',
+      (CURRENT_DATE + 5)::timestamptz + interval '21 hours',
+      (CURRENT_DATE + 6)::timestamptz + interval '1 hour',
+      'Confirmed', 50000, 10000, '[]'::jsonb
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected overlapping booking on same unit to fail';
+  END IF;
+
+  RESET ROLE;
+
+  -- Deposit deduction exceeding held deposit MUST block; valid partial deduction succeeds
+  INSERT INTO public.rental_security_deposits (
+    id, account_id, business_id, branch_id, booking_id, renter_name, unit_name,
+    amount, original_amount, deducted_amount, payment_method, status
+  ) VALUES (
+    v_dep_id, v_acc_a, v_biz_a, v_br_a, v_bk_1, 'Karim Event', 'Salle Zighoud',
+    40000, 40000, 0, 'Cash', 'Held'
+  );
+
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.settle_rental_deposit_atomic(v_dep_id, 'deduct', 55000, 'Overheld claim');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected deposit deduction > held amount to fail';
+  END IF;
+
+  v_res := public.settle_rental_deposit_atomic(v_dep_id, 'deduct', 15000, 'Sound cable damaged');
+  IF (v_res ->> 'deducted_amount')::numeric <> 15000 THEN
+    RAISE EXCEPTION 'Expected deducted_amount=15000, got %', v_res;
+  END IF;
+
+  -- Coworking hours consumption: 2h ok, another 1h blocked
+  v_res := public.consume_coworking_subscription_hours(v_sub_id, 2);
+  IF (v_res ->> 'remaining_hours')::numeric <> 0 THEN
+    RAISE EXCEPTION 'Expected remaining_hours=0, got %', v_res;
+  END IF;
+  v_blocked := false;
+  BEGIN
+    PERFORM public.consume_coworking_subscription_hours(v_sub_id, 1);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected coworking over-consumption to fail';
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
-
-
-
-
-
-

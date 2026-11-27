@@ -522,6 +522,33 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS approved_pct');
     expect(downSql).toContain('DROP COLUMN IF EXISTS currency');
   });
+
+  it('verifies Phase 3 Step 5 (7.5) rental_booking depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280005_phase3_rental_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280005_phase3_rental_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('CREATE EXTENSION IF NOT EXISTS btree_gist');
+    expect(sql).toContain('ADD CONSTRAINT excl_rental_bookings_no_overlap');
+    expect(sql).toContain('ADD CONSTRAINT chk_rental_deposit_deduction');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.rental_pricing_rules');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.rental_contract_templates');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.rental_asset_check_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.rental_coworking_subscriptions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.upsert_rental_booking_atomic(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.settle_rental_deposit_atomic(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.consume_coworking_subscription_hours(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.consume_coworking_subscription_hours(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.settle_rental_deposit_atomic(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.upsert_rental_booking_atomic(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.rental_coworking_subscriptions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.rental_asset_check_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.rental_contract_templates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.rental_pricing_rules');
+    expect(downSql).toContain('DROP CONSTRAINT IF EXISTS excl_rental_bookings_no_overlap');
+    expect(downSql).toContain('DROP CONSTRAINT IF EXISTS chk_rental_deposit_deduction');
+  });
 });
-
-

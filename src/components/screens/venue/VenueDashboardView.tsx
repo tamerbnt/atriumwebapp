@@ -93,8 +93,9 @@ export const VenueDashboardView: React.FC = () => {
   const unitOptions = useMemo(
     () => [
       { id: 'all', label: localizeText(language, 'Tous', 'All', 'الكل') },
-      { id: 'cowork', label: 'Cowork' },
       { id: 'rooms', label: localizeText(language, 'Salles', 'Rooms', 'قاعات') },
+      { id: 'cowork', label: 'Cowork' },
+      { id: 'fleet', label: localizeText(language, 'Flotte/Mat.', 'Fleet/Gear', 'أسطول/معدات') },
     ],
     [language]
   );
@@ -301,12 +302,21 @@ export const VenueDashboardView: React.FC = () => {
             className={POD_SPAN.half}
             title={localizeText(language, 'Capacité active', 'Space Utilization', 'استغلال المساحات')}
             helpText={getDashboardHelpText('venue', 'capacity', language)}
-            subtitle={localizeText(
-              language,
-              'Unités actuellement occupées vs libres',
-              'Occupied rentable units vs available pool',
-              'الوحدات المشغولة مقابل المتاحة'
-            )}
+            subtitle={
+              data.fleetAttentionCount > 0
+                ? localizeText(
+                    language,
+                    `${data.fleetAttentionCount} véhicule(s) : contrôle / assurance à renouveler`,
+                    `${data.fleetAttentionCount} vehicle(s) need insurance/inspection renewal`,
+                    `${data.fleetAttentionCount} مركبة تحتاج تجديد التأمين أو الفحص`
+                  )
+                : localizeText(
+                    language,
+                    'Unités actuellement occupées vs libres',
+                    'Occupied rentable units vs available pool',
+                    'الوحدات المشغولة مقابل المتاحة'
+                  )
+            }
             locale={locale}
             {...featuredSurface}
             state={resolveChartState(data.totalUnits > 0)}
