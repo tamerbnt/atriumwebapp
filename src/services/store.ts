@@ -224,6 +224,14 @@ import {
   HammamGenderBlock,
   HammamSessionStatus,
   SalonHammamSession,
+  PosSubRole,
+  PosOrderChannel,
+  PosFloorTable,
+  PosKitchenOrder,
+  PosKitchenOrderItem,
+  PosCustomerCreditEntry,
+  PosOpticalPrescription,
+  PosSelectedModifier,
 } from '../types/index';
 import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
@@ -325,6 +333,13 @@ import {
   resolveNextAdjustmentSeq,
   executePayrollMigrationBackfill,
 } from '../utils/payrollMigrationDryRun';
+import {
+  computeKitchenOrderDelta,
+  computeRecipeIngredientDeltas,
+  snapshotPosOrderLine,
+  validateOpticalPrescription,
+  validateTableTransfer,
+} from '../utils/posDepth';
 import {
   isExecutiveRole,
   createDefaultBusinessConfig,
@@ -806,6 +821,7 @@ interface AppState {
   activeMembershipRole: StandardRole;
   activeAppointmentRole: StandardRole;
   activePosRole: StandardRole;
+  activePosSubRole: PosSubRole;
   activeEducationRole: StandardRole;
   memberCheckIns: MemberCheckInLog[];
   walkInTickets: WalkInTicket[];
@@ -814,6 +830,10 @@ interface AppState {
   posCashSessions: PosCashSession[];
   posCashMovements: PosCashMovement[];
   posZReports: PosZReport[];
+  posFloorTables: PosFloorTable[];
+  posKitchenOrders: PosKitchenOrder[];
+  posCustomerCreditEntries: PosCustomerCreditEntry[];
+  posOpticalPrescriptions: PosOpticalPrescription[];
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -1054,6 +1074,7 @@ const DEFAULT_STATE: AppState = {
   activeMembershipRole: 'owner',
   activeAppointmentRole: 'owner',
   activePosRole: 'owner',
+  activePosSubRole: 'cashier',
   activeEducationRole: 'owner',
   memberCheckIns: [],
   walkInTickets: [],
@@ -1062,6 +1083,10 @@ const DEFAULT_STATE: AppState = {
   posCashSessions: [],
   posCashMovements: [],
   posZReports: [],
+  posFloorTables: [],
+  posKitchenOrders: [],
+  posCustomerCreditEntries: [],
+  posOpticalPrescriptions: [],
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -1487,6 +1512,7 @@ let globalState: AppState = backfillTraceability((() => {
           activeMembershipRole: parsed.activeMembershipRole || 'owner',
           activeAppointmentRole: parsed.activeAppointmentRole || 'owner',
           activePosRole: parsed.activePosRole || 'owner',
+          activePosSubRole: (parsed.activePosSubRole || 'cashier') as PosSubRole,
           activeEducationRole: parsed.activeEducationRole || 'owner',
           activeManufacturingRole: (parsed.activeManufacturingRole
             ? migrateStoredOperationalRole(parsed.activeManufacturingRole)
@@ -1501,6 +1527,10 @@ let globalState: AppState = backfillTraceability((() => {
           posCashSessions: Array.isArray(parsed.posCashSessions) ? parsed.posCashSessions : [],
           posCashMovements: Array.isArray(parsed.posCashMovements) ? parsed.posCashMovements : [],
           posZReports: Array.isArray(parsed.posZReports) ? parsed.posZReports : [],
+          posFloorTables: Array.isArray(parsed.posFloorTables) ? parsed.posFloorTables : [],
+          posKitchenOrders: Array.isArray(parsed.posKitchenOrders) ? parsed.posKitchenOrders : [],
+          posCustomerCreditEntries: Array.isArray(parsed.posCustomerCreditEntries) ? parsed.posCustomerCreditEntries : [],
+          posOpticalPrescriptions: Array.isArray(parsed.posOpticalPrescriptions) ? parsed.posOpticalPrescriptions : [],
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
           isFastSwitchOpen: false,
@@ -1947,6 +1977,22 @@ export const selectCurrentPosCashMovementsFromState = createBranchSelector<PosCa
 export const selectCurrentPosZReportsFromState = createBranchSelector<PosZReport>(
   (s) => s.posZReports,
   (zr, b) => zr.branchId === b
+);
+export const selectCurrentPosFloorTablesFromState = createBranchSelector<PosFloorTable>(
+  (s) => s.posFloorTables || [],
+  (t, b) => !t.branchId || t.branchId === b
+);
+export const selectCurrentPosKitchenOrdersFromState = createBranchSelector<PosKitchenOrder>(
+  (s) => s.posKitchenOrders || [],
+  (o, b) => !o.branchId || o.branchId === b
+);
+export const selectCurrentPosCreditEntriesFromState = createBranchSelector<PosCustomerCreditEntry>(
+  (s) => s.posCustomerCreditEntries || [],
+  (c, b) => !c.branchId || c.branchId === b
+);
+export const selectCurrentPosOpticalPrescriptionsFromState = createBranchSelector<PosOpticalPrescription>(
+  (s) => s.posOpticalPrescriptions || [],
+  (rx, b) => !rx.branchId || rx.branchId === b
 );
 
 export const selectCurrentFreelanceClientsFromState = createBranchSelector<FreelanceClient>(
@@ -4154,6 +4200,10 @@ function pruneDeletedRecords(
     pos_cash_sessions: 'posCashSessions',
     pos_cash_movements: 'posCashMovements',
     pos_z_reports: 'posZReports',
+    pos_floor_tables: 'posFloorTables',
+    pos_kitchen_orders: 'posKitchenOrders',
+    pos_customer_credit_entries: 'posCustomerCreditEntries',
+    pos_optical_prescriptions: 'posOpticalPrescriptions',
     freelance_clients: 'freelanceClients',
     freelance_projects: 'freelanceProjects',
     freelance_time_logs: 'timeLogs',
@@ -5092,6 +5142,38 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
               ...(updatedAfter ? mergeById(cur, reports) : reports),
               ...others,
             ];
+          }
+        });
+      }
+      if (shouldSyncTable('pos_floor_tables')) {
+        tasks.push(async () => {
+          const rows = await posService.fetchFloorTables(branchId);
+          if (rows.length > 0) {
+            updates.posFloorTables = mergeById(globalState.posFloorTables || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('pos_kitchen_orders')) {
+        tasks.push(async () => {
+          const rows = await posService.fetchKitchenOrders(branchId);
+          if (rows.length > 0) {
+            updates.posKitchenOrders = mergeById(globalState.posKitchenOrders || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('pos_customer_credit_entries')) {
+        tasks.push(async () => {
+          const rows = await posService.fetchCarnetEntries(branchId);
+          if (rows.length > 0) {
+            updates.posCustomerCreditEntries = mergeById(globalState.posCustomerCreditEntries || [], rows);
+          }
+        });
+      }
+      if (shouldSyncTable('pos_optical_prescriptions')) {
+        tasks.push(async () => {
+          const rows = await posService.fetchOpticalPrescriptions(branchId);
+          if (rows.length > 0) {
+            updates.posOpticalPrescriptions = mergeById(globalState.posOpticalPrescriptions || [], rows);
           }
         });
       }
@@ -7227,6 +7309,13 @@ function createAtriumActions() {
       quantity: number;
       discount?: number;
       notes?: string;
+      variantId?: string;
+      variantLabel?: string;
+      unitPriceOverride?: number;
+      modifiers?: PosSelectedModifier[];
+      modifiersUnitDeltaDzd?: number;
+      weightKg?: number;
+      pluCode?: string;
     }>,
     paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit' = 'Cash',
     memberId?: string,
@@ -7236,6 +7325,14 @@ function createAtriumActions() {
       discountAmount?: number;
       taxAmount?: number;
       subtotal?: number;
+      tipAmount?: number;
+      orderChannel?: PosOrderChannel;
+      tableId?: string;
+      tableLabel?: string;
+      deliveryAddress?: string;
+      deliveryCourier?: string;
+      deliveryFee?: number;
+      recipeAlreadyDepleted?: boolean;
       payments?: PaymentDetail[];
       amountTendered?: number;
       changeGiven?: number;
@@ -7244,16 +7341,31 @@ function createAtriumActions() {
       customerName?: string;
     }
   ) => {
-    const before = captureStoreSlices(['products', 'sales', 'stockMovements']);
+    const before = captureStoreSlices(['products', 'sales', 'stockMovements', 'posCustomerCreditEntries']);
+    const resolveItemUnitPrice = (item: (typeof items)[number]) => {
+      if (item.unitPriceOverride != null) return item.unitPriceOverride;
+      const modDelta =
+        item.modifiersUnitDeltaDzd ??
+        (item.modifiers || []).reduce((s, m) => s + Number(m.priceDeltaDzd || 0), 0);
+      const variant = item.variantId
+        ? item.product.variants?.find((v) => v.id === item.variantId)
+        : undefined;
+      const base = variant?.priceDzd != null ? variant.priceDzd : item.product.price.amount;
+      return Math.max(0, base + modDelta);
+    };
+
     const rawSubtotal = items.reduce((sum, item) => {
-      const lineTotal = item.product.price.amount * item.quantity;
+      const unitP = resolveItemUnitPrice(item);
+      const lineTotal = unitP * item.quantity;
       const lineDiscount = item.discount || 0;
       return sum + Math.max(0, lineTotal - lineDiscount);
     }, 0);
     const subtotal = extra?.subtotal !== undefined ? extra.subtotal : rawSubtotal;
     const discountAmount = extra?.discountAmount !== undefined ? extra.discountAmount : (extra?.discount || 0);
     const taxAmount = extra?.taxAmount || 0;
-    const totalAmount = Math.max(0, subtotal - discountAmount + taxAmount);
+    const tipAmount = Math.max(0, Number(extra?.tipAmount || 0));
+    const deliveryFee = Math.max(0, Number(extra?.deliveryFee || 0));
+    const totalAmount = Math.max(0, subtotal - discountAmount + taxAmount + tipAmount + deliveryFee);
 
     const member = memberId ? globalState.members.find((m) => m.id === memberId) : undefined;
     const finalCustomerName = extra?.customerName || member?.fullName || (memberId ? undefined : 'Walk-in Customer');
@@ -7270,54 +7382,95 @@ function createAtriumActions() {
       discount: extra?.discount,
       discountAmount,
       taxAmount,
+      tipAmount: tipAmount > 0 ? tipAmount : undefined,
+      orderChannel: extra?.orderChannel || 'counter',
+      tableId: extra?.tableId,
+      tableLabel: extra?.tableLabel,
+      deliveryAddress: extra?.deliveryAddress,
+      deliveryCourier: extra?.deliveryCourier,
+      deliveryFee: deliveryFee > 0 ? deliveryFee : undefined,
       totalAmount,
       paymentMethod,
       payments: extra?.payments,
       amountTendered: extra?.amountTendered,
       changeGiven: extra?.changeGiven,
       cashierName: extra?.cashierName || globalState.currentUser?.fullName || 'Cashier Desk',
-      items: items.map((i) => ({
-        productId: i.product.id,
-        productName: i.product.name,
-        quantity: i.quantity,
-        unitPrice: i.product.price.amount,
-        totalPrice: i.product.price.amount * i.quantity - (i.discount || 0),
-        costPrice: i.product.costPrice ?? i.product.cost?.amount,
-        barcode: i.product.barcode,
-        unit: i.product.unit,
-        discount: i.discount,
-        notes: i.notes,
-      })),
+      items: items.map((i) => {
+        const unitP = resolveItemUnitPrice(i);
+        const modDelta =
+          i.modifiersUnitDeltaDzd ??
+          (i.modifiers || []).reduce((s, m) => s + Number(m.priceDeltaDzd || 0), 0);
+        return {
+          productId: i.product.id,
+          productName: i.variantLabel ? `${i.product.name} (${i.variantLabel})` : i.product.name,
+          quantity: i.quantity,
+          unitPrice: unitP,
+          totalPrice: Math.max(0, unitP * i.quantity - (i.discount || 0)),
+          costPrice: i.product.costPrice ?? i.product.cost?.amount,
+          barcode: i.product.barcode,
+          unit: i.product.unit,
+          discount: i.discount,
+          notes: i.notes,
+          variantId: i.variantId,
+          variantLabel: i.variantLabel,
+          modifiers: i.modifiers,
+          modifiersUnitDeltaDzd: modDelta > 0 ? modDelta : undefined,
+          weightKg: i.weightKg,
+          pluCode: i.pluCode || i.product.pluCode,
+        };
+      }),
       notes,
       status: 'Completed',
       createdAt: new Date().toISOString(),
     };
 
-    // Decrement stock quantities and record movements
+    const recipeIngredientDeltas = extra?.recipeAlreadyDepleted
+      ? []
+      : computeRecipeIngredientDeltas({
+          products: globalState.products,
+          lineDeltas: items.map((it) => ({ productId: it.product.id, deltaQty: it.quantity })),
+        });
+    const bomById = new Map(recipeIngredientDeltas.map((d) => [d.ingredientProductId, d.deltaQuantity]));
+
+    // Decrement product, variant, and recipe BOM quantities and record movements
     const newMovements: StockMovement[] = [];
     const updatedProducts = globalState.products.map((p) => {
-      const match = items.find((item) => item.product.id === p.id);
-      if (match) {
-        const prev = p.stockQuantity;
-        const next = Math.max(0, prev - match.quantity);
-        newMovements.push({
-          ...getTraceContext(),
-          id: `sm_${Date.now()}_${p.id}`,
-          tenantId: globalState.account.id,
-          facilityId: globalState.currentBranchId,
-          productId: p.id,
-          productName: p.name,
-          type: 'Sale',
-          quantity: -match.quantity,
-          previousStock: prev,
-          newStock: next,
-          reason: `Register Sale #${sale.id.slice(-6).toUpperCase()}`,
-          createdAt: new Date().toISOString(),
-          createdBy: globalState.currentUser?.fullName || 'Cashier Desk',
-        });
-        return { ...p, stockQuantity: next };
-      }
-      return p;
+      const matchingItems = items.filter((item) => item.product.id === p.id);
+      const bomTake = bomById.get(p.id) || 0;
+      const directTake = matchingItems.reduce((s, it) => s + it.quantity, 0);
+      const totalTake = Number((directTake + bomTake).toFixed(4));
+      if (totalTake <= 0) return p;
+
+      const prev = p.stockQuantity;
+      const next = Math.max(0, Number((prev - totalTake).toFixed(4)));
+      const nextVariants = Array.isArray(p.variants)
+        ? p.variants.map((v) => {
+            const vTake = matchingItems
+              .filter((m) => m.variantId === v.id)
+              .reduce((s, m) => s + m.quantity, 0);
+            return vTake > 0 ? { ...v, stockQuantity: Math.max(0, v.stockQuantity - vTake) } : v;
+          })
+        : p.variants;
+
+      newMovements.push({
+        ...getTraceContext(),
+        id: `sm_${Date.now()}_${p.id}`,
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
+        productId: p.id,
+        productName: p.name,
+        type: 'Sale',
+        quantity: -totalTake,
+        previousStock: prev,
+        newStock: next,
+        reason:
+          bomTake > 0 && directTake === 0
+            ? `Recipe BOM #${sale.id.slice(-6).toUpperCase()}`
+            : `Register Sale #${sale.id.slice(-6).toUpperCase()}`,
+        createdAt: new Date().toISOString(),
+        createdBy: globalState.currentUser?.fullName || 'Cashier Desk',
+      });
+      return { ...p, stockQuantity: next, variants: nextVariants };
     });
 
     const nowSaleIso = new Date().toISOString();
@@ -7386,6 +7539,36 @@ function createAtriumActions() {
           })
         : globalState.wmsCycleCounts;
 
+    // Auto-record Carnet de dettes entry if Credit payment method (or Split containing Credit) is used
+    const creditPortionDzd =
+      paymentMethod === 'Credit'
+        ? totalAmount
+        : (extra?.payments || [])
+            .filter((p) => p.method === 'Credit')
+            .reduce((s, p) => s + Number(p.amount || 0), 0);
+    const carnetAutoEntry: PosCustomerCreditEntry | null =
+      creditPortionDzd > 0
+        ? {
+            id: generateClientUuid(),
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+            customerId: memberId,
+            customerName: finalCustomerName || 'Walk-in Credit Client',
+            customerPhone: extra?.customerPhone || member?.phoneNumber,
+            entryType: 'charge',
+            amountCentimes: dzdToCentimes(creditPortionDzd),
+            creditLimitCentimes: 5_000_000,
+            paymentMethod: 'Credit',
+            saleId: sale.id,
+            reference: `CARNET-${sale.id.slice(-6).toUpperCase()}`,
+            notes: notes || 'POS Carnet de dettes',
+            recordedByStaffId: globalState.currentUser?.id,
+            recordedByName: globalState.currentUser?.fullName || 'Cashier Desk',
+            occurredAt: nowSaleIso,
+          }
+        : null;
+
     globalState = {
       ...globalState,
       products: updatedProducts,
@@ -7393,8 +7576,15 @@ function createAtriumActions() {
       stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
       wmsStockLots: updatedLots,
       wmsCycleCounts: updatedCycleCounts,
+      posCustomerCreditEntries: carnetAutoEntry
+        ? [carnetAutoEntry, ...(globalState.posCustomerCreditEntries || [])]
+        : globalState.posCustomerCreditEntries,
     };
     notify();
+
+    if (carnetAutoEntry && isSupabaseConfigured()) {
+      posService.upsertCarnetEntry(carnetAutoEntry).catch(() => {});
+    }
 
     if (isSupabaseConfigured()) {
       posService.createSale(sale).catch((err) => {
@@ -11532,6 +11722,658 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+  };
+
+  // Phase 3 Step 3 (7.3 pos_inventory): Floor tables, KDS delta snapshots, BOM depletion, Carnet de dettes, Optical Rx, PIN voids
+  const upsertPosFloorTable = (input: {
+    id?: string;
+    tableCode: string;
+    label: string;
+    zone?: string;
+    seats?: number;
+    status?: PosFloorTable['status'];
+    notes?: string;
+  }) => {
+    const existing = input.id ? (globalState.posFloorTables || []).find((t) => t.id === input.id) : undefined;
+    const tbl: PosFloorTable = {
+      id: existing?.id || generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      tableCode: input.tableCode.trim() || `T${(globalState.posFloorTables || []).length + 1}`,
+      label: input.label.trim() || input.tableCode.trim(),
+      zone: input.zone?.trim() || existing?.zone || 'Main Hall',
+      seats: Math.max(1, Number(input.seats ?? existing?.seats ?? 4)),
+      status: input.status || existing?.status || 'available',
+      currentOrderId: existing?.currentOrderId,
+      waiterStaffId: existing?.waiterStaffId,
+      waiterName: existing?.waiterName,
+      notes: input.notes ?? existing?.notes,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      posFloorTables: existing
+        ? (globalState.posFloorTables || []).map((t) => (t.id === existing.id ? tbl : t))
+        : [...(globalState.posFloorTables || []), tbl],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.upsertFloorTable(tbl).catch(() => {});
+    }
+    return tbl;
+  };
+
+  const sendPosKitchenOrder = (input: {
+    orderId?: string;
+    orderChannel: PosOrderChannel;
+    tableId?: string;
+    customerId?: string;
+    customerName?: string;
+    customerPhone?: string;
+    deliveryAddress?: string;
+    deliveryCourier?: string;
+    deliveryFeeDzd?: number;
+    discountDzd?: number;
+    notes?: string;
+    items: PosKitchenOrderItem[];
+  }) => {
+    const existing = input.orderId
+      ? (globalState.posKitchenOrders || []).find((o) => o.id === input.orderId)
+      : undefined;
+    const nowIso = new Date().toISOString();
+    const prevSnapshot = existing?.sentSnapshotItems || [];
+    const { deltas, hasChanges } = computeKitchenOrderDelta({
+      previousSnapshot: prevSnapshot,
+      nextItems: input.items,
+    });
+
+    // Deplete BOM raw ingredients ONLY for incremental deltas vs already-sent snapshot
+    const lineDeltas = existing
+      ? deltas.map((d) => ({ productId: d.productId, deltaQty: d.deltaQty }))
+      : input.items.map((it) => ({ productId: it.productId, deltaQty: it.quantity }));
+    const ingredientDeltas = computeRecipeIngredientDeltas({
+      products: globalState.products,
+      lineDeltas,
+    });
+    const ingMap = new Map(ingredientDeltas.map((d) => [d.ingredientProductId, d.deltaQuantity]));
+    const bomMovements: StockMovement[] = [];
+    const updatedProducts =
+      ingMap.size > 0
+        ? globalState.products.map((p) => {
+            const delta = ingMap.get(p.id);
+            if (!delta) return p;
+            const prev = p.stockQuantity;
+            const next = Math.max(0, Number((prev - delta).toFixed(4)));
+            bomMovements.push({
+              ...getTraceContext(),
+              id: generateClientUuid(),
+              tenantId: globalState.account.id,
+              facilityId: globalState.currentBranchId,
+              productId: p.id,
+              productName: p.name,
+              type: delta > 0 ? 'Sale' : 'Return',
+              quantity: -delta,
+              previousStock: prev,
+              newStock: next,
+              reason: existing
+                ? `KDS Delta Rev #${existing.revision + 1}`
+                : `KDS Order Send`,
+              createdAt: nowIso,
+              createdBy: globalState.currentUser?.fullName || 'Kitchen Desk',
+            });
+            return { ...p, stockQuantity: next };
+          })
+        : globalState.products;
+
+    const targetTable = input.tableId
+      ? (globalState.posFloorTables || []).find((t) => t.id === input.tableId)
+      : undefined;
+
+    const subtotalDzd = input.items.reduce((s, it) => s + Number(it.lineTotalDzd || 0), 0);
+    const discountCentimes = Math.max(0, dzdToCentimes(input.discountDzd || 0));
+    const deliveryFeeCentimes = Math.max(0, dzdToCentimes(input.deliveryFeeDzd || 0));
+    const subtotalCentimes = dzdToCentimes(subtotalDzd);
+    const totalCentimes = Math.max(0, subtotalCentimes - discountCentimes + deliveryFeeCentimes);
+
+    const nextRevision = existing
+      ? hasChanges
+        ? (existing.revision || 1) + 1
+        : existing.revision || 1
+      : 1;
+
+    const order: PosKitchenOrder = {
+      id: existing?.id || generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      orderNumber: existing?.orderNumber || `KDS-${Date.now().toString().slice(-5)}`,
+      orderChannel: input.orderChannel,
+      tableId: targetTable?.id || input.tableId || existing?.tableId,
+      tableLabel: targetTable?.label || existing?.tableLabel,
+      waiterStaffId: existing?.waiterStaffId || globalState.currentUser?.id,
+      waiterName: existing?.waiterName || globalState.currentUser?.fullName || 'Waiter',
+      customerId: input.customerId ?? existing?.customerId,
+      customerName: input.customerName ?? existing?.customerName,
+      customerPhone: input.customerPhone ?? existing?.customerPhone,
+      deliveryAddress: input.deliveryAddress ?? existing?.deliveryAddress,
+      deliveryCourier: input.deliveryCourier ?? existing?.deliveryCourier,
+      deliveryFeeCentimes,
+      kdsStatus: 'sent',
+      revision: nextRevision,
+      currentItems: input.items.map((it) => ({ ...it })),
+      sentSnapshotItems: input.items.map((it) => ({ ...it })),
+      deltaItems: existing ? deltas : [],
+      discountCentimes,
+      tipCentimes: existing?.tipCentimes || 0,
+      subtotalCentimes,
+      totalCentimes,
+      notes: input.notes ?? existing?.notes,
+      sentAt: existing?.sentAt || nowIso,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    const nextTables = (globalState.posFloorTables || []).map((t) => {
+      if (order.tableId && t.id === order.tableId) {
+        return {
+          ...t,
+          status: 'occupied' as const,
+          currentOrderId: order.id,
+          waiterStaffId: order.waiterStaffId,
+          waiterName: order.waiterName,
+          updatedAt: nowIso,
+        };
+      }
+      return t;
+    });
+
+    globalState = {
+      ...globalState,
+      products: updatedProducts,
+      stockMovements: [...bomMovements, ...(globalState.stockMovements || [])],
+      posFloorTables: nextTables,
+      posKitchenOrders: existing
+        ? (globalState.posKitchenOrders || []).map((o) => (o.id === existing.id ? order : o))
+        : [order, ...(globalState.posKitchenOrders || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService.upsertKitchenOrder(order).catch(() => {});
+      if (existing) {
+        posService
+          .sendKitchenOrderRpc({
+            orderId: order.id,
+            tableId: order.tableId,
+            items: order.sentSnapshotItems,
+            deltaItems: order.deltaItems,
+            notes: order.notes,
+          })
+          .catch(() => {});
+      }
+    }
+    return order;
+  };
+
+  const updatePosKitchenOrderStatus = (
+    orderId: string,
+    nextStatus: PosKitchenOrder['kdsStatus']
+  ) => {
+    const existing = (globalState.posKitchenOrders || []).find((o) => o.id === orderId);
+    if (!existing) return;
+    const nowIso = new Date().toISOString();
+    const updated: PosKitchenOrder = {
+      ...existing,
+      kdsStatus: nextStatus,
+      readyAt: nextStatus === 'ready' ? nowIso : existing.readyAt,
+      servedAt: nextStatus === 'served' ? nowIso : existing.servedAt,
+      settledAt: nextStatus === 'settled' ? nowIso : existing.settledAt,
+      updatedAt: nowIso,
+    };
+    globalState = {
+      ...globalState,
+      posKitchenOrders: (globalState.posKitchenOrders || []).map((o) =>
+        o.id === orderId ? updated : o
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.upsertKitchenOrder(updated).catch(() => {});
+    }
+  };
+
+  const transferPosOrderTable = (orderId: string, targetTableId: string) => {
+    const order = (globalState.posKitchenOrders || []).find((o) => o.id === orderId);
+    const targetTable = (globalState.posFloorTables || []).find((t) => t.id === targetTableId);
+    if (!order || !targetTable) return { success: false as const, error: 'NOT_FOUND' };
+
+    const check = validateTableTransfer({
+      order,
+      targetTable,
+      allOrders: globalState.posKitchenOrders || [],
+    });
+    if (!check.valid) {
+      return { success: false as const, error: check.reason || 'INVALID_TRANSFER' };
+    }
+
+    const nowIso = new Date().toISOString();
+    const prevTableId = order.tableId;
+    const nextOrder: PosKitchenOrder = {
+      ...order,
+      orderChannel: 'dine_in',
+      tableId: targetTable.id,
+      tableLabel: targetTable.label,
+      updatedAt: nowIso,
+    };
+    const nextTables = (globalState.posFloorTables || []).map((t) => {
+      if (t.id === prevTableId && t.currentOrderId === order.id) {
+        return { ...t, status: 'available' as const, currentOrderId: undefined, updatedAt: nowIso };
+      }
+      if (t.id === targetTable.id) {
+        return {
+          ...t,
+          status: 'occupied' as const,
+          currentOrderId: order.id,
+          waiterName: order.waiterName,
+          updatedAt: nowIso,
+        };
+      }
+      return t;
+    });
+
+    globalState = {
+      ...globalState,
+      posKitchenOrders: (globalState.posKitchenOrders || []).map((o) =>
+        o.id === orderId ? nextOrder : o
+      ),
+      posFloorTables: nextTables,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      posService.transferTableOrderRpc(orderId, targetTableId).catch(() => {});
+    }
+    return { success: true as const, order: nextOrder };
+  };
+
+  const voidPosKitchenOrder = (params: {
+    orderId: string;
+    reason: string;
+    pinVerified: boolean;
+    restoreBomStock?: boolean;
+  }) => {
+    if (!params.pinVerified) {
+      return { success: false as const, error: 'VOID_PIN_REQUIRED' };
+    }
+    const order = (globalState.posKitchenOrders || []).find((o) => o.id === params.orderId);
+    if (!order) return { success: false as const, error: 'NOT_FOUND' };
+    const nowIso = new Date().toISOString();
+
+    let updatedProducts = globalState.products;
+    const restoreMovements: StockMovement[] = [];
+    if (params.restoreBomStock !== false) {
+      const ingDeltas = computeRecipeIngredientDeltas({
+        products: globalState.products,
+        lineDeltas: order.sentSnapshotItems.map((it) => ({
+          productId: it.productId,
+          deltaQty: -it.quantity,
+        })),
+      });
+      const restoreMap = new Map(ingDeltas.map((d) => [d.ingredientProductId, d.deltaQuantity]));
+      if (restoreMap.size > 0) {
+        updatedProducts = globalState.products.map((p) => {
+          const delta = restoreMap.get(p.id);
+          if (!delta) return p;
+          const prev = p.stockQuantity;
+          const next = Math.max(0, Number((prev - delta).toFixed(4)));
+          restoreMovements.push({
+            ...getTraceContext(),
+            id: generateClientUuid(),
+            tenantId: globalState.account.id,
+            facilityId: globalState.currentBranchId,
+            productId: p.id,
+            productName: p.name,
+            type: 'Return',
+            quantity: Math.abs(delta),
+            previousStock: prev,
+            newStock: next,
+            reason: `Void KDS #${order.orderNumber}: ${params.reason}`,
+            createdAt: nowIso,
+            createdBy: globalState.currentUser?.fullName || 'Manager',
+          });
+          return { ...p, stockQuantity: next };
+        });
+      }
+    }
+
+    const nextOrder: PosKitchenOrder = {
+      ...order,
+      kdsStatus: 'voided',
+      voidReason: params.reason.trim() || 'Manager void',
+      voidPinVerified: true,
+      voidedByStaffId: globalState.currentUser?.id,
+      voidedAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const nextTables = (globalState.posFloorTables || []).map((t) =>
+      order.tableId && t.id === order.tableId && t.currentOrderId === order.id
+        ? { ...t, status: 'available' as const, currentOrderId: undefined, updatedAt: nowIso }
+        : t
+    );
+
+    globalState = {
+      ...globalState,
+      products: updatedProducts,
+      stockMovements: [...restoreMovements, ...(globalState.stockMovements || [])],
+      posFloorTables: nextTables,
+      posKitchenOrders: (globalState.posKitchenOrders || []).map((o) =>
+        o.id === params.orderId ? nextOrder : o
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService
+        .voidKitchenOrSaleRpc({
+          targetType: 'kitchen_order',
+          targetId: params.orderId,
+          reason: nextOrder.voidReason || 'Manager void',
+          pinVerified: true,
+          voidedByStaffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+    return { success: true as const, order: nextOrder };
+  };
+
+  const voidPosSaleWithPin = (params: {
+    saleId: string;
+    reason: string;
+    pinVerified: boolean;
+  }) => {
+    if (!params.pinVerified) {
+      return { success: false as const, error: 'VOID_PIN_REQUIRED' };
+    }
+    const sale = globalState.sales.find((s) => s.id === params.saleId);
+    if (!sale || sale.status === 'Voided') {
+      return { success: false as const, error: 'SALE_UNAVAILABLE' };
+    }
+
+    const nowIso = new Date().toISOString();
+    const reason = params.reason.trim() || 'Manager PIN Void';
+    const bomRestore = computeRecipeIngredientDeltas({
+      products: globalState.products,
+      lineDeltas: sale.items.map((it) => ({ productId: it.productId, deltaQty: -it.quantity })),
+    });
+    const bomMap = new Map(bomRestore.map((d) => [d.ingredientProductId, Math.abs(d.deltaQuantity)]));
+
+    const restoreMovements: StockMovement[] = [];
+    const updatedProducts = globalState.products.map((p) => {
+      const directQty = sale.items
+        .filter((it) => it.productId === p.id)
+        .reduce((s, it) => s + Number(it.quantity || 0), 0);
+      const bomQty = bomMap.get(p.id) || 0;
+      const totalRestore = Number((directQty + bomQty).toFixed(4));
+      if (totalRestore <= 0) return p;
+      const prev = p.stockQuantity;
+      const next = Number((prev + totalRestore).toFixed(4));
+      restoreMovements.push({
+        ...getTraceContext(),
+        id: generateClientUuid(),
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
+        productId: p.id,
+        productName: p.name,
+        type: 'Return',
+        quantity: totalRestore,
+        previousStock: prev,
+        newStock: next,
+        reason: `PIN Void #${sale.id.slice(-6).toUpperCase()}: ${reason}`,
+        createdAt: nowIso,
+        createdBy: globalState.currentUser?.fullName || 'Manager',
+      });
+      return { ...p, stockQuantity: next };
+    });
+
+    globalState = {
+      ...globalState,
+      products: updatedProducts,
+      stockMovements: [...restoreMovements, ...(globalState.stockMovements || [])],
+      sales: globalState.sales.map((s) =>
+        s.id === sale.id
+          ? {
+              ...s,
+              status: 'Voided' as const,
+              voidReason: reason,
+              voidPinVerified: true,
+              voidedByStaffId: globalState.currentUser?.id,
+              voidedAt: nowIso,
+              notes: `${s.notes ? `${s.notes} · ` : ''}Voided (PIN): ${reason}`,
+            }
+          : s
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService
+        .voidKitchenOrSaleRpc({
+          targetType: 'sale',
+          targetId: sale.id,
+          reason,
+          pinVerified: true,
+          voidedByStaffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+    return { success: true as const };
+  };
+
+  const settlePosKitchenOrder = (input: {
+    orderId: string;
+    paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit';
+    discountDzd?: number;
+    tipDzd?: number;
+    payments?: PaymentDetail[];
+    customerId?: string;
+    customerName?: string;
+    customerPhone?: string;
+    amountTendered?: number;
+    changeGiven?: number;
+  }) => {
+    const order = (globalState.posKitchenOrders || []).find((o) => o.id === input.orderId);
+    if (!order || order.kdsStatus === 'settled' || order.kdsStatus === 'voided') {
+      return { success: false as const, error: 'ORDER_UNAVAILABLE' };
+    }
+
+    const lineInputs = order.currentItems
+      .map((line) => {
+        const prod = globalState.products.find((p) => p.id === line.productId);
+        if (!prod) return null;
+        return {
+          product: prod,
+          quantity: line.quantity,
+          variantId: line.variantId,
+          variantLabel: line.variantLabel,
+          unitPriceOverride: line.unitPriceDzd,
+          modifiers: line.modifiers,
+          modifiersUnitDeltaDzd: line.modifiersUnitDeltaDzd,
+          weightKg: line.weightKg,
+          pluCode: line.pluCode,
+          notes: line.notes,
+        };
+      })
+      .filter(Boolean) as Array<{
+      product: Product;
+      quantity: number;
+      variantId?: string;
+      variantLabel?: string;
+      unitPriceOverride?: number;
+      modifiers?: PosSelectedModifier[];
+      modifiersUnitDeltaDzd?: number;
+      weightKg?: number;
+      pluCode?: string;
+      notes?: string;
+    }>;
+
+    const sale = processSale(
+      lineInputs,
+      input.paymentMethod,
+      input.customerId || order.customerId,
+      order.notes || `KDS ${order.orderNumber}`,
+      {
+        discountAmount: input.discountDzd ?? order.discountCentimes / 100,
+        tipAmount: input.tipDzd ?? order.tipCentimes / 100,
+        orderChannel: order.orderChannel,
+        tableId: order.tableId,
+        tableLabel: order.tableLabel,
+        deliveryAddress: order.deliveryAddress,
+        deliveryCourier: order.deliveryCourier,
+        deliveryFee: (order.deliveryFeeCentimes || 0) / 100,
+        recipeAlreadyDepleted: true,
+        payments: input.payments,
+        amountTendered: input.amountTendered,
+        changeGiven: input.changeGiven,
+        customerName: input.customerName || order.customerName,
+        customerPhone: input.customerPhone || order.customerPhone,
+      }
+    );
+
+    const nowIso = new Date().toISOString();
+    const settledOrder: PosKitchenOrder = {
+      ...order,
+      kdsStatus: 'settled',
+      tipCentimes: dzdToCentimes(input.tipDzd ?? order.tipCentimes / 100),
+      settledSaleId: sale.id,
+      settledAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const nextTables = (globalState.posFloorTables || []).map((t) =>
+      order.tableId && t.id === order.tableId && t.currentOrderId === order.id
+        ? { ...t, status: 'available' as const, currentOrderId: undefined, updatedAt: nowIso }
+        : t
+    );
+
+    globalState = {
+      ...globalState,
+      posFloorTables: nextTables,
+      posKitchenOrders: (globalState.posKitchenOrders || []).map((o) =>
+        o.id === order.id ? settledOrder : o
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService.upsertKitchenOrder(settledOrder).catch(() => {});
+    }
+    return { success: true as const, sale, order: settledOrder };
+  };
+
+  const recordPosCarnetEntry = (input: {
+    customerId?: string;
+    customerName: string;
+    customerPhone?: string;
+    entryType: PosCustomerCreditEntry['entryType'];
+    amountDzd: number;
+    creditLimitDzd?: number;
+    paymentMethod?: 'Cash' | 'Card' | 'BankTransfer' | 'CCP' | 'BaridiMob';
+    saleId?: string;
+    reference?: string;
+    notes?: string;
+  }) => {
+    const amountCentimes = Math.max(0, dzdToCentimes(input.amountDzd));
+    const nowIso = new Date().toISOString();
+    const ref = input.reference?.trim() || `CARNET-${Date.now().toString().slice(-6)}`;
+
+    let unifiedPaymentId: string | undefined;
+    if (input.entryType === 'repayment' && amountCentimes > 0) {
+      const payment = recordUnifiedPayment({
+        sourceVertical: 'pos_inventory',
+        direction: 'inflow',
+        partyId: input.customerId,
+        partyName: input.customerName,
+        amountDzd: input.amountDzd,
+        method: input.paymentMethod || 'Cash',
+        notes: input.notes || `Carnet de dettes repayment (${ref})`,
+        idempotencyKey: `pos_carnet_${ref}`,
+      });
+      unifiedPaymentId = payment?.id;
+    }
+
+    const entry: PosCustomerCreditEntry = {
+      id: generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      customerId: input.customerId,
+      customerName: input.customerName.trim(),
+      customerPhone: input.customerPhone?.trim() || undefined,
+      entryType: input.entryType,
+      amountCentimes,
+      creditLimitCentimes: dzdToCentimes(input.creditLimitDzd || 50_000),
+      paymentMethod: input.paymentMethod || 'Cash',
+      saleId: input.saleId,
+      unifiedPaymentId,
+      reference: ref,
+      notes: input.notes?.trim() || undefined,
+      recordedByStaffId: globalState.currentUser?.id,
+      recordedByName: globalState.currentUser?.fullName || 'Cashier Desk',
+      occurredAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      posCustomerCreditEntries: [entry, ...(globalState.posCustomerCreditEntries || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService.upsertCarnetEntry(entry).catch(() => {});
+    }
+    return entry;
+  };
+
+  const upsertOpticalPrescription = (
+    input: Omit<PosOpticalPrescription, 'id' | 'branchId' | 'accountId' | 'businessId'> & {
+      id?: string;
+    }
+  ) => {
+    const validation = validateOpticalPrescription(input);
+    if (!validation.valid) {
+      return { success: false as const, errors: validation.errors };
+    }
+
+    const existing = input.id
+      ? (globalState.posOpticalPrescriptions || []).find((r) => r.id === input.id)
+      : undefined;
+    const nowIso = new Date().toISOString();
+    const rx: PosOpticalPrescription = {
+      ...input,
+      id: existing?.id || generateClientUuid(),
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      prescribedAt: input.prescribedAt || nowIso.slice(0, 10),
+      labStatus: input.labStatus || 'measured',
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      posOpticalPrescriptions: existing
+        ? (globalState.posOpticalPrescriptions || []).map((r) => (r.id === existing.id ? rx : r))
+        : [rx, ...(globalState.posOpticalPrescriptions || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      posService.upsertOpticalPrescription(rx).catch(() => {});
+    }
+    return { success: true as const, prescription: rx };
   };
 
 
@@ -19129,6 +19971,10 @@ function createAtriumActions() {
       salonLoyaltyLedger: Array.isArray(parsed.salonLoyaltyLedger) ? parsed.salonLoyaltyLedger : [],
       salonConsentForms: Array.isArray(parsed.salonConsentForms) ? parsed.salonConsentForms : [],
       salonHammamSessions: Array.isArray(parsed.salonHammamSessions) ? parsed.salonHammamSessions : [],
+      posFloorTables: Array.isArray(parsed.posFloorTables) ? parsed.posFloorTables : [],
+      posKitchenOrders: Array.isArray(parsed.posKitchenOrders) ? parsed.posKitchenOrders : [],
+      posCustomerCreditEntries: Array.isArray(parsed.posCustomerCreditEntries) ? parsed.posCustomerCreditEntries : [],
+      posOpticalPrescriptions: Array.isArray(parsed.posOpticalPrescriptions) ? parsed.posOpticalPrescriptions : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -19178,6 +20024,10 @@ function createAtriumActions() {
   };
   const setActivePosRole = (role: StandardRole) => {
     globalState = { ...globalState, activePosRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActivePosSubRole = (subRole: PosSubRole) => {
+    globalState = { ...globalState, activePosSubRole: subRole };
     notify();
   };
   const setActiveEducationRole = (role: StandardRole) => {
@@ -27345,7 +28195,17 @@ function createAtriumActions() {
     setActiveMembershipRole,
     setActiveAppointmentRole,
     setActivePosRole,
+    setActivePosSubRole,
     setActiveEducationRole,
+    upsertPosFloorTable,
+    sendPosKitchenOrder,
+    updatePosKitchenOrderStatus,
+    transferPosOrderTable,
+    voidPosKitchenOrder,
+    voidPosSaleWithPin,
+    settlePosKitchenOrder,
+    recordPosCarnetEntry,
+    upsertOpticalPrescription,
     addMemberCheckIn,
     addWalkInTicket,
     updateSalonChairStation,
@@ -27762,6 +28622,7 @@ export function useAtriumStore() {
     activeMembershipRole: state.activeMembershipRole || 'owner',
     activeAppointmentRole: state.activeAppointmentRole || 'owner',
     activePosRole: state.activePosRole || 'owner',
+    activePosSubRole: state.activePosSubRole || 'cashier',
     activeEducationRole: state.activeEducationRole || 'owner',
     memberCheckIns: currentMemberCheckIns,
     walkInTickets: selectCurrentWalkInTicketsFromState(state),
@@ -27770,6 +28631,10 @@ export function useAtriumStore() {
     posCashSessions: selectCurrentPosCashSessionsFromState(state),
     posCashMovements: selectCurrentPosCashMovementsFromState(state),
     posZReports: selectCurrentPosZReportsFromState(state),
+    posFloorTables: selectCurrentPosFloorTablesFromState(state),
+    posKitchenOrders: selectCurrentPosKitchenOrdersFromState(state),
+    posCustomerCreditEntries: selectCurrentPosCreditEntriesFromState(state),
+    posOpticalPrescriptions: selectCurrentPosOpticalPrescriptionsFromState(state),
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],

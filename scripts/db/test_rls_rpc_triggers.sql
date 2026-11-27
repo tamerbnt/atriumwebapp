@@ -1473,7 +1473,100 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 21. Phase 3 Step 3 (7.3 pos_inventory): Floor tables, KDS snapshots/transfers,
+--     Manager-PIN voids, Carnet de dettes, Optical prescriptions & Tenant RLS
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_biz_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_tbl1_id uuid := gen_random_uuid();
+  v_tbl2_id uuid := gen_random_uuid();
+  v_kds_id uuid := gen_random_uuid();
+  v_carnet_id uuid := gen_random_uuid();
+  v_rx_id uuid := gen_random_uuid();
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.pos_floor_tables (
+    id, account_id, business_id, branch_id, table_code, label, zone, seats, status
+  ) VALUES
+    (v_tbl1_id, v_acc_a, v_biz_a, v_br_a, 'T-73-1', 'Table 1', 'Terrace', 4, 'available'),
+    (v_tbl2_id, v_acc_a, v_biz_a, v_br_a, 'T-73-2', 'Table 2', 'Main Hall', 6, 'available');
+
+  INSERT INTO public.pos_kitchen_orders (
+    id, account_id, business_id, branch_id, order_number, order_channel,
+    table_id, table_label, kds_status, revision, current_items, subtotal_centimes, total_centimes
+  ) VALUES (
+    v_kds_id, v_acc_a, v_biz_a, v_br_a, 'KDS-73-001', 'dine_in',
+    v_tbl1_id, 'Table 1', 'draft', 1, '[{"productName":"Pizza Margherita","quantity":2,"unitPriceDzd":1200}]'::jsonb, 240000, 240000
+  );
+
+  INSERT INTO public.pos_optical_prescriptions (
+    id, account_id, business_id, branch_id, customer_name, od_sphere, od_axis, os_sphere, os_axis, pd_mm, lab_status
+  ) VALUES (
+    v_rx_id, v_acc_a, v_biz_a, v_br_a, 'Karim Optics', -1.25, 90, -1.50, 85, 63.0, 'measured'
+  );
+
+  -- Tenant B must not read Tenant A POS 7.3 records
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.pos_floor_tables WHERE id = v_tbl1_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A pos_floor_tables';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.pos_kitchen_orders WHERE id = v_kds_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A pos_kitchen_orders';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.pos_optical_prescriptions WHERE id = v_rx_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A pos_optical_prescriptions';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A sends kitchen order -> occupies Table 1 & snapshots revision 1
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.pos_send_kitchen_order(
+    v_kds_id,
+    v_tbl1_id,
+    '[{"productName":"Pizza Margherita","quantity":2,"unitPriceDzd":1200}]'::jsonb,
+    '[]'::jsonb,
+    'No olives'
+  );
+  IF (v_res ->> 'kds_status') <> 'sent' OR (v_res ->> 'revision')::int <> 1 THEN
+    RAISE EXCEPTION 'Expected sent rev 1, got %', v_res;
+  END IF;
+
+  -- Transfer order from Table 1 to Table 2 atomically
+  v_res := public.pos_transfer_table_order(v_kds_id, v_tbl2_id);
+  IF (v_res ->> 'to_table_id')::uuid <> v_tbl2_id THEN
+    RAISE EXCEPTION 'Expected transfer to Table 2, got %', v_res;
+  END IF;
+
+  -- Record Carnet de dettes charge
+  v_res := public.pos_record_carnet_entry(
+    v_biz_a, v_br_a, NULL, 'Client Carnet A', 'charge', 180000, 'CARNET-73-1', 'Credit', NULL, NULL, 'Weekly groceries'
+  );
+  IF (v_res ->> 'amount_centimes')::bigint <> 180000 THEN
+    RAISE EXCEPTION 'Expected carnet amount 180000, got %', v_res;
+  END IF;
+
+  -- Manager PIN void releases Table 2 back to available
+  v_res := public.pos_void_kitchen_or_sale_order('kitchen_order', v_kds_id, 'Customer left', true, NULL);
+  IF (v_res ->> 'status') <> 'voided' THEN
+    RAISE EXCEPTION 'Expected voided kitchen order, got %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
 
 
 

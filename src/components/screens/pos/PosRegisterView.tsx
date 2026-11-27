@@ -25,6 +25,9 @@ import {
   Eye,
   AlertTriangle,
   LockOpen,
+  UtensilsCrossed,
+  ChefHat,
+  Scale,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
@@ -32,17 +35,39 @@ import {
   selectCurrentMembersFromState,
   selectCurrentParkedOrdersFromState,
   selectCurrentPosCashSessionsFromState,
+  selectCurrentPosFloorTablesFromState,
+  selectCurrentPosKitchenOrdersFromState,
   selectCurrentProductsFromState,
   selectCurrentSalesFromState,
   selectCurrentStaffFromState,
   selectCurrentStockMovementsFromState,
+  selectCurrentWmsNegativeStockPolicyFromState,
   shallowEqualObjects,
   showToast,
   useAtriumActions,
   useAtriumSelector,
   useDashboardShellState,
 } from '../../../services/store';
-import { Product, ParkedOrder } from '../../../types/index';
+import {
+  Product,
+  ParkedOrder,
+  PosFloorTable,
+  PosKitchenOrder,
+  PosOrderChannel,
+  PosSelectedModifier,
+  PosSubRole,
+} from '../../../types/index';
+import {
+  buildPosLineKey,
+  canPerformPosActionBySubRole,
+  evaluatePosVariantAndStock,
+  parseScaleBarcodeOrPlu,
+  snapshotPosOrderLine,
+} from '../../../utils/posDepth';
+import { PosVariantModifierModal } from './PosVariantModifierModal';
+import { PosSplitTipModal } from './PosSplitTipModal';
+import { PosTablesKdsPanel } from './PosTablesKdsPanel';
+import { WmsBarcodePrintModal, BarcodeLabelTarget } from '../../common/wms/WmsBarcodePrintModal';
 import { formatMoney } from '../../../utils/rules';
 import { dzdToCentimes } from '../../../utils/money';
 import { Modal } from '../../ui/Modal';
@@ -85,10 +110,18 @@ import {
 } from '../../ui/kinetic';
 
 interface CartItem {
+  lineKey?: string;
   product: Product;
   quantity: number;
   discount: number;
   notes?: string;
+  variantId?: string;
+  variantLabel?: string;
+  modifiers?: PosSelectedModifier[];
+  modifiersUnitDeltaDzd?: number;
+  unitPriceOverride?: number;
+  weightKg?: number;
+  pluCode?: string;
 }
 
 const playBeep = (freq = 880, duration = 0.08) => {
@@ -109,7 +142,7 @@ const playBeep = (freq = 880, duration = 0.08) => {
   }
 };
 
-export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'receipt_settings' | 'inventory' }> = ({
+export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'floor_kds' | 'receipt_settings' | 'inventory' }> = ({
   initialTab = 'register',
 }) => {
   const { t, language, isRtl } = useTranslation();
@@ -126,6 +159,13 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     deleteParkedOrder,
     updateReceiptConfig,
     openPosCashSession,
+    setActivePosSubRole,
+    upsertPosFloorTable,
+    sendPosKitchenOrder,
+    updatePosKitchenOrderStatus,
+    transferPosOrderTable,
+    voidPosKitchenOrder,
+    settlePosKitchenOrder,
   } = useAtriumActions();
   const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
     useDashboardShellState();
@@ -142,6 +182,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     stockMovements,
     receiptConfig,
     posCashSessions,
+    posFloorTables,
+    posKitchenOrders,
+    activePosSubRole,
+    wmsNegativeStockPolicy,
   } = useAtriumSelector(
     (s) => ({
       account: s.account,
@@ -156,6 +200,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
       stockMovements: selectCurrentStockMovementsFromState(s),
       receiptConfig: s.receiptConfig,
       posCashSessions: selectCurrentPosCashSessionsFromState(s),
+      posFloorTables: selectCurrentPosFloorTablesFromState(s),
+      posKitchenOrders: selectCurrentPosKitchenOrdersFromState(s),
+      activePosSubRole: s.activePosSubRole || 'cashier',
+      wmsNegativeStockPolicy: selectCurrentWmsNegativeStockPolicyFromState(s),
     }),
     shallowEqualObjects
   );
@@ -165,10 +213,18 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     [posCashSessions]
   );
 
-  const [activeTab, setActiveTab] = useState<'register' | 'parked' | 'receipt_settings' | 'inventory'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'register' | 'parked' | 'floor_kds' | 'receipt_settings' | 'inventory'>(initialTab);
   useEffect(() => {
     if (initialTab) setActiveTab(initialTab);
   }, [initialTab]);
+
+  const [orderChannel, setOrderChannel] = useState<PosOrderChannel>('counter');
+  const [selectedTableId, setSelectedTableId] = useState<string>('');
+  const [activeKitchenOrderId, setActiveKitchenOrderId] = useState<string | null>(null);
+  const [settlingKitchenOrder, setSettlingKitchenOrder] = useState<PosKitchenOrder | null>(null);
+  const [variantPickerProduct, setVariantPickerProduct] = useState<Product | null>(null);
+  const [barcodePrintTarget, setBarcodePrintTarget] = useState<BarcodeLabelTarget | null>(null);
+  const [isSplitTipModalOpen, setIsSplitTipModalOpen] = useState(false);
 
   const [barcodeQuery, setBarcodeQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -349,8 +405,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     return { todaySalesCount: todaySales.length, turnover, totalCash, parkedCount, parkedValuation };
   }, [sales, currentBranch.id, parkedOrders]);
 
+  const getCartItemUnitPrice = (item: CartItem) =>
+    item.unitPriceOverride != null ? item.unitPriceOverride : item.product.price.amount;
+
   const cartSubtotal = useMemo(
-    () => cart.reduce((acc, item) => acc + item.product.price.amount * item.quantity - item.discount, 0),
+    () => cart.reduce((acc, item) => acc + getCartItemUnitPrice(item) * item.quantity - item.discount, 0),
     [cart]
   );
 
@@ -365,7 +424,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     if (!receiptConfig.showTaxBreakdown || cartSubtotal <= 0) return 0;
     const discountRatio = Math.max(0, 1 - discountAmount / cartSubtotal);
     const totalTax = cart.reduce((acc, item) => {
-      const lineNet = (item.product.price.amount * item.quantity - item.discount) * discountRatio;
+      const lineNet = (getCartItemUnitPrice(item) * item.quantity - item.discount) * discountRatio;
       const itemRate = item.product.taxRate ?? configuredDefaultTva;
       return acc + lineNet * (Math.max(0, itemRate) / 100);
     }, 0);
@@ -394,8 +453,51 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const splitRemaining = useMemo(() => cartTotal - splitTotal, [cartTotal, splitTotal]);
 
   const addToCart = useCallback(
-    (product: Product) => {
-      if (product.stockQuantity <= 0) {
+    (
+      product: Product,
+      overrides?: {
+        variantId?: string;
+        variantLabel?: string;
+        modifiers?: PosSelectedModifier[];
+        modifiersUnitDeltaDzd?: number;
+        unitPriceOverride?: number;
+        weightKg?: number;
+        quantity?: number;
+        notes?: string;
+        skipVariantModal?: boolean;
+      }
+    ) => {
+      const hasConfigurableOptions =
+        !overrides?.skipVariantModal &&
+        ((product.variants && product.variants.length > 0) ||
+          (product.modifierGroups && product.modifierGroups.length > 0) ||
+          Boolean(product.isWeighted));
+      if (hasConfigurableOptions) {
+        setVariantPickerProduct(product);
+        return;
+      }
+
+      const qtyToAdd = overrides?.weightKg && overrides.weightKg > 0 ? overrides.weightKg : overrides?.quantity || 1;
+      const lineKey = buildPosLineKey({
+        productId: product.id,
+        variantId: overrides?.variantId,
+        modifiers: overrides?.modifiers,
+        pluCode: product.pluCode,
+      });
+
+      const alreadyInCartQty = cart
+        .filter((item) => item.product.id === product.id && item.variantId === overrides?.variantId)
+        .reduce((s, item) => s + item.quantity, 0);
+
+      const stockCheck = evaluatePosVariantAndStock({
+        product,
+        variantId: overrides?.variantId,
+        requestedQty: qtyToAdd,
+        alreadyInCartQty,
+        negativeStockPolicy: wmsNegativeStockPolicy,
+      });
+
+      if (!stockCheck.allowed) {
         showToast({
           type: 'warning',
           title: t('shop_toast_out_of_stock_title'),
@@ -403,36 +505,78 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         });
         return;
       }
+      if (stockCheck.warning) {
+        showToast({
+          type: 'warning',
+          title: isAr ? 'تحذير المخزون السالب' : isEn ? 'Low / Negative Stock Warning' : 'Alerte stock négatif',
+          message: `${product.name} (${stockCheck.availableQty})`,
+        });
+      }
+
       setCart((prev) => {
-        const existing = prev.find((item) => item.product.id === product.id);
+        const existing = prev.find((item) => (item.lineKey || item.product.id) === lineKey);
         if (existing) {
-          if (existing.quantity >= product.stockQuantity) {
-            showToast({
-              type: 'warning',
-              title: t('shop_toast_max_stock_title'),
-              message: t('shop_toast_max_stock_msg', { limit: product.stockQuantity }),
-            });
-            return prev;
-          }
           return prev.map((item) =>
-            item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            (item.lineKey || item.product.id) === lineKey
+              ? { ...item, quantity: Number((item.quantity + qtyToAdd).toFixed(3)) }
+              : item
           );
         }
-        return [...prev, { product, quantity: 1, discount: 0 }];
+        return [
+          ...prev,
+          {
+            lineKey,
+            product,
+            quantity: qtyToAdd,
+            discount: 0,
+            notes: overrides?.notes,
+            variantId: overrides?.variantId,
+            variantLabel: overrides?.variantLabel,
+            modifiers: overrides?.modifiers,
+            modifiersUnitDeltaDzd: overrides?.modifiersUnitDeltaDzd,
+            unitPriceOverride: overrides?.unitPriceOverride,
+            weightKg: overrides?.weightKg,
+            pluCode: product.pluCode,
+          },
+        ];
       });
       if (soundEnabled) playBeep(920, 0.05);
     },
-    [soundEnabled, t]
+    [cart, soundEnabled, t, wmsNegativeStockPolicy, isAr, isEn]
   );
 
   const handleBarcodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcodeQuery.trim()) return;
-    const clean = barcodeQuery.trim().toLowerCase();
+    const raw = barcodeQuery.trim();
+    const scaleParsed = parseScaleBarcodeOrPlu(raw);
+    if (scaleParsed.matched && scaleParsed.pluCode) {
+      const pluClean = scaleParsed.pluCode.toLowerCase();
+      const foundScaleProd = products.find(
+        (p) =>
+          (p.pluCode && p.pluCode.toLowerCase() === pluClean) ||
+          p.sku.toLowerCase() === pluClean ||
+          (p.barcode && p.barcode.toLowerCase() === raw.toLowerCase())
+      );
+      if (foundScaleProd) {
+        addToCart(foundScaleProd, {
+          skipVariantModal: true,
+          weightKg: scaleParsed.weightKg,
+          quantity: scaleParsed.weightKg || 1,
+          unitPriceOverride: scaleParsed.priceDzd != null ? scaleParsed.priceDzd : undefined,
+        });
+        if (soundEnabled) playBeep(980, 0.08);
+        setBarcodeQuery('');
+        return;
+      }
+    }
+
+    const clean = raw.toLowerCase();
     const found = products.find(
       (p) =>
         (p.barcode && p.barcode.toLowerCase() === clean) ||
         p.sku.toLowerCase() === clean ||
+        (p.pluCode && p.pluCode.toLowerCase() === clean) ||
         p.id.toLowerCase() === clean
     );
     if (found) {
@@ -449,19 +593,28 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     }
   };
 
-  const updateQuantity = (productId: string, delta: number) => {
+  const updateQuantity = (lineKey: string, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            if (newQty > item.product.stockQuantity) {
-              showToast({
-                type: 'warning',
-                title: t('shop_toast_max_stock_title'),
-                message: t('shop_toast_max_stock_msg', { limit: item.product.stockQuantity }),
+          if ((item.lineKey || item.product.id) === lineKey) {
+            const newQty = Number((item.quantity + delta).toFixed(3));
+            if (delta > 0) {
+              const check = evaluatePosVariantAndStock({
+                product: item.product,
+                variantId: item.variantId,
+                requestedQty: delta,
+                alreadyInCartQty: item.quantity,
+                negativeStockPolicy: wmsNegativeStockPolicy,
               });
-              return item;
+              if (!check.allowed) {
+                showToast({
+                  type: 'warning',
+                  title: t('shop_toast_max_stock_title'),
+                  message: t('shop_toast_max_stock_msg', { limit: check.availableQty }),
+                });
+                return item;
+              }
             }
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }
@@ -471,18 +624,21 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     );
   };
 
-  const updateLineDiscount = (productId: string, discount: number) => {
+  const updateLineDiscount = (lineKey: string, discount: number) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.product.id === productId
-          ? { ...item, discount: Math.max(0, Math.min(item.product.price.amount * item.quantity, discount)) }
+        (item.lineKey || item.product.id) === lineKey
+          ? {
+              ...item,
+              discount: Math.max(0, Math.min(getCartItemUnitPrice(item) * item.quantity, discount)),
+            }
           : item
       )
     );
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  const removeFromCart = (lineKey: string) => {
+    setCart((prev) => prev.filter((item) => (item.lineKey || item.product.id) !== lineKey));
   };
 
   const handleAddCustomItem = (e: React.FormEvent) => {
@@ -522,20 +678,114 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
 
   const handleOpenCheckout = () => {
     if (cart.length === 0) return;
-    setAmountTenderedInput(cartTotal.toString());
-    setSplitPayments([
-      { method: 'Cash', amount: Math.ceil(cartTotal / 2) },
-      { method: 'Card', amount: Math.floor(cartTotal / 2) },
-    ]);
-    const customer = members.find((m) => m.id === selectedCustomerId);
-    setCheckoutCustomerPhone(customer?.phoneNumber || '');
-    setIsCheckoutModalOpen(true);
+    const perm = canPerformPosActionBySubRole(activePosSubRole, 'collect_payment');
+    if (!perm.allowed) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'صلاحية مقيدة' : isEn ? 'Role Restricted' : 'Rôle restreint',
+        message: isAr
+          ? 'حوّل الدور التشغيلي إلى أمين الصندوق لإتمام التحصيل.'
+          : isEn
+            ? 'Switch sub-role to Cashier to collect payment.'
+            : 'Passez en mode Caissier pour encaisser.',
+      });
+      return;
+    }
+    setSettlingKitchenOrder(null);
+    setIsSplitTipModalOpen(true);
   };
 
-  const usesCashInCheckout =
-    checkoutMode === 'single'
-      ? singlePaymentMethod === 'Cash'
-      : splitPayments.some((sp) => sp.method === 'Cash' && sp.amount > 0);
+  const handleSendToKitchen = () => {
+    if (cart.length === 0) return;
+    const perm = canPerformPosActionBySubRole(activePosSubRole, 'send_to_kitchen');
+    if (!perm.allowed) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'صلاحية مقيدة' : isEn ? 'Role Restricted' : 'Rôle restreint',
+        message: isAr ? 'حوّل إلى نادل أو أمين صندوق لإرسال الطلب للمطبخ.' : isEn ? 'Switch to Waiter or Cashier to send kitchen tickets.' : 'Passez en mode Serveur ou Caissier pour envoyer en cuisine.',
+      });
+      return;
+    }
+    const customer = members.find((m) => m.id === selectedCustomerId);
+    const snapshotItems = cart.map((c) => {
+      const variant = c.variantId ? c.product.variants?.find((v) => v.id === c.variantId) : undefined;
+      return snapshotPosOrderLine({
+        product: c.product,
+        quantity: c.quantity,
+        variant,
+        modifiers: c.modifiers,
+        weightKg: c.weightKg,
+        notes: c.notes,
+      });
+    });
+    const order = sendPosKitchenOrder({
+      orderId: activeKitchenOrderId || undefined,
+      orderChannel: selectedTableId ? 'dine_in' : orderChannel,
+      tableId: selectedTableId || undefined,
+      customerId: selectedCustomerId || undefined,
+      customerName: customer?.fullName,
+      customerPhone: customer?.phoneNumber,
+      discountDzd: discountAmount,
+      items: snapshotItems,
+    });
+    if (soundEnabled) playBeep(1040, 0.12);
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم الإرسال للمطبخ' : isEn ? 'Sent to Kitchen (KDS)' : 'Envoyé en Cuisine (KDS)',
+      message: `${order.orderNumber} · v${order.revision}`,
+    });
+    setCart([]);
+    setActiveKitchenOrderId(null);
+    setOrderDiscountValue(0);
+    setSelectedCustomerId('');
+    setActiveTab('floor_kds');
+  };
+
+  const handleSelectTableForRegister = (tbl: PosFloorTable) => {
+    setSelectedTableId(tbl.id);
+    setOrderChannel('dine_in');
+    const existingOrder = posKitchenOrders.find(
+      (o) =>
+        (o.id === tbl.currentOrderId || o.tableId === tbl.id) &&
+        o.kdsStatus !== 'settled' &&
+        o.kdsStatus !== 'voided'
+    );
+    if (existingOrder) {
+      handleLoadKdsOrderIntoRegister(existingOrder);
+    } else {
+      setActiveKitchenOrderId(null);
+      setActiveTab('register');
+    }
+  };
+
+  const handleLoadKdsOrderIntoRegister = (order: PosKitchenOrder) => {
+    const loadedCart: CartItem[] = order.currentItems
+      .map((line) => {
+        const prod = products.find((p) => p.id === line.productId);
+        if (!prod) return null;
+        return {
+          lineKey: line.lineKey,
+          product: prod,
+          quantity: line.quantity,
+          discount: 0,
+          notes: line.notes,
+          variantId: line.variantId,
+          variantLabel: line.variantLabel,
+          modifiers: line.modifiers,
+          modifiersUnitDeltaDzd: line.modifiersUnitDeltaDzd,
+          unitPriceOverride: line.unitPriceDzd,
+          weightKg: line.weightKg,
+          pluCode: line.pluCode,
+        } as CartItem;
+      })
+      .filter(Boolean) as CartItem[];
+    setCart(loadedCart);
+    setActiveKitchenOrderId(order.id);
+    setOrderChannel(order.orderChannel);
+    setSelectedTableId(order.tableId || '');
+    if (order.customerId) setSelectedCustomerId(order.customerId);
+    setActiveTab('register');
+  };
 
   const handleQuickOpenCashDrawer = () => {
     openPosCashSession({
@@ -544,28 +794,85 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     });
   };
 
+  const handleSplitTipConfirm = (payload: {
+    paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit';
+    payments?: any[];
+    tipAmount: number;
+    orderChannel: PosOrderChannel;
+    deliveryAddress?: string;
+    deliveryCourier?: string;
+    deliveryFee: number;
+    amountTendered: number;
+    changeGiven: number;
+    cashierName: string;
+    customerPhone?: string;
+    notes?: string;
+  }) => {
+    if (settlingKitchenOrder) {
+      const res = settlePosKitchenOrder({
+        orderId: settlingKitchenOrder.id,
+        paymentMethod: payload.paymentMethod,
+        tipDzd: payload.tipAmount,
+        payments: payload.payments,
+        amountTendered: payload.amountTendered,
+        changeGiven: payload.changeGiven,
+        customerPhone: payload.customerPhone,
+      });
+      if (res.success && res.sale) {
+        if (soundEnabled) playBeep(1200, 0.15);
+        setCompletedSale(res.sale);
+      }
+      setSettlingKitchenOrder(null);
+      setIsSplitTipModalOpen(false);
+      return;
+    }
+
+    const customer = members.find((m) => m.id === selectedCustomerId);
+    const activeTable = posFloorTables.find((t) => t.id === selectedTableId);
+    const sale = processSale(
+      cart,
+      payload.paymentMethod,
+      selectedCustomerId || undefined,
+      payload.notes || undefined,
+      {
+        subtotal: cartSubtotal,
+        discount: discountAmount,
+        discountAmount,
+        taxAmount,
+        tipAmount: payload.tipAmount,
+        orderChannel: payload.orderChannel,
+        tableId: activeTable?.id,
+        tableLabel: activeTable?.label,
+        deliveryAddress: payload.deliveryAddress,
+        deliveryCourier: payload.deliveryCourier,
+        deliveryFee: payload.deliveryFee,
+        payments: payload.payments,
+        amountTendered: payload.amountTendered,
+        changeGiven: payload.changeGiven,
+        cashierName: payload.cashierName,
+        customerPhone: payload.customerPhone || customer?.phoneNumber,
+        customerName: customer?.fullName || t('shop_receipt_walkin'),
+      }
+    );
+    if (soundEnabled) playBeep(1200, 0.15);
+    setCompletedSale(sale);
+    setCart([]);
+    setActiveKitchenOrderId(null);
+    setSelectedTableId('');
+    setOrderDiscountValue(0);
+    setSelectedCustomerId('');
+    setIsSplitTipModalOpen(false);
+  };
+
+  const usesCashInCheckout =
+    checkoutMode === 'split'
+      ? splitPayments.some((sp) => sp.method === 'Cash' && sp.amount > 0)
+      : singlePaymentMethod === 'Cash';
+
   const handleConfirmCheckout = () => {
     if (cart.length === 0) return;
-    if (usesCashInCheckout && !openCashSession) {
-      showToast({
-        type: 'warning',
-        title: isAr ? 'صندوق النقد مغلق' : isEn ? 'Cash drawer closed' : 'Caisse fermée',
-        message: isAr
-          ? 'افتح جلسة الصندوق قبل إتمام المبيعات النقدية.'
-          : isEn
-            ? 'Open a cash drawer session before completing a cash checkout.'
-            : 'Ouvrez une session de caisse avant de valider un paiement en espèces.',
-      });
-      return;
-    }
-    if (checkoutMode === 'split' && splitRemaining !== 0) {
-      showToast({
-        type: 'warning',
-        title: t('shop_toast_split_mismatch_title'),
-        message: t('shop_toast_split_mismatch_msg', { remaining: formatMoney(splitRemaining) }),
-      });
-      return;
-    }
+    if (usesCashInCheckout && !openCashSession) return;
+    if (checkoutMode === 'split' && splitRemaining !== 0) return;
     const customer = members.find((m) => m.id === selectedCustomerId);
     const sale = processSale(
       cart,
@@ -1239,6 +1546,12 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   count: cart.reduce((a, b) => a + b.quantity, 0),
                 },
                 {
+                  value: 'floor_kds',
+                  label: isAr ? 'الطاولات والمطبخ' : isEn ? 'Tables & KDS' : 'Tables & KDS',
+                  icon: <UtensilsCrossed size={14} />,
+                  count: posKitchenOrders.filter((o) => o.kdsStatus !== 'settled' && o.kdsStatus !== 'voided').length,
+                },
+                {
                   value: 'parked',
                   label: t('shop_held_orders'),
                   icon: <PauseCircle size={14} />,
@@ -1251,6 +1564,17 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 },
               ]}
               aria-label="POS Register Mode Tabs"
+            />
+            <LiveSegmentedControl
+              size="sm"
+              value={activePosSubRole}
+              onValueChange={(val) => setActivePosSubRole(val as PosSubRole)}
+              options={[
+                { value: 'waiter', label: isAr ? 'نادل' : isEn ? 'Waiter' : 'Serveur' },
+                { value: 'cashier', label: isAr ? 'كاشير' : isEn ? 'Cashier' : 'Caissier' },
+                { value: 'kitchen', label: isAr ? 'مطبخ' : isEn ? 'Kitchen' : 'Cuisine' },
+              ]}
+              aria-label="POS Sub-role Switcher"
             />
             <button
               type="button"
@@ -1516,6 +1840,32 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               )}
             </div>
 
+            {posFloorTables.length > 0 && (
+              <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#F5F1EC] dark:bg-[#191716] t-cap">
+                <span className="font-semibold text-black/70 dark:text-white/75 flex items-center gap-1.5">
+                  <UtensilsCrossed size={13} className="text-[var(--brand-text,#BF431F)]" />
+                  <span>
+                    {selectedTableId
+                      ? posFloorTables.find((t) => t.id === selectedTableId)?.label || orderChannel
+                      : orderChannel === 'dine_in'
+                      ? (isAr ? 'صالة' : 'Sur place')
+                      : orderChannel === 'delivery'
+                      ? (isAr ? 'توصيل' : 'Livraison')
+                      : orderChannel === 'takeaway'
+                      ? (isAr ? 'سفري' : 'À emporter')
+                      : (isAr ? 'الكونتوار' : 'Comptoir')}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('floor_kds')}
+                  className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
+                >
+                  {isAr ? 'تغيير الطاولة' : isEn ? 'Tables / KDS' : 'Choisir table'}
+                </button>
+              </div>
+            )}
+
             <LabelSelect
               field="Customer"
               label={t('pos_customer_attribution')}
@@ -1541,14 +1891,26 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 </KineticEmptyStateMotion>
               ) : (
                 cart.map((item) => {
-                  const lineTotal = item.product.price.amount * item.quantity - item.discount;
+                  const rowKey = item.lineKey || item.product.id;
+                  const unitP = getCartItemUnitPrice(item);
+                  const lineTotal = unitP * item.quantity - item.discount;
                   return (
-                    <div key={item.product.id} className="pt-2 first:pt-0 space-y-2">
+                    <div key={rowKey} className="pt-2 first:pt-0 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <div className="t-small font-semibold text-black dark:text-white truncate">{item.product.name}</div>
-                          <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
-                            {formatMoney(item.product.price.amount)} {t('shop_per_unit')}
+                          <div className="t-small font-semibold text-black dark:text-white truncate">
+                            {item.product.name}
+                            {item.variantLabel ? ` (${item.variantLabel})` : ''}
+                          </div>
+                          {item.modifiers && item.modifiers.length > 0 && (
+                            <div className="t-cap text-black/60 dark:text-white/60 truncate">
+                              + {item.modifiers.map((m) => m.optionName).join(', ')}
+                            </div>
+                          )}
+                          <div className="t-cap text-black/55 dark:text-white/55 tabular-nums flex items-center gap-1">
+                            <span>{formatMoney(unitP)}</span>
+                            <span>{item.weightKg ? `/ kg` : t('shop_per_unit')}</span>
+                            {item.weightKg && <Scale size={11} className="text-[var(--brand-text,#BF431F)]" />}
                           </div>
                         </div>
                         <div className="shrink-0 text-end">
@@ -1570,17 +1932,17 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                         >
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.product.id, -1)}
+                            onClick={() => updateQuantity(rowKey, -1)}
                             className="w-6 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-[#2B2825] cursor-pointer"
                           >
                             <Minus size={12} />
                           </button>
-                          <span className="w-7 text-center t-small font-semibold tabular-nums text-black dark:text-white">
+                          <span className="w-9 text-center t-small font-semibold tabular-nums text-black dark:text-white">
                             {item.quantity}
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.product.id, 1)}
+                            onClick={() => updateQuantity(rowKey, 1)}
                             className="w-6 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-[#2B2825] cursor-pointer"
                           >
                             <Plus size={12} />
@@ -1592,14 +1954,14 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                             min="0"
                             placeholder={t('shop_line_discount_ph')}
                             value={item.discount || ''}
-                            onChange={(e) => updateLineDiscount(item.product.id, parseFloat(e.target.value) || 0)}
+                            onChange={(e) => updateLineDiscount(rowKey, parseFloat(e.target.value) || 0)}
                             className={`w-20 h-6 px-2 t-cap rounded-[var(--r-check,6px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 tabular-nums ${
                               isRtl ? 'text-left' : 'text-right'
                             }`}
                           />
                           <button
                             type="button"
-                            onClick={() => removeFromCart(item.product.id)}
+                            onClick={() => removeFromCart(rowKey)}
                             className="text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer p-1"
                           >
                             <Trash2 size={13} />
@@ -1709,27 +2071,64 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </div>
             )}
 
-            <div className={cart.length > 0 ? 'sq-elev-card' : ''}>
-              <button
-                type="button"
-                disabled={cart.length === 0}
-                onClick={handleOpenCheckout}
-                data-sq="card"
-                data-sq-border="none"
-                className={`w-full h-12 t-small font-semibold tracking-wide flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                  cart.length === 0
-                    ? 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/55 dark:text-white/55 cursor-not-allowed'
-                    : 'bg-[var(--brand-fill,#C9461F)] text-white hover:opacity-90 active:scale-98'
-                }`}
-              >
-                <Coins size={16} />
-                <span>{t('shop_charge_button', { amount: formatMoney(cartTotal) })}</span>
-                <ArrowRight size={15} className={isRtl ? 'rotate-180' : ''} />
-              </button>
+            <div className="space-y-2">
+              {cart.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSendToKitchen}
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="w-full h-10 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black dark:text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+                  <ChefHat size={15} className="text-[var(--brand-text,#BF431F)]" />
+                  <span>
+                    {activeKitchenOrderId
+                      ? (isAr ? 'تحديث وإرسال التعديلات للمطبخ' : isEn ? 'Send Delta to Kitchen (KDS)' : 'Envoyer Delta en Cuisine (KDS)')
+                      : (isAr ? 'إرسال الطلب للمطبخ (KDS)' : isEn ? 'Send to Kitchen (KDS)' : 'Envoyer en Cuisine (KDS)')}
+                  </span>
+                </button>
+              )}
+              <div className={cart.length > 0 ? 'sq-elev-card' : ''}>
+                <button
+                  type="button"
+                  disabled={cart.length === 0}
+                  onClick={handleOpenCheckout}
+                  data-sq="card"
+                  data-sq-border="none"
+                  className={`w-full h-12 t-small font-semibold tracking-wide flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    cart.length === 0
+                      ? 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/55 dark:text-white/55 cursor-not-allowed'
+                      : 'bg-[var(--brand-fill,#C9461F)] text-white hover:opacity-90 active:scale-98'
+                  }`}
+                >
+                  <Coins size={16} />
+                  <span>{t('shop_charge_button', { amount: formatMoney(cartTotal) })}</span>
+                  <ArrowRight size={15} className={isRtl ? 'rotate-180' : ''} />
+                </button>
+              </div>
             </div>
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === 'floor_kds' && (
+        <PosTablesKdsPanel
+          floorTables={posFloorTables}
+          kitchenOrders={posKitchenOrders}
+          activeSubRole={activePosSubRole}
+          selectedTableId={selectedTableId}
+          onSelectTableForRegister={handleSelectTableForRegister}
+          onUpsertFloorTable={upsertPosFloorTable}
+          onUpdateKdsStatus={updatePosKitchenOrderStatus}
+          onTransferTable={transferPosOrderTable}
+          onLoadOrderIntoRegister={handleLoadKdsOrderIntoRegister}
+          onOpenSettleOrder={(order) => {
+            setSettlingKitchenOrder(order);
+            setIsSplitTipModalOpen(true);
+          }}
+          onVoidKitchenOrder={voidPosKitchenOrder}
+        />
       )}
 
       {activeTab === 'parked' && (
@@ -2438,6 +2837,20 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       }}
                     />
                     <InspectorWideButton
+                      label={isAr ? 'طباعة الباركود' : isEn ? 'Print Barcode Label' : 'Imprimer étiquette code-barres'}
+                      icon={<Barcode size={15} />}
+                      tone="neutral"
+                      onClick={() =>
+                        setBarcodePrintTarget({
+                          code: prod.barcode || prod.sku || prod.id,
+                          productName: prod.name,
+                          sku: prod.sku,
+                          expiryDate: prod.expiryDate,
+                          priceDzd: prod.price.amount,
+                        })
+                      }
+                    />
+                    <InspectorWideButton
                       label={isAr ? 'تعديل البطاقة' : isEn ? 'Edit Product' : 'Modifier la fiche'}
                       icon={<Settings2 size={15} />}
                       tone="neutral"
@@ -3072,6 +3485,73 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           </div>
         </form>
       </Modal>
+
+      <PosVariantModifierModal
+        isOpen={Boolean(variantPickerProduct)}
+        onClose={() => setVariantPickerProduct(null)}
+        product={variantPickerProduct}
+        onConfirm={(sel) => {
+          addToCart(sel.product, {
+            variantId: sel.variant?.id,
+            variantLabel: sel.variant?.label,
+            modifiers: sel.modifiers,
+            modifiersUnitDeltaDzd: sel.modifiersUnitDeltaDzd,
+            unitPriceOverride: sel.unitPriceDzd,
+            weightKg: sel.weightKg,
+            quantity: sel.quantity,
+            notes: sel.notes,
+            skipVariantModal: true,
+          });
+        }}
+      />
+
+      <PosSplitTipModal
+        isOpen={isSplitTipModalOpen}
+        onClose={() => {
+          setIsSplitTipModalOpen(false);
+          setSettlingKitchenOrder(null);
+        }}
+        subtotalDzd={settlingKitchenOrder ? settlingKitchenOrder.subtotalCentimes / 100 : cartSubtotal}
+        discountDzd={settlingKitchenOrder ? settlingKitchenOrder.discountCentimes / 100 : discountAmount}
+        taxDzd={settlingKitchenOrder ? 0 : taxAmount}
+        orderChannel={settlingKitchenOrder ? settlingKitchenOrder.orderChannel : orderChannel}
+        onOrderChannelChange={setOrderChannel}
+        tableLabel={
+          settlingKitchenOrder?.tableLabel ||
+          posFloorTables.find((tbl) => tbl.id === selectedTableId)?.label
+        }
+        initialCustomerPhone={
+          settlingKitchenOrder?.customerPhone ||
+          members.find((m) => m.id === selectedCustomerId)?.phoneNumber
+        }
+        initialDeliveryAddress={settlingKitchenOrder?.deliveryAddress}
+        initialDeliveryCourier={settlingKitchenOrder?.deliveryCourier}
+        initialDeliveryFeeDzd={settlingKitchenOrder ? settlingKitchenOrder.deliveryFeeCentimes / 100 : 0}
+        hasCustomerSelected={Boolean(selectedCustomerId || settlingKitchenOrder?.customerId)}
+        hasOpenCashSession={Boolean(openCashSession)}
+        onQuickOpenCashDrawer={handleQuickOpenCashDrawer}
+        staff={staff}
+        itemTotalsForByItems={
+          settlingKitchenOrder
+            ? settlingKitchenOrder.currentItems.map((it) => ({
+                id: it.lineKey,
+                label: `${it.quantity}× ${it.productName}`,
+                itemTotalDzd: it.lineTotalDzd,
+              }))
+            : cart.map((c, idx) => ({
+                id: c.lineKey || `${c.product.id}-${idx}`,
+                label: `${c.quantity}× ${c.product.name}`,
+                itemTotalDzd: getCartItemUnitPrice(c) * c.quantity - c.discount,
+              }))
+        }
+        onConfirm={handleSplitTipConfirm}
+      />
+
+      <WmsBarcodePrintModal
+        isOpen={Boolean(barcodePrintTarget)}
+        onClose={() => setBarcodePrintTarget(null)}
+        target={barcodePrintTarget}
+      />
     </div>
   );
 };

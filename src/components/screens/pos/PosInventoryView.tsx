@@ -12,19 +12,28 @@ import {
   Clock,
   Printer,
   Eye,
+  Barcode,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
   selectCurrentBusinessFromState,
   selectCurrentProductsFromState,
   selectCurrentPurchaseDocsFromState,
+  selectCurrentWmsStockLotsFromState,
   shallowEqualObjects,
   showToast,
   useAtriumActions,
   useAtriumSelector,
   useDashboardShellState,
 } from '../../../services/store';
-import { Product, PurchaseDocument } from '../../../types/index';
+import {
+  Product,
+  ProductRecipeIngredient,
+  ProductVariant,
+  PurchaseDocument,
+} from '../../../types/index';
+import { classifyProductExpiry } from '../../../utils/posDepth';
+import { WmsBarcodePrintModal, BarcodeLabelTarget } from '../../common/wms/WmsBarcodePrintModal';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -104,6 +113,7 @@ export const PosInventoryView: React.FC<any> = () => {
     currentBusiness,
     currentBranchId,
     activePosRole,
+    wmsStockLots,
   } = useAtriumSelector(
     (s) => ({
       products: selectCurrentProductsFromState(s),
@@ -114,11 +124,13 @@ export const PosInventoryView: React.FC<any> = () => {
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranchId: s.currentBranchId,
       activePosRole: s.activePosRole || 'owner',
+      wmsStockLots: selectCurrentWmsStockLotsFromState(s),
     }),
     shallowEqualObjects
   );
 
   const isStaff = activePosRole === 'staff';
+  const [barcodePrintTarget, setBarcodePrintTarget] = useState<BarcodeLabelTarget | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'purchases' | 'wms'>('inventory');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
@@ -150,6 +162,11 @@ export const PosInventoryView: React.FC<any> = () => {
   const [formReorder, setFormReorder] = useState('');
   const [formUnit, setFormUnit] = useState('pcs');
   const [formTaxRate, setFormTaxRate] = useState(19);
+  const [formPluCode, setFormPluCode] = useState('');
+  const [formIsWeighted, setFormIsWeighted] = useState(false);
+  const [formExpiryDate, setFormExpiryDate] = useState('');
+  const [formVariants, setFormVariants] = useState<ProductVariant[]>([]);
+  const [formRecipeBom, setFormRecipeBom] = useState<ProductRecipeIngredient[]>([]);
 
   const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
   const [selectedProductForAdjust, setSelectedProductForAdjust] = useState<Product | null>(null);
@@ -410,6 +427,11 @@ export const PosInventoryView: React.FC<any> = () => {
     setFormReorder(String(prod.reorderLevel || 5));
     setFormUnit(prod.unit || 'pcs');
     setFormTaxRate(prod.taxRate || 19);
+    setFormPluCode(prod.pluCode || '');
+    setFormIsWeighted(Boolean(prod.isWeighted));
+    setFormExpiryDate(prod.expiryDate || '');
+    setFormVariants(Array.isArray(prod.variants) ? prod.variants.map((v) => ({ ...v })) : []);
+    setFormRecipeBom(Array.isArray(prod.recipeBom) ? prod.recipeBom.map((r) => ({ ...r })) : []);
     setIsProductFormModalOpen(true);
   };
 
@@ -425,6 +447,11 @@ export const PosInventoryView: React.FC<any> = () => {
     setFormReorder('');
     setFormUnit('pcs');
     setFormTaxRate(19);
+    setFormPluCode('');
+    setFormIsWeighted(false);
+    setFormExpiryDate('');
+    setFormVariants([]);
+    setFormRecipeBom([]);
     setIsProductFormModalOpen(true);
   };
 
@@ -435,6 +462,8 @@ export const PosInventoryView: React.FC<any> = () => {
     const stockNum = parseInt(formStock, 10);
     const reorderNum = formReorder === '' ? 5 : parseInt(formReorder, 10);
     if (!formName.trim() || isNaN(priceNum) || priceNum <= 0 || isNaN(stockNum) || stockNum < 0) return;
+    const cleanedVariants = formVariants.filter((v) => v.label.trim().length > 0);
+    const cleanedBom = formRecipeBom.filter((r) => r.ingredientProductId && r.quantityPerUnit > 0);
     if (editingProductId) {
       updateProduct(editingProductId, {
         name: formName.trim(),
@@ -448,6 +477,11 @@ export const PosInventoryView: React.FC<any> = () => {
         reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
+        pluCode: formPluCode.trim() || undefined,
+        isWeighted: formIsWeighted,
+        expiryDate: formExpiryDate || undefined,
+        variants: cleanedVariants.length > 0 ? cleanedVariants : undefined,
+        recipeBom: cleanedBom.length > 0 ? cleanedBom : undefined,
       });
     } else {
       addProduct({
@@ -463,6 +497,11 @@ export const PosInventoryView: React.FC<any> = () => {
         reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
+        pluCode: formPluCode.trim() || undefined,
+        isWeighted: formIsWeighted,
+        expiryDate: formExpiryDate || undefined,
+        variants: cleanedVariants.length > 0 ? cleanedVariants : undefined,
+        recipeBom: cleanedBom.length > 0 ? cleanedBom : undefined,
         isActive: true,
         isPinned: false,
       });
@@ -620,14 +659,34 @@ export const PosInventoryView: React.FC<any> = () => {
         width: '2.3*',
         minWidth: '200px',
         sortable: true,
-        renderCell: (p) => (
-          <div className="min-w-0">
-            <div className="font-semibold t-small text-black dark:text-white truncate">{p.name}</div>
-            <div className="t-cap text-black/55 dark:text-white/55 truncate">
-              {p.description || t('shop_standard_article')}
+        renderCell: (p) => {
+          const exp = classifyProductExpiry({ product: p, lots: wmsStockLots });
+          return (
+            <div className="min-w-0">
+              <div className="font-semibold t-small text-black dark:text-white truncate flex items-center gap-1.5">
+                <span className="truncate">{p.name}</span>
+                {p.isWeighted && (
+                  <span className="t-cap px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-semibold shrink-0">
+                    PLU {p.pluCode || p.sku}
+                  </span>
+                )}
+                {exp.status === 'expired' && (
+                  <span className="t-cap px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-semibold shrink-0">
+                    {isAr ? 'منتهي' : 'Expiré'}
+                  </span>
+                )}
+                {exp.status === 'expiring_soon' && (
+                  <span className="t-cap px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-semibold shrink-0">
+                    J-{exp.daysRemaining}
+                  </span>
+                )}
+              </div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
+                {p.description || t('shop_standard_article')}
+              </div>
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         key: 'category',
@@ -730,9 +789,29 @@ export const PosInventoryView: React.FC<any> = () => {
       {
         key: 'actions',
         header: '',
-        width: '110px',
+        width: '140px',
         renderCell: (p) => (
           <div className="flex items-center gap-1 justify-end">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setBarcodePrintTarget({
+                  code: p.barcode || p.sku || p.id,
+                  productName: p.name,
+                  sku: p.sku,
+                  expiryDate: p.expiryDate,
+                  priceDzd: p.price.amount,
+                });
+              }}
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              title={isAr ? 'طباعة باركود' : isEn ? 'Print Barcode' : 'Imprimer code-barres'}
+              aria-label={`Print barcode for ${p.name}`}
+            >
+              <Barcode size={14} />
+            </button>
             <button
               type="button"
               onClick={(e) => {
@@ -1617,6 +1696,20 @@ export const PosInventoryView: React.FC<any> = () => {
                       },
                     },
                     {
+                      id: 'barcode',
+                      label: isAr ? 'طباعة باركود' : isEn ? 'Barcode' : 'Étiquette',
+                      icon: <Barcode size={16} />,
+                      onClick: () => {
+                        setBarcodePrintTarget({
+                          code: prod.barcode || prod.sku || prod.id,
+                          productName: prod.name,
+                          sku: prod.sku,
+                          expiryDate: prod.expiryDate,
+                          priceDzd: prod.price.amount,
+                        });
+                      },
+                    },
+                    {
                       id: 'edit',
                       label: isAr ? 'تعديل' : 'Modifier',
                       icon: <Edit2 size={16} />,
@@ -1644,6 +1737,12 @@ export const PosInventoryView: React.FC<any> = () => {
                   <InspectorKeyValue label="SKU" value={prod.sku} copyText={prod.sku} />
                   {prod.barcode && (
                     <InspectorKeyValue label="EAN-13" value={prod.barcode} copyText={prod.barcode} />
+                  )}
+                  {prod.pluCode && (
+                    <InspectorKeyValue label="Scale PLU" value={prod.pluCode} />
+                  )}
+                  {prod.expiryDate && (
+                    <InspectorKeyValue label={isAr ? 'الصلاحية' : 'Expiration'} value={prod.expiryDate} />
                   )}
                   <InspectorKeyValue
                     label={isAr ? 'المخزون المتوفر' : 'Stock actuel'}
@@ -1906,6 +2005,191 @@ export const PosInventoryView: React.FC<any> = () => {
               corner={12}
             />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <LabelInput
+              field="ProdPlu"
+              label={isAr ? 'رمز الميزان (PLU)' : isEn ? 'Scale PLU Code' : 'Code PLU Balance'}
+              value={formPluCode}
+              onChange={setFormPluCode}
+              placeholder="104"
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              field="ProdExpiry"
+              label={isAr ? 'تاريخ الصلاحية' : isEn ? 'Expiry Date' : 'Date péremption'}
+              type="date"
+              value={formExpiryDate}
+              onChange={setFormExpiryDate}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <label className="flex items-center gap-2 pt-5 t-small font-semibold text-black dark:text-white cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formIsWeighted}
+                onChange={(e) => setFormIsWeighted(e.target.checked)}
+                className="w-4 h-4 accent-[#BF431F]"
+              />
+              <span>{isAr ? 'يباع بالوزن (كغ)' : isEn ? 'Sold by Weight' : 'Vente au poids (kg)'}</span>
+            </label>
+          </div>
+
+          {/* Variants Editor */}
+          <div className="p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#191716] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="t-cap font-semibold text-black/75 dark:text-white/80">
+                {isAr ? 'المتغيرات (أحجام / نكهات)' : isEn ? 'Variants (Sizes / Colors)' : 'Variantes (Tailles / Formats)'}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormVariants((prev) => [
+                    ...prev,
+                    {
+                      id: `var_${Date.now()}_${prev.length}`,
+                      sku: `${(formSku || 'SKU').trim()}-V${prev.length + 1}`,
+                      label: `Size ${prev.length + 1}`,
+                      priceDzd: parseFloat(formPrice) || 0,
+                      stockQuantity: 10,
+                      isActive: true,
+                    },
+                  ])
+                }
+                className="t-cap font-semibold text-[var(--brand-text,#BF431F)] cursor-pointer hover:underline"
+              >
+                + {isAr ? 'إضافة متغير' : isEn ? 'Add Variant' : 'Ajouter variante'}
+              </button>
+            </div>
+            {formVariants.map((v, idx) => (
+              <div key={v.id} className="grid grid-cols-12 gap-2 items-center">
+                <input
+                  type="text"
+                  value={v.label}
+                  onChange={(e) =>
+                    setFormVariants((prev) =>
+                      prev.map((item, i) => (i === idx ? { ...item, label: e.target.value } : item))
+                    )
+                  }
+                  placeholder="Label"
+                  className="col-span-5 h-8 px-2 rounded bg-white dark:bg-[#2B2825] t-cap"
+                />
+                <input
+                  type="number"
+                  value={v.priceDzd}
+                  onChange={(e) =>
+                    setFormVariants((prev) =>
+                      prev.map((item, i) => (i === idx ? { ...item, priceDzd: parseFloat(e.target.value) || 0 } : item))
+                    )
+                  }
+                  placeholder="DA"
+                  className="col-span-3 h-8 px-2 rounded bg-white dark:bg-[#2B2825] t-cap tabular-nums"
+                />
+                <input
+                  type="number"
+                  value={v.stockQuantity}
+                  onChange={(e) =>
+                    setFormVariants((prev) =>
+                      prev.map((item, i) => (i === idx ? { ...item, stockQuantity: parseInt(e.target.value, 10) || 0 } : item))
+                    )
+                  }
+                  placeholder="Qty"
+                  className="col-span-3 h-8 px-2 rounded bg-white dark:bg-[#2B2825] t-cap tabular-nums"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormVariants((prev) => prev.filter((_, i) => i !== idx))}
+                  className="col-span-1 text-rose-500 t-cap cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Recipe BOM Editor */}
+          <div className="p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#191716] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="t-cap font-semibold text-black/75 dark:text-white/80">
+                {isAr ? 'مكونات الوصفة (BOM)' : isEn ? 'Recipe / BOM Ingredients' : 'Recette / Fiche Technique (BOM)'}
+              </span>
+              {products.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstIng = products.find((pr) => pr.id !== editingProductId) || products[0];
+                    if (!firstIng) return;
+                    setFormRecipeBom((prev) => [
+                      ...prev,
+                      {
+                        ingredientProductId: firstIng.id,
+                        ingredientName: firstIng.name,
+                        quantityPerUnit: 1,
+                        unit: firstIng.unit || 'pcs',
+                      },
+                    ]);
+                  }}
+                  className="t-cap font-semibold text-[var(--brand-text,#BF431F)] cursor-pointer hover:underline"
+                >
+                  + {isAr ? 'إضافة مكون' : isEn ? 'Add Ingredient' : 'Ajouter ingrédient'}
+                </button>
+              )}
+            </div>
+            {formRecipeBom.map((r, idx) => (
+              <div key={`${r.ingredientProductId}-${idx}`} className="grid grid-cols-12 gap-2 items-center">
+                <select
+                  value={r.ingredientProductId}
+                  onChange={(e) => {
+                    const ing = products.find((p) => p.id === e.target.value);
+                    if (!ing) return;
+                    setFormRecipeBom((prev) =>
+                      prev.map((item, i) =>
+                        i === idx
+                          ? {
+                              ...item,
+                              ingredientProductId: ing.id,
+                              ingredientName: ing.name,
+                              unit: ing.unit || 'pcs',
+                            }
+                          : item
+                      )
+                    );
+                  }}
+                  className="col-span-7 h-8 px-2 rounded bg-white dark:bg-[#2B2825] t-cap"
+                >
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unit || 'pcs'})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  step="0.05"
+                  min="0.01"
+                  value={r.quantityPerUnit}
+                  onChange={(e) =>
+                    setFormRecipeBom((prev) =>
+                      prev.map((item, i) =>
+                        i === idx ? { ...item, quantityPerUnit: parseFloat(e.target.value) || 0.1 } : item
+                      )
+                    )
+                  }
+                  className="col-span-4 h-8 px-2 rounded bg-white dark:bg-[#2B2825] t-cap tabular-nums"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormRecipeBom((prev) => prev.filter((_, i) => i !== idx))}
+                  className="col-span-1 text-rose-500 t-cap cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
             <Button type="button" tone="soft" size={40} onClick={() => setIsProductFormModalOpen(false)}>
               {t('action_cancel')}
@@ -2194,6 +2478,12 @@ export const PosInventoryView: React.FC<any> = () => {
           setPoSupplierId(sup.id);
           setIsSupplierModalOpen(false);
         }}
+      />
+
+      <WmsBarcodePrintModal
+        isOpen={Boolean(barcodePrintTarget)}
+        onClose={() => setBarcodePrintTarget(null)}
+        target={barcodePrintTarget}
       />
     </div>
   );

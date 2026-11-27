@@ -18,6 +18,7 @@ import {
   selectCurrentPosCashSessionsFromState,
   selectCurrentPosCashMovementsFromState,
   selectCurrentPosZReportsFromState,
+  selectCurrentPosCreditEntriesFromState,
   shallowEqualObjects,
   showToast,
   useAtriumActions,
@@ -107,6 +108,7 @@ export const PosFinanceView: React.FC = () => {
     posCashSessions,
     posCashMovements,
     posZReports,
+    posCustomerCreditEntries,
     currentBranch,
     branches,
     currentUser,
@@ -116,6 +118,7 @@ export const PosFinanceView: React.FC = () => {
       posCashSessions: selectCurrentPosCashSessionsFromState(s),
       posCashMovements: selectCurrentPosCashMovementsFromState(s),
       posZReports: selectCurrentPosZReportsFromState(s),
+      posCustomerCreditEntries: selectCurrentPosCreditEntriesFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -230,6 +233,13 @@ export const PosFinanceView: React.FC = () => {
       (acc, m) => acc + Math.max(0, m.amountCentimes),
       0
     );
+    const tipsCollectedDzd = todaySales
+      .filter((s) => s.status !== 'Voided' && s.status !== 'Refunded')
+      .reduce((acc, s) => acc + Math.max(0, Number(s.tipAmount || 0)), 0);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const carnetRepaymentsCentimes = posCustomerCreditEntries
+      .filter((e) => e.entryType === 'repayment' && e.occurredAt.startsWith(todayStr))
+      .reduce((acc, e) => acc + Math.max(0, e.amountCentimes || 0), 0);
 
     const branchCounts = new Map<string, number>();
     expenses.forEach((e) => {
@@ -242,6 +252,8 @@ export const PosFinanceView: React.FC = () => {
       cardSales: centimesToDzd(paymentCentimes.cardSalesCentimes),
       baridiMobSales: centimesToDzd(paymentCentimes.baridimobSalesCentimes),
       totalGrossSales: centimesToDzd(paymentCentimes.totalGrossSalesCentimes),
+      tipsCollectedDzd,
+      carnetRepaymentsDzd: centimesToDzd(carnetRepaymentsCentimes),
       totalCashPayouts: centimesToDzd(drawerSummary.cashOutCentimes),
       totalAllExpenses: centimesToDzd(totalAllExpensesCentimes),
       expectedCashInDrawer: centimesToDzd(drawerSummary.expectedCashCentimes),
@@ -266,6 +278,7 @@ export const PosFinanceView: React.FC = () => {
     activeSessionMovements,
     actualCashInput,
     posCashMovements,
+    posCustomerCreditEntries,
     expenses,
     branchesById,
     currentBranch,
@@ -683,6 +696,16 @@ export const PosFinanceView: React.FC = () => {
             <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
               {formatMoney(financeTotals.expectedCashInDrawer)}
             </span>
+            {financeTotals.tipsCollectedDzd > 0 && (
+              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-semibold">
+                {isAr ? 'الإكراميات:' : isEn ? 'Tips:' : 'Pourboires :'} +{formatMoney(financeTotals.tipsCollectedDzd)}
+              </span>
+            )}
+            {financeTotals.carnetRepaymentsDzd > 0 && (
+              <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold">
+                {isAr ? 'تحصيل الديون:' : isEn ? 'Carnet Collected:' : 'Recouvrement Carnet :'} +{formatMoney(financeTotals.carnetRepaymentsDzd)}
+              </span>
+            )}
             {financeTotals.pinRequiredForClose && (
               <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold">
                 <ShieldCheck size={13} />

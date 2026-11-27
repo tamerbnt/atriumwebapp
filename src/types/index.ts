@@ -409,10 +409,17 @@ export interface Product {
   isActive: boolean;
   isPinned: boolean;
   supplier?: string;
+  variants?: ProductVariant[];
+  modifierGroups?: ProductModifierGroup[];
+  recipeBom?: ProductRecipeIngredient[];
+  isWeighted?: boolean;
+  pluCode?: string;
+  expiryDate?: string;
   version?: number;
 }
 
 export interface SaleItem {
+  lineId?: string;
   productId: string;
   productName: string;
   quantity: number;
@@ -423,6 +430,12 @@ export interface SaleItem {
   unit?: string;
   discount?: number;
   notes?: string;
+  variantId?: string;
+  variantLabel?: string;
+  modifiers?: PosSelectedModifier[];
+  modifiersUnitDeltaDzd?: number;
+  weightKg?: number;
+  pluCode?: string;
 }
 
 export interface PaymentDetail {
@@ -447,6 +460,13 @@ export interface Sale {
   discount?: number;
   discountAmount?: number;
   taxAmount?: number;
+  tipAmount?: number;
+  orderChannel?: PosOrderChannel;
+  tableId?: string;
+  tableLabel?: string;
+  deliveryAddress?: string;
+  deliveryCourier?: string;
+  deliveryFee?: number;
   paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit';
   payments?: PaymentDetail[];
   amountTendered?: number;
@@ -458,6 +478,10 @@ export interface Sale {
   refundReason?: string;
   refundedAt?: string;
   refundedItems?: Array<{ productId: string; productName: string; quantity: number }>;
+  voidedByStaffId?: string;
+  voidReason?: string;
+  voidPinVerified?: boolean;
+  voidedAt?: string;
   version?: number;
   createdAt: string;
 }
@@ -5869,6 +5893,192 @@ export interface GymTrainerCommission {
   earnedDate: string;
   version?: number;
 }
+
+export type PosSubRole = 'waiter' | 'cashier' | 'kitchen';
+export type PosOrderChannel = 'counter' | 'dine_in' | 'takeaway' | 'delivery';
+
+export interface ProductVariant {
+  id: string;
+  sku: string;
+  barcode?: string;
+  label: string; // e.g., "M / Black" or "42 / Blue"
+  attributes?: Record<string, string>;
+  priceDzd?: number;
+  costDzd?: number;
+  stockQuantity: number;
+  isActive: boolean;
+}
+
+export interface ProductModifierOption {
+  id: string;
+  name: string;
+  priceDeltaDzd: number;
+}
+
+export interface ProductModifierGroup {
+  id: string;
+  name: string;
+  required?: boolean;
+  multiSelect?: boolean;
+  maxSelect?: number;
+  options: ProductModifierOption[];
+}
+
+export interface ProductRecipeIngredient {
+  ingredientProductId: string;
+  ingredientName: string;
+  quantityPerUnit: number;
+  unit?: string;
+}
+
+export interface PosSelectedModifier {
+  groupId: string;
+  groupName: string;
+  optionId: string;
+  optionName: string;
+  priceDeltaDzd: number;
+}
+
+export interface PosFloorTable {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  tableCode: string;
+  label: string;
+  zone: string;
+  seats: number;
+  status: 'available' | 'occupied' | 'reserved' | 'cleaning';
+  currentOrderId?: string;
+  waiterStaffId?: string;
+  waiterName?: string;
+  notes?: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PosKitchenOrderItem {
+  lineKey: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  baseUnitPriceDzd: number;
+  modifiersUnitDeltaDzd: number;
+  unitPriceDzd: number;
+  lineTotalDzd: number;
+  variantId?: string;
+  variantLabel?: string;
+  modifiers?: PosSelectedModifier[];
+  weightKg?: number;
+  pluCode?: string;
+  notes?: string;
+}
+
+export interface PosKitchenOrderDelta {
+  lineKey: string;
+  productId: string;
+  productName: string;
+  changeType: 'added' | 'removed' | 'increased' | 'decreased';
+  previousQty: number;
+  newQty: number;
+  deltaQty: number;
+  variantLabel?: string;
+  modifiersSummary?: string;
+}
+
+export interface PosKitchenOrder {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  orderNumber: string;
+  orderChannel: PosOrderChannel;
+  tableId?: string;
+  tableLabel?: string;
+  waiterStaffId?: string;
+  waiterName?: string;
+  customerId?: string;
+  customerName?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
+  deliveryCourier?: string;
+  deliveryFeeCentimes: number;
+  kdsStatus: 'draft' | 'sent' | 'preparing' | 'ready' | 'served' | 'settled' | 'voided';
+  revision: number;
+  currentItems: PosKitchenOrderItem[];
+  sentSnapshotItems: PosKitchenOrderItem[];
+  deltaItems: PosKitchenOrderDelta[];
+  discountCentimes: number;
+  tipCentimes: number;
+  subtotalCentimes: number;
+  totalCentimes: number;
+  settledSaleId?: string;
+  voidReason?: string;
+  voidPinVerified?: boolean;
+  voidedByStaffId?: string;
+  voidedAt?: string;
+  notes?: string;
+  sentAt?: string;
+  readyAt?: string;
+  servedAt?: string;
+  settledAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface PosCustomerCreditEntry {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  customerId?: string;
+  customerName: string;
+  customerPhone?: string;
+  entryType: 'charge' | 'repayment' | 'adjustment';
+  amountCentimes: number;
+  creditLimitCentimes: number;
+  paymentMethod?: string;
+  saleId?: string;
+  unifiedPaymentId?: string;
+  reference: string;
+  notes?: string;
+  recordedByStaffId?: string;
+  recordedByName?: string;
+  occurredAt: string;
+  version?: number;
+}
+
+export interface PosOpticalPrescription {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId: string;
+  customerId?: string;
+  customerName: string;
+  customerPhone?: string;
+  prescriberName?: string;
+  prescribedAt: string;
+  odSphere?: number;
+  odCylinder?: number;
+  odAxis?: number;
+  odAdd?: number;
+  osSphere?: number;
+  osCylinder?: number;
+  osAxis?: number;
+  osAdd?: number;
+  pdMm?: number;
+  lensType?: string;
+  frameModel?: string;
+  labStatus: 'measured' | 'ordered_lab' | 'edging' | 'ready' | 'delivered';
+  saleId?: string;
+  notes?: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 
 
 

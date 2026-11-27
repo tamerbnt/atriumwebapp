@@ -658,7 +658,7 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
 
 ## Phase 3 Step 1 — Membership & Club Operations Depth (`7.1 membership_session`)
 
-- **Database Schema, Migration & Rollback**: `supabase/migrations/202611270010_phase3_membership_depth.sql` + `supabase/rollbacks/202611270010_phase3_membership_depth.down.sql` (`migrationsAndRollbacks.test.ts` 18/18 passing; CI Postgres 16 harness parity).
+- **Database Schema, Migration & Rollback**: `supabase/migrations/202611280001_phase3_membership_depth.sql` + `supabase/rollbacks/202611280001_phase3_membership_depth.down.sql` (`migrationsAndRollbacks.test.ts` 18/18 passing; CI Postgres 16 harness parity).
   - Added freeze/pause lifecycle columns, family/couple pack linkage & role columns, auto-renewal controls, session-pack unused credit refunds, and `gym_trainer_commissions` linked to Workforce payroll slips.
 - **Pure Engine, Services & Store Wiring**:
   - `src/utils/membershipDepth.ts` + `src/utils/membershipDepth.test.ts` (`npm test` 5/5): Freeze validation during active check-in windows, auto-expiry extension on resume, mid-cycle plan switch proration, family/couple pack limits, unused session refund math, FIFO waitlist promotion on class cancellation, `ATR:MEM:...` QR payload build/parse, trainer commission accrual -> payroll aggregation, day-pass Art. 317 stamp-duty calculation, and club retention summary (`computeMembershipRetentionSummary`).
@@ -677,4 +677,27 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - `npm run ci:guards` (strict): **0 findings**.
   - Live headless Chromium (`playwright-cli` at `1440x900`, Ultra Mode Rounds 1–2): Verified Membership Dashboard `Retention, Freeze & Courts` pod, Members slide-over inspector & `Member QR Pass` modal, Auto-Renewals modal, Schedule `Courts` panel, Staff `Payroll` `Trainer Coaching & Class Commissions` clearance, and Front Desk Staff switch -> `GymFrontDeskKiosk` clean scanner bar + Day Pass modal (`1 000 DA` + `Timbre Art. 317` `+20 DZD` = `1,020 DZD`) with **`0` console errors / `0` console warnings**.
 - **Next Queued Phase 3 Vertical**: `7.2 appointment_service`.
+
+---
+
+## Phase 3 Step 2 — Appointment & Salon Operations Depth (`7.2 appointment_service`)
+
+- **Database Schema, Migration & Rollback**: `supabase/migrations/202611280002_phase3_appointment_depth.sql` + `supabase/rollbacks/202611280002_phase3_appointment_depth.down.sql` (`migrationsAndRollbacks.test.ts` 19/19 passing; `scripts/db/test_rls_rpc_triggers.sql` Section 20 CI Postgres 16 harness parity).
+  - Normalized `client_type` (`regular` | `vip` | `walkin`) and `segment_data` on `salon_clients` / `gym_members`; added `buffer_minutes`, `cost_price_centimes`, `consumables`, `allergy_keywords`, and `requires_consent` on `salon_services`; added deposit lifecycle, `cancellation_cutoff_hours`, `refunded_deposit_centimes`, `allergy_override_confirmed`, `booking_channel`, `consumables_deducted`, package/gift-card/loyalty metadata on `salon_appointments`.
+  - Created tenant/branch-isolated tables `salon_stylist_schedules`, `salon_prepaid_packages`, `salon_gift_cards`, `salon_loyalty_ledger`, `salon_consent_forms`, and `salon_hammam_sessions` with RLS policies and `SECURITY DEFINER` RPCs (`complete_salon_appointment_with_consumables`, `cancel_salon_appointment_with_deposit`).
+- **Pure Engine, Services & Store Wiring**:
+  - `src/utils/appointmentDepth.ts` + `src/utils/appointmentDepth.test.ts` (`npm test` 8/8): Walk-in/VIP client normalization, stylist availability & break/time-off/buffer overlap evaluator, allergy conflict detector with explicit override tracking, deposit cancellation cutoff & forfeiture/refund evaluator, prepaid package session deduction, gift card balance deduction, loyalty points accrual/redemption ledger math, consent form validation, Hammam cabin & add-on settlement, and atomic service consumables depletion calculation.
+  - `src/lib/supabase/services/appointmentService.ts`, `src/lib/supabase/offlineQueue.ts`, and `src/services/store.ts`: Wired stylist schedule/time-off management, prepaid packages, gift cards, loyalty ledger, tattoo/laser consent records, Hammam sessions, deposit cancellation handling, and consumables stock depletion (plus snapshot/backup parity).
+- **UI Integrations (`src/components/screens/appointment/` & `src/components/modals/`)**:
+  - `AppointmentScheduleView.tsx` & `SalonHammamPanel.tsx`: Day-by-day stylist availability, buffer/conflict validation, Hammam cabins & thermal treatments workspace, and deposit cancellation settlement.
+  - `AppointmentClientsView.tsx` & `SalonPackagesConsentPanel.tsx`: Walk-in/VIP/Regular filtering, client allergy safety alerts, prepaid packages, gift cards, loyalty ledger, and consent forms tab.
+  - `AppointmentModal.tsx`, `AppointmentServicesView.tsx`, `AppointmentFinanceView.tsx`: Deposit capture, booking channel, consumables linking, gift card / package / loyalty redemption, and revenue/commission reconciliation.
+- **Verified Checks**:
+  - `npx tsc --noEmit` (`lint_applet`) & `vite build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **181 / 181 passed** (7 suites, incl. `appointmentDepth.test.ts` 8/8).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **46 / 46 files, 344 / 344 tests passed** (incl. `phase3AppointmentDepth.test.tsx` 6/6 and `migrationsAndRollbacks.test.ts` 19/19).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `appointment_service` across `Calendar/Schedule` + `Hammam` tab, `Clients` + `Packages/Consent` tab, `Store` (Services), and `Finance` via Command Palette navigation with **`0` console errors / `0` console warnings**.
+- **Next Queued Phase 3 Vertical**: `7.3 pos_inventory`.
+
 

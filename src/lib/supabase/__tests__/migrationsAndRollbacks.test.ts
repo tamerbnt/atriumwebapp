@@ -464,5 +464,37 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_stylist_schedules');
     expect(downSql).toContain('DROP COLUMN IF EXISTS deposit_centimes');
   });
+
+  it('verifies Phase 3 Step 3 (7.3) POS & inventory depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280003_phase3_pos_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280003_phase3_pos_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS variants jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS modifier_groups jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS recipe_bom jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS tip_centimes bigint');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_floor_tables');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_kitchen_orders');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_customer_credit_entries');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pos_optical_prescriptions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pos_send_kitchen_order(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pos_transfer_table_order(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pos_void_kitchen_or_sale_order(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pos_record_carnet_entry(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pos_record_carnet_entry(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pos_void_kitchen_or_sale_order(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pos_transfer_table_order(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pos_send_kitchen_order(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_optical_prescriptions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_customer_credit_entries');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_kitchen_orders');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_floor_tables');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS variants');
+  });
 });
+
 

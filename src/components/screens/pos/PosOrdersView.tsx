@@ -11,10 +11,16 @@ import {
   Banknote,
   Coins,
   Eye,
+  BookOpenCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentMembersFromState,
   selectCurrentParkedOrdersFromState,
+  selectCurrentPosCreditEntriesFromState,
+  selectCurrentPosOpticalPrescriptionsFromState,
   selectCurrentSalesFromState,
   selectCurrentStockMovementsFromState,
   selectCurrentUnifiedDocumentsFromState,
@@ -26,6 +32,8 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { Sale, ParkedOrder, UnifiedDocument } from '../../../types/index';
+import { PosCarnetOpticalPanel } from './PosCarnetOpticalPanel';
+import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { UnifiedInvoiceComposerModal, type UnifiedInvoiceComposerPrefill } from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
@@ -92,6 +100,9 @@ export const PosOrdersView: React.FC = () => {
     deleteParkedOrder,
     refundSale,
     batchDeleteSales,
+    voidPosSaleWithPin,
+    recordPosCarnetEntry,
+    upsertOpticalPrescription,
   } = useAtriumActions();
   const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
     useDashboardShellState();
@@ -104,6 +115,10 @@ export const PosOrdersView: React.FC = () => {
     branches,
     receiptConfig,
     currentUser,
+    members,
+    posCustomerCreditEntries,
+    posOpticalPrescriptions,
+    currentBusinessConfig,
   } = useAtriumSelector(
     (s) => ({
       sales: selectCurrentSalesFromState(s),
@@ -114,11 +129,17 @@ export const PosOrdersView: React.FC = () => {
       branches: s.branches,
       receiptConfig: s.receiptConfig,
       currentUser: s.currentUser,
+      members: selectCurrentMembersFromState(s),
+      posCustomerCreditEntries: selectCurrentPosCreditEntriesFromState(s),
+      posOpticalPrescriptions: selectCurrentPosOpticalPrescriptionsFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
     }),
     shallowEqualObjects
   );
 
-  const [activeSubTab, setActiveSubTab] = useState<'sales' | 'parked'>('sales');
+  const isOpticalTrade = currentBusinessConfig.onboardingContext?.selectedTradeId === 'trade_optical_store';
+  const [activeSubTab, setActiveSubTab] = useState<'sales' | 'parked' | 'carnet' | 'optical'>('sales');
+  const [saleToVoidWithPin, setSaleToVoidWithPin] = useState<Sale | null>(null);
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | '7days' | 'month'>('all');
   const [tenderFilter, setTenderFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<SalesStatusFilter>('all');
@@ -811,7 +832,7 @@ export const PosOrdersView: React.FC = () => {
           <LiveSegmentedControl
             size="md"
             value={activeSubTab}
-            onValueChange={(val) => setActiveSubTab(val as 'sales' | 'parked')}
+            onValueChange={(val) => setActiveSubTab(val as 'sales' | 'parked' | 'carnet' | 'optical')}
             options={[
               {
                 value: 'sales',
@@ -824,6 +845,20 @@ export const PosOrdersView: React.FC = () => {
                 label: isAr ? 'المعلقة' : isEn ? 'Parked' : 'En pause',
                 icon: <PauseCircle size={14} />,
                 count: parkedOrders.length,
+              },
+              {
+                value: 'carnet',
+                label: isAr ? 'دفتر الديون' : isEn ? 'Credit Carnet' : 'Carnet dettes',
+                icon: <BookOpenCheck size={14} />,
+                count: posCustomerCreditEntries.length,
+              },
+              {
+                value: 'optical',
+                label: isOpticalTrade
+                  ? (isAr ? 'وصفات البصريات' : isEn ? 'Optical Rx ★' : 'Optique Rx ★')
+                  : (isAr ? 'البصريات' : isEn ? 'Optical Rx' : 'Optique Rx'),
+                icon: <Eye size={14} />,
+                count: posOpticalPrescriptions.length,
               },
             ]}
             aria-label="Orders Mode Switcher"
@@ -873,6 +908,16 @@ export const PosOrdersView: React.FC = () => {
         }}
       />
 
+      {activeSubTab === 'carnet' || activeSubTab === 'optical' ? (
+        <PosCarnetOpticalPanel
+          mode={activeSubTab}
+          entries={posCustomerCreditEntries}
+          prescriptions={posOpticalPrescriptions}
+          members={members}
+          onRecordCarnetEntry={recordPosCarnetEntry}
+          onUpsertOpticalRx={upsertOpticalPrescription}
+        />
+      ) : (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={
@@ -983,7 +1028,7 @@ export const PosOrdersView: React.FC = () => {
                   setSelectedSaleForReceipt(s);
                 },
               },
-              ...(s.status !== 'Refunded'
+              ...(s.status !== 'Refunded' && s.status !== 'Voided'
                 ? [
                     {
                       id: 'refund',
@@ -992,6 +1037,15 @@ export const PosOrdersView: React.FC = () => {
                       onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
                         e.stopPropagation();
                         setSelectedSaleForRefund(s);
+                      },
+                    },
+                    {
+                      id: 'void_pin',
+                      label: isAr ? 'إلغاء PIN' : isEn ? 'Void (PIN)' : 'Annuler (PIN)',
+                      icon: <ShieldAlert className="w-[15px] h-[15px]" />,
+                      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        setSaleToVoidWithPin(s);
                       },
                     },
                   ]
@@ -1023,13 +1077,19 @@ export const PosOrdersView: React.FC = () => {
                 icon: <Printer className="w-3.5 h-3.5" />,
                 onClick: () => setSelectedSaleForReceipt(s),
               },
-              ...(s.status !== 'Refunded'
+              ...(s.status !== 'Refunded' && s.status !== 'Voided'
                 ? [
                     {
                       id: 'refund',
                       label: isAr ? 'استرجاع' : 'Rembourser',
                       icon: <RotateCcw className="w-3.5 h-3.5" />,
                       onClick: () => setSelectedSaleForRefund(s),
+                    },
+                    {
+                      id: 'void_pin',
+                      label: isAr ? 'إلغاء PIN' : isEn ? 'Void (PIN)' : 'Annuler (PIN)',
+                      icon: <ShieldAlert className="w-3.5 h-3.5" />,
+                      onClick: () => setSaleToVoidWithPin(s),
                     },
                   ]
                 : []),
@@ -1279,6 +1339,7 @@ export const PosOrdersView: React.FC = () => {
           />
         )}
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -1823,6 +1884,27 @@ export const PosOrdersView: React.FC = () => {
             title: isAr ? 'تم تسجيل الدفعة' : isEn ? 'Payment Recorded' : 'Règlement Enregistré',
             message: `${pay.paymentNumber} · ${pay.partyName}`,
           });
+        }}
+      />
+
+      <PinVerificationModal
+        isOpen={Boolean(saleToVoidWithPin)}
+        onClose={() => setSaleToVoidWithPin(null)}
+        title={isAr ? 'رمز المدير لإلغاء البيع' : isEn ? 'Manager PIN Required to Void Sale' : 'Code PIN gérant requis pour annulation'}
+        description={saleToVoidWithPin ? `#${saleToVoidWithPin.id.slice(-8).toUpperCase()} · ${formatMoney(saleToVoidWithPin.totalAmount)}` : undefined}
+        onSuccess={() => {
+          if (!saleToVoidWithPin) return;
+          voidPosSaleWithPin({
+            saleId: saleToVoidWithPin.id,
+            reason: 'Manager PIN Void',
+            pinVerified: true,
+          });
+          showToast({
+            type: 'warning',
+            title: isAr ? 'تم إلغاء التذكرة' : isEn ? 'Sale Voided' : 'Ticket annulé',
+            message: `#${saleToVoidWithPin.id.slice(-8).toUpperCase()}`,
+          });
+          setSaleToVoidWithPin(null);
         }}
       />
     </div>
