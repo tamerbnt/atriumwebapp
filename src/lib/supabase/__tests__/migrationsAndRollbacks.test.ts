@@ -434,5 +434,35 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.gym_member_freeze_logs');
     expect(downSql).toContain('DROP COLUMN IF EXISTS auto_renew');
   });
+
+  it('verifies Phase 3 Step 2 (7.2) appointment service depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280002_phase3_appointment_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280002_phase3_appointment_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS client_type text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS consumables jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS deposit_centimes bigint');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_stylist_schedules');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_prepaid_packages');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_gift_cards');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_loyalty_ledger');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_consent_forms');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.salon_hammam_sessions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.cancel_salon_appointment_with_deposit(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.redeem_salon_package_or_gift_card(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.redeem_salon_package_or_gift_card(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.cancel_salon_appointment_with_deposit(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_hammam_sessions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_consent_forms');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_loyalty_ledger');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_gift_cards');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_prepaid_packages');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.salon_stylist_schedules');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS deposit_centimes');
+  });
 });
 

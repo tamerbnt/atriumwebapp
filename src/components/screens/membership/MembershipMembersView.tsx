@@ -12,10 +12,14 @@ import {
   Eye,
   CreditCard,
   Activity,
+  BellRing,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
   useAtriumSelector,
+  useAtriumActions,
   selectCurrentMembersFromState,
   selectCurrentPlansFromState,
   selectCurrentBranchFromState,
@@ -36,11 +40,14 @@ import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { resolveEmptyState } from '../../../atrium/components/EmptyState';
 import { Member } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
+import { collectAutoRenewalCandidates } from '../../../utils/membershipDepth';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { MemberSlideOverInspector } from './MemberSlideOverInspector';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { Button } from '@/atrium/core';
 import {
   ScreenHeaderBar,
   ScreenPod,
@@ -52,6 +59,7 @@ import {
   KineticRowData,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticFloatingBulkBar,
   KineticBulkAction,
   KineticRowFanAction,
@@ -155,6 +163,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     shallowEqualObjects
   );
 
+  const { runAutoRenewalsForEligibleMembers, runReminderEngineScan } = useAtriumActions();
   const selectMember = selectMemberAction;
   const closeDetail = closeDetailAction;
   const addMember = addMemberAction;
@@ -186,6 +195,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
   const [memberSortBy, setMemberSortBy] = useState('member');
   const [memberSortDir, setMemberSortDir] = useState<'asc' | 'desc'>('asc');
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isAutoRenewModalOpen, setIsAutoRenewModalOpen] = useState(false);
   const [panelInitialTab, setPanelInitialTab] = useState<'overview' | 'access' | 'billing'>('overview');
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
@@ -219,6 +229,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     ageGroupFilter !== 'All' ||
     branchFilter !== 'All' ||
     statusFilter === 'Expired' ||
+    statusFilter === 'Frozen' ||
     statusFilter === 'Archived';
 
   const activeFiltersCount =
@@ -226,7 +237,12 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     (genderFilter !== 'All' ? 1 : 0) +
     (ageGroupFilter !== 'All' ? 1 : 0) +
     (branchFilter !== 'All' ? 1 : 0) +
-    (statusFilter === 'Expired' || statusFilter === 'Archived' ? 1 : 0);
+    (statusFilter === 'Expired' || statusFilter === 'Frozen' || statusFilter === 'Archived' ? 1 : 0);
+
+  const autoRenewalCandidates = useMemo(
+    () => collectAutoRenewalCandidates({ members, plans, leadDays: 7 }),
+    [members, plans]
+  );
 
   const handleResetFilters = useCallback(() => {
     setPlanFilter('All');
@@ -309,6 +325,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         member.status === 'Suspended' ||
         member.status === 'Banned' ||
         Boolean((member as any).isBlocked);
+      const isFrozen = member.status === 'Frozen';
       const isExpired = member.status === 'Expired' || daysRemaining <= 0;
 
       const statusLabel = isBlocked
@@ -317,6 +334,12 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
           : language === 'fr'
           ? 'Bloqué'
           : 'Blocked'
+        : isFrozen
+        ? language === 'ar'
+          ? 'مجمد'
+          : language === 'fr'
+          ? 'Gelé'
+          : 'Frozen'
         : isExpired
         ? language === 'ar'
           ? 'منتهي'
@@ -337,7 +360,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         vipBadge: pinnedMemberIds.has(member.id) ? 'VIP' : undefined,
         categoryLabel: member.membershipPlanName || 'Full Access Monthly',
         statusLabel,
-        statusVariant: isBlocked ? 'blocked' : isExpired ? 'expired' : 'active',
+        statusVariant: isBlocked ? 'blocked' : isFrozen ? 'warning' : isExpired ? 'expired' : 'active',
         metricPrimary: member.expirationDate || 'Non spécifié',
         metricSecondary: remainingText,
         branchName: branchInfo.name,
@@ -387,6 +410,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     activeMembersCount,
     expiringCount,
     expiredCount,
+    frozenCount,
     archivedCount,
     ageGroupCounts,
     planCounts,
@@ -395,6 +419,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     let active = 0;
     let expiring = 0;
     let expired = 0;
+    let frozen = 0;
     let archived = 0;
     const ag: Record<string, number> = {
       All: preparedMembers.length,
@@ -412,6 +437,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       const item = preparedMembers[i];
       const m = item.member;
       if (m.status === 'Active') active++;
+      else if (m.status === 'Frozen') frozen++;
       else if (m.status === 'Expired') expired++;
       else if (m.status === 'Banned' || m.status === 'Suspended') archived++;
       if (item.daysRemaining <= 14 && item.daysRemaining > 0) expiring++;
@@ -443,6 +469,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       activeMembersCount: active,
       expiringCount: expiring,
       expiredCount: expired,
+      frozenCount: frozen,
       archivedCount: archived,
       ageGroupCounts: ag,
       planCounts: pc,
@@ -512,6 +539,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       const member = item.member;
       if (hasStatus) {
         if (deferredStatusFilter === 'Active' && member.status !== 'Active') continue;
+        if (deferredStatusFilter === 'Frozen' && member.status !== 'Frozen') continue;
         if (deferredStatusFilter === 'Expired' && member.status !== 'Expired') continue;
         if (deferredStatusFilter === 'Expiring' && item.daysRemaining > 14) continue;
         if (
@@ -613,10 +641,15 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       { value: 'All', label: t('member_filter_all', language), count: members.length },
       { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
       { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+      {
+        value: 'Frozen',
+        label: language === 'ar' ? 'مجمد' : language === 'fr' ? 'Gelés' : 'Frozen',
+        count: frozenCount,
+      },
       { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
       { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
     ],
-    [language, members.length, activeMembersCount, expiringCount, expiredCount, archivedCount]
+    [language, members.length, activeMembersCount, expiringCount, frozenCount, expiredCount, archivedCount]
   );
 
   const genderFilterOptions = useMemo(
@@ -1604,6 +1637,38 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
           onViewModeChange={(val) => setViewMode(val === 'grid' ? 'grid' : 'list')}
           onExport={handleExportCSV}
           exportTooltip={t('members_export_csv', language)}
+          extraTrailingControls={
+            <button
+              type="button"
+              data-no-liquid="true"
+              data-sq="ctl"
+              data-sq-border="none"
+              data-testid="members-autorenew-alerts-btn"
+              onClick={() => setIsAutoRenewModalOpen(true)}
+              className="h-10 px-3.5 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#36322E] text-black dark:text-white t-small font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+              title={
+                language === 'ar'
+                  ? 'التجديد التلقائي وتنبيهات الانتهاء'
+                  : language === 'fr'
+                  ? 'Renouvellements auto & rappels'
+                  : 'Auto-renewals & alerts'
+              }
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-[var(--atr-acc,#d4522f)]" />
+              <span className="hidden sm:inline">
+                {language === 'ar'
+                  ? 'التجديد التلقائي'
+                  : language === 'fr'
+                  ? 'Renouvellements'
+                  : 'Auto-Renewals'}
+              </span>
+              {(autoRenewalCandidates.length > 0 || expiringCount > 0) && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f] text-white tabular-nums">
+                  {autoRenewalCandidates.length + expiringCount}
+                </span>
+              )}
+            </button>
+          }
           activeChips={activeChips}
           onResetAllFilters={handleResetFilters}
         />
@@ -1694,6 +1759,159 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         initialTime="10:00"
         initialStaffId={undefined}
       />
+
+      <KineticModalShell
+        isOpen={isAutoRenewModalOpen}
+        onClose={() => setIsAutoRenewModalOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-50"
+        scrimClassName="bg-[#1F1D1B]/45"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          data-testid="members-autorenew-modal"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[88vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-[#d4522f]/12 text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] grid place-items-center shrink-0"
+              >
+                <BellRing className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="t-card font-semibold text-black dark:text-white">
+                  {language === 'ar'
+                    ? 'التجديد التلقائي وتذكيرات الانتهاء'
+                    : language === 'fr'
+                    ? 'Renouvellements Auto & Rappels Échéance'
+                    : 'Auto-Renewals & Expiry Reminders'}
+                </h3>
+                <p className="t-cap text-black/62 dark:text-white/65">
+                  {language === 'ar'
+                    ? `${autoRenewalCandidates.length} اشتراكات جاهزة للتجديد التلقائي · ${expiringCount} قريبة الانتهاء`
+                    : language === 'fr'
+                    ? `${autoRenewalCandidates.length} éligible(s) au renouvellement auto · ${expiringCount} expiration(s) <14j`
+                    : `${autoRenewalCandidates.length} due for auto-renewal · ${expiringCount} expiring (<14d)`}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAutoRenewModalOpen(false)}
+              aria-label={language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 dark:text-white/60 hover:bg-[#F3EDE7] dark:hover:bg-[#332F2B] cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {autoRenewalCandidates.length > 0 ? (
+            <div className="divide-y divide-[var(--atr-divider)] rounded-xl border border-[var(--atr-divider)] max-h-56 overflow-y-auto">
+              {autoRenewalCandidates.map((c) => (
+                <div
+                  key={c.member.id}
+                  className="px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs"
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-black dark:text-white truncate">
+                      {c.member.fullName}
+                    </div>
+                    <div className="text-black/60 dark:text-white/65 truncate">
+                      {c.plan.name} → {c.nextExpirationDate}
+                    </div>
+                  </div>
+                  <span className="font-semibold tabular-nums text-[#096b40] dark:text-[#5BE3A3] shrink-0">
+                    {centimesToDzd(c.renewalAmountCentimes).toLocaleString()} DZD
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 t-small text-black/68 dark:text-white/70"
+            >
+              {language === 'ar'
+                ? 'لا توجد اشتراكات مفعّلة للتجديد التلقائي مستحقة خلال 7 أيام.'
+                : language === 'fr'
+                ? 'Aucun abonnement avec renouvellement automatique n’arrive à échéance sous 7 jours.'
+                : 'No auto-renew enabled memberships are due within the next 7 days.'}
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+            <Button
+              type="button"
+              tone="soft"
+              size={40}
+              data-testid="members-send-expiry-reminders-btn"
+              onClick={() => {
+                const res = runReminderEngineScan({ showSummaryToast: false });
+                showToast({
+                  type: 'success',
+                  title:
+                    language === 'ar'
+                      ? 'تم فحص التذكيرات'
+                      : language === 'fr'
+                      ? 'Rappels expirations envoyés'
+                      : 'Expiry Reminders Processed',
+                  message:
+                    language === 'ar'
+                      ? `تم إرسال ${res.sentCount}، مؤجل ${res.deferredCount}`
+                      : language === 'fr'
+                      ? `${res.sentCount} envoyé(s), ${res.deferredCount} différé(s) (heures calmes)`
+                      : `${res.sentCount} sent, ${res.deferredCount} deferred (quiet hours)`,
+                });
+              }}
+            >
+              <BellRing className="w-4 h-4 mr-1.5" />
+              {language === 'ar'
+                ? 'إرسال تذكيرات الانتهاء'
+                : language === 'fr'
+                ? 'Envoyer rappels échéance'
+                : 'Send Expiry Reminders'}
+            </Button>
+            <Button
+              type="button"
+              tone="accent"
+              size={40}
+              disabled={autoRenewalCandidates.length === 0}
+              data-testid="members-run-autorenew-btn"
+              onClick={() => {
+                const renewed = runAutoRenewalsForEligibleMembers(7);
+                showToast({
+                  type: 'success',
+                  title:
+                    language === 'ar'
+                      ? 'تم التجديد التلقائي'
+                      : language === 'fr'
+                      ? 'Renouvellements exécutés'
+                      : 'Auto-Renewals Executed',
+                  message:
+                    language === 'ar'
+                      ? `تم تجديد ${renewed.length} اشتراكات`
+                      : language === 'fr'
+                      ? `${renewed.length} abonnement(s) renouvelé(s)`
+                      : `${renewed.length} membership(s) renewed`,
+                });
+                setIsAutoRenewModalOpen(false);
+              }}
+            >
+              <RefreshCw className="w-4 h-4 mr-1.5" />
+              {language === 'ar'
+                ? 'تنفيذ التجديد التلقائي'
+                : language === 'fr'
+                ? 'Renouveler les éligibles'
+                : 'Run Auto-Renewals'}
+            </Button>
+          </div>
+        </div>
+      </KineticModalShell>
     </div>
   );
 });

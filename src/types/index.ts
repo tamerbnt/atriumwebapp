@@ -166,6 +166,7 @@ export interface Member {
   freezeFeeCentimes?: number;
   freezeReason?: string;
   qrToken?: string;
+  clientType?: 'regular' | 'vip' | 'walkin';
   version?: number;
   createdAt: string;
   updatedAt: string;
@@ -594,6 +595,13 @@ export interface OnboardingParams {
 
 export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow' | 'Booked';
 
+export interface ServiceConsumableItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unit?: string;
+}
+
 export interface ServiceItem {
   id: string;
   accountId?: string;
@@ -603,7 +611,7 @@ export interface ServiceItem {
   tenantId?: string;
   facilityId: string;
   name: string;
-  category: 'Hair' | 'Nails' | 'Facial' | 'Massage' | 'Bridal' | 'Barber';
+  category: 'Hair' | 'Nails' | 'Facial' | 'Massage' | 'Bridal' | 'Barber' | 'Tattoo' | 'Laser' | 'Hammam';
   durationMinutes: number;
   price: number;
   colorCode?: string;
@@ -612,9 +620,15 @@ export interface ServiceItem {
   costPrice?: number;
   commissionRate?: number;
   bufferMinutes?: number;
+  consumables?: ServiceConsumableItem[];
+  allergyKeywords?: string[];
+  requiresConsent?: boolean;
   isActive?: boolean;
   version?: number;
 }
+
+export type AppointmentBookingChannel = 'desk' | 'online' | 'whatsapp' | 'walkin';
+export type AppointmentDepositStatus = 'none' | 'held' | 'applied' | 'refunded' | 'forfeited';
 
 export interface Appointment {
   id: string;
@@ -647,6 +661,147 @@ export interface Appointment {
   stylistCommission?: number;
   retailProductsTotal?: number;
   tipAmount?: number;
+  depositCentimes?: number;
+  depositStatus?: AppointmentDepositStatus;
+  cancellationCutoffHours?: number;
+  refundedDepositCentimes?: number;
+  allergyOverrideConfirmed?: boolean;
+  bookingChannel?: AppointmentBookingChannel;
+  consumablesDeducted?: boolean;
+  packageId?: string;
+  giftCardCode?: string;
+  loyaltyPointsUsed?: number;
+  loyaltyPointsEarned?: number;
+  version?: number;
+}
+
+export interface StylistDayHours {
+  enabled: boolean;
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  breakStart?: string; // HH:mm
+  breakEnd?: string; // HH:mm
+}
+
+export interface StylistTimeOffRange {
+  id: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  reason?: string;
+}
+
+export interface StylistScheduleConfig {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId: string;
+  staffName: string;
+  salonClosingTime: string; // HH:mm e.g. '20:00'
+  weeklyHours: Record<number, StylistDayHours>; // 0=Sun..6=Sat
+  timeOffRanges: StylistTimeOffRange[];
+  version?: number;
+  updatedAt?: string;
+}
+
+export interface SalonPrepaidPackage {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  clientId: string;
+  clientName: string;
+  packageName: string;
+  serviceIds: string[];
+  categoryFilter?: string;
+  totalSessions: number;
+  remainingSessions: number;
+  priceCentimes: number;
+  expiresAt?: string;
+  status: 'active' | 'exhausted' | 'expired' | 'refunded';
+  createdAt: string;
+  version?: number;
+}
+
+export interface SalonGiftCard {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  code: string;
+  recipientName: string;
+  recipientPhone?: string;
+  purchaserName?: string;
+  initialCentimes: number;
+  remainingCentimes: number;
+  expiresAt?: string;
+  status: 'active' | 'redeemed' | 'expired' | 'void';
+  createdAt: string;
+  version?: number;
+}
+
+export interface SalonLoyaltyEntry {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  clientId: string;
+  clientName?: string;
+  appointmentId?: string;
+  pointsDelta: number;
+  balanceAfter: number;
+  reason: string;
+  recordedAt: string;
+  version?: number;
+}
+
+export type SalonConsentProtocolType = 'tattoo' | 'laser' | 'chemical' | 'aesthetic' | 'other';
+
+export interface SalonConsentForm {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  clientId: string;
+  clientName: string;
+  appointmentId?: string;
+  serviceId?: string;
+  serviceName: string;
+  protocolType: SalonConsentProtocolType;
+  medicalChecklist: Record<string, boolean>;
+  allergiesAcknowledged: boolean;
+  signatureDataUrl: string;
+  beforePhotoPath?: string;
+  afterPhotoPath?: string;
+  signedAt: string;
+  version?: number;
+}
+
+export type HammamGenderBlock = 'women' | 'men' | 'private';
+export type HammamSessionStatus = 'Booked' | 'InSession' | 'Completed' | 'Cancelled';
+
+export interface SalonHammamSession {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  cabinName: string;
+  genderBlock: HammamGenderBlock;
+  clientId?: string;
+  clientName: string;
+  clientPhone?: string;
+  attendantId?: string;
+  attendantName?: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  capacity: number;
+  bookedCount: number;
+  addons: string[]; // e.g. ['Savon Noir', 'Gommage Kessa', 'Argile Ghassoul']
+  priceCentimes: number;
+  status: HammamSessionStatus;
+  notes?: string;
+  createdAt: string;
   version?: number;
 }
 
@@ -3786,6 +3941,7 @@ export interface SalonChairStation {
   currentStylistName?: string;
   currentAppointmentId?: string;
   clientName?: string;
+  serviceId?: string;
   serviceName?: string;
   servicePriceDzd?: number;
   servicePriceCentimes?: number;

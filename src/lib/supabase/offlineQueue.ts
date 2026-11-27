@@ -182,6 +182,12 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   bi_report_snapshots: 52,
   gym_member_freeze_logs: 41,
   gym_trainer_commissions: 43,
+  salon_stylist_schedules: 22,
+  salon_prepaid_packages: 25,
+  salon_gift_cards: 25,
+  salon_consent_forms: 42,
+  salon_hammam_sessions: 40,
+  salon_loyalty_ledger: 44,
   immutable_audit_logs: 50,
 };
 

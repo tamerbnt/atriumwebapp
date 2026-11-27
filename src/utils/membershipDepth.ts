@@ -418,6 +418,25 @@ export function buildMemberQrPayload(member: Pick<Member, 'id' | 'businessId' | 
   return `ATR:MEM:${bizTag}:${member.id}:${cardTag}`;
 }
 
+export function parseMemberQrPayload(rawInput: string): {
+  isAtriumQr: boolean;
+  businessTag?: string;
+  memberId?: string;
+  cardTag?: string;
+} {
+  const trimmed = (rawInput || '').trim();
+  if (!trimmed.toUpperCase().startsWith('ATR:MEM:')) {
+    return { isAtriumQr: false };
+  }
+  const parts = trimmed.split(':');
+  return {
+    isAtriumQr: true,
+    businessTag: parts[2] || undefined,
+    memberId: parts[3] || undefined,
+    cardTag: parts[4] || undefined,
+  };
+}
+
 /**
  * Generates a deterministic 21x21 QR-like finder+data matrix for offline/online member badges.
  * Always places canonical 7x7 finder patterns at TL, TR, and BL corners plus timing tracks.
@@ -545,7 +564,7 @@ export function computeMembershipRetentionSummary(params: {
     .filter((c) => c.status === 'pending')
     .reduce((acc, c) => acc + c.commissionCentimes, 0);
   const activeCourtBookingsCount = params.courtBookings.filter(
-    (b) => b.status === 'Confirmed' || b.status === 'CheckedIn' || b.status === 'Pending'
+    (b) => b.status === 'Confirmed' || b.status === 'CheckedIn' || b.status === 'Tentative'
   ).length;
 
   return {

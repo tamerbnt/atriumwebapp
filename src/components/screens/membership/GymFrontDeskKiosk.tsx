@@ -23,7 +23,8 @@ import {
   showToast,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
-import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
+import { formatMoney } from '../../../utils/rules';
+import { evaluateDayPassTotals, parseMemberQrPayload } from '../../../utils/membershipDepth';
 import { sequenceService, toValidUuid } from '../../../lib/supabase/index';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -108,10 +109,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   const [walkInPhone, setWalkInPhone] = useState('');
   const [walkInAmount, setWalkInAmount] = useState('500');
   const [walkInPaymentMethod, setWalkInPaymentMethod] = useState('cash');
+  const [applyTimbreFiscal, setApplyTimbreFiscal] = useState(true);
   const [lastPrintedTicket, setLastPrintedTicket] = useState<any>(null);
   const [inspectedLogId, setInspectedLogId] = useState<string | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [pendingDuplicateMember, setPendingDuplicateMember] = useState<any | null>(null);
+  const [overrideMode, setOverrideMode] = useState<'duplicate' | 'expired'>('duplicate');
   const [isPinOverrideOpen, setIsPinOverrideOpen] = useState(false);
   const [isOverrideReasonOpen, setIsOverrideReasonOpen] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
@@ -158,20 +161,33 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
 
   const searchResults = useMemo(() => {
     if (!scanInput.trim() || scanInput.length < 2) return [];
+    const parsedQr = parseMemberQrPayload(scanInput);
     const q = scanInput.toLowerCase().trim();
     return members
-      .filter(
-        (m) =>
+      .filter((m) => {
+        if (parsedQr.isAtriumQr) {
+          if (parsedQr.memberId && m.id.toLowerCase() === parsedQr.memberId.toLowerCase()) return true;
+          if (parsedQr.cardTag && m.cardId?.toLowerCase() === parsedQr.cardTag.toLowerCase()) return true;
+        }
+        return (
           m.fullName.toLowerCase().includes(q) ||
           (m.phoneNumber && m.phoneNumber.includes(q)) ||
           (m.cardId && m.cardId.toLowerCase().includes(q)) ||
           m.id.toLowerCase().includes(q)
-      )
+        );
+      })
       .slice(0, 5);
   }, [members, scanInput]);
 
   const handleValidateCheckIn = useCallback(
-    (member: any, override?: { overrideByStaffId?: string; overrideReason?: string }) => {
+    (
+      member: any,
+      override?: {
+        overrideByStaffId?: string;
+        overrideReason?: string;
+        allowExpiredOrQuotaOverride?: boolean;
+      }
+    ) => {
       const activeAccountId = (account?.id || currentBranch?.accountId || '').trim();
       const resolvedBranchId = (currentBranchId || currentBranch?.id || member.branchId || '').trim();
       if (!activeAccountId || !resolvedBranchId) {
@@ -188,11 +204,13 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         logDenied: true,
         overrideByStaffId: override?.overrideByStaffId,
         overrideReason: override?.overrideReason,
+        allowExpiredOrQuotaOverride: override?.allowExpiredOrQuotaOverride,
       });
       if (!evaluation) return;
 
       if (evaluation.duplicateBlocked) {
         playChime('warning');
+        setOverrideMode('duplicate');
         setPendingDuplicateMember(member);
         setOverrideReason(
           isRtl
@@ -222,6 +240,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
 
       setLastCheckInResult({
         status: evaluation.accessStatus,
+        reasonCode: evaluation.reasonCode,
         message,
         member: {
           ...member,
@@ -239,14 +258,16 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       if (!pendingDuplicateMember || !overrideReason.trim()) return;
       const target = pendingDuplicateMember;
       const reasonText = overrideReason.trim();
+      const allowExpired = overrideMode === 'expired';
       setIsOverrideReasonOpen(false);
       setPendingDuplicateMember(null);
       handleValidateCheckIn(target, {
         overrideByStaffId: currentUser?.id || 'owner_pin',
         overrideReason: reasonText,
+        allowExpiredOrQuotaOverride: allowExpired,
       });
     },
-    [pendingDuplicateMember, overrideReason, handleValidateCheckIn, currentUser?.id]
+    [pendingDuplicateMember, overrideReason, overrideMode, handleValidateCheckIn, currentUser?.id]
   );
 
   const handleScanSubmit = useCallback(
@@ -254,8 +275,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       e.preventDefault();
       if (!scanInput.trim()) return;
       const trimmed = scanInput.trim();
+      const parsedQr = parseMemberQrPayload(trimmed);
       const exactMatch = members.find(
         (m) =>
+          (parsedQr.isAtriumQr &&
+            ((parsedQr.memberId && m.id.toLowerCase() === parsedQr.memberId.toLowerCase()) ||
+              (parsedQr.cardTag && m.cardId?.toLowerCase() === parsedQr.cardTag.toLowerCase()))) ||
           m.cardId?.toLowerCase() === trimmed.toLowerCase() ||
           m.id.toLowerCase() === trimmed.toLowerCase() ||
           (m.phoneNumber && m.phoneNumber.trim() === trimmed)
@@ -318,7 +343,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         }
 
         const amountNum = parseFloat(walkInAmount) || 500;
-        const timbre = walkInPaymentMethod === 'cash' ? calculateArt317Timbre(amountNum) : 0;
+        const dayPassCalc = evaluateDayPassTotals({
+          baseAmountDzd: amountNum,
+          paymentMethod: walkInPaymentMethod,
+          applyTimbreFiscal,
+        });
+        const timbre = dayPassCalc.timbreDzd;
         const ticketId =
           typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
             ? crypto.randomUUID()
@@ -351,6 +381,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       isCreatingWalkIn,
       walkInAmount,
       walkInPaymentMethod,
+      applyTimbreFiscal,
       account,
       currentBusinessId,
       currentBranchId,
@@ -363,6 +394,16 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       addWalkInTicket,
       playChime,
     ]
+  );
+
+  const dayPassPreview = useMemo(
+    () =>
+      evaluateDayPassTotals({
+        baseAmountDzd: parseFloat(walkInAmount) || 0,
+        paymentMethod: walkInPaymentMethod,
+        applyTimbreFiscal,
+      }),
+    [walkInAmount, walkInPaymentMethod, applyTimbreFiscal]
   );
 
   const { activeMembersCount, grantedLogsCount, alertLogsCount, visibleLogs } = useMemo(() => {
@@ -473,8 +514,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="relative flex items-center h-14 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
+                className="flex items-center gap-3 h-14 px-4 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
               >
+                <Scan size={20} className="shrink-0 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <input
                   id="barcodeInput"
                   ref={inputRef}
@@ -486,16 +528,15 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       ? 'امسح الباركود أو ابدأ بالكتابة...'
                       : 'Scanner le badge ou taper le nom/téléphone...'
                   }
-                  className="lbi-field w-full h-full pl-12 pr-28 bg-transparent border-0 t-card font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 focus:outline-none"
+                  className="flex-1 min-w-0 h-full bg-transparent border-0 t-card font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 focus:outline-none"
                   dir="ltr"
                 />
-                <Scan size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <button
                   type="submit"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold transition-colors cursor-pointer"
+                  className="shrink-0 h-10 px-4 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold transition-colors cursor-pointer"
                 >
                   {isRtl ? 'تحقق' : 'Valider'}
                 </button>
@@ -595,9 +636,32 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                           : isRtl ? 'دخول مرفوض' : 'ACCÈS REFUSÉ'}
                       </span>
                     </div>
-                    <p className="t-small font-medium text-black/75 dark:text-white/80 mt-1">
-                      {lastCheckInResult.message}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
+                      <p className="t-small font-medium text-black/75 dark:text-white/80">
+                        {lastCheckInResult.message}
+                      </p>
+                      {lastCheckInResult.status === 'Denied_Expired' && (
+                        <button
+                          type="button"
+                          data-testid="kiosk-expired-override-btn"
+                          onClick={() => {
+                            setOverrideMode('expired');
+                            setPendingDuplicateMember(lastCheckInResult.member);
+                            setOverrideReason(
+                              isRtl
+                                ? 'تصريح مدير لاشتراك منتهي / حصص منتهية'
+                                : language === 'en'
+                                ? 'Manager PIN override for expired/quota'
+                                : 'Dérogation PIN gérant (expiré/séances)'
+                            );
+                            setIsPinOverrideOpen(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white t-cap font-semibold cursor-pointer transition-colors"
+                        >
+                          {isRtl ? 'تجاوز PIN المدير' : language === 'en' ? 'PIN Override' : 'Forcer par PIN'}
+                        </button>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-[var(--atr-divider)] t-cap">
                       <div>
                         <span className="text-black/62 dark:text-white/65 block t-cap">
@@ -921,9 +985,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     onValueChange={setWalkInAmount}
                     aria-label={isRtl ? 'مبلغ الحصة' : 'Tarif de la séance'}
                     options={[
-                      { value: '500', label: '500 DA' },
-                      { value: '800', label: '800 DA' },
-                      { value: '1000', label: '1 000 DA' },
+                      { value: '500', label: <span className="tabular-nums">500 DA</span>, 'aria-label': '500 DA' },
+                      { value: '800', label: <span className="tabular-nums">800 DA</span>, 'aria-label': '800 DA' },
+                      { value: '1000', label: <span className="tabular-nums">1 000 DA</span>, 'aria-label': '1 000 DA' },
                     ]}
                   />
                   <LabelInput
@@ -950,6 +1014,43 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       { value: 'cib', label: 'CIB', icon: <CreditCard size={14} /> },
                     ]}
                   />
+                </div>
+                {walkInPaymentMethod === 'cash' && (
+                  <label className="flex items-center justify-between gap-3 rounded-xl bg-[#F7F3EE] dark:bg-[#191715] px-3 py-2.5 cursor-pointer">
+                    <span className="t-cap font-semibold text-black dark:text-white">
+                      {isRtl
+                        ? 'تطبيق طابع المادة 317 نقداً'
+                        : language === 'en'
+                        ? 'Apply Art. 317 Cash Stamp Duty'
+                        : 'Appliquer Timbre Fiscal Art. 317 (espèces)'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={applyTimbreFiscal}
+                      onChange={(e) => setApplyTimbreFiscal(e.target.checked)}
+                      className="w-4 h-4 accent-[#d4522f]"
+                    />
+                  </label>
+                )}
+                <div className="rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] px-3.5 py-2.5 t-cap space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-black/62 dark:text-white/65">{isRtl ? 'الحصة' : 'Tarif'}</span>
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
+                      {formatMoney(parseFloat(walkInAmount) || 0, 'DZD')}
+                    </span>
+                  </div>
+                  {dayPassPreview.timbreDzd > 0 && (
+                    <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                      <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
+                      <span className="tabular-nums font-semibold">+{dayPassPreview.timbreDzd} DZD</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pt-1 border-t border-[var(--atr-divider)] font-semibold text-black dark:text-white">
+                    <span>{isRtl ? 'الإجمالي' : 'Total'}</span>
+                    <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                      {formatMoney(dayPassPreview.totalDzd, 'DZD')}
+                    </span>
+                  </div>
                 </div>
                 <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-end gap-2">
                   <Button
@@ -1068,9 +1169,27 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
           setIsPinOverrideOpen(false);
           setIsOverrideReasonOpen(true);
         }}
-        title={isRtl ? 'تجاوز حظر الدخول المكرر (5 دقائق)' : language === 'en' ? 'Override Duplicate Check-In Guard' : 'Forcer le Double Pointage (5 min)'}
+        title={
+          overrideMode === 'expired'
+            ? isRtl
+              ? 'تجاوز انتهاء الاشتراك / الحصص'
+              : language === 'en'
+              ? 'Override Expired / Exhausted Quota'
+              : 'Dérogation Abonnement Expiré / Séances'
+            : isRtl
+            ? 'تجاوز حظر الدخول المكرر (5 دقائق)'
+            : language === 'en'
+            ? 'Override Duplicate Check-In Guard'
+            : 'Forcer le Double Pointage (5 min)'
+        }
         description={
-          isRtl
+          overrideMode === 'expired'
+            ? isRtl
+              ? 'الاشتراك منتهي أو نفدت الحصص. أدخل رمز PIN لتسجيل دخول استثنائي.'
+              : language === 'en'
+              ? 'Membership is expired or quota exhausted. Enter Owner PIN to log an exception check-in.'
+              : 'Abonnement expiré ou séances épuisées. Code PIN gérant requis pour forcer l’entrée.'
+            : isRtl
             ? 'تم تسجيل دخول هذا العضو خلال الدقائق الخمس الماضية. أدخل رمز PIN للمتابعة.'
             : language === 'en'
             ? 'Member checked in within the last 5 minutes. Enter Owner PIN to log an override.'

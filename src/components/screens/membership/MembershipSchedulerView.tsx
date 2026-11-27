@@ -11,6 +11,7 @@ import {
   Trash2,
   Copy,
   CheckCircle2,
+  X,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -57,6 +58,8 @@ import {
 } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonSchedulerView } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { MembershipCourtsPanel } from './MembershipCourtsPanel';
 
 export const MembershipSchedulerView: React.FC = React.memo(() => {
   const {
@@ -95,6 +98,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     upsertScheduleEvent,
     batchDeleteScheduleEvents,
     enrollMemberInClass,
+    cancelClassEnrollment,
     confirmScheduleCoach,
     duplicateScheduleWeek,
   } = useAtriumActions();
@@ -108,6 +112,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     hasCachedData: allScheduleEvents.length > 0,
   });
 
+  const [schedulerSectionMode, setSchedulerSectionMode] = useState<'classes' | 'courts'>('classes');
   const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('calendar');
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [dayFilter, setDayFilter] = useState<string>('All');
@@ -772,8 +777,31 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         }}
       />
 
-      <ScreenPod>
-        <ScreenCollectionToolbar
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <LiveSegmentedControl
+          size="md"
+          value={schedulerSectionMode}
+          onValueChange={(v) => setSchedulerSectionMode(v as 'classes' | 'courts')}
+          aria-label={isAr ? 'أقسام الجدول' : isEn ? 'Schedule Sections' : 'Sections planning'}
+          options={[
+            {
+              value: 'classes',
+              label: isAr ? 'الحصص الجماعية' : isEn ? 'Classes & Schedule' : 'Cours & Séances',
+              count: allScheduleEvents.length,
+            },
+            {
+              value: 'courts',
+              label: isAr ? 'الملاعب والمرافق' : isEn ? 'Courts & Resources' : 'Terrains & Espaces',
+            },
+          ]}
+        />
+      </div>
+
+      {schedulerSectionMode === 'courts' ? (
+        <MembershipCourtsPanel language={language} />
+      ) : (
+        <ScreenPod>
+          <ScreenCollectionToolbar
           title={isAr ? 'قائمة الحصص والجلسات' : isEn ? 'Schedule Collection' : 'Planning des Séances'}
           liveRegionText={`${sortedCollectionEvents.length} sessions`}
           language={language}
@@ -868,7 +896,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           onResetFilters={handleResetFilters}
           hasActiveFilters={hasActiveAdvancedFilters || availabilityFilter !== 'All' || searchQuery.trim().length > 0}
         />
-      </ScreenPod>
+        </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -959,12 +988,46 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                       subtitle={isAr ? 'المدرب المشرف' : isEn ? 'Lead Instructor' : 'Coach référent'}
                       badge={{ label: isAr ? 'مؤكد' : 'Confirmé', tone: 'ok' }}
                     />
-                    <InspectorListItem
-                      title={`${ev.enrolledCount} ${isAr ? 'مشترك مسجل' : isEn ? 'registered members' : 'adhérents inscrits'}`}
-                      subtitle={`${ev.roomOrArea} · ${ev.startTime}-${ev.endTime}`}
-                      badge={{ label: `${pct}%`, tone: isFull ? 'danger' : 'ok' }}
-                      isLast
-                    />
+                    {classEnrollments
+                      .filter((ce) => ce.eventId === ev.id && ce.status !== 'cancelled')
+                      .map((ce) => {
+                        const mem = members.find((m) => m.id === ce.memberId);
+                        return (
+                          <div
+                            key={ce.id}
+                            className="px-3.5 py-2.5 flex items-center justify-between gap-2 border-t border-[var(--atr-divider)] text-xs"
+                          >
+                            <div className="min-w-0">
+                              <div className="font-semibold text-black dark:text-white truncate">
+                                {mem ? mem.fullName : ce.memberName || ce.memberId}
+                              </div>
+                              <div className="text-[11px] text-black/60 dark:text-white/60">
+                                {ce.status === 'waitlisted'
+                                  ? isAr ? 'قائمة انتظار' : isEn ? 'Waitlisted' : 'Liste d’attente'
+                                  : isAr ? 'مؤكد' : isEn ? 'Enrolled' : 'Inscrit'}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const res = cancelClassEnrollment(ce.id);
+                                if (res.success && res.promotedMemberId) {
+                                  const promoted = members.find((m) => m.id === res.promotedMemberId);
+                                  showToast({
+                                    type: 'info',
+                                    title: isAr ? 'ترقية من قائمة الانتظار' : isEn ? 'Waitlist Promoted' : 'Promotion liste d’attente',
+                                    message: promoted?.fullName || res.promotedMemberId,
+                                  });
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-semibold hover:bg-rose-100 cursor-pointer shrink-0 inline-flex items-center gap-1"
+                            >
+                              <X size={12} />
+                              {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+                            </button>
+                          </div>
+                        );
+                      })}
                   </InspectorCard>
                 </InspectorSection>
 
@@ -1229,14 +1292,33 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                       const mem = members.find((m) => m.id === ce.memberId);
                       return (
                         <div key={ce.id} className="px-3 py-2 flex items-center justify-between text-xs">
-                          <span className="font-medium text-black dark:text-white">
+                          <span className="font-medium text-black dark:text-white truncate">
                             {mem ? mem.fullName : ce.memberName || ce.memberId}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${ce.status === 'waitlisted' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                            {ce.status === 'waitlisted'
-                              ? isAr ? 'قائمة انتظار' : isEn ? 'Waitlist' : 'Liste d’attente'
-                              : isAr ? 'مؤكد' : isEn ? 'Enrolled' : 'Inscrit'}
-                          </span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${ce.status === 'waitlisted' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              {ce.status === 'waitlisted'
+                                ? isAr ? 'قائمة انتظار' : isEn ? 'Waitlist' : 'Liste d’attente'
+                                : isAr ? 'مؤكد' : isEn ? 'Enrolled' : 'Inscrit'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const res = cancelClassEnrollment(ce.id);
+                                if (res.success && res.promotedMemberId) {
+                                  const promoted = members.find((m) => m.id === res.promotedMemberId);
+                                  showToast({
+                                    type: 'info',
+                                    title: isAr ? 'ترقية من قائمة الانتظار' : isEn ? 'Waitlist Promoted' : 'Promotion liste d’attente',
+                                    message: promoted?.fullName || res.promotedMemberId,
+                                  });
+                                }
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 font-semibold cursor-pointer"
+                            >
+                              {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+                            </button>
+                          </div>
                         </div>
                       );
                     })}

@@ -1370,7 +1370,111 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- SECTION 20: Phase 3 Step 2 (7.2) — Appointment Service Depth RLS & RPCs
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_staff_a uuid := '33333333-1111-1111-1111-111111111111';
+  v_client_id uuid := gen_random_uuid();
+  v_apt_id uuid := gen_random_uuid();
+  v_pkg_id uuid := gen_random_uuid();
+  v_gc_id uuid := gen_random_uuid();
+  v_consent_id uuid := gen_random_uuid();
+  v_hammam_id uuid := gen_random_uuid();
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.salon_clients (
+    id, account_id, business_id, branch_id, full_name, client_type
+  ) VALUES (
+    v_client_id, v_acc_a, v_biz_a, v_br_a, 'Walkin Amira', 'walkin'
+  );
+
+  INSERT INTO public.salon_appointments (
+    id, account_id, business_id, branch_id, client_id, client_name, staff_name, service_name,
+    appointment_date, start_time, end_time, duration_minutes, price, status,
+    deposit_centimes, deposit_status, cancellation_cutoff_hours
+  ) VALUES (
+    v_apt_id, v_acc_a, v_biz_a, v_br_a, v_client_id, 'Walkin Amira', 'Lina', 'Laser Session',
+    CURRENT_DATE + 3, '14:00', '15:00', 60, 4500, 'Confirmed',
+    150000, 'held', 24
+  );
+
+  INSERT INTO public.salon_prepaid_packages (
+    id, account_id, business_id, branch_id, client_id, client_name, package_name,
+    total_sessions, remaining_sessions, price_centimes
+  ) VALUES (
+    v_pkg_id, v_acc_a, v_biz_a, v_br_a, v_client_id, 'Walkin Amira', 'Pack 5 Brushing',
+    5, 5, 600000
+  );
+
+  INSERT INTO public.salon_gift_cards (
+    id, account_id, business_id, branch_id, code, recipient_name, initial_centimes, remaining_centimes
+  ) VALUES (
+    v_gc_id, v_acc_a, v_biz_a, v_br_a, 'GIFT-72-TEST', 'Walkin Amira', 500000, 500000
+  );
+
+  INSERT INTO public.salon_consent_forms (
+    id, account_id, business_id, branch_id, client_id, client_name, service_name,
+    protocol_type, allergies_acknowledged, signature_data_url
+  ) VALUES (
+    v_consent_id, v_acc_a, v_biz_a, v_br_a, v_client_id, 'Walkin Amira', 'Laser Session',
+    'laser', true, 'data:image/png;base64,iVBORw0KGgo='
+  );
+
+  INSERT INTO public.salon_hammam_sessions (
+    id, account_id, business_id, branch_id, cabin_name, gender_block, client_id, client_name,
+    attendant_id, attendant_name, session_date, start_time, end_time, capacity, booked_count, price_centimes
+  ) VALUES (
+    v_hammam_id, v_acc_a, v_biz_a, v_br_a, 'Hammam Royal 1', 'women', v_client_id, 'Walkin Amira',
+    v_staff_a, 'Lina', CURRENT_DATE + 1, '16:00', '17:00', 2, 1, 350000
+  );
+
+  -- Tenant B must not read Tenant A salon 7.2 records
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.salon_prepaid_packages WHERE id = v_pkg_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A salon_prepaid_packages';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.salon_gift_cards WHERE id = v_gc_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A salon_gift_cards';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.salon_consent_forms WHERE id = v_consent_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A salon_consent_forms';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.salon_hammam_sessions WHERE id = v_hammam_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A salon_hammam_sessions';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A cancels > 24h before appointment -> held deposit refunds cleanly
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.cancel_salon_appointment_with_deposit(v_apt_id, now(), 'Cancelled');
+  IF (v_res ->> 'deposit_status') <> 'refunded' OR (v_res ->> 'refunded_deposit_centimes')::bigint <> 150000 THEN
+    RAISE EXCEPTION 'Expected refunded deposit 150000, got %', v_res;
+  END IF;
+
+  -- Tenant A redeems 1 package session + 200000 gift card centimes atomically
+  v_res := public.redeem_salon_package_or_gift_card(v_pkg_id, v_gc_id, 200000);
+  IF (v_res ->> 'package_remaining_sessions')::int <> 4 OR (v_res ->> 'gift_card_applied_centimes')::bigint <> 200000 THEN
+    RAISE EXCEPTION 'Expected package=4 and gift=200000, got %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
 
 
 

@@ -22,6 +22,7 @@ import { useAtriumSelector, selectCurrentBranchFromState } from '../../../servic
 import { StaffAttendanceSubView } from '../../common/staff/StaffAttendanceSubView';
 import { StaffPayrollSubView } from '../../common/staff/StaffPayrollSubView';
 import { StaffHistorySubView } from '../../common/staff/StaffHistorySubView';
+import { TrainerCommissionsPanel } from './TrainerCommissionsPanel';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import {
   ScreenPod,
@@ -496,25 +497,32 @@ export const MembershipStaffView: React.FC<any> = () => {
       )}
 
       {foundation.activeSubTab === 'payroll' && (
-        <ScreenPod>
-          <StaffPayrollSubView
+        <div className="space-y-6 pb-16">
+          <ScreenPod>
+            <StaffPayrollSubView
+              staffList={foundation.facilityStaff}
+              payrollRuns={foundation.staffPayrollRuns}
+              payrollSlips={foundation.staffPayrollSlips}
+              salaryAdvances={foundation.staffSalaryAdvances}
+              onGeneratePayroll={(month, year, opts) => {
+                foundation.generateStaffPayrollRun(month, year, 'membership_session', opts);
+              }}
+              onApprovePayroll={foundation.approveStaffPayrollRun}
+              onMarkSlipPaid={foundation.markStaffPayrollSlipPaid}
+              onCreateAdvance={foundation.createStaffSalaryAdvance}
+              onWaiveAdvance={foundation.waiveStaffSalaryAdvance}
+              effectiveStatutoryRate={foundation.effectiveStatutoryRate}
+              businessName={foundation.currentBusiness?.name}
+              fiscalProfile={foundation.currentBusinessConfig?.fiscalProfile}
+              language={language}
+            />
+          </ScreenPod>
+          <TrainerCommissionsPanel
             staffList={foundation.facilityStaff}
             payrollRuns={foundation.staffPayrollRuns}
-            payrollSlips={foundation.staffPayrollSlips}
-            salaryAdvances={foundation.staffSalaryAdvances}
-            onGeneratePayroll={(month, year, opts) => {
-              foundation.generateStaffPayrollRun(month, year, 'membership_session', opts);
-            }}
-            onApprovePayroll={foundation.approveStaffPayrollRun}
-            onMarkSlipPaid={foundation.markStaffPayrollSlipPaid}
-            onCreateAdvance={foundation.createStaffSalaryAdvance}
-            onWaiveAdvance={foundation.waiveStaffSalaryAdvance}
-            effectiveStatutoryRate={foundation.effectiveStatutoryRate}
-            businessName={foundation.currentBusiness?.name}
-            fiscalProfile={foundation.currentBusinessConfig?.fiscalProfile}
             language={language}
           />
-        </ScreenPod>
+        </div>
       )}
 
       {foundation.activeSubTab === 'history' && (

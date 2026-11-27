@@ -8220,6 +8220,303 @@ function createAtriumActions() {
     return plan;
   };
 
+  const cancelClassEnrollment = (enrollmentId: string) => {
+    const existing = (globalState.classEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!existing) return { success: false as const };
+    const targetEvent = (globalState.schedule || []).find((sc) => sc.id === existing.eventId);
+    const result = cancelEnrollmentAndPromoteWaitlist({
+      enrollmentId,
+      enrollments: globalState.classEnrollments || [],
+      currentEnrolledCount: targetEvent?.enrolledCount || 0,
+    });
+    if (!result.cancelledEnrollment) return { success: false as const };
+
+    globalState = {
+      ...globalState,
+      classEnrollments: result.updatedEnrollments,
+      schedule: targetEvent
+        ? (globalState.schedule || []).map((sc) =>
+            sc.id === targetEvent.id ? { ...sc, enrolledCount: result.nextEnrolledCount } : sc
+          )
+        : globalState.schedule,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.cancelAndPromoteClassEnrollment(enrollmentId).catch(() => {});
+    }
+    return {
+      success: true as const,
+      promotedMemberId: result.promotedEnrollment?.memberId,
+    };
+  };
+
+  const toggleMemberAutoRenew = (memberId: string, enabled?: boolean, billingCycleDays?: number) => {
+    const target = (globalState.members || []).find((m) => m.id === memberId);
+    if (!target) return null;
+    const nextAutoRenew = enabled !== undefined ? enabled : !target.autoRenew;
+    updateMember(memberId, {
+      autoRenew: nextAutoRenew,
+      ...(billingCycleDays != null ? { billingCycleDays } : {}),
+    });
+    return nextAutoRenew;
+  };
+
+  const updateMemberFamilyGroup = (
+    memberId: string,
+    familyGroupId: string | undefined,
+    familyRole: 'primary' | 'dependent' = 'dependent'
+  ) => {
+    const target = (globalState.members || []).find((m) => m.id === memberId);
+    if (!target) return false;
+    updateMember(memberId, {
+      familyGroupId: familyGroupId || undefined,
+      familyRole: familyGroupId ? familyRole : undefined,
+    });
+    return true;
+  };
+
+  const freezeMemberSubscription = (params: {
+    memberId: string;
+    daysRequested: number;
+    feeCentimes?: number;
+    allowDuringActiveCheckIn?: boolean;
+    overrideReason?: string;
+  }) => {
+    const member = (globalState.members || []).find((m) => m.id === params.memberId);
+    if (!member) return { allowed: false as const, error: 'MEMBER_NOT_FOUND' as const };
+    const evalRes = evaluateMemberFreeze({
+      member,
+      checkInLogs: globalState.memberCheckIns || [],
+      daysRequested: params.daysRequested,
+      feeCentimes: params.feeCentimes,
+      policy: DEFAULT_FREEZE_POLICY,
+      allowDuringActiveCheckIn: params.allowDuringActiveCheckIn,
+      overrideReason: params.overrideReason,
+    });
+    if (!evalRes.allowed) return evalRes;
+
+    const nowIso = new Date().toISOString();
+    const trace = getTraceContext();
+    const freezeLog: GymMemberFreezeLog = {
+      id: `frz_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...trace,
+      branchId: member.branchId || globalState.currentBranchId,
+      memberId: member.id,
+      memberName: member.fullName,
+      staffId: globalState.currentUser?.id,
+      action: 'freeze',
+      daysFrozen: evalRes.requestedDays,
+      feeCentimes: evalRes.feeCentimes,
+      extendedExpiryTo: evalRes.freezeUntilIso,
+      duringActiveCheckInWindow: evalRes.duringActiveCheckInWindow,
+      overrideReason: params.overrideReason,
+      recordedAt: nowIso,
+    };
+
+    const updatedMember: Member = {
+      ...member,
+      status: 'Frozen',
+      frozenAt: nowIso,
+      freezeUntil: evalRes.freezeUntilIso,
+      freezeDaysUsed: (member.freezeDaysUsed || 0) + evalRes.requestedDays,
+      freezeFeeCentimes: evalRes.feeCentimes,
+      freezeReason: params.overrideReason,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      members: (globalState.members || []).map((m) => (m.id === member.id ? updatedMember : m)),
+      memberFreezeLogs: [freezeLog, ...(globalState.memberFreezeLogs || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.updateMember(updatedMember).catch(() => {});
+      memberService.upsertFreezeLog(freezeLog).catch(() => {});
+    }
+    return evalRes;
+  };
+
+  const resumeMemberSubscription = (memberId: string) => {
+    const member = (globalState.members || []).find((m) => m.id === memberId);
+    if (!member) return { allowed: false as const, error: 'MEMBER_NOT_FOUND' as const };
+    const evalRes = evaluateMemberResume({
+      member,
+      autoExtendExpiryOnResume: DEFAULT_FREEZE_POLICY.autoExtendExpiryOnResume,
+    });
+    if (!evalRes.allowed) return evalRes;
+
+    const nowIso = new Date().toISOString();
+    const trace = getTraceContext();
+    const resumeLog: GymMemberFreezeLog = {
+      id: `frz_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...trace,
+      branchId: member.branchId || globalState.currentBranchId,
+      memberId: member.id,
+      memberName: member.fullName,
+      staffId: globalState.currentUser?.id,
+      action: 'resume',
+      daysFrozen: evalRes.actualFrozenDays,
+      feeCentimes: 0,
+      extendedExpiryTo: evalRes.extendedExpiryDate,
+      duringActiveCheckInWindow: false,
+      recordedAt: nowIso,
+    };
+
+    const updatedMember: Member = {
+      ...member,
+      status: 'Active',
+      frozenAt: undefined,
+      freezeUntil: undefined,
+      expirationDate: evalRes.extendedExpiryDate,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      members: (globalState.members || []).map((m) => (m.id === member.id ? updatedMember : m)),
+      memberFreezeLogs: [resumeLog, ...(globalState.memberFreezeLogs || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.updateMember(updatedMember).catch(() => {});
+      memberService.upsertFreezeLog(resumeLog).catch(() => {});
+    }
+    return evalRes;
+  };
+
+  const switchMemberPlanMidCycle = (memberId: string, targetPlanId: string) => {
+    const member = (globalState.members || []).find((m) => m.id === memberId);
+    const plans = selectCurrentPlansFromState(globalState);
+    const targetPlan = plans.find((p) => p.id === targetPlanId);
+    if (!member || !targetPlan) return null;
+    const currentPlan = plans.find(
+      (p) => p.id === member.membershipPlanId || p.name === member.membershipPlanName
+    );
+    const calc = calculateMidCyclePlanSwitch({ member, currentPlan, targetPlan });
+    updateMember(memberId, {
+      membershipPlanId: targetPlan.id,
+      membershipPlanName: targetPlan.name,
+      expirationDate: calc.nextExpirationDate,
+      remainingSessions: calc.nextRemainingSessions,
+      qrToken: member.qrToken || buildMemberQrPayload(member),
+    });
+    return calc;
+  };
+
+  const refundMemberUnusedSessions = (
+    memberId: string,
+    sessionsToRefund: number,
+    adminFeeCentimes = 0
+  ) => {
+    const member = (globalState.members || []).find((m) => m.id === memberId);
+    if (!member) return { allowed: false as const, error: 'MEMBER_NOT_FOUND' as const };
+    const plan = selectCurrentPlansFromState(globalState).find(
+      (p) => p.id === member.membershipPlanId || p.name === member.membershipPlanName
+    );
+    const evalRes = evaluateUnusedSessionRefund({
+      member,
+      plan,
+      sessionsToRefund,
+      adminFeeCentimes,
+    });
+    if (!evalRes.allowed) return evalRes;
+
+    updateMember(memberId, {
+      remainingSessions: evalRes.remainingAfterRefund,
+    });
+    return evalRes;
+  };
+
+  const runAutoRenewalsForEligibleMembers = (leadDays = 3) => {
+    const candidates = collectAutoRenewalCandidates({
+      members: selectCurrentMembersFromState(globalState),
+      plans: selectCurrentPlansFromState(globalState),
+      leadDays,
+    });
+    for (const c of candidates) {
+      updateMember(c.member.id, {
+        status: 'Active',
+        startDate: c.nextStartDate,
+        expirationDate: c.nextExpirationDate,
+        remainingSessions: c.nextRemainingSessions,
+      });
+    }
+    return candidates;
+  };
+
+  const recordTrainerCommission = (params: {
+    staffId: string;
+    staffName?: string;
+    memberId?: string;
+    scheduleEventId?: string;
+    sourceLabel: string;
+    grossAmountCentimes: number;
+    commissionRateBps: number;
+    earnedDate?: string;
+  }) => {
+    const trace = getTraceContext();
+    const commissionCentimes = calculateTrainerCommissionCentimes(
+      params.grossAmountCentimes,
+      params.commissionRateBps
+    );
+    const comm: GymTrainerCommission = {
+      id: `tcom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      ...trace,
+      branchId: globalState.currentBranchId,
+      staffId: params.staffId,
+      staffName: params.staffName,
+      memberId: params.memberId,
+      scheduleEventId: params.scheduleEventId,
+      sourceLabel: params.sourceLabel,
+      grossAmountCentimes: params.grossAmountCentimes,
+      commissionRateBps: params.commissionRateBps,
+      commissionCentimes,
+      status: 'pending',
+      earnedDate: params.earnedDate || new Date().toISOString().slice(0, 10),
+    };
+    globalState = {
+      ...globalState,
+      trainerCommissions: [comm, ...(globalState.trainerCommissions || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.upsertTrainerCommission(comm).catch(() => {});
+    }
+    return comm;
+  };
+
+  const postTrainerCommissionsToPayroll = (commissionIds: string[], payrollRunId?: string) => {
+    const idSet = new Set(commissionIds);
+    const updatedList: GymTrainerCommission[] = [];
+    const nextAll = (globalState.trainerCommissions || []).map((c) => {
+      if (!idSet.has(c.id) || c.status !== 'pending') return c;
+      const next: GymTrainerCommission = {
+        ...c,
+        status: 'posted_to_payroll',
+        payrollRunId: payrollRunId || c.payrollRunId,
+      };
+      updatedList.push(next);
+      return next;
+    });
+    if (updatedList.length === 0) return [];
+    globalState = {
+      ...globalState,
+      trainerCommissions: nextAll,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      for (const comm of updatedList) {
+        memberService.upsertTrainerCommission(comm).catch(() => {});
+      }
+    }
+    return updatedList;
+  };
+
   const createStaffMember = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
     const before = captureStoreSlices(['staff']);
     const trace = getTraceContext();
@@ -8791,7 +9088,18 @@ function createAtriumActions() {
           );
       const advancesSum = pendingAdvances.reduce((sum, a) => sum + a.amountDzd, 0);
 
-      const coachingCommission = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
+      const postedCommissions = (globalState.trainerCommissions || []).filter(
+        (c) =>
+          c.staffId === member.id &&
+          c.status === 'posted_to_payroll' &&
+          (!c.payrollRunId || c.payrollRunId === runId)
+      );
+      const postedCommissionDzd = postedCommissions.reduce(
+        (sum, c) => sum + centimesToDzd(c.commissionCentimes),
+        0
+      );
+      const baseServiceComm = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
+      const coachingCommission = baseServiceComm + postedCommissionDzd;
       const primesCotisables = coachingCommission > 0 ? [{ label: 'Commissions Séances & Pass', amount: Math.round(coachingCommission) }] : [];
 
       const calc = calculateAlgerianGrossToNet({
@@ -8881,11 +9189,18 @@ function createAtriumActions() {
 
     const existingRuns = (globalState.staffPayrollRuns || []).filter((r) => r.id !== runId);
     const existingSlips = (globalState.staffPayrollSlips || []).filter((s) => s.payrollRunId !== runId);
+    const staffPoolIds = new Set(staffPool.map((s) => s.id));
+    const boundTrainerCommissions = (globalState.trainerCommissions || []).map((c) =>
+      c.status === 'posted_to_payroll' && !c.payrollRunId && staffPoolIds.has(c.staffId)
+        ? { ...c, payrollRunId: runId }
+        : c
+    );
 
     globalState = {
       ...globalState,
       staffPayrollRuns: [newRun, ...existingRuns],
       staffPayrollSlips: [...slips, ...existingSlips],
+      trainerCommissions: boundTrainerCommissions,
     };
     notify();
 

@@ -16,7 +16,13 @@ import {
   selectCurrentMembersFromState,
   selectCurrentLeadsFromState,
   selectCurrentMemberCheckInsFromState,
+  selectCurrentMemberFreezeLogsFromState,
+  selectCurrentTrainerCommissionsFromState,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalBookingsFromState,
 } from '../../../services/store';
+import { computeMembershipRetentionSummary, isGymCourtOrResourceUnit } from '../../../utils/membershipDepth';
+import { centimesToDzd } from '../../../utils/money';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { useCardFilters } from '../../../hooks/useCardFilters';
@@ -53,12 +59,25 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     retryCloudSync,
     lastSyncedAt,
   } = useDashboardShellState();
-  const { sales, members, leads, memberCheckIns } = useAtriumSelector(
+  const {
+    sales,
+    members,
+    leads,
+    memberCheckIns,
+    memberFreezeLogs,
+    trainerCommissions,
+    rentableUnits,
+    rentalBookings,
+  } = useAtriumSelector(
     (s) => ({
       sales: selectCurrentSalesFromState(s),
       members: selectCurrentMembersFromState(s),
       leads: selectCurrentLeadsFromState(s),
       memberCheckIns: selectCurrentMemberCheckInsFromState(s),
+      memberFreezeLogs: selectCurrentMemberFreezeLogsFromState(s),
+      trainerCommissions: selectCurrentTrainerCommissionsFromState(s),
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
     }),
     shallowEqualObjects
   );
@@ -150,6 +169,19 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
       }),
     [members, memberCheckIns, sales, leads, filters, language]
   );
+
+  const retentionSummary = useMemo(() => {
+    const courtUnitIds = new Set(
+      rentableUnits.filter((u) => isGymCourtOrResourceUnit(u)).map((u) => u.id)
+    );
+    const courtBookings = rentalBookings.filter((b) => courtUnitIds.has(b.unitId));
+    return computeMembershipRetentionSummary({
+      members,
+      freezeLogs: memberFreezeLogs,
+      commissions: trainerCommissions,
+      courtBookings,
+    });
+  }, [members, memberFreezeLogs, trainerCommissions, rentableUnits, rentalBookings]);
 
   if (showSkeleton && members.length === 0) {
     return (
@@ -363,6 +395,65 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
           </DashboardPodGrid>
         </DashboardPod>
       )}
+
+      <DashboardPod
+        title={localizeText(
+          language,
+          'Rétention, gels & terrains',
+          'Retention, Freeze & Courts',
+          'الاحتفاظ والتجميد والملاعب'
+        )}
+        subtitle={localizeText(
+          language,
+          'Renouvellements automatiques, abonnements gelés, commissions coachs & réservations',
+          'Auto-renewals, frozen passes, pending trainer commissions & active court bookings',
+          'التجديد التلقائي، الاشتراكات المجمدة، عمولات المدربين وحجوزات الملاعب'
+        )}
+      >
+        <div
+          data-testid="membership-retention-pod"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+        >
+          {[
+            {
+              label: localizeText(language, 'Taux actifs', 'Active Rate', 'نسبة النشطين'),
+              value: `${retentionSummary.activeRatePct}%`,
+            },
+            {
+              label: localizeText(language, 'Auto-renouvel.', 'Auto-Renew', 'تجديد تلقائي'),
+              value: `${retentionSummary.autoRenewRatePct}%`,
+            },
+            {
+              label: localizeText(language, 'Gels en cours', 'Frozen Passes', 'المجمدة حالياً'),
+              value: String(retentionSummary.frozenCount),
+            },
+            {
+              label: localizeText(language, 'Packs Famille', 'Family Packs', 'باقات العائلة'),
+              value: String(retentionSummary.familyLinkedCount),
+            },
+            {
+              label: localizeText(language, 'Commissions dues', 'Pending Coach DZD', 'عمولات معلقة'),
+              value: `${centimesToDzd(retentionSummary.pendingCommissionCentimes).toLocaleString()} DZD`,
+            },
+            {
+              label: localizeText(language, 'Créneaux terrains', 'Court Bookings', 'حجوزات الملاعب'),
+              value: String(retentionSummary.activeCourtBookingsCount),
+            },
+          ].map((metric) => (
+            <div
+              key={metric.label}
+              data-sq="card"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#22201E] p-3.5 flex flex-col gap-1"
+            >
+              <span className="t-cap text-black/62 dark:text-white/65 truncate">{metric.label}</span>
+              <span className="t-card font-semibold text-black dark:text-white tabular-nums">
+                {metric.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </DashboardPod>
     </DashboardBentoFrame>
   );
 };

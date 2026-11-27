@@ -11,6 +11,7 @@ import {
   evaluateMemberResume,
   evaluateUnusedSessionRefund,
   generateQrMatrix21x21,
+  parseMemberQrPayload,
 } from './membershipDepth';
 import type { GymClassEnrollment, Member, MembershipPlan } from '../types/index';
 
@@ -203,6 +204,11 @@ test('cancelEnrollmentAndPromoteWaitlist promotes earliest waitlisted member on 
 test('QR pass matrix, trainer commissions & day-pass timbre toggle are deterministic', () => {
   const payload = buildMemberQrPayload(sampleMember);
   assert.equal(payload, 'ATR:MEM:BIZ_1:mem_1:RFID-991122');
+  const parsedQr = parseMemberQrPayload(payload);
+  assert.equal(parsedQr.isAtriumQr, true);
+  assert.equal(parsedQr.memberId, 'mem_1');
+  assert.equal(parsedQr.cardTag, 'RFID-991122');
+
   const grid = generateQrMatrix21x21(payload);
   assert.equal(grid.length, 21);
   assert.equal(grid[0].length, 21);
@@ -212,9 +218,13 @@ test('QR pass matrix, trainer commissions & day-pass timbre toggle are determini
 
   assert.equal(calculateTrainerCommissionCentimes(600000, 1500), 90000); // 15% of 6,000 DZD = 900 DZD
 
-  const withTimbre = evaluateDayPassTotals({ baseAmountDzd: 1000, paymentMethod: 'cash', applyTimbreFiscal: true });
-  assert.equal(withTimbre.timbreDzd, 50);
-  assert.equal(withTimbre.totalDzd, 1050);
+  const withTimbreSmall = evaluateDayPassTotals({ baseAmountDzd: 1000, paymentMethod: 'cash', applyTimbreFiscal: true });
+  assert.equal(withTimbreSmall.timbreDzd, 20);
+  assert.equal(withTimbreSmall.totalDzd, 1020);
+
+  const withTimbreMid = evaluateDayPassTotals({ baseAmountDzd: 5000, paymentMethod: 'cash', applyTimbreFiscal: true });
+  assert.equal(withTimbreMid.timbreDzd, 50);
+  assert.equal(withTimbreMid.totalDzd, 5050);
 
   const withoutTimbre = evaluateDayPassTotals({ baseAmountDzd: 1000, paymentMethod: 'cash', applyTimbreFiscal: false });
   assert.equal(withoutTimbre.timbreDzd, 0);

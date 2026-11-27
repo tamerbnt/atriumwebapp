@@ -654,5 +654,27 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `BI & Reports` workspace via Sidebar navigation across all 4 sub-tabs (`Overview & Aging` 9 KPI cards, 5 aging buckets, `7d`/`90d`/`Custom` presets; `Branch Comparison`; `KPI Registry` live threshold save propagating `200,000 DZD` to Overview; `Scheduled Reports & Snapshots` invalid-email inline `role="alert"`, saved digest creation, immutable snapshot recording, `Recently dispatched` status update, and Blob `.html` A4 print download), with **`0` console errors / `0` console warnings**.
 - **Phase 2 Status**: **COMPLETE (`6.1`–`6.10` / Steps 1–9 verified and logged)**.
 
+---
 
+## Phase 3 Step 1 — Membership & Club Operations Depth (`7.1 membership_session`)
+
+- **Database Schema, Migration & Rollback**: `supabase/migrations/202611270010_phase3_membership_depth.sql` + `supabase/rollbacks/202611270010_phase3_membership_depth.down.sql` (`migrationsAndRollbacks.test.ts` 18/18 passing; CI Postgres 16 harness parity).
+  - Added freeze/pause lifecycle columns, family/couple pack linkage & role columns, auto-renewal controls, session-pack unused credit refunds, and `gym_trainer_commissions` linked to Workforce payroll slips.
+- **Pure Engine, Services & Store Wiring**:
+  - `src/utils/membershipDepth.ts` + `src/utils/membershipDepth.test.ts` (`npm test` 5/5): Freeze validation during active check-in windows, auto-expiry extension on resume, mid-cycle plan switch proration, family/couple pack limits, unused session refund math, FIFO waitlist promotion on class cancellation, `ATR:MEM:...` QR payload build/parse, trainer commission accrual -> payroll aggregation, day-pass Art. 317 stamp-duty calculation, and club retention summary (`computeMembershipRetentionSummary`).
+  - `src/services/store.ts` & `src/lib/supabase/services/`: Wired `freezeMember`, `resumeMember`, `switchMemberPlan`, `refundMemberUnusedSessions`, `cancelClassEnrollment`, `runAutoRenewalsForEligibleMembers`, `recordTrainerCommission`, `postTrainerCommissionsToPayroll`, and `allowExpiredOrQuotaOverride` check-in audit logging.
+- **UI Integrations (`src/components/screens/membership/`)**:
+  - `MemberSlideOverInspector.tsx`: `Freeze` / `Resume`, `Switch plan`, `Refund`, `QR Pass` (`MemberQrPassModal`), `Auto-renew` switch, `Family / Couple Pack ID` + role editor, and `Frozen` badge.
+  - `MembershipMembersView.tsx`: `'Frozen'` filter/badge/count + `"Auto-Renewals"` action running `runReminderEngineScan` (`6.5`) & `runAutoRenewalsForEligibleMembers(7)`.
+  - `MembershipSchedulerView.tsx`: Top `LiveSegmentedControl` (`Classes` | `Courts` -> `<MembershipCourtsPanel />` reusing rental unit/booking engine) and live `classEnrollments` roster with FIFO waitlist promotion on cancellation.
+  - `GymFrontDeskKiosk.tsx`: `ATR:MEM:` QR token scan lookup, expired/quota override PIN logging (`kiosk-expired-override-btn`), Walk-In Day Pass Art. 317 cash stamp checkbox + live totals preview, pure flex scanner bar, and non-truncating Tarif badges (`500 DA`, `800 DA`, `1 000 DA`).
+  - `MembershipStaffView.tsx`: `<TrainerCommissionsPanel />` mounted cleanly in `payroll` sub-tab with `pb-16` clearance above floating controls.
+  - `MembershipDashboardView.tsx`: `"Retention, Freeze & Courts"` `<DashboardPod>` (`data-testid="membership-retention-pod"`).
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`lint_applet`) & `vite build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **173 / 173 passed** (7 suites, incl. `membershipDepth.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **45 / 45 files, 337 / 337 tests passed** (incl. `phase3MembershipDepth.test.tsx` 6/6 and `migrationsAndRollbacks.test.ts` 18/18).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`, Ultra Mode Rounds 1–2): Verified Membership Dashboard `Retention, Freeze & Courts` pod, Members slide-over inspector & `Member QR Pass` modal, Auto-Renewals modal, Schedule `Courts` panel, Staff `Payroll` `Trainer Coaching & Class Commissions` clearance, and Front Desk Staff switch -> `GymFrontDeskKiosk` clean scanner bar + Day Pass modal (`1 000 DA` + `Timbre Art. 317` `+20 DZD` = `1,020 DZD`) with **`0` console errors / `0` console warnings**.
+- **Next Queued Phase 3 Vertical**: `7.2 appointment_service`.
 

@@ -17,6 +17,12 @@ import {
   Plus,
   ShieldCheck,
   Printer,
+  PauseCircle,
+  PlayCircle,
+  ArrowRightLeft,
+  QrCode,
+  RefreshCw,
+  Users,
 } from 'lucide-react';
 import { Member, UnifiedDocument } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
@@ -28,6 +34,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentMemberCheckInsFromState,
+  selectCurrentMemberFreezeLogsFromState,
   selectCurrentSalesFromState,
   selectCurrentPlansFromState,
   selectCurrentUnifiedDocumentsFromState,
@@ -41,12 +48,19 @@ import {
 import { KineticEmptyStateMotion } from '../../ui/kinetic/KineticEmptyStateMotion';
 import { buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic/branchUtils';
 import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LabelInput } from '../../ui/LabelInput';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Button } from '@/atrium/core';
 import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
 import { UnifiedInvoiceComposerModal } from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 import { Customer360Panel } from '../../common/crm/Customer360Panel';
+import {
+  MemberFreezeModal,
+  MemberPlanSwitchModal,
+  MemberQrPassModal,
+  MemberSessionRefundModal,
+} from './MemberLifecycleModals';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
@@ -89,7 +103,23 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [composerModalOpen, setComposerModalOpen] = useState(false);
   const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
-  const { openShopForMember } = useAtriumActions();
+  const [freezeModalOpen, setFreezeModalOpen] = useState(false);
+  const [switchPlanModalOpen, setSwitchPlanModalOpen] = useState(false);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [qrPassModalOpen, setQrPassModalOpen] = useState(false);
+  const [familyGroupInput, setFamilyGroupInput] = useState(() => member?.familyGroupId || '');
+  const [familyRoleInput, setFamilyRoleInput] = useState<'primary' | 'dependent'>(
+    () => member?.familyRole || 'primary'
+  );
+  const {
+    openShopForMember,
+    freezeMemberSubscription,
+    resumeMemberSubscription,
+    switchMemberPlanMidCycle,
+    refundMemberUnusedSessions,
+    toggleMemberAutoRenew,
+    updateMemberFamilyGroup,
+  } = useAtriumActions();
 
   const branchState = useAtriumSelector(
     (s) => ({
@@ -97,6 +127,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       currentBranchId: s.currentBranchId,
       language: s.language,
       memberCheckIns: selectCurrentMemberCheckInsFromState(s),
+      memberFreezeLogs: selectCurrentMemberFreezeLogsFromState(s),
       sales: selectCurrentSalesFromState(s),
       plans: selectCurrentPlansFromState(s),
       unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
@@ -206,6 +237,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       if (notesText !== nextNotes) {
         setNotesText(nextNotes);
       }
+      setFamilyGroupInput(activeMember.familyGroupId || '');
+      setFamilyRoleInput(activeMember.familyRole || 'primary');
     }
     if (justOpened || switchedMember || switchedTab) {
       entranceEpochRef.current += 1;
@@ -509,14 +542,19 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         activeMember.status === 'Banned' ||
         (activeMember as any).isBlocked)
   );
+  const isFrozenStatus = activeMember?.status === 'Frozen';
   const isExpired = daysRemaining <= 0 || activeMember?.status === 'Expired';
   const statusLabel = isBlocked
     ? L('Blocked', 'Bloqué', 'محظور')
+    : isFrozenStatus
+    ? L('Frozen', 'Gelé', 'مجمد')
     : isExpired
     ? L('Expired', 'Expiré', 'منتهي')
     : L('Active', 'Actif', 'نشط');
   const statusPillCls = isBlocked
     ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+    : isFrozenStatus
+    ? 'bg-[#E0F2FE] dark:bg-[#172A3A] text-[#0369A1] dark:text-[#7DD3FC]'
     : isExpired
     ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
     : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
@@ -730,7 +768,76 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                         <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-white dark:bg-[#22201E] grid place-items-center">
                           <RotateCcw className="w-[18px] h-[18px]" />
                         </span>
-                        <span>{L('Renew plan', 'Renouveler abonnement', 'تجديد الاشتراك')}</span>
+                        <span>{L('Renew plan', 'Renouveler', 'تجديد الاشتراك')}</span>
+                      </button>
+                    </div>
+                    <div className="qa grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="none"
+                        data-testid="member-freeze-trigger"
+                        onClick={() => setFreezeModalOpen(true)}
+                        className="flex flex-col items-center gap-2 pt-3 px-2 pb-3 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-[var(--atr-ink,#000000)] dark:text-white t-small font-medium leading-tight text-center transition-colors cursor-pointer"
+                      >
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[34px] h-[34px] bg-white dark:bg-[#22201E] grid place-items-center">
+                          {isFrozenStatus ? (
+                            <PlayCircle className="w-[16px] h-[16px] text-[#096b40]" />
+                          ) : (
+                            <PauseCircle className="w-[16px] h-[16px] text-[#0369A1]" />
+                          )}
+                        </span>
+                        <span>
+                          {isFrozenStatus
+                            ? L('Resume', 'Reprendre', 'استئناف')
+                            : L('Freeze', 'Geler', 'تجميد')}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="none"
+                        data-testid="member-switch-plan-trigger"
+                        onClick={() => setSwitchPlanModalOpen(true)}
+                        className="flex flex-col items-center gap-2 pt-3 px-2 pb-3 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-[var(--atr-ink,#000000)] dark:text-white t-small font-medium leading-tight text-center transition-colors cursor-pointer"
+                      >
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[34px] h-[34px] bg-white dark:bg-[#22201E] grid place-items-center">
+                          <ArrowRightLeft className="w-[16px] h-[16px]" />
+                        </span>
+                        <span>{L('Switch plan', 'Changer pack', 'تبديل الباقة')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="none"
+                        data-testid="member-refund-sessions-trigger"
+                        onClick={() => setRefundModalOpen(true)}
+                        className="flex flex-col items-center gap-2 pt-3 px-2 pb-3 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-[var(--atr-ink,#000000)] dark:text-white t-small font-medium leading-tight text-center transition-colors cursor-pointer"
+                      >
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[34px] h-[34px] bg-white dark:bg-[#22201E] grid place-items-center">
+                          <RotateCcw className="w-[16px] h-[16px] text-amber-600" />
+                        </span>
+                        <span>{L('Refund', 'Rembourser', 'استرداد حصص')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="none"
+                        data-testid="member-qr-pass-trigger"
+                        onClick={() => setQrPassModalOpen(true)}
+                        className="flex flex-col items-center gap-2 pt-3 px-2 pb-3 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-[var(--atr-ink,#000000)] dark:text-white t-small font-medium leading-tight text-center transition-colors cursor-pointer"
+                      >
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[34px] h-[34px] bg-white dark:bg-[#22201E] grid place-items-center">
+                          <QrCode className="w-[16px] h-[16px]" />
+                        </span>
+                        <span>{L('QR Pass', 'Badge QR', 'بطاقة QR')}</span>
                       </button>
                     </div>
                   </section>
@@ -837,6 +944,86 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     </div>
                   </section>
 
+                  <section style={{ '--k': 2 } as React.CSSProperties}>
+                    <h3>{L('Auto-renew & Family pack', 'Renouvellement & Famille', 'التجديد التلقائي والعائلة')}</h3>
+                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-3 border-0 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2 t-body">
+                          <RefreshCw className="w-4 h-4 text-[var(--atr-acc,#d4522f)]" />
+                          <span>{L('Auto-renew subscription', 'Renouvellement auto', 'تجديد تلقائي')}</span>
+                        </span>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={Boolean(activeMember.autoRenew)}
+                          data-testid="member-autorenew-toggle"
+                          onClick={() => {
+                            const nextVal = toggleMemberAutoRenew(activeMember.id);
+                            showToast(
+                              nextVal
+                                ? L('Auto-renew enabled', 'Renouvellement auto activé', 'تم تفعيل التجديد التلقائي')
+                                : L('Auto-renew disabled', 'Renouvellement auto désactivé', 'تم إيقاف التجديد التلقائي')
+                            );
+                          }}
+                          className={`px-3 py-1 rounded-full t-small font-semibold cursor-pointer transition-colors ${
+                            activeMember.autoRenew
+                              ? 'bg-[#DDF5E8] text-[#096b40] dark:bg-[#143324] dark:text-[#5BE3A3]'
+                              : 'bg-black/8 text-black/65 dark:bg-white/10 dark:text-white/70'
+                          }`}
+                        >
+                          {activeMember.autoRenew ? L('ON', 'ACTIF', 'مفعل') : L('OFF', 'INACTIF', 'معطل')}
+                        </button>
+                      </div>
+
+                      <div className="pt-2 border-t border-[var(--atr-divider)] space-y-2">
+                        <div className="flex items-center gap-2 t-cap text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">
+                          <Users className="w-3.5 h-3.5" />
+                          <span>{L('Family / Couple Pack ID', 'Groupe Famille / Couple', 'كود باقة العائلة')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <LabelInput
+                              field="familyGroupCode"
+                              label={L('Family ID', 'Code famille', 'رمز العائلة')}
+                              value={familyGroupInput}
+                              onChange={setFamilyGroupInput}
+                              placeholder="FAM-2026-01"
+                              height={36}
+                            />
+                          </div>
+                          <select
+                            aria-label={L('Family role', 'Rôle famille', 'الدور')}
+                            value={familyRoleInput}
+                            onChange={(e) => setFamilyRoleInput(e.target.value as 'primary' | 'dependent')}
+                            className="h-9 px-2.5 rounded-xl bg-white dark:bg-[#2B2825] border border-black/10 dark:border-white/10 text-xs"
+                          >
+                            <option value="primary">{L('Primary', 'Titulaire', 'رئيسي')}</option>
+                            <option value="dependent">{L('Dependent', 'Rattaché', 'تابع')}</option>
+                          </select>
+                          <Button
+                            type="button"
+                            tone="soft"
+                            size={36}
+                            onClick={() => {
+                              updateMemberFamilyGroup(
+                                activeMember.id,
+                                familyGroupInput.trim() || undefined,
+                                familyRoleInput
+                              );
+                              showToast(
+                                familyGroupInput.trim()
+                                  ? L('Family group linked', 'Groupe famille associé', 'تم ربط باقة العائلة')
+                                  : L('Family group cleared', 'Groupe famille dissocié', 'تم إلغاء ربط العائلة')
+                              );
+                            }}
+                          >
+                            {L('Save', 'OK', 'حفظ')}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
                   <section style={{ '--k': 3 } as React.CSSProperties}>
                     <LabelTextarea
                       field="memberStaffNotes"
@@ -877,15 +1064,27 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       </div>
                     </div>
                     <div className="h-2.5" />
-                    <Button
-                      type="button"
-                      tone="soft"
-                      size={40}
-                      className="w-full"
-                      onClick={() => onToggleBlock(activeMember)}
-                    >
-                      {isBlocked ? L('Unblock card', 'Débloquer le badge', 'إلغاء حظر البطاقة') : L('Block card', 'Bloquer le badge', 'حظر البطاقة')}
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        tone="soft"
+                        size={40}
+                        className="w-full"
+                        onClick={() => setQrPassModalOpen(true)}
+                      >
+                        <QrCode className="w-4 h-4 mr-1.5" />
+                        {L('Show QR Pass', 'Badge QR', 'بطاقة QR')}
+                      </Button>
+                      <Button
+                        type="button"
+                        tone="soft"
+                        size={40}
+                        className="w-full"
+                        onClick={() => onToggleBlock(activeMember)}
+                      >
+                        {isBlocked ? L('Unblock card', 'Débloquer le badge', 'إلغاء حظر البطاقة') : L('Block card', 'Bloquer le badge', 'حظر البطاقة')}
+                      </Button>
+                    </div>
                   </section>
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
@@ -1207,10 +1406,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   quantity: 1,
                   unit: 'mois',
                   unitPriceHt: Number(
-                    branchState.plans.find(
-                      (p) => p.id === activeMember.membershipPlanId || p.name === activeMember.membershipPlanName
-                    )?.price ||
-                      activeMember.balance ||
+                    matchedPlan?.price?.amount ??
+                      (matchedPlan?.price as any) ??
+                      activeMember.balance ??
                       4500
                   ),
                   tvaPercent: 19,
@@ -1226,6 +1424,43 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
             isOpen={Boolean(printUnifiedDoc)}
             onClose={() => setPrintUnifiedDoc(null)}
             document={printUnifiedDoc}
+          />
+          <MemberFreezeModal
+            isOpen={freezeModalOpen}
+            onClose={() => setFreezeModalOpen(false)}
+            member={activeMember}
+            checkInLogs={branchState.memberCheckIns}
+            freezeLogs={branchState.memberFreezeLogs}
+            locale={esLocale}
+            onFreeze={freezeMemberSubscription}
+            onResume={resumeMemberSubscription}
+            showToast={showToast}
+          />
+          <MemberPlanSwitchModal
+            isOpen={switchPlanModalOpen}
+            onClose={() => setSwitchPlanModalOpen(false)}
+            member={activeMember}
+            plans={branchState.plans}
+            locale={esLocale}
+            onSwitchPlan={switchMemberPlanMidCycle}
+            showToast={showToast}
+          />
+          <MemberSessionRefundModal
+            isOpen={refundModalOpen}
+            onClose={() => setRefundModalOpen(false)}
+            member={activeMember}
+            plans={branchState.plans}
+            locale={esLocale}
+            onRefundSessions={refundMemberUnusedSessions}
+            showToast={showToast}
+          />
+          <MemberQrPassModal
+            isOpen={qrPassModalOpen}
+            onClose={() => setQrPassModalOpen(false)}
+            member={activeMember}
+            branchName={memberBranch?.name}
+            locale={esLocale}
+            showToast={showToast}
           />
         </>
       )}
