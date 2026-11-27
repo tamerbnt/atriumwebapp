@@ -552,6 +552,10 @@ export function canAccessRoute(
     );
   }
 
+  if (targetScreen === 'bi_reports') {
+    return ctx.isExecutive;
+  }
+
   if (ctx.category === 'project_milestone') {
     const allowedSet = PM_ROLE_ROUTES[ctx.normalizedRole];
     return Boolean(allowedSet?.has(targetScreen));

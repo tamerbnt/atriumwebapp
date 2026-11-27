@@ -177,6 +177,11 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   platform_approval_requests: 39,
   platform_attachments: 40,
   platform_webhook_deliveries: 45,
+  bi_kpi_definitions: 21,
+  bi_saved_reports: 26,
+  bi_report_snapshots: 52,
+  gym_member_freeze_logs: 41,
+  gym_trainer_commissions: 43,
   immutable_audit_logs: 50,
 };
 
@@ -525,6 +530,8 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'dispatch_reminder_idempotent') return 445;
     if (item.fn === 'mark_import_job_rolled_back') return 485;
     if (item.fn === 'process_data_subject_request') return 395;
+    if (item.fn === 'cancel_and_promote_gym_class_enrollment') return 405;
+    if (item.fn === 'record_bi_report_snapshot') return 520;
     if (item.fn === 'log_sensitive_read_event') return 500;
   }
   return (item.table ? TABLE_REPLAY_PRIORITY[item.table] ?? 35 : 48) * 10 + getKindPriority(item.kind);

@@ -36,6 +36,7 @@ import {
   Bell,
   FileSpreadsheet,
   Lock,
+  Sliders,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -73,6 +74,7 @@ import { SettingsReferenceRatesTab } from './settings/SettingsReferenceRatesTab'
 import { ReminderEngineWorkspace } from '../common/reminders/ReminderEngineWorkspace';
 import { DataImportWorkspace } from '../common/import/DataImportWorkspace';
 import { SecurityRbacWorkspace } from '../common/security/SecurityRbacWorkspace';
+import { PlatformGovernanceWorkspace } from '../common/platform/PlatformGovernanceWorkspace';
 import { PayrollMigrationDryRunPanel } from '../common/staff/PayrollMigrationDryRunPanel';
 import { getEffectivePermissionContext } from '../../utils/routePermissions';
 import { normalizeBusinessCategory } from '../../utils/staffRules';
@@ -538,6 +540,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             icon: <Lock size={15} strokeWidth={1.5} />,
           },
           {
+            id: 'platform_governance',
+            label: t('phase2_plat_tab', language),
+            icon: <Sliders size={15} strokeWidth={1.5} />,
+          },
+          {
             id: 'branches_devices',
             label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
             icon: <Monitor size={15} strokeWidth={1.5} />,
@@ -615,6 +622,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       {effectiveTab === 'data_import' && <DataImportWorkspace />}
 
       {effectiveTab === 'security_rbac' && <SecurityRbacWorkspace />}
+
+      {effectiveTab === 'platform_governance' && <PlatformGovernanceWorkspace />}
 
       {effectiveTab === 'preferences' && (
         <>

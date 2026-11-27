@@ -20,6 +20,8 @@ import {
   Sale,
   ScheduleEvent,
   GymClassEnrollment,
+  GymMemberFreezeLog,
+  GymTrainerCommission,
   ServiceItem,
   StaffMember,
   StaffRole,
@@ -192,6 +194,25 @@ import {
   MedicalPatient,
   LogisticsShipment,
   RealEstateProperty,
+  ApprovalActionScope,
+  PlatformApprovalRule,
+  PlatformApprovalRequest,
+  PlatformAttachmentRecord,
+  PlatformCustomField,
+  PlatformCustomFieldType,
+  PlatformPrintTemplate,
+  PrintTemplateDocType,
+  PlatformApiKey,
+  PlatformApiScope,
+  PlatformWebhook,
+  PlatformWebhookDelivery,
+  PlatformWebhookEventType,
+  VirusScanStatus,
+  BiDateRangePreset,
+  BiKpiDefinition,
+  BiReportSnapshot,
+  BiReportType,
+  BiSavedReport,
 } from '../types/index';
 import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
@@ -421,6 +442,8 @@ import {
   realEstateService,
   auditService,
   securityService,
+  platformGovernanceService,
+  biService,
   type StatutoryRateSet,
 } from '../lib/supabase/index';
 import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
@@ -525,6 +548,40 @@ import {
   recordFailedPinAttempt,
   verifyTotpToken,
 } from '../utils/rbacEngine';
+import {
+  buildDefaultApprovalRules,
+  buildDefaultPrintTemplate,
+  buildTenantStoragePath,
+  buildWebhookSignatureHeader,
+  canPurgeAttachment,
+  computeWebhookRetryState,
+  evaluateApprovalRequirement,
+  generateSignedAttachmentAccess,
+  issuePlatformApiKeyPair,
+  issueWebhookEndpointSecret,
+  isValidWebhookEndpointUrl,
+  scrubPlatformSecretsForBackup,
+  sha256Hex,
+  validateApprovalDecision,
+  validateAttachmentUpload,
+  validateCustomFieldKey,
+} from '../utils/platformGovernanceEngine';
+import {
+  buildCanonicalBiKpiDefinitions,
+  evaluateBiKpiRegistry,
+  validateBiScheduleRecipients,
+} from '../utils/biKpiRegistry';
+import {
+  DEFAULT_FREEZE_POLICY,
+  buildMemberQrPayload,
+  calculateMidCyclePlanSwitch,
+  calculateTrainerCommissionCentimes,
+  cancelEnrollmentAndPromoteWaitlist,
+  collectAutoRenewalCandidates,
+  evaluateMemberFreeze,
+  evaluateMemberResume,
+  evaluateUnusedSessionRefund,
+} from '../utils/membershipDepth';
 
 const generateClientUuid = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -597,6 +654,8 @@ export type ActiveScreen =
   | 'trading_finance'
   // Category 11: Real Estate & Property Management (Algeria)
   | 'realestate_mandates'
+  // Phase 2 Section 6.10 Unified BI & Cross-Vertical Reports
+  | 'bi_reports'
   // Dev-only Phase 1 Component Catalog
   | 'chart_catalog';
 
@@ -628,6 +687,8 @@ interface AppState {
   effectiveStatutoryRate: StatutoryRateSet;
   schedule: ScheduleEvent[];
   classEnrollments: GymClassEnrollment[];
+  memberFreezeLogs: GymMemberFreezeLog[];
+  trainerCommissions: GymTrainerCommission[];
   devices: Device[];
   appointments: Appointment[];
   servicesCatalog: ServiceItem[];
@@ -770,6 +831,19 @@ interface AppState {
   sensitiveReadEvents: SensitiveReadEvent[];
   pinAttemptTrackerByBusiness: Record<string, PinAttemptTracker>;
   sessionLockState: SessionLockState;
+  // Phase 2 Section 6.9: Approvals, Attachments, Custom Fields, Print Templates, API & Webhooks
+  platformApprovalRules: PlatformApprovalRule[];
+  platformApprovalRequests: PlatformApprovalRequest[];
+  platformAttachments: PlatformAttachmentRecord[];
+  platformCustomFields: PlatformCustomField[];
+  platformPrintTemplates: PlatformPrintTemplate[];
+  platformApiKeys: PlatformApiKey[];
+  platformWebhooks: PlatformWebhook[];
+  platformWebhookDeliveries: PlatformWebhookDelivery[];
+  // Phase 2 Section 6.10: Unified BI KPI Registry & Cross-Vertical Reports
+  biKpiDefinitions: BiKpiDefinition[];
+  biSavedReports: BiSavedReport[];
+  biReportSnapshots: BiReportSnapshot[];
   // Business Configuration & Formules Engine
   businessConfigs: Record<string, BusinessCategoryConfig>;
   categoryFormules: CategoryFormule[];
@@ -864,6 +938,8 @@ const DEFAULT_STATE: AppState = {
   effectiveStatutoryRate: getLocalCodeBaselineStatutoryRate(),
   schedule: INITIAL_SCHEDULE,
   classEnrollments: [],
+  memberFreezeLogs: [],
+  trainerCommissions: [],
   devices: INITIAL_DEVICES,
   appointments: INITIAL_APPOINTMENTS,
   servicesCatalog: INITIAL_SALON_SERVICES,
@@ -994,6 +1070,17 @@ const DEFAULT_STATE: AppState = {
     isLocked: false,
     lastActivityAtMs: Date.now(),
   },
+  platformApprovalRules: [],
+  platformApprovalRequests: [],
+  platformAttachments: [],
+  platformCustomFields: [],
+  platformPrintTemplates: [],
+  platformApiKeys: [],
+  platformWebhooks: [],
+  platformWebhookDeliveries: [],
+  biKpiDefinitions: [],
+  biSavedReports: [],
+  biReportSnapshots: [],
   businessConfigs: INITIAL_BUSINESS_CONFIGS,
   categoryFormules: INITIAL_CATEGORY_FORMULES,
   settingsTab: 'preferences',
@@ -1188,6 +1275,8 @@ let globalState: AppState = backfillTraceability((() => {
           staff: mergedStaff,
           schedule: Array.isArray(parsed.schedule) ? parsed.schedule : INITIAL_SCHEDULE,
           classEnrollments: Array.isArray(parsed.classEnrollments) ? parsed.classEnrollments : [],
+          memberFreezeLogs: Array.isArray(parsed.memberFreezeLogs) ? parsed.memberFreezeLogs : [],
+          trainerCommissions: Array.isArray(parsed.trainerCommissions) ? parsed.trainerCommissions : [],
           pendingShopMemberId: null,
           devices: Array.isArray(parsed.devices) ? parsed.devices : INITIAL_DEVICES,
           appointments: Array.isArray(parsed.appointments) ? parsed.appointments : INITIAL_APPOINTMENTS,
@@ -1308,6 +1397,29 @@ let globalState: AppState = backfillTraceability((() => {
                   lastActivityAtMs: Number(parsed.sessionLockState.lastActivityAtMs || Date.now()),
                 }
               : { isLocked: false, lastActivityAtMs: Date.now() },
+          platformApprovalRules: Array.isArray(parsed.platformApprovalRules)
+            ? parsed.platformApprovalRules
+            : [],
+          platformApprovalRequests: Array.isArray(parsed.platformApprovalRequests)
+            ? parsed.platformApprovalRequests
+            : [],
+          platformAttachments: Array.isArray(parsed.platformAttachments)
+            ? parsed.platformAttachments
+            : [],
+          platformCustomFields: Array.isArray(parsed.platformCustomFields)
+            ? parsed.platformCustomFields
+            : [],
+          platformPrintTemplates: Array.isArray(parsed.platformPrintTemplates)
+            ? parsed.platformPrintTemplates
+            : [],
+          platformApiKeys: Array.isArray(parsed.platformApiKeys) ? parsed.platformApiKeys : [],
+          platformWebhooks: Array.isArray(parsed.platformWebhooks) ? parsed.platformWebhooks : [],
+          platformWebhookDeliveries: Array.isArray(parsed.platformWebhookDeliveries)
+            ? parsed.platformWebhookDeliveries
+            : [],
+          biKpiDefinitions: Array.isArray(parsed.biKpiDefinitions) ? parsed.biKpiDefinitions : [],
+          biSavedReports: Array.isArray(parsed.biSavedReports) ? parsed.biSavedReports : [],
+          biReportSnapshots: Array.isArray(parsed.biReportSnapshots) ? parsed.biReportSnapshots : [],
           currentUser:
             parsed.currentUser === undefined
               ? DEFAULT_USER
@@ -1700,6 +1812,14 @@ export const selectCurrentScheduleFromState = createBranchSelector<ScheduleEvent
 export const selectCurrentClassEnrollmentsFromState = createBranchSelector<GymClassEnrollment>(
   (s) => s.classEnrollments || [],
   (ce, b) => (ce.branchId || '') === b
+);
+export const selectCurrentMemberFreezeLogsFromState = createBranchSelector<GymMemberFreezeLog>(
+  (s) => s.memberFreezeLogs || [],
+  (fl, b) => (fl.branchId || '') === b
+);
+export const selectCurrentTrainerCommissionsFromState = createBranchSelector<GymTrainerCommission>(
+  (s) => s.trainerCommissions || [],
+  (tc, b) => (tc.branchId || '') === b
 );
 export const selectCurrentAppointmentsFromState = createBranchSelector<Appointment>(
   (s) => s.appointments,
@@ -2271,6 +2391,92 @@ export function selectCurrentDataSubjectRequestsFromState(state: AppState): Data
 export function selectCurrentSensitiveReadEventsFromState(state: AppState): SensitiveReadEvent[] {
   const bizId = state.currentBusinessId || '';
   return (state.sensitiveReadEvents || []).filter((e) => e.businessId === bizId);
+}
+
+export function selectCurrentPlatformApprovalRulesFromState(state: AppState): PlatformApprovalRule[] {
+  const bizId = state.currentBusinessId || '';
+  const existing = (state.platformApprovalRules || []).filter(
+    (r) => r.businessId === bizId && !r.deletedAt
+  );
+  if (existing.length > 0) return existing;
+  return buildDefaultApprovalRules({
+    accountId: state.account?.id || '',
+    businessId: bizId,
+    branchId: state.currentBranchId || undefined,
+  });
+}
+
+export function selectCurrentPlatformApprovalRequestsFromState(state: AppState): PlatformApprovalRequest[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformApprovalRequests || []).filter(
+    (r) => r.businessId === bizId && !r.deletedAt
+  );
+}
+
+export function selectCurrentPlatformAttachmentsFromState(state: AppState): PlatformAttachmentRecord[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformAttachments || []).filter(
+    (a) => a.businessId === bizId && !a.deletedAt && !a.purgedAt
+  );
+}
+
+export function selectCurrentPlatformCustomFieldsFromState(state: AppState): PlatformCustomField[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformCustomFields || []).filter((f) => f.businessId === bizId && !f.deletedAt);
+}
+
+export function selectCurrentPlatformPrintTemplatesFromState(state: AppState): PlatformPrintTemplate[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformPrintTemplates || []).filter((p) => p.businessId === bizId && !p.deletedAt);
+}
+
+export function selectCurrentPlatformApiKeysFromState(state: AppState): PlatformApiKey[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformApiKeys || []).filter((k) => k.businessId === bizId && !k.deletedAt);
+}
+
+export function selectCurrentPlatformWebhooksFromState(state: AppState): PlatformWebhook[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformWebhooks || []).filter((w) => w.businessId === bizId && !w.deletedAt);
+}
+
+export function selectCurrentPlatformWebhookDeliveriesFromState(
+  state: AppState
+): PlatformWebhookDelivery[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.platformWebhookDeliveries || []).filter(
+    (d) => d.businessId === bizId && !d.deletedAt
+  );
+}
+
+export function selectCurrentBiKpiDefinitionsFromState(state: AppState): BiKpiDefinition[] {
+  const bizId = state.currentBusinessId || '';
+  const canonical = buildCanonicalBiKpiDefinitions({
+    accountId: state.account?.id || '',
+    businessId: bizId,
+  });
+  const stored = (state.biKpiDefinitions || []).filter(
+    (d) => (!d.businessId || d.businessId === bizId) && !d.deletedAt
+  );
+  if (stored.length === 0) return canonical;
+  const byCode = new Map<string, BiKpiDefinition>();
+  for (const def of canonical) {
+    byCode.set(def.kpiCode, def);
+  }
+  for (const custom of stored) {
+    byCode.set(custom.kpiCode, custom);
+  }
+  return Array.from(byCode.values());
+}
+
+export function selectCurrentBiSavedReportsFromState(state: AppState): BiSavedReport[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.biSavedReports || []).filter((r) => r.businessId === bizId && !r.deletedAt);
+}
+
+export function selectCurrentBiReportSnapshotsFromState(state: AppState): BiReportSnapshot[] {
+  const bizId = state.currentBusinessId || '';
+  return (state.biReportSnapshots || []).filter((s) => s.businessId === bizId && !s.deletedAt);
 }
 
 export function selectExistingItemsForImportEntityFromState(
@@ -3843,6 +4049,8 @@ function pruneDeletedRecords(
     gym_registration_leads: 'leads',
     gym_schedule_events: 'schedule',
     gym_class_enrollments: 'classEnrollments',
+    gym_member_freeze_logs: 'memberFreezeLogs',
+    gym_trainer_commissions: 'trainerCommissions',
     gym_check_ins: 'memberCheckIns',
     gym_walk_in_tickets: 'walkInTickets',
     salon_appointments: 'appointments',
@@ -3922,6 +4130,17 @@ function pruneDeletedRecords(
     rbac_role_permissions: 'rbacPermissions',
     data_protection_consents: 'dataProtectionConsents',
     data_subject_requests: 'dataSubjectRequests',
+    platform_approval_rules: 'platformApprovalRules',
+    platform_approval_requests: 'platformApprovalRequests',
+    platform_attachments: 'platformAttachments',
+    platform_custom_fields: 'platformCustomFields',
+    platform_print_templates: 'platformPrintTemplates',
+    platform_api_keys: 'platformApiKeys',
+    platform_webhooks: 'platformWebhooks',
+    platform_webhook_deliveries: 'platformWebhookDeliveries',
+    bi_kpi_definitions: 'biKpiDefinitions',
+    bi_saved_reports: 'biSavedReports',
+    bi_report_snapshots: 'biReportSnapshots',
     category_formules: 'categoryFormules',
   };
 
@@ -4446,6 +4665,75 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
       });
     }
 
+    if (
+      shouldSyncTable('platform_approval_rules') ||
+      shouldSyncTable('platform_approval_requests') ||
+      shouldSyncTable('platform_attachments') ||
+      shouldSyncTable('platform_custom_fields') ||
+      shouldSyncTable('platform_print_templates') ||
+      shouldSyncTable('platform_api_keys') ||
+      shouldSyncTable('platform_webhooks') ||
+      shouldSyncTable('platform_webhook_deliveries')
+    ) {
+      tasks.push(async () => {
+        const plat = await platformGovernanceService.fetchForBusiness(businessId);
+        if (plat.rules.length > 0) {
+          const others = (globalState.platformApprovalRules || []).filter((r) => r.businessId !== businessId);
+          updates.platformApprovalRules = [...plat.rules, ...others];
+        }
+        if (plat.requests.length > 0) {
+          const others = (globalState.platformApprovalRequests || []).filter((r) => r.businessId !== businessId);
+          updates.platformApprovalRequests = [...plat.requests, ...others];
+        }
+        if (plat.attachments.length > 0) {
+          const others = (globalState.platformAttachments || []).filter((a) => a.businessId !== businessId);
+          updates.platformAttachments = [...plat.attachments, ...others];
+        }
+        if (plat.customFields.length > 0) {
+          const others = (globalState.platformCustomFields || []).filter((f) => f.businessId !== businessId);
+          updates.platformCustomFields = [...plat.customFields, ...others];
+        }
+        if (plat.printTemplates.length > 0) {
+          const others = (globalState.platformPrintTemplates || []).filter((p) => p.businessId !== businessId);
+          updates.platformPrintTemplates = [...plat.printTemplates, ...others];
+        }
+        if (plat.apiKeys.length > 0) {
+          const others = (globalState.platformApiKeys || []).filter((k) => k.businessId !== businessId);
+          updates.platformApiKeys = [...plat.apiKeys, ...others];
+        }
+        if (plat.webhooks.length > 0) {
+          const others = (globalState.platformWebhooks || []).filter((w) => w.businessId !== businessId);
+          updates.platformWebhooks = [...plat.webhooks, ...others];
+        }
+        if (plat.webhookDeliveries.length > 0) {
+          const others = (globalState.platformWebhookDeliveries || []).filter((d) => d.businessId !== businessId);
+          updates.platformWebhookDeliveries = [...plat.webhookDeliveries, ...others];
+        }
+      });
+    }
+
+    if (
+      shouldSyncTable('bi_kpi_definitions') ||
+      shouldSyncTable('bi_saved_reports') ||
+      shouldSyncTable('bi_report_snapshots')
+    ) {
+      tasks.push(async () => {
+        const bi = await biService.fetchForBusiness(businessId);
+        if (bi.definitions.length > 0) {
+          const others = (globalState.biKpiDefinitions || []).filter((d) => d.businessId !== businessId);
+          updates.biKpiDefinitions = [...bi.definitions, ...others];
+        }
+        if (bi.savedReports.length > 0) {
+          const others = (globalState.biSavedReports || []).filter((r) => r.businessId !== businessId);
+          updates.biSavedReports = [...bi.savedReports, ...others];
+        }
+        if (bi.snapshots.length > 0) {
+          const others = (globalState.biReportSnapshots || []).filter((s) => s.businessId !== businessId);
+          updates.biReportSnapshots = [...bi.snapshots, ...others];
+        }
+      });
+    }
+
     if (activeCategory === 'membership_session') {
       if (shouldSyncTable('gym_plans')) {
         tasks.push(async () => {
@@ -4525,6 +4813,44 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
               ...(updatedAfter ? mergeById(cur, tickets) : tickets),
               ...others,
             ];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_member_freeze_logs')) {
+        tasks.push(async () => {
+          const logs = await memberService.fetchFreezeLogs(branchId);
+          if (logs.length > 0) {
+            const others = (globalState.memberFreezeLogs || []).filter((l) => l.branchId !== branchId);
+            updates.memberFreezeLogs = [...logs, ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_trainer_commissions')) {
+        tasks.push(async () => {
+          const comms = await memberService.fetchTrainerCommissions(branchId);
+          if (comms.length > 0) {
+            const others = (globalState.trainerCommissions || []).filter((c) => c.branchId !== branchId);
+            updates.trainerCommissions = [...comms, ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('rental_units')) {
+        tasks.push(async () => {
+          const units = await rentalService.fetchUnits(branchId, updatedAfter);
+          if (units.length > 0) {
+            const others = (globalState.rentableUnits || []).filter((u) => u.facilityId !== branchId && u.branchId !== branchId);
+            const cur = (globalState.rentableUnits || []).filter((u) => u.facilityId === branchId || u.branchId === branchId);
+            updates.rentableUnits = [...(updatedAfter ? mergeById(cur, units) : units), ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('rental_bookings')) {
+        tasks.push(async () => {
+          const bookings = await rentalService.fetchBookings(branchId, updatedAfter);
+          if (bookings.length > 0) {
+            const others = (globalState.rentalBookings || []).filter((bk) => bk.facilityId !== branchId && bk.branchId !== branchId);
+            const cur = (globalState.rentalBookings || []).filter((bk) => bk.facilityId === branchId || bk.branchId === branchId);
+            updates.rentalBookings = [...(updatedAfter ? mergeById(cur, bookings) : bookings), ...others];
           }
         });
       }
@@ -5152,6 +5478,7 @@ export function checkInMemberAction(
     method?: 'rfid' | 'qr' | 'manual' | 'turnstile';
     overrideByStaffId?: string;
     overrideReason?: string;
+    allowExpiredOrQuotaOverride?: boolean;
     duplicateWindowMinutes?: number;
     logDenied?: boolean;
   }
@@ -6337,6 +6664,7 @@ function createAtriumActions() {
       method?: 'rfid' | 'qr' | 'manual' | 'turnstile';
       overrideByStaffId?: string;
       overrideReason?: string;
+      allowExpiredOrQuotaOverride?: boolean;
       duplicateWindowMinutes?: number;
       logDenied?: boolean;
     }
@@ -6356,6 +6684,7 @@ function createAtriumActions() {
       {
         duplicateWindowMinutes: options?.duplicateWindowMinutes,
         overrideReason: options?.overrideReason,
+        allowExpiredOrQuotaOverride: options?.allowExpiredOrQuotaOverride,
       }
     );
 
@@ -17597,17 +17926,14 @@ function createAtriumActions() {
       const { owner2faVerifier: _omitVerifier, ...safePolicy } = p;
       sanitizedPolicies[k] = safePolicy;
     }
-    return JSON.stringify(
-      {
-        ...globalState,
-        securityPolicyByBusiness: sanitizedPolicies,
-        storageVersion: ATRIUM_STORAGE_VERSION,
-        exportedAt: new Date().toISOString(),
-        version: 'atrium_v2_full',
-      },
-      null,
-      2
-    );
+    const sanitized = scrubPlatformSecretsForBackup({
+      ...globalState,
+      securityPolicyByBusiness: sanitizedPolicies,
+      storageVersion: ATRIUM_STORAGE_VERSION,
+      exportedAt: new Date().toISOString(),
+      version: 'atrium_v2_full',
+    });
+    return JSON.stringify(sanitized, null, 2);
   };
 
   const importDatabase = (jsonString: string): boolean => {
@@ -17691,6 +18017,31 @@ function createAtriumActions() {
       sensitiveReadEvents: Array.isArray(parsed.sensitiveReadEvents)
         ? parsed.sensitiveReadEvents
         : [],
+      platformApprovalRules: Array.isArray(parsed.platformApprovalRules)
+        ? parsed.platformApprovalRules
+        : [],
+      platformApprovalRequests: Array.isArray(parsed.platformApprovalRequests)
+        ? parsed.platformApprovalRequests
+        : [],
+      platformAttachments: Array.isArray(parsed.platformAttachments)
+        ? parsed.platformAttachments
+        : [],
+      platformCustomFields: Array.isArray(parsed.platformCustomFields)
+        ? parsed.platformCustomFields
+        : [],
+      platformPrintTemplates: Array.isArray(parsed.platformPrintTemplates)
+        ? parsed.platformPrintTemplates
+        : [],
+      platformApiKeys: Array.isArray(parsed.platformApiKeys) ? parsed.platformApiKeys : [],
+      platformWebhooks: Array.isArray(parsed.platformWebhooks) ? parsed.platformWebhooks : [],
+      platformWebhookDeliveries: Array.isArray(parsed.platformWebhookDeliveries)
+        ? parsed.platformWebhookDeliveries
+        : [],
+      biKpiDefinitions: Array.isArray(parsed.biKpiDefinitions) ? parsed.biKpiDefinitions : [],
+      biSavedReports: Array.isArray(parsed.biSavedReports) ? parsed.biSavedReports : [],
+      biReportSnapshots: Array.isArray(parsed.biReportSnapshots) ? parsed.biReportSnapshots : [],
+      memberFreezeLogs: Array.isArray(parsed.memberFreezeLogs) ? parsed.memberFreezeLogs : [],
+      trainerCommissions: Array.isArray(parsed.trainerCommissions) ? parsed.trainerCommissions : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -24766,6 +25117,898 @@ function createAtriumActions() {
     return event;
   };
 
+  // ============================================================================
+  // PHASE 2 STEP 8 (6.9): APPROVALS, ATTACHMENTS, CUSTOM FIELDS, API & WEBHOOKS
+  // ============================================================================
+  const ephemeralWebhookSecretCache = new Map<string, string>();
+
+  const savePlatformApprovalRule = (input: {
+    actionScope: ApprovalActionScope;
+    ruleName: string;
+    thresholdCentimes: number;
+    thresholdPercent?: number | null;
+    approverRoles?: string[];
+    requireDualControl?: boolean;
+    isActive?: boolean;
+  }): PlatformApprovalRule => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for savePlatformApprovalRule');
+
+    const existingRules = selectCurrentPlatformApprovalRulesFromState(globalState);
+    const existing = existingRules.find((r) => r.actionScope === input.actionScope);
+    const nowIso = new Date().toISOString();
+    const rule: PlatformApprovalRule = {
+      id: existing?.id || `apr_rule_${businessId}_${input.actionScope}`,
+      accountId,
+      businessId,
+      branchId: globalState.currentBranchId || undefined,
+      actionScope: input.actionScope,
+      ruleName: input.ruleName.trim() || existing?.ruleName || input.actionScope,
+      thresholdCentimes: Math.max(0, Math.round(input.thresholdCentimes)),
+      thresholdPercent: input.thresholdPercent ?? null,
+      approverRoles:
+        input.approverRoles && input.approverRoles.length > 0
+          ? input.approverRoles
+          : existing?.approverRoles || ['owner'],
+      requireDualControl: input.requireDualControl ?? existing?.requireDualControl ?? true,
+      isActive: input.isActive ?? existing?.isActive ?? true,
+      updatedByStaffId: globalState.currentUser?.id,
+      version: (existing?.version ?? 0) + 1,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    const otherRules = (globalState.platformApprovalRules || []).filter(
+      (r) => !(r.businessId === businessId && r.actionScope === input.actionScope)
+    );
+    globalState = {
+      ...globalState,
+      platformApprovalRules: [rule, ...otherRules],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertApprovalRule(rule, globalState.currentUser?.id).catch(() => {});
+    }
+    return rule;
+  };
+
+  const submitPlatformApprovalRequest = (input: {
+    actionScope: ApprovalActionScope;
+    entityType: string;
+    entityId: string;
+    entityLabel: string;
+    amountCentimes: number;
+    percentDelta?: number | null;
+    reason: string;
+  }): { request: PlatformApprovalRequest; ruleMatched: boolean } => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) {
+      throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for submitPlatformApprovalRequest');
+    }
+
+    const rules = selectCurrentPlatformApprovalRulesFromState(globalState);
+    const evalRes = evaluateApprovalRequirement({
+      rules,
+      actionScope: input.actionScope,
+      amountCentimes: input.amountCentimes,
+      percentDelta: input.percentDelta,
+    });
+    const nowIso = new Date().toISOString();
+    const request: PlatformApprovalRequest = {
+      id: `apr_req_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      branchId: globalState.currentBranchId || undefined,
+      ruleId: evalRes.matchedRule?.id || null,
+      actionScope: input.actionScope,
+      entityType: input.entityType.trim() || 'invoice',
+      entityId: input.entityId.trim() || `ENT-${Date.now()}`,
+      entityLabel: input.entityLabel.trim() || input.entityId.trim() || 'Pending Request',
+      amountCentimes: Math.max(0, Math.round(input.amountCentimes)),
+      percentDelta: input.percentDelta ?? null,
+      reason: input.reason.trim() || 'Approval required by policy',
+      status: 'pending',
+      requestedByStaffId: globalState.currentUser?.id,
+      requestedByName: globalState.currentUser?.fullName || globalState.currentUser?.role || 'Staff',
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      platformApprovalRequests: [request, ...(globalState.platformApprovalRequests || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertApprovalRequest(request).catch(() => {});
+    }
+    return { request, ruleMatched: evalRes.required };
+  };
+
+  const decidePlatformApprovalRequest = (input: {
+    requestId: string;
+    decision: 'approved' | 'rejected' | 'cancelled';
+    decisionNote?: string;
+    allowSoleOwnerFallback?: boolean;
+  }): { ok: true; request: PlatformApprovalRequest } | { ok: false; reasonCode: string } => {
+    const req = (globalState.platformApprovalRequests || []).find((r) => r.id === input.requestId);
+    if (!req) return { ok: false, reasonCode: 'APPROVAL_REQUEST_NOT_FOUND' };
+
+    const rules = selectCurrentPlatformApprovalRulesFromState(globalState);
+    const rule = rules.find((r) => r.id === req.ruleId || r.actionScope === req.actionScope);
+    const deciderRole = normalizeRbacRole(
+      getEffectiveUserRole(selectCurrentBusinessFromState(globalState).category, globalState)
+    );
+    const check = validateApprovalDecision({
+      request: req,
+      rule,
+      deciderStaffId: globalState.currentUser?.id,
+      deciderRole,
+      decision: input.decision,
+      allowSoleOwnerFallback: input.allowSoleOwnerFallback,
+    });
+    if (!check.ok) {
+      return { ok: false, reasonCode: check.reasonCode };
+    }
+
+    const nowIso = new Date().toISOString();
+    const updated: PlatformApprovalRequest = {
+      ...req,
+      status: input.decision,
+      decidedByStaffId: globalState.currentUser?.id,
+      decidedByName: globalState.currentUser?.fullName || deciderRole,
+      decisionNote: input.decisionNote?.trim() || req.decisionNote,
+      decidedAt: nowIso,
+      updatedAt: nowIso,
+      version: (req.version ?? 1) + 1,
+    };
+
+    globalState = {
+      ...globalState,
+      platformApprovalRequests: (globalState.platformApprovalRequests || []).map((r) =>
+        r.id === req.id ? updated : r
+      ),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      platformGovernanceService
+        .decideApproval({
+          requestId: req.id,
+          decision: input.decision,
+          note: input.decisionNote,
+        })
+        .catch(() => {});
+    }
+    return { ok: true, request: updated };
+  };
+
+  const registerPlatformAttachment = (input: {
+    entityType: string;
+    entityId: string;
+    entityLabel: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    contentDigestSource?: string;
+    virusScanStatus?: VirusScanStatus;
+    retentionDays?: number;
+    legalHold?: boolean;
+    eSignatureDataUrl?: string;
+    customMetadata?: Record<string, any>;
+  }): { ok: true; attachment: PlatformAttachmentRecord } | { ok: false; errorCode: string } => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) {
+      throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for registerPlatformAttachment');
+    }
+
+    const valid = validateAttachmentUpload({
+      fileName: input.fileName,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+      virusScanStatus: input.virusScanStatus ?? 'clean',
+    });
+    if (!valid.ok) {
+      return { ok: false, errorCode: valid.errorCode };
+    }
+
+    const nowIso = new Date().toISOString();
+    const storagePath = buildTenantStoragePath({
+      accountId,
+      businessId,
+      entityType: input.entityType || 'document',
+      entityId: input.entityId || 'unlinked',
+      fileName: input.fileName,
+    });
+    const draftAtt: PlatformAttachmentRecord = {
+      id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      branchId: globalState.currentBranchId || undefined,
+      entityType: input.entityType.trim() || 'invoice',
+      entityId: input.entityId.trim() || 'unlinked',
+      entityLabel: input.entityLabel.trim() || input.fileName,
+      bucket: 'platform-attachments',
+      storagePath,
+      fileName: input.fileName.trim(),
+      mimeType: input.mimeType,
+      sizeBytes: Math.round(input.sizeBytes),
+      sha256: sha256Hex(input.contentDigestSource || `${storagePath}:${input.sizeBytes}`),
+      virusScanStatus: input.virusScanStatus ?? 'clean',
+      retentionDays: Math.max(7, Math.min(36500, Math.round(input.retentionDays ?? 1825))),
+      legalHold: Boolean(input.legalHold),
+      eSignatureDataUrl: input.eSignatureDataUrl,
+      customMetadata: input.customMetadata || {},
+      uploadedByStaffId: globalState.currentUser?.id,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const signed = generateSignedAttachmentAccess({ attachment: draftAtt, ttlSeconds: 900 });
+    const attachment: PlatformAttachmentRecord = {
+      ...draftAtt,
+      signedUrlToken: signed.token,
+      signedUrlExpiresAt: signed.expiresAt,
+    };
+
+    globalState = {
+      ...globalState,
+      platformAttachments: [attachment, ...(globalState.platformAttachments || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertAttachment(attachment).catch(() => {});
+    }
+    return { ok: true, attachment };
+  };
+
+  const toggleAttachmentLegalHold = (attachmentId: string): PlatformAttachmentRecord | null => {
+    const existing = (globalState.platformAttachments || []).find((a) => a.id === attachmentId);
+    if (!existing) return null;
+    const nowIso = new Date().toISOString();
+    const updated: PlatformAttachmentRecord = {
+      ...existing,
+      legalHold: !existing.legalHold,
+      updatedAt: nowIso,
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      platformAttachments: (globalState.platformAttachments || []).map((a) =>
+        a.id === attachmentId ? updated : a
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertAttachment(updated).catch(() => {});
+    }
+    return updated;
+  };
+
+  const issueAttachmentSignedUrl = (input: {
+    attachmentId: string;
+    ttlSeconds?: number;
+  }): { ok: true; signedUrl: string; expiresAt: string } | { ok: false; errorCode: string } => {
+    const existing = (globalState.platformAttachments || []).find((a) => a.id === input.attachmentId);
+    if (!existing || existing.purgedAt || existing.deletedAt) {
+      return { ok: false, errorCode: 'ATTACHMENT_NOT_FOUND' };
+    }
+    if (existing.virusScanStatus === 'quarantined') {
+      return { ok: false, errorCode: 'ATTACHMENT_QUARANTINED_MALWARE' };
+    }
+    const signed = generateSignedAttachmentAccess({
+      attachment: existing,
+      ttlSeconds: input.ttlSeconds ?? 900,
+    });
+    const updated: PlatformAttachmentRecord = {
+      ...existing,
+      signedUrlToken: signed.token,
+      signedUrlExpiresAt: signed.expiresAt,
+      updatedAt: new Date().toISOString(),
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      platformAttachments: (globalState.platformAttachments || []).map((a) =>
+        a.id === existing.id ? updated : a
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertAttachment(updated).catch(() => {});
+    }
+    return { ok: true, signedUrl: signed.signedUrl, expiresAt: signed.expiresAt };
+  };
+
+  const purgePlatformAttachment = (
+    attachmentId: string
+  ): { ok: true } | { ok: false; reasonCode: string } => {
+    const existing = (globalState.platformAttachments || []).find((a) => a.id === attachmentId);
+    if (!existing) return { ok: false, reasonCode: 'ATTACHMENT_NOT_FOUND' };
+    const check = canPurgeAttachment(existing);
+    if (!check.allowed) {
+      return { ok: false, reasonCode: check.reasonCode || 'PURGE_BLOCKED' };
+    }
+    const nowIso = new Date().toISOString();
+    globalState = {
+      ...globalState,
+      platformAttachments: (globalState.platformAttachments || []).map((a) =>
+        a.id === attachmentId
+          ? { ...a, purgedAt: nowIso, deletedAt: nowIso, updatedAt: nowIso, version: (a.version ?? 1) + 1 }
+          : a
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.purgeAttachment(attachmentId).catch(() => {});
+    }
+    return { ok: true };
+  };
+
+  const upsertPlatformCustomField = (input: {
+    entityType: string;
+    fieldKey: string;
+    labelEn: string;
+    labelFr?: string;
+    labelAr?: string;
+    fieldType: PlatformCustomFieldType;
+    options?: string[];
+    isRequired?: boolean;
+    isActive?: boolean;
+  }): PlatformCustomField => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for upsertPlatformCustomField');
+
+    const cleanKey = validateCustomFieldKey(input.fieldKey) || `field_${Date.now()}`;
+    const existing = (globalState.platformCustomFields || []).find(
+      (f) => f.businessId === businessId && f.entityType === input.entityType && f.fieldKey === cleanKey && !f.deletedAt
+    );
+    const nowIso = new Date().toISOString();
+    const cf: PlatformCustomField = {
+      id: existing?.id || `cf_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      entityType: input.entityType,
+      fieldKey: cleanKey,
+      labelEn: input.labelEn.trim() || cleanKey,
+      labelFr: (input.labelFr || input.labelEn).trim() || cleanKey,
+      labelAr: (input.labelAr || input.labelEn).trim() || cleanKey,
+      fieldType: input.fieldType,
+      options: input.options || [],
+      isRequired: Boolean(input.isRequired),
+      isActive: input.isActive ?? true,
+      version: (existing?.version ?? 0) + 1,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    const others = (globalState.platformCustomFields || []).filter((f) => f.id !== cf.id);
+    globalState = {
+      ...globalState,
+      platformCustomFields: [cf, ...others],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertCustomField(cf).catch(() => {});
+    }
+    return cf;
+  };
+
+  const upsertPlatformPrintTemplate = (input: {
+    docType: PrintTemplateDocType;
+    headerNote?: string;
+    footerNote?: string;
+    accentColor?: string;
+    showQr?: boolean;
+    showStamp?: boolean;
+    showSignature?: boolean;
+    rtlMirrorLayout?: boolean;
+  }): PlatformPrintTemplate => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for upsertPlatformPrintTemplate');
+
+    const existing =
+      (globalState.platformPrintTemplates || []).find(
+        (t) => t.businessId === businessId && t.docType === input.docType && !t.deletedAt
+      ) || buildDefaultPrintTemplate({ accountId, businessId, docType: input.docType });
+
+    const nowIso = new Date().toISOString();
+    const tpl: PlatformPrintTemplate = {
+      ...existing,
+      headerNote: input.headerNote ?? existing.headerNote ?? '',
+      footerNote: input.footerNote ?? existing.footerNote ?? '',
+      accentColor: input.accentColor ?? existing.accentColor ?? '#D4522F',
+      showQr: input.showQr ?? existing.showQr,
+      showStamp: input.showStamp ?? existing.showStamp,
+      showSignature: input.showSignature ?? existing.showSignature,
+      rtlMirrorLayout: input.rtlMirrorLayout ?? existing.rtlMirrorLayout,
+      version: (existing.version ?? 0) + 1,
+      updatedAt: nowIso,
+    };
+    const others = (globalState.platformPrintTemplates || []).filter((t) => t.id !== tpl.id);
+    globalState = {
+      ...globalState,
+      platformPrintTemplates: [tpl, ...others],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertPrintTemplate(tpl).catch(() => {});
+    }
+    return tpl;
+  };
+
+  const createPlatformApiKey = (input: {
+    label: string;
+    scopes: PlatformApiScope[];
+    rateLimitPerMinute?: number;
+    expiresInDays?: number | null;
+  }): { plaintextToken: string; record: PlatformApiKey } => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for createPlatformApiKey');
+
+    const issued = issuePlatformApiKeyPair({
+      accountId,
+      businessId,
+      branchId: globalState.currentBranchId || undefined,
+      label: input.label,
+      scopes: input.scopes,
+      rateLimitPerMinute: input.rateLimitPerMinute,
+      expiresInDays: input.expiresInDays,
+      createdByStaffId: globalState.currentUser?.id,
+    });
+    globalState = {
+      ...globalState,
+      platformApiKeys: [issued.record, ...(globalState.platformApiKeys || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertApiKey(issued.record).catch(() => {});
+    }
+    return issued;
+  };
+
+  const revokePlatformApiKey = (apiKeyId: string): PlatformApiKey | null => {
+    const existing = (globalState.platformApiKeys || []).find((k) => k.id === apiKeyId);
+    if (!existing) return null;
+    const nowIso = new Date().toISOString();
+    const updated: PlatformApiKey = {
+      ...existing,
+      status: 'revoked',
+      revokedAt: nowIso,
+      updatedAt: nowIso,
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      platformApiKeys: (globalState.platformApiKeys || []).map((k) =>
+        k.id === apiKeyId ? updated : k
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertApiKey(updated).catch(() => {});
+    }
+    return updated;
+  };
+
+  const createPlatformWebhook = (input: {
+    label: string;
+    endpointUrl: string;
+    subscribedEvents: PlatformWebhookEventType[];
+    maxRetries?: number;
+  }): { ok: true; webhook: PlatformWebhook; plaintextSecret: string } | { ok: false; errorCode: string } => {
+    const accountId = requireTenantAccountId(globalState.account?.id);
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required for createPlatformWebhook');
+
+    if (!isValidWebhookEndpointUrl(input.endpointUrl)) {
+      return { ok: false, errorCode: 'INVALID_WEBHOOK_URL' };
+    }
+    const sec = issueWebhookEndpointSecret();
+    const nowIso = new Date().toISOString();
+    const webhook: PlatformWebhook = {
+      id: `whk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      branchId: globalState.currentBranchId || undefined,
+      label: input.label.trim() || 'Outbound Webhook',
+      endpointUrl: input.endpointUrl.trim(),
+      subscribedEvents:
+        input.subscribedEvents.length > 0 ? [...new Set(input.subscribedEvents)] : ['invoice.issued'],
+      signingSecretMasked: sec.maskedSecret,
+      signingSecretHash: sec.secretHash,
+      status: 'active',
+      maxRetries: Math.max(1, Math.min(10, Math.round(input.maxRetries ?? 5))),
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    ephemeralWebhookSecretCache.set(webhook.id, sec.plaintextSecret);
+
+    globalState = {
+      ...globalState,
+      platformWebhooks: [webhook, ...(globalState.platformWebhooks || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertWebhook(webhook).catch(() => {});
+    }
+    return { ok: true, webhook, plaintextSecret: sec.plaintextSecret };
+  };
+
+  const togglePlatformWebhookStatus = (webhookId: string): PlatformWebhook | null => {
+    const existing = (globalState.platformWebhooks || []).find((w) => w.id === webhookId);
+    if (!existing) return null;
+    const nowIso = new Date().toISOString();
+    const updated: PlatformWebhook = {
+      ...existing,
+      status: existing.status === 'active' ? 'paused' : 'active',
+      updatedAt: nowIso,
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      platformWebhooks: (globalState.platformWebhooks || []).map((w) =>
+        w.id === webhookId ? updated : w
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.upsertWebhook(updated).catch(() => {});
+    }
+    return updated;
+  };
+
+  const triggerWebhookDelivery = (input: {
+    webhookId: string;
+    eventType: PlatformWebhookEventType;
+    payloadJson?: Record<string, any>;
+    idempotencyKey?: string;
+    simulateHttpStatus?: number;
+  }): PlatformWebhookDelivery | null => {
+    const wh = (globalState.platformWebhooks || []).find((w) => w.id === input.webhookId && !w.deletedAt);
+    if (!wh) return null;
+
+    const idem = input.idempotencyKey || `idem_${wh.id}_${input.eventType}_${Date.now()}`;
+    const existing = (globalState.platformWebhookDeliveries || []).find(
+      (d) => d.webhookId === wh.id && d.idempotencyKey === idem && !d.deletedAt
+    );
+    if (existing) return existing;
+
+    const payload = input.payloadJson || {
+      event: input.eventType,
+      businessId: wh.businessId,
+      occurredAt: new Date().toISOString(),
+      sample: true,
+    };
+    const signingKey = ephemeralWebhookSecretCache.get(wh.id) || wh.signingSecretHash;
+    const signatureHeader = buildWebhookSignatureHeader({
+      secret: signingKey,
+      payloadJson: payload,
+    });
+    const httpStatus = input.simulateHttpStatus ?? 200;
+    const retryState = computeWebhookRetryState({
+      attemptCount: 1,
+      maxRetries: wh.maxRetries,
+      httpStatus,
+    });
+    const nowIso = new Date().toISOString();
+    const delivery: PlatformWebhookDelivery = {
+      id: `whd_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: wh.accountId,
+      businessId: wh.businessId,
+      branchId: wh.branchId,
+      webhookId: wh.id,
+      eventType: input.eventType,
+      idempotencyKey: idem,
+      payloadJson: payload,
+      signatureHeader,
+      status: retryState.status,
+      attemptCount: 1,
+      httpStatus,
+      responseSnippet: httpStatus >= 200 && httpStatus < 300 ? '200 OK (Signed HMAC-SHA256)' : `HTTP ${httpStatus}`,
+      nextRetryAt: retryState.nextRetryAt,
+      deliveredAt: retryState.deliveredAt,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      platformWebhookDeliveries: [delivery, ...(globalState.platformWebhookDeliveries || [])].slice(0, 200),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      platformGovernanceService.recordWebhookDelivery(delivery).catch(() => {});
+    }
+    return delivery;
+  };
+
+  const retryWebhookDelivery = (input: {
+    deliveryId: string;
+    simulateHttpStatus?: number;
+  }): PlatformWebhookDelivery | null => {
+    const existing = (globalState.platformWebhookDeliveries || []).find(
+      (d) => d.id === input.deliveryId && !d.deletedAt
+    );
+    if (!existing) return null;
+    const wh = (globalState.platformWebhooks || []).find((w) => w.id === existing.webhookId);
+    const maxRetries = wh?.maxRetries ?? 5;
+    const nextAttempt = existing.attemptCount + 1;
+    const httpStatus = input.simulateHttpStatus ?? 200;
+    const retryState = computeWebhookRetryState({
+      attemptCount: nextAttempt,
+      maxRetries,
+      httpStatus,
+    });
+    const updated: PlatformWebhookDelivery = {
+      ...existing,
+      status: retryState.status,
+      attemptCount: nextAttempt,
+      httpStatus,
+      responseSnippet: httpStatus >= 200 && httpStatus < 300 ? '200 OK (Retried)' : `HTTP ${httpStatus}`,
+      nextRetryAt: retryState.nextRetryAt,
+      deliveredAt: retryState.deliveredAt,
+      updatedAt: new Date().toISOString(),
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      platformWebhookDeliveries: (globalState.platformWebhookDeliveries || []).map((d) =>
+        d.id === existing.id ? updated : d
+      ),
+    };
+    notify();
+    return updated;
+  };
+
+  // Phase 2 Step 9 (6.10): Unified BI KPI Registry & Cross-Vertical Reports Actions
+  const upsertBiKpiDefinition = (input: {
+    kpiCode: string;
+    targetValue: number | null;
+    isActive?: boolean;
+  }): BiKpiDefinition => {
+    const accountId = requireTenantAccountId(globalState.account?.id, 'upsertBiKpiDefinition');
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required');
+
+    const currentDefs = selectCurrentBiKpiDefinitionsFromState(globalState);
+    const baseDef = currentDefs.find((d) => d.kpiCode === input.kpiCode);
+    const nowIso = new Date().toISOString();
+
+    const updated: BiKpiDefinition = baseDef
+      ? {
+          ...baseDef,
+          businessId,
+          targetValue: input.targetValue,
+          isActive: input.isActive !== undefined ? input.isActive : baseDef.isActive,
+          version: (baseDef.version ?? 1) + 1,
+          updatedAt: nowIso,
+        }
+      : {
+          id: `bikpi_${businessId}_${input.kpiCode}`,
+          accountId,
+          businessId,
+          kpiCode: input.kpiCode,
+          category: 'operations',
+          labelEn: input.kpiCode,
+          labelFr: input.kpiCode,
+          labelAr: input.kpiCode,
+          formulaSpec: 'Custom KPI metric',
+          unitType: 'centimes',
+          sourceTables: ['unified_documents'],
+          targetValue: input.targetValue,
+          isActive: input.isActive !== false,
+          version: 1,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+    const existingList = globalState.biKpiDefinitions || [];
+    const existsInState = existingList.some(
+      (d) => d.businessId === businessId && d.kpiCode === updated.kpiCode && !d.deletedAt
+    );
+
+    globalState = {
+      ...globalState,
+      biKpiDefinitions: existsInState
+        ? existingList.map((d) =>
+            d.businessId === businessId && d.kpiCode === updated.kpiCode && !d.deletedAt ? updated : d
+          )
+        : [updated, ...existingList],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      biService.upsertKpiDefinition(updated).catch(() => {});
+    }
+    return updated;
+  };
+
+  const saveBiReportConfig = (input: {
+    id?: string;
+    title: string;
+    reportType: BiReportType;
+    kpiCodes: string[];
+    dateRangePreset: BiDateRangePreset;
+    comparePreviousPeriod?: boolean;
+    branchId?: string;
+    scheduleCron?: string | null;
+    scheduleRecipientsRaw?: string;
+  }):
+    | { ok: true; report: BiSavedReport }
+    | { ok: false; errorCode: 'EMPTY_TITLE' | 'INVALID_RECIPIENT_EMAIL'; invalidEmails?: string[] } => {
+    const accountId = requireTenantAccountId(globalState.account?.id, 'saveBiReportConfig');
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required');
+
+    const title = input.title.trim();
+    if (!title) {
+      return { ok: false, errorCode: 'EMPTY_TITLE' };
+    }
+
+    const { validEmails, invalidEmails } = validateBiScheduleRecipients(input.scheduleRecipientsRaw || '');
+    if (invalidEmails.length > 0) {
+      return { ok: false, errorCode: 'INVALID_RECIPIENT_EMAIL', invalidEmails };
+    }
+
+    const existing = input.id
+      ? (globalState.biSavedReports || []).find((r) => r.id === input.id && !r.deletedAt)
+      : undefined;
+    const nowIso = new Date().toISOString();
+
+    const report: BiSavedReport = {
+      id: existing?.id || `birep_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      branchId: input.branchId && input.branchId !== 'all' ? input.branchId : undefined,
+      title,
+      reportType: input.reportType,
+      kpiCodes: input.kpiCodes.length > 0 ? input.kpiCodes : ['gross_invoiced_revenue', 'cash_collections'],
+      dateRangePreset: input.dateRangePreset,
+      comparePreviousPeriod: input.comparePreviousPeriod !== false,
+      scheduleCron: input.scheduleCron || undefined,
+      scheduleRecipients: validEmails,
+      lastDispatchedAt: existing?.lastDispatchedAt,
+      createdByStaffId: existing?.createdByStaffId || globalState.currentUser?.id || undefined,
+      version: existing ? (existing.version ?? 1) + 1 : 1,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      biSavedReports: existing
+        ? (globalState.biSavedReports || []).map((r) => (r.id === report.id ? report : r))
+        : [report, ...(globalState.biSavedReports || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      biService.upsertSavedReport(report).catch(() => {});
+    }
+    return { ok: true, report };
+  };
+
+  const deleteBiSavedReport = (reportId: string): boolean => {
+    const existing = (globalState.biSavedReports || []).find((r) => r.id === reportId && !r.deletedAt);
+    if (!existing) return false;
+    const nowIso = new Date().toISOString();
+    const tombstoned: BiSavedReport = {
+      ...existing,
+      deletedAt: nowIso,
+      updatedAt: nowIso,
+      version: (existing.version ?? 1) + 1,
+    };
+    globalState = {
+      ...globalState,
+      biSavedReports: (globalState.biSavedReports || []).map((r) =>
+        r.id === reportId ? tombstoned : r
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      biService.upsertSavedReport(tombstoned).catch(() => {});
+    }
+    return true;
+  };
+
+  const generateBiReportSnapshot = (input: {
+    title?: string;
+    reportId?: string;
+    preset: BiDateRangePreset;
+    customStart?: string;
+    customEnd?: string;
+    branchIdFilter?: string;
+  }): BiReportSnapshot => {
+    const accountId = requireTenantAccountId(globalState.account?.id, 'generateBiReportSnapshot');
+    const businessId = globalState.currentBusinessId || '';
+    if (!businessId) throw new TenantContextMissingError('TENANT_CONTEXT_MISSING: businessId required');
+
+    const definitions = selectCurrentBiKpiDefinitionsFromState(globalState);
+    const evaluated = evaluateBiKpiRegistry({
+      accountId,
+      businessId,
+      branchIdFilter: input.branchIdFilter,
+      branches: globalState.branches || [],
+      definitions,
+      unifiedDocuments: globalState.unifiedDocuments || [],
+      unifiedPayments: globalState.unifiedPayments || [],
+      sales: globalState.sales || [],
+      products: globalState.products || [],
+      wmsStockLots: globalState.wmsStockLots || [],
+      payrollRuns: globalState.staffPayrollRuns || [],
+      attendanceLogs: globalState.staffAttendanceLogs || [],
+      purchaseDocs: globalState.purchaseDocs || [],
+      pmExpenses: globalState.pmExpenses || [],
+      freelanceExpenses: globalState.freelanceExpenses || [],
+      scfJournalEntries: globalState.journalEntries || [],
+      preset: input.preset,
+      customStart: input.customStart,
+      customEnd: input.customEnd,
+    });
+
+    const nowIso = new Date().toISOString();
+    const linkedReport = input.reportId
+      ? (globalState.biSavedReports || []).find((r) => r.id === input.reportId && !r.deletedAt)
+      : undefined;
+
+    const snapshot: BiReportSnapshot = {
+      id: `bisnp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId,
+      businessId,
+      branchId:
+        input.branchIdFilter && input.branchIdFilter !== 'all' ? input.branchIdFilter : undefined,
+      reportId: linkedReport?.id,
+      title: input.title?.trim() || linkedReport?.title || `Executive BI (${input.preset.toUpperCase()})`,
+      periodStart: evaluated.bounds.periodStart,
+      periodEnd: evaluated.bounds.periodEnd,
+      previousPeriodStart: evaluated.bounds.previousPeriodStart,
+      previousPeriodEnd: evaluated.bounds.previousPeriodEnd,
+      metricsJson: evaluated.metricsByCode,
+      branchBreakdownJson: evaluated.branchComparison,
+      agingBucketsJson: evaluated.agingBuckets,
+      generatedByStaffId: globalState.currentUser?.id || undefined,
+      version: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const nextReports = linkedReport
+      ? (globalState.biSavedReports || []).map((r) =>
+          r.id === linkedReport.id
+            ? {
+                ...r,
+                lastDispatchedAt: nowIso,
+                updatedAt: nowIso,
+                version: (r.version ?? 1) + 1,
+              }
+            : r
+        )
+      : globalState.biSavedReports || [];
+
+    globalState = {
+      ...globalState,
+      biReportSnapshots: [snapshot, ...(globalState.biReportSnapshots || [])].slice(0, 120),
+      biSavedReports: nextReports,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      biService.recordReportSnapshot(snapshot).catch(() => {});
+    }
+    return snapshot;
+  };
+
   return {
     setScreen,
     setTheme,
@@ -24798,8 +26041,18 @@ function createAtriumActions() {
     openShopForMember,
     clearPendingShopMember,
     enrollMemberInClass,
+    cancelClassEnrollment,
     confirmScheduleCoach,
     duplicateScheduleWeek,
+    toggleMemberAutoRenew,
+    updateMemberFamilyGroup,
+    freezeMemberSubscription,
+    resumeMemberSubscription,
+    switchMemberPlanMidCycle,
+    refundMemberUnusedSessions,
+    runAutoRenewalsForEligibleMembers,
+    recordTrainerCommission,
+    postTrainerCommissionsToPayroll,
     createStaffMember,
     updateStaffMember,
     freezeStaffMember,
@@ -25105,6 +26358,25 @@ function createAtriumActions() {
     createDataSubjectRequest,
     processDataSubjectRequestAction,
     recordSensitiveDataRead,
+    savePlatformApprovalRule,
+    submitPlatformApprovalRequest,
+    decidePlatformApprovalRequest,
+    registerPlatformAttachment,
+    toggleAttachmentLegalHold,
+    issueAttachmentSignedUrl,
+    purgePlatformAttachment,
+    upsertPlatformCustomField,
+    upsertPlatformPrintTemplate,
+    createPlatformApiKey,
+    revokePlatformApiKey,
+    createPlatformWebhook,
+    togglePlatformWebhookStatus,
+    triggerWebhookDelivery,
+    retryWebhookDelivery,
+    upsertBiKpiDefinition,
+    saveBiReportConfig,
+    deleteBiSavedReport,
+    generateBiReportSnapshot,
   };
 }
 
@@ -25154,6 +26426,8 @@ export function useAtriumStore() {
   const currentSales = selectCurrentSalesFromState(state);
   const currentSchedule = selectCurrentScheduleFromState(state);
   const currentClassEnrollments = selectCurrentClassEnrollmentsFromState(state);
+  const currentMemberFreezeLogs = selectCurrentMemberFreezeLogsFromState(state);
+  const currentTrainerCommissions = selectCurrentTrainerCommissionsFromState(state);
   const currentPlans = selectCurrentPlansFromState(state);
   const currentAppointments = selectCurrentAppointmentsFromState(state);
   const currentServices = selectCurrentServicesFromState(state);
@@ -25291,6 +26565,8 @@ export function useAtriumStore() {
     sales: currentSales,
     schedule: currentSchedule,
     classEnrollments: currentClassEnrollments,
+    memberFreezeLogs: currentMemberFreezeLogs,
+    trainerCommissions: currentTrainerCommissions,
     pendingShopMemberId: state.pendingShopMemberId || null,
     plans: currentPlans,
     appointments: currentAppointments,
@@ -25404,5 +26680,18 @@ export function useAtriumStore() {
     staffSalaryAdvances: state.staffSalaryAdvances || [],
     staffPayrollRuns: state.staffPayrollRuns || [],
     staffPayrollSlips: state.staffPayrollSlips || [],
+    // Phase 2 Step 8 (6.9) Collections
+    platformApprovalRules: selectCurrentPlatformApprovalRulesFromState(state),
+    platformApprovalRequests: selectCurrentPlatformApprovalRequestsFromState(state),
+    platformAttachments: selectCurrentPlatformAttachmentsFromState(state),
+    platformCustomFields: selectCurrentPlatformCustomFieldsFromState(state),
+    platformPrintTemplates: selectCurrentPlatformPrintTemplatesFromState(state),
+    platformApiKeys: selectCurrentPlatformApiKeysFromState(state),
+    platformWebhooks: selectCurrentPlatformWebhooksFromState(state),
+    platformWebhookDeliveries: selectCurrentPlatformWebhookDeliveriesFromState(state),
+    // Phase 2 Step 9 (6.10) BI Collections
+    biKpiDefinitions: selectCurrentBiKpiDefinitionsFromState(state),
+    biSavedReports: selectCurrentBiSavedReportsFromState(state),
+    biReportSnapshots: selectCurrentBiReportSnapshotsFromState(state),
   };
 }

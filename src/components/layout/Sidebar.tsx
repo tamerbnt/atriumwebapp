@@ -1938,6 +1938,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }
 
+  // Unified BI & Cross-Vertical Reports Injection Across All Categories
+  if (
+    canAccessRoute(category, permState, 'bi_reports') &&
+    !items.some((item) => item.id === 'bi_reports')
+  ) {
+    const biNavItem = {
+      id: 'bi_reports' as ActiveScreen,
+      icon: <BarChart2 size={19} />,
+      title: t('phase2_bi_nav', language),
+      label: t('phase2_bi_nav', language),
+    };
+    const settingsIndex = items.findIndex((item) => item.id === 'settings');
+    if (settingsIndex >= 0) {
+      items.splice(settingsIndex, 0, biNavItem);
+    } else {
+      items.push(biNavItem);
+    }
+  }
+
   return items.filter((item) => canAccessRoute(category, permState, item.id));
   }, [category, currentBusinessId, rbacPermissions, activePmRole, activeGarageRole, activeRealEstateRole,
      activeManufacturingRole, activeLegalRole, activeLogisticsRole,

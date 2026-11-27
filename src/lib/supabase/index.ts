@@ -38,3 +38,5 @@ export * from './services/reminderService';
 export * from './services/wmsService';
 export * from './services/importService';
 export * from './services/securityService';
+export * from './services/platformGovernanceService';
+export * from './services/biService';

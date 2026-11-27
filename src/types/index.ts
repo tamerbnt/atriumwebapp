@@ -156,6 +156,16 @@ export interface Member {
   balanceLabel?: string;
   segmentData?: Record<string, any>;
   lastVisitDate?: string;
+  autoRenew?: boolean;
+  billingCycleDays?: number;
+  familyGroupId?: string;
+  familyRole?: 'primary' | 'dependent';
+  frozenAt?: string;
+  freezeUntil?: string;
+  freezeDaysUsed?: number;
+  freezeFeeCentimes?: number;
+  freezeReason?: string;
+  qrToken?: string;
   version?: number;
   createdAt: string;
   updatedAt: string;
@@ -5537,6 +5547,174 @@ export interface PlatformWebhookDelivery {
   updatedAt: string;
   deletedAt?: string;
 }
+
+// ==========================================
+// PHASE 2 SECTION 6.10: UNIFIED BI KPI REGISTRY & CROSS-VERTICAL REPORTS
+// ==========================================
+
+export type BiKpiCategory =
+  | 'revenue'
+  | 'collections'
+  | 'receivables'
+  | 'inventory'
+  | 'workforce'
+  | 'operations';
+
+export type BiKpiUnitType = 'centimes' | 'count' | 'percent' | 'days';
+
+export type BiDateRangePreset = 'today' | '7d' | '30d' | '90d' | 'ytd' | 'custom';
+
+export type BiReportType =
+  | 'executive_overview'
+  | 'receivables_aging'
+  | 'inventory_valuation'
+  | 'workforce_payroll'
+  | 'branch_comparison';
+
+export interface BiKpiDefinition {
+  id: string;
+  accountId: string;
+  businessId?: string;
+  kpiCode: string;
+  category: BiKpiCategory;
+  labelEn: string;
+  labelFr: string;
+  labelAr: string;
+  formulaSpec: string;
+  unitType: BiKpiUnitType;
+  sourceTables: string[];
+  targetValue?: number | null;
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface BiKpiEvaluation {
+  kpiCode: string;
+  category: BiKpiCategory;
+  labelEn: string;
+  labelFr: string;
+  labelAr: string;
+  formulaSpec: string;
+  unitType: BiKpiUnitType;
+  sourceTables: string[];
+  currentValue: number;
+  previousValue: number;
+  deltaValue: number;
+  deltaPercent: number;
+  targetValue?: number | null;
+  trend: 'up' | 'down' | 'flat';
+}
+
+export type BiAgingBucketKey = 'current' | '1_30' | '31_60' | '61_90' | '90_plus';
+
+export interface BiAgingBucketSummary {
+  bucket: BiAgingBucketKey;
+  docCount: number;
+  amountCentimes: number;
+  sharePercent: number;
+}
+
+export interface BiBranchComparisonRow {
+  branchId: string;
+  branchName: string;
+  branchCode: string;
+  revenueCentimes: number;
+  collectionsCentimes: number;
+  receivablesCentimes: number;
+  expensesCentimes: number;
+  collectionRatePercent: number;
+  activeDocumentsCount: number;
+}
+
+export interface BiSavedReport {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  title: string;
+  reportType: BiReportType;
+  kpiCodes: string[];
+  dateRangePreset: BiDateRangePreset;
+  comparePreviousPeriod: boolean;
+  scheduleCron?: string;
+  scheduleRecipients: string[];
+  lastDispatchedAt?: string;
+  createdByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface BiReportSnapshot {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId?: string;
+  reportId?: string;
+  title: string;
+  periodStart: string;
+  periodEnd: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
+  metricsJson: Record<string, number>;
+  branchBreakdownJson: BiBranchComparisonRow[];
+  agingBucketsJson: BiAgingBucketSummary[];
+  generatedByStaffId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface MembershipFreezePolicy {
+  maxFreezeDaysPerCycle: number;
+  defaultFreezeFeeCentimes: number;
+  activeCheckInWindowMinutes: number;
+  autoExtendExpiryOnResume: boolean;
+}
+
+export interface GymMemberFreezeLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  memberId: string;
+  memberName?: string;
+  staffId?: string;
+  action: 'freeze' | 'resume';
+  daysFrozen: number;
+  feeCentimes: number;
+  extendedExpiryTo?: string;
+  duringActiveCheckInWindow: boolean;
+  overrideReason?: string;
+  recordedAt: string;
+  version?: number;
+}
+
+export interface GymTrainerCommission {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId: string;
+  staffName?: string;
+  memberId?: string;
+  scheduleEventId?: string;
+  sourceLabel: string;
+  grossAmountCentimes: number;
+  commissionRateBps: number;
+  commissionCentimes: number;
+  status: 'pending' | 'posted_to_payroll' | 'cancelled';
+  payrollRunId?: string;
+  earnedDate: string;
+  version?: number;
+}
+
+
 
 
 

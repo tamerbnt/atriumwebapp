@@ -200,6 +200,7 @@ import {
   LogisticsHistoryView,
   ContractorHistoryView,
   AgricultureHistoryView,
+  BiAnalyticsWorkspace,
 } from './components/screens/lazyScreens';
 import { ToastStack } from './components/ui/ToastStack';
 import { ScrollJumpPill } from './components/ui/ScrollJumpPill';
@@ -758,6 +759,10 @@ export default function App() {
           preferencesOnly={!permissionCtx.isExecutive}
         />
       );
+    }
+
+    if (resolvedScreen === 'bi_reports') {
+      return <BiAnalyticsWorkspace />;
     }
 
     if (resolvedScreen === 'staff') {

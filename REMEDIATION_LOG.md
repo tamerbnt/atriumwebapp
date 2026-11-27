@@ -614,5 +614,45 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Settings -> Security & RBAC` matrix role switching & live cell toggle (`staff` / `finance:view` -> `true`), owner lock cells disabled, `2FA & Session Policy` (`Begin 2FA Setup` masked secret + URI + 6 recovery codes), `Law 18-07 Aid & Audits` amber `"Configuration & Documentation Aid — Pending Legal Counsel Review"` disclaimer banner, and **`0` console errors / `0` console warnings**.
 - **Remaining Phase 2 Scope (`6.9`–`6.10`)**: Approvals, attachments/signed URLs, REST API & webhooks (`6.9`), and Unified BI KPI registry & reports (`6.10`) remain queued next.
 
+---
+
+## Phase 2 Step 8 — Platform Capabilities: Approvals, Attachments Vault, Custom Schema, Print Templates, Scoped API Keys & Signed Webhooks (`6.9`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270008_phase2_platform_approvals_attachments_api.sql` + `supabase/rollbacks/202611270008_phase2_platform_approvals_attachments_api.down.sql`.
+  - Created tenant/branch-isolated `platform_approval_rules`, `platform_approval_requests`, `platform_attachments` (with `platform-attachments` bucket provisioning guarded on `storage.buckets`), `platform_custom_fields`, `platform_print_templates`, `platform_api_keys` (storing `key_prefix` + SHA-256 `key_hash` only), `platform_webhooks` (masked secret + SHA-256 hash only), and `platform_webhook_deliveries`, all covered by RLS policies and audit triggers.
+  - Added transactional `SECURITY DEFINER` RPCs: `decide_platform_approval` (enforces `can_rbac` + `APPROVAL_SELF_DECISION_FORBIDDEN` maker-checker guard), `purge_expired_platform_attachment` (enforces `ATTACHMENT_LEGAL_HOLD_ACTIVE`), and `dispatch_webhook_delivery_idempotent` (deduplicates `(webhook_id, idempotency_key) WHERE deleted_at IS NULL`).
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 17) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (16/16).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/platformGovernanceEngine.ts` + `src/utils/platformGovernanceEngine.test.ts` (wired into `npm test`): Isomorphic SHA-256 & HMAC-SHA256 primitives, approval rule evaluation + strict dual-control check (with explicit opt-in sole-owner fallback), attachment MIME/extension/size/quarantine validator, signed URL token generator, retention + legal-hold purge gate, scoped `atr_live_*` API key issuer/verifier (scope & RPM enforcement), SSRF-hardened webhook endpoint validation (rejecting loopback, link-local, metadata, and RFC1918 targets) + `t=<ts>,v1=<sig>` HMAC verification + exponential retry/dead-letter engine, and `scrubPlatformSecretsForBackup`.
+  - `src/lib/supabase/services/platformGovernanceService.ts`, `src/lib/supabase/offlineQueue.ts`, and `src/services/store.ts` (`savePlatformApprovalRule`, `submitPlatformApprovalRequest`, `decidePlatformApprovalRequest`, `registerPlatformAttachment`, `toggleAttachmentLegalHold`, `issueAttachmentSignedUrl`, `purgePlatformAttachment`, `upsertPlatformCustomField`, `upsertPlatformPrintTemplate`, `createPlatformApiKey`, `revokePlatformApiKey`, `createPlatformWebhook`, `togglePlatformWebhookStatus`, `triggerWebhookDelivery`, `retryWebhookDelivery`) with `ephemeralWebhookSecretCache` & `exportDatabase()` secret scrubbing.
+  - `src/components/common/platform/PlatformGovernanceWorkspace.tsx` & `src/components/screens/SettingsScreen.tsx` (`platform_governance` tab) with 4 sub-tabs (`Approvals`, `Vault & Templates`, `REST API Keys`, `Webhooks`) and strict EN/FR/AR `phase2_plat_*` parity.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`lint_applet`) & `vite build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **166 / 166 passed** (7 suites, incl. `platformGovernanceEngine.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **43 / 43 files, 325 / 325 tests passed** (incl. `phase2PlatformGovernance.test.tsx` 4/4 and `migrationsAndRollbacks.test.ts` 16/16).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `Settings -> Platform & API` across all 4 sub-tabs (`Approvals` request submission + self-approval block toast, `Vault & Templates` PDF attachment registration + signed URL output, `REST API Keys` one-time secret reveal & masked SHA-256 card, `Webhooks` registration + `200 OK` HMAC delivery + `502` retrying entry), with **`0` console errors / `0` console warnings**.
+- **Remaining Phase 2 Scope (`6.10`)**: Unified BI KPI registry & reports (`6.10`) remains queued as the final step.
+
+---
+
+## Phase 2 Step 9 — Unified BI KPI Registry & Cross-Vertical Reports (`6.10`)
+
+- **Database Schema, RPCs & Rollback**: `supabase/migrations/202611270009_phase2_bi_kpi_registry.sql` + `supabase/rollbacks/202611270009_phase2_bi_kpi_registry.down.sql`.
+  - Created tenant/branch-isolated `bi_kpi_definitions` (with partial unique index `uq_bi_kpi_definitions_scope_code`), `bi_saved_reports` (report type, date preset, cron expression, recipients, and `last_dispatched_at`), and immutable `bi_report_snapshots` (evaluated metrics & aging JSON payloads, grand totals in centimes, and print snapshot metadata), all covered by RLS policies and audit triggers.
+  - Added `SECURITY DEFINER` RPC `record_bi_report_snapshot` enforcing business membership, `analytics:view` / executive access checks, and snapshot persistence + `last_dispatched_at` update.
+  - Extended `scripts/db/test_rls_rpc_triggers.sql` (Section 18) and `src/lib/supabase/__tests__/migrationsAndRollbacks.test.ts` (17/17).
+- **Application Services, Pure Engine & UI**:
+  - `src/utils/biKpiRegistry.ts` + `src/utils/biKpiRegistry.test.ts` (wired into `npm test`): Canonical cross-vertical KPI registry (`gross_invoiced_revenue`, `cash_collections`, `receivables_outstanding`, `collection_efficiency_pct`, `inventory_valuation_cmup`, `expiring_stock_risk`, `workforce_payroll_cost`, `operating_expenses_scf`, `net_operating_margin_pct`), non-double-counting revenue/collections aggregation across `UnifiedDocument`/`UnifiedPayment` and unbridged legacy `Sale` records, 5-bucket Receivables Aging (`0d`, `1–30d`, `31–60d`, `61–90d`, `90+d`), multi-branch comparison matrix, RFC-compliant CSV exporter (`buildBiReportCsv`), and printable A4 HTML generator (`buildBiReportPrintHtml`).
+  - `src/lib/supabase/services/biService.ts`, `src/lib/supabase/offlineQueue.ts` (entity sync priorities & `record_bi_report_snapshot` RPC priority), `src/utils/rbacEngine.ts` + `src/utils/routePermissions.ts` (`'bi_reports'` gated via `analytics:view` / executive check while leaving golden `routePermissions.test.ts` matrix Sets untouched), and `src/services/store.ts` (`upsertBiKpiDefinition`, `saveBiReportConfig`, `deleteBiSavedReport`, `generateBiReportSnapshot`, backup/import parity).
+  - `src/components/common/bi/BiAnalyticsWorkspace.tsx`, `src/components/screens/lazyScreens.ts`, `src/App.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/TopBar.tsx`, and `src/components/modals/CommandPaletteModal.tsx` with 4 sub-tabs (`Overview & Aging`, `Branch Comparison`, `KPI Registry`, `Scheduled Reports & Snapshots`), Blob CSV/A4 exports (zero `window.open`/`window.alert`), and strict EN/FR/AR `phase2_bi_*` parity.
+- **Verified Checks (Post-Final Edit)**:
+  - `npx tsc --noEmit` (`lint_applet`) & `vite build` (`compile_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **168 / 168 passed** (7 suites, incl. `biKpiRegistry.test.ts`).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **44 / 44 files, 330 / 330 tests passed** (incl. `phase2BiRegistry.test.tsx` 4/4, `migrationsAndRollbacks.test.ts` 17/17, and `routePermissions.test.ts` 5/5).
+  - `npm run ci:guards` (strict): **0 findings**.
+  - Live headless Chromium (`playwright-cli` at `1440x900`): Verified `BI & Reports` workspace via Sidebar navigation across all 4 sub-tabs (`Overview & Aging` 9 KPI cards, 5 aging buckets, `7d`/`90d`/`Custom` presets; `Branch Comparison`; `KPI Registry` live threshold save propagating `200,000 DZD` to Overview; `Scheduled Reports & Snapshots` invalid-email inline `role="alert"`, saved digest creation, immutable snapshot recording, `Recently dispatched` status update, and Blob `.html` A4 print download), with **`0` console errors / `0` console warnings**.
+- **Phase 2 Status**: **COMPLETE (`6.1`–`6.10` / Steps 1–9 verified and logged)**.
+
 
 

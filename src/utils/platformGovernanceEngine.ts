@@ -128,7 +128,7 @@ export function sha256Hex(input: string): string {
 export function hmacSha256Hex(secret: string, message: string): string {
   const enc = new TextEncoder();
   const blockSize = 64;
-  let keyBytes = enc.encode(secret);
+  let keyBytes: Uint8Array = enc.encode(secret);
   if (keyBytes.length > blockSize) {
     keyBytes = sha256Bytes(keyBytes);
   }
@@ -514,12 +514,22 @@ export function isValidWebhookEndpointUrl(rawUrl: string): boolean {
   try {
     const u = new URL((rawUrl || '').trim());
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
-    const host = u.hostname.toLowerCase();
-    // Block cloud metadata SSRF ranges
-    if (host === '169.254.169.254' || host === 'metadata.google.internal') {
+    const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+    if (!host) return false;
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '::1' ||
+      host === 'metadata.google.internal' ||
+      host.startsWith('169.254.') ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
+    ) {
       return false;
     }
-    return Boolean(host);
+    return true;
   } catch {
     return false;
   }

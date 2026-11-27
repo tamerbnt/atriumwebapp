@@ -105,7 +105,14 @@ export function mapScreenToRbacResource(
   }
   if (s === 'settings') return 'settings';
   if (s === 'history') return 'history';
-  if (s === 'analytics' || s === 'pm_dir_reports' || s === 'pm_sup_missions' || s === 'pm_sup_attendance' || s === 'pm_sup_staffing') {
+  if (
+    s === 'analytics' ||
+    s === 'bi_reports' ||
+    s === 'pm_dir_reports' ||
+    s === 'pm_sup_missions' ||
+    s === 'pm_sup_attendance' ||
+    s === 'pm_sup_staffing'
+  ) {
     return 'analytics';
   }
   if (

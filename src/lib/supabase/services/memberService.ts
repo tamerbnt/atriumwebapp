@@ -10,6 +10,8 @@ import type {
   MembershipPlan,
   ScheduleEvent,
   GymClassEnrollment,
+  GymMemberFreezeLog,
+  GymTrainerCommission,
 } from '../../../types/index';
 
 export const mapMembershipPlanFromDb = (row: any): MembershipPlan => ({
@@ -82,7 +84,7 @@ export const memberService = {
           let query = (client as any)
             .from('gym_members')
             .select(
-              'id, account_id, business_id, branch_id, staff_id, full_name, email, phone_number, card_id, rfid_tag, barcode, plan_id, plan_name, status, start_date, expiration_date, remaining_sessions, gender, notes, emergency_contact_name, emergency_contact_phone, profile_image_url, version, created_at, updated_at'
+              'id, account_id, business_id, branch_id, staff_id, full_name, email, phone_number, card_id, rfid_tag, barcode, plan_id, plan_name, status, start_date, expiration_date, remaining_sessions, gender, notes, emergency_contact_name, emergency_contact_phone, profile_image_url, auto_renew, billing_cycle_days, family_group_id, family_role, frozen_at, freeze_until, freeze_days_used, freeze_fee_centimes, freeze_reason, qr_token, version, created_at, updated_at'
             )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
@@ -129,6 +131,16 @@ export const memberService = {
       notes: member.notes || null,
       emergency_contact_name: member.emergencyContactName || null,
       emergency_contact_phone: member.emergencyContactPhone || null,
+      auto_renew: Boolean(member.autoRenew),
+      billing_cycle_days: member.billingCycleDays ?? null,
+      family_group_id: member.familyGroupId || null,
+      family_role: member.familyRole || null,
+      frozen_at: member.frozenAt || null,
+      freeze_until: member.freezeUntil || null,
+      freeze_days_used: member.freezeDaysUsed ?? 0,
+      freeze_fee_centimes: member.freezeFeeCentimes ?? 0,
+      freeze_reason: member.freezeReason || null,
+      qr_token: member.qrToken || null,
     };
 
     await syncCoordinator.mutateOrQueueUpsert('gym_members', payload, {
@@ -167,6 +179,16 @@ export const memberService = {
       notes: member.notes || null,
       emergency_contact_name: member.emergencyContactName || null,
       emergency_contact_phone: member.emergencyContactPhone || null,
+      auto_renew: Boolean(member.autoRenew),
+      billing_cycle_days: member.billingCycleDays ?? null,
+      family_group_id: member.familyGroupId || null,
+      family_role: member.familyRole || null,
+      frozen_at: member.frozenAt || null,
+      freeze_until: member.freezeUntil || null,
+      freeze_days_used: member.freezeDaysUsed ?? 0,
+      freeze_fee_centimes: member.freezeFeeCentimes ?? 0,
+      freeze_reason: member.freezeReason || null,
+      qr_token: member.qrToken || null,
     };
 
     const res = await syncCoordinator.mutateOrQueueUpsert('gym_members', payload, {
@@ -575,6 +597,148 @@ export const memberService = {
       leadId,
       deletedByStaffId
     );
+    return res.success;
+  },
+
+  async cancelAndPromoteClassEnrollment(enrollmentId: string) {
+    return syncCoordinator.rpcOrQueue('cancel_and_promote_gym_class_enrollment', {
+      p_enrollment_id: toValidUuid(enrollmentId),
+    });
+  },
+
+  async fetchFreezeLogs(branchId: string): Promise<GymMemberFreezeLog[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    try {
+      const rows = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('gym_member_freeze_logs')
+          .select(
+            'id, account_id, business_id, branch_id, member_id, staff_id, action, days_frozen, fee_centimes, extended_expiry_to, during_active_checkin_window, override_reason, recorded_at, version'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('recorded_at', { ascending: false })
+          .range(from, to)
+      );
+      return rows.map((row: any): GymMemberFreezeLog => ({
+        id: row.id,
+        accountId: row.account_id || undefined,
+        businessId: row.business_id || undefined,
+        branchId: row.branch_id || undefined,
+        memberId: row.member_id,
+        staffId: row.staff_id || undefined,
+        action: row.action,
+        daysFrozen: Number(row.days_frozen || 0),
+        feeCentimes: Number(row.fee_centimes || 0),
+        extendedExpiryTo: row.extended_expiry_to || undefined,
+        duringActiveCheckInWindow: Boolean(row.during_active_checkin_window),
+        overrideReason: row.override_reason || undefined,
+        recordedAt: row.recorded_at,
+        version: row.version != null ? Number(row.version) : undefined,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertFreezeLog(
+    log: GymMemberFreezeLog,
+    ctx?: { accountId?: string; businessId?: string; branchId?: string; staffId?: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: log.accountId || ctx?.accountId,
+      businessId: log.businessId || ctx?.businessId,
+      branchId: log.branchId || ctx?.branchId,
+      staffId: log.staffId || ctx?.staffId,
+    });
+    const payload = {
+      id: toValidUuid(log.id),
+      ...trace,
+      member_id: toValidUuid(log.memberId),
+      action: log.action,
+      days_frozen: log.daysFrozen,
+      fee_centimes: log.feeCentimes,
+      extended_expiry_to: log.extendedExpiryTo || null,
+      during_active_checkin_window: Boolean(log.duringActiveCheckInWindow),
+      override_reason: log.overrideReason || null,
+      recorded_at: log.recordedAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('gym_member_freeze_logs', payload, {
+      expectedVersion: log.version,
+      entityType: 'GymMemberFreezeLog',
+      entityLabel: log.memberName || log.memberId,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchTrainerCommissions(branchId: string): Promise<GymTrainerCommission[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    try {
+      const rows = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('gym_trainer_commissions')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, member_id, schedule_event_id, source_label, gross_amount_centimes, commission_rate_bps, commission_centimes, status, payroll_run_id, earned_date, version'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('earned_date', { ascending: false })
+          .range(from, to)
+      );
+      return rows.map((row: any): GymTrainerCommission => ({
+        id: row.id,
+        accountId: row.account_id || undefined,
+        businessId: row.business_id || undefined,
+        branchId: row.branch_id || undefined,
+        staffId: row.staff_id,
+        memberId: row.member_id || undefined,
+        scheduleEventId: row.schedule_event_id || undefined,
+        sourceLabel: row.source_label,
+        grossAmountCentimes: Number(row.gross_amount_centimes || 0),
+        commissionRateBps: Number(row.commission_rate_bps || 0),
+        commissionCentimes: Number(row.commission_centimes || 0),
+        status: row.status || 'pending',
+        payrollRunId: row.payroll_run_id || undefined,
+        earnedDate: row.earned_date,
+        version: row.version != null ? Number(row.version) : undefined,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertTrainerCommission(
+    comm: GymTrainerCommission,
+    ctx?: { accountId?: string; businessId?: string; branchId?: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: comm.accountId || ctx?.accountId,
+      businessId: comm.businessId || ctx?.businessId,
+      branchId: comm.branchId || ctx?.branchId,
+      staffId: comm.staffId,
+    });
+    const payload = {
+      id: toValidUuid(comm.id),
+      ...trace,
+      member_id: comm.memberId ? toValidUuid(comm.memberId) : null,
+      schedule_event_id: comm.scheduleEventId ? toValidUuid(comm.scheduleEventId) : null,
+      source_label: comm.sourceLabel,
+      gross_amount_centimes: comm.grossAmountCentimes,
+      commission_rate_bps: comm.commissionRateBps,
+      commission_centimes: comm.commissionCentimes,
+      status: comm.status,
+      payroll_run_id: comm.payrollRunId ? toValidUuid(comm.payrollRunId) : null,
+      earned_date: comm.earnedDate,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('gym_trainer_commissions', payload, {
+      expectedVersion: comm.version,
+      entityType: 'GymTrainerCommission',
+      entityLabel: comm.sourceLabel,
+      localData: payload,
+    });
     return res.success;
   },
 };

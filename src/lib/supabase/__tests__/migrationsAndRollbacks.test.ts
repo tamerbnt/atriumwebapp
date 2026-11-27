@@ -398,5 +398,41 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_approval_requests');
     expect(downSql).toContain('DROP TABLE IF EXISTS public.platform_approval_rules');
   });
+
+  it('verifies Phase 2 Step 9 (6.10) unified BI KPI registry, saved reports & snapshots migration and rollback parity', () => {
+    const biPath = path.join(MIGRATIONS_DIR, '202611270009_phase2_bi_kpi_registry.sql');
+    const biDownPath = path.join(ROLLBACKS_DIR, '202611270009_phase2_bi_kpi_registry.down.sql');
+    const sql = fs.readFileSync(biPath, 'utf8');
+    const downSql = fs.readFileSync(biDownPath, 'utf8');
+
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.bi_kpi_definitions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.bi_saved_reports');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.bi_report_snapshots');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.record_bi_report_snapshot(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.record_bi_report_snapshot(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.bi_report_snapshots');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.bi_saved_reports');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.bi_kpi_definitions');
+  });
+
+  it('verifies Phase 3 Step 1 (7.1) membership depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280001_phase3_membership_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280001_phase3_membership_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS auto_renew boolean');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.gym_member_freeze_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.gym_trainer_commissions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.cancel_and_promote_gym_class_enrollment(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.cancel_and_promote_gym_class_enrollment(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.gym_trainer_commissions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.gym_member_freeze_logs');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS auto_renew');
+  });
 });
 

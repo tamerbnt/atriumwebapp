@@ -499,6 +499,14 @@ const TopBarInner: React.FC<TopBarProps> = ({
       ]);
     }
 
+    // Unified BI KPI Registry & Cross-Vertical Reports
+    if (activeScreen === 'bi_reports') {
+      return renderBreadcrumbTrail([
+        homeNode,
+        { id: 'bi_reports', label: t('phase2_bi_nav', language), icon: BarChart2 },
+      ]);
+    }
+
     // Home (Salle d'accueil) root screen
     if (activeScreen === 'home') {
       return renderBreadcrumbTrail([homeNode]);

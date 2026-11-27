@@ -1229,6 +1229,147 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- SECTION 18: Phase 2 Step 9 (6.10) — Unified BI KPI Registry & Snapshot RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_kpi_id uuid := gen_random_uuid();
+  v_rep_id uuid := gen_random_uuid();
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.bi_kpi_definitions (
+    id, account_id, business_id, kpi_code, category,
+    label_en, label_fr, label_ar, formula_spec, unit_type, target_value
+  ) VALUES (
+    v_kpi_id, v_acc_a, v_biz_a, 'gross_invoiced_revenue', 'revenue',
+    'Gross Invoiced Revenue', 'Chiffre d''affaires facturé', 'الإيرادات المفوترة',
+    'SUM(issued_invoices - credit_notes) + unbridged_sales', 'centimes', 10000000
+  );
+
+  INSERT INTO public.bi_saved_reports (
+    id, account_id, business_id, branch_id, title, report_type,
+    kpi_codes, date_range_preset, compare_previous_period
+  ) VALUES (
+    v_rep_id, v_acc_a, v_biz_a, v_br_a, 'Monthly Executive Digest', 'executive_overview',
+    '["gross_invoiced_revenue","cash_collections"]'::jsonb, '30d', true
+  );
+
+  -- Tenant B must not read Tenant A BI KPI definitions or saved reports
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.bi_saved_reports WHERE id = v_rep_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A bi_saved_reports';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A owner records BI report snapshot atomically
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.record_bi_report_snapshot(
+    v_biz_a,
+    v_br_a,
+    v_rep_id,
+    'Monthly Executive Digest — Nov 2026',
+    CURRENT_DATE - 30,
+    CURRENT_DATE,
+    CURRENT_DATE - 60,
+    CURRENT_DATE - 31,
+    '{"gross_invoiced_revenue": 2500000}'::jsonb,
+    '[{"branchId": "22222222-2222-2222-2222-222222222222", "revenueCentimes": 2500000}]'::jsonb,
+    '[{"bucket": "current", "amountCentimes": 400000}]'::jsonb
+  );
+  IF (v_res ->> 'snapshot_id') IS NULL THEN
+    RAISE EXCEPTION 'Expected snapshot_id from record_bi_report_snapshot, got %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
+-- ============================================================================
+-- SECTION 19: Phase 3 Step 1 (7.1) — Membership Freeze Logs, Trainer
+-- Commissions RLS & Transactional Waitlist Promotion RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_staff_a uuid := '33333333-1111-1111-1111-111111111111';
+  v_mem_1 uuid := gen_random_uuid();
+  v_mem_2 uuid := gen_random_uuid();
+  v_ev_id uuid := gen_random_uuid();
+  v_enr_1 uuid := gen_random_uuid();
+  v_enr_2 uuid := gen_random_uuid();
+  v_freeze_id uuid := gen_random_uuid();
+  v_comm_id uuid := gen_random_uuid();
+  v_count int;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.gym_members (
+    id, account_id, business_id, branch_id, full_name, status,
+    start_date, expiration_date, remaining_sessions, auto_renew, family_group_id, family_role
+  ) VALUES
+    (v_mem_1, v_acc_a, v_biz_a, v_br_a, 'Member One', 'Active', CURRENT_DATE, CURRENT_DATE + 30, 12, true, 'FAM-001', 'primary'),
+    (v_mem_2, v_acc_a, v_biz_a, v_br_a, 'Member Two', 'Active', CURRENT_DATE, CURRENT_DATE + 30, 12, false, 'FAM-001', 'dependent');
+
+  INSERT INTO public.gym_schedule_events (
+    id, account_id, business_id, branch_id, title, day_of_week, start_time, end_time, capacity, enrolled_count
+  ) VALUES (
+    v_ev_id, v_acc_a, v_biz_a, v_br_a, 'HIIT Elite', 1, '18:00', '19:00', 1, 1
+  );
+
+  INSERT INTO public.gym_class_enrollments (
+    id, account_id, business_id, branch_id, event_id, member_id, member_name, status, enrolled_at
+  ) VALUES
+    (v_enr_1, v_acc_a, v_biz_a, v_br_a, v_ev_id, v_mem_1, 'Member One', 'enrolled', now() - interval '1 hour'),
+    (v_enr_2, v_acc_a, v_biz_a, v_br_a, v_ev_id, v_mem_2, 'Member Two', 'waitlisted', now());
+
+  INSERT INTO public.gym_member_freeze_logs (
+    id, account_id, business_id, branch_id, member_id, action, days_frozen, fee_centimes
+  ) VALUES (
+    v_freeze_id, v_acc_a, v_biz_a, v_br_a, v_mem_1, 'freeze', 7, 100000
+  );
+
+  INSERT INTO public.gym_trainer_commissions (
+    id, account_id, business_id, branch_id, staff_id, member_id, schedule_event_id,
+    source_label, gross_amount_centimes, commission_rate_bps, commission_centimes
+  ) VALUES (
+    v_comm_id, v_acc_a, v_biz_a, v_br_a, v_staff_a, v_mem_1, v_ev_id,
+    'HIIT Elite Coaching', 500000, 1500, 75000
+  );
+
+  -- Tenant B must not read Tenant A freeze logs or trainer commissions
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.gym_member_freeze_logs WHERE id = v_freeze_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A gym_member_freeze_logs';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.gym_trainer_commissions WHERE id = v_comm_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A gym_trainer_commissions';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A cancels enrolled seat -> auto-promotes waitlisted member
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_res := public.cancel_and_promote_gym_class_enrollment(v_enr_1);
+  IF (v_res ->> 'promoted_id')::uuid <> v_enr_2 THEN
+    RAISE EXCEPTION 'Expected waitlisted enrollment % to promote, got %', v_enr_2, v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 
 

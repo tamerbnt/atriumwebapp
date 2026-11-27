@@ -44,6 +44,7 @@ export function evaluateMemberCheckIn(
   options?: {
     duplicateWindowMinutes?: number;
     overrideReason?: string;
+    allowExpiredOrQuotaOverride?: boolean;
   }
 ): CheckInEvaluationResult {
   const nowMs = Date.parse(nowIso) || Date.now();
@@ -52,6 +53,7 @@ export function evaluateMemberCheckIn(
     options?.duplicateWindowMinutes ?? DEFAULT_CHECKIN_DUPLICATE_WINDOW_MINUTES
   );
   const hasOverride = Boolean(options?.overrideReason && options.overrideReason.trim().length > 0);
+  const canOverrideExpiryOrQuota = Boolean(options?.allowExpiredOrQuotaOverride && hasOverride);
 
   if (member.status === 'Banned' || member.status === 'Suspended' || member.status === 'Frozen') {
     return {
@@ -69,8 +71,10 @@ export function evaluateMemberCheckIn(
   const daysLeft = Number.isFinite(expiryMs)
     ? Math.ceil((expiryMs - nowMs) / 86400000)
     : 999;
+  const isExpiredMember =
+    member.status === 'Expired' || (Number.isFinite(expiryMs) && expiryMs < nowMs);
 
-  if (member.status === 'Expired' || (Number.isFinite(expiryMs) && expiryMs < nowMs)) {
+  if (isExpiredMember && !canOverrideExpiryOrQuota) {
     return {
       allowed: false,
       duplicateBlocked: false,
@@ -82,7 +86,12 @@ export function evaluateMemberCheckIn(
     };
   }
 
-  if (member.remainingSessions !== undefined && member.remainingSessions !== null && member.remainingSessions <= 0) {
+  const isQuotaZero =
+    member.remainingSessions !== undefined &&
+    member.remainingSessions !== null &&
+    member.remainingSessions <= 0;
+
+  if (isQuotaZero && !canOverrideExpiryOrQuota) {
     return {
       allowed: false,
       duplicateBlocked: false,
@@ -122,9 +131,13 @@ export function evaluateMemberCheckIn(
   }
 
   const remainingBefore = member.remainingSessions;
-  const hasFiniteSessions = remainingBefore !== undefined && remainingBefore !== null;
-  const remainingAfter = hasFiniteSessions ? Math.max(0, remainingBefore - 1) : undefined;
-  const isWarning = daysLeft <= 5;
+  const hasFiniteSessions =
+    remainingBefore !== undefined && remainingBefore !== null && remainingBefore > 0;
+  const remainingAfter =
+    remainingBefore !== undefined && remainingBefore !== null
+      ? Math.max(0, remainingBefore - (hasFiniteSessions ? 1 : 0))
+      : undefined;
+  const isWarning = daysLeft <= 5 || isExpiredMember || isQuotaZero;
 
   return {
     allowed: true,

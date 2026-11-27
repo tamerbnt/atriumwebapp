@@ -42,7 +42,7 @@ test('1.1 check-in guard blocks duplicate within 5 minutes unless override reaso
   assert.equal(overridden.remainingSessionsAfter, 7);
 });
 
-test('1.1 frozen or expired members do not decrement sessions', () => {
+test('1.1 frozen or expired members do not decrement sessions unless expired override given', () => {
   const frozen = evaluateMemberCheckIn(
     { id: 'm_2', status: 'Frozen', expirationDate: '2027-01-01', remainingSessions: 5 },
     [],
@@ -52,6 +52,28 @@ test('1.1 frozen or expired members do not decrement sessions', () => {
   assert.equal(frozen.accessStatus, 'Denied_Frozen');
   assert.equal(frozen.shouldDecrementSession, false);
   assert.equal(frozen.remainingSessionsAfter, 5);
+
+  const expiredDenied = evaluateMemberCheckIn(
+    { id: 'm_3', status: 'Expired', expirationDate: '2026-10-01', remainingSessions: 0 },
+    [],
+    '2026-11-26T10:00:00.000Z'
+  );
+  assert.equal(expiredDenied.allowed, false);
+  assert.equal(expiredDenied.accessStatus, 'Denied_Expired');
+
+  const expiredAllowed = evaluateMemberCheckIn(
+    { id: 'm_3', status: 'Expired', expirationDate: '2026-10-01', remainingSessions: 0 },
+    [],
+    '2026-11-26T10:00:00.000Z',
+    {
+      allowExpiredOrQuotaOverride: true,
+      overrideReason: 'Renewal payment promised at front desk',
+    }
+  );
+  assert.equal(expiredAllowed.allowed, true);
+  assert.equal(expiredAllowed.accessStatus, 'Warning_Expiring');
+  assert.equal(expiredAllowed.shouldDecrementSession, false);
+  assert.equal(expiredAllowed.remainingSessionsAfter, 0);
 });
 
 test('1.2 edu attendance deduplicates by (businessId, sessionId, studentId) and tracks change history', () => {

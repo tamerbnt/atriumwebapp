@@ -325,6 +325,21 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       });
     }
 
+    // Unified BI & Cross-Vertical Reports Navigation
+    if (canAccessRoute(category, permState, 'bi_reports')) {
+      list.push({
+        id: 'nav-bi-reports',
+        title: t('phase2_bi_nav', language),
+        subtitle: t('phase2_bi_title', language),
+        category: navCategoryLabel,
+        icon: <BarChart2 size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
+        onSelect: () => {
+          setScreen('bi_reports');
+          onClose();
+        },
+      });
+    }
+
     if (!canAccessRoute(category, permState, 'settings') && canAccessRoute(category, permState, 'preferences')) {
       list.push({
         id: 'nav-preferences',

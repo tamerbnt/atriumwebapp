@@ -164,6 +164,7 @@ export const LegalHistoryView = lazyNamed<any>(() => import('./legal/LegalHistor
 export const LogisticsHistoryView = lazyNamed<any>(() => import('./logistics/LogisticsHistoryView'), 'LogisticsHistoryView');
 export const ContractorHistoryView = lazyNamed<any>(() => import('./contractor/ContractorHistoryView'), 'ContractorHistoryView');
 export const AgricultureHistoryView = lazyNamed<any>(() => import('./agriculture/AgricultureHistoryView'), 'AgricultureHistoryView');
+export const BiAnalyticsWorkspace = lazyNamed<any>(() => import('../common/bi/BiAnalyticsWorkspace'), 'BiAnalyticsWorkspace');
 
 /**
  * Intelligent background preloader for all screens of the active business category.
@@ -173,6 +174,7 @@ export function preloadCategoryScreens(category: string): void {
   try {
     CategoryHomeView.preload();
     SettingsScreen.preload();
+    BiAnalyticsWorkspace.preload();
 
     switch (category) {
       case 'membership_fitness':
