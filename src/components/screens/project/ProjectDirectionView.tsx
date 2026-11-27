@@ -1,16 +1,24 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   useAtriumSelector,
+  useAtriumActions,
   useDashboardShellState,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   selectCurrentPmProjectsFromState,
   selectCurrentPmMilestonesFromState,
+  selectCurrentPmPrintOrdersFromState,
+  selectCurrentPmBatDeliverablesFromState,
   selectCurrentPmMissionsFromState,
   selectCurrentPmTalentsFromState,
   selectCurrentPmPayrollBatchesFromState,
   selectCurrentPmExpensesFromState,
   selectCurrentPmAttendancesFromState,
+  selectCurrentPmTimesheetsFromState,
+  selectCurrentPmClientPortalReviewsFromState,
+  selectCurrentUnifiedDocumentsFromState,
+  selectCurrentUnifiedPaymentsFromState,
   selectCurrentStaffFromState,
   addPmProjectAction as addPmProject,
   deletePmProjectAction as deletePmProject,
@@ -28,8 +36,19 @@ import {
   computeAvailableAuditYears,
   computeDirectionFinancialAudit,
 } from '../../../utils/projectMetrics';
+import {
+  computeProjectRealProfitability,
+  DEFAULT_FX_RATES_TO_DZD,
+  evaluateExpenseReceiptCompliance,
+  isNonPrintProjectPreset,
+  normalizeFxRateToDzd,
+  type ProjectRealProfitabilitySummary,
+} from '../../../utils/projectDepth';
 import { registerUndoEntry } from '../../../services/undoEngine';
-import { PMProject } from '../../../types/index';
+import { PMProject, UnifiedCurrency } from '../../../types/index';
+import { ProjectGanttPanel } from './ProjectGanttPanel';
+import { ProjectBillingPortalPanel } from './ProjectBillingPortalPanel';
+import { ProjectTimesheetsPanel } from './ProjectTimesheetsPanel';
 import {
   TrendingUp,
   Plus,
@@ -48,11 +67,15 @@ import {
   Briefcase,
   UserCheck,
   Palette,
+  AlertTriangle,
+  Clock,
+  FileCheck2,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -121,7 +144,15 @@ import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboar
 import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 interface ProjectDirectionViewProps {
-  initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
+  initialTab?:
+    | 'dashboard'
+    | 'projects'
+    | 'gantt'
+    | 'billing'
+    | 'timesheets'
+    | 'new_project'
+    | 'approvals'
+    | 'reports';
 }
 
 const getProjectStatusBadge = (
@@ -199,16 +230,23 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   const {
     account,
     currentUser,
+    businessConfig,
     currentBranch,
     currentBranchId,
     branches,
     pmProjects,
     pmMilestones,
+    pmPrintOrders,
+    pmBatDeliverables,
     pmMissions,
     pmTalents,
     pmPayrollBatches,
     pmExpenses,
     pmAttendances,
+    pmTimesheets,
+    pmClientPortalReviews,
+    unifiedDocuments,
+    unifiedPayments,
     pmClients,
     staff,
     activePmSubScreen,
@@ -216,22 +254,37 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     (s) => ({
       account: s.account,
       currentUser: s.currentUser,
+      businessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       currentBranchId: s.currentBranchId,
       branches: s.branches,
       pmProjects: selectCurrentPmProjectsFromState(s),
       pmMilestones: selectCurrentPmMilestonesFromState(s),
+      pmPrintOrders: selectCurrentPmPrintOrdersFromState(s),
+      pmBatDeliverables: selectCurrentPmBatDeliverablesFromState(s),
       pmMissions: selectCurrentPmMissionsFromState(s),
       pmTalents: selectCurrentPmTalentsFromState(s),
       pmPayrollBatches: selectCurrentPmPayrollBatchesFromState(s),
       pmExpenses: selectCurrentPmExpensesFromState(s),
       pmAttendances: selectCurrentPmAttendancesFromState(s),
+      pmTimesheets: selectCurrentPmTimesheetsFromState(s),
+      pmClientPortalReviews: selectCurrentPmClientPortalReviewsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
       pmClients: s.pmClients || [],
       staff: selectCurrentStaffFromState(s),
       activePmSubScreen: s.activePmSubScreen || 'dashboard',
     }),
     shallowEqualObjects
   );
+
+  const {
+    upsertPmMilestone,
+    approvePmMilestonePartial,
+    recordPmTimesheet,
+    approvePmTimesheet,
+    deletePmTimesheet,
+  } = useAtriumActions();
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -243,6 +296,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   const [selectedReceiptUrl, setSelectedReceiptUrl] = useState<string | null>(null);
   const [rejectionModalId, setRejectionModalId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [overrideExpenseId, setOverrideExpenseId] = useState<string | null>(null);
+  const [overrideReason, setOverrideReason] = useState('');
 
   const currentScreen =
     activePmSubScreen === 'new_project' || initialTab === 'new_project'
@@ -251,6 +306,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       ? 'approvals'
       : activePmSubScreen === 'reports' || initialTab === 'reports'
       ? 'reports'
+      : activePmSubScreen === 'gantt' || initialTab === 'gantt'
+      ? 'gantt'
+      : activePmSubScreen === 'billing' || initialTab === 'billing'
+      ? 'billing'
+      : activePmSubScreen === 'timesheets' || initialTab === 'timesheets'
+      ? 'timesheets'
       : activePmSubScreen === 'projects' || initialTab === 'projects'
       ? 'projects'
       : 'dashboard';
@@ -379,6 +440,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   const [newProjectBudgetCap, setNewProjectBudgetCap] = useState('');
   const [newProjectMaxField, setNewProjectMaxField] = useState('');
   const [newProjectMargin, setNewProjectMargin] = useState('');
+  const [newProjectCurrency, setNewProjectCurrency] = useState<UnifiedCurrency>('DZD');
+  const [newProjectFxRate, setNewProjectFxRate] = useState('1');
+  const [newProjectAlertThreshold, setNewProjectAlertThreshold] = useState('85');
+  const [newProjectMaxRevisions, setNewProjectMaxRevisions] = useState('3');
+  const [newProjectNonPrint, setNewProjectNonPrint] = useState(() =>
+    isNonPrintProjectPreset(businessConfig?.onboardingContext?.selectedTradeId)
+  );
   const [newProjectStartDate, setNewProjectStartDate] = useState(
     () => new Date().toISOString().slice(0, 10)
   );
@@ -388,6 +456,37 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     () => leadOptions[1]?.value || leadOptions[0]?.value || ''
   );
   const [projectCreatedSuccess, setProjectCreatedSuccess] = useState(false);
+
+  const profitabilityByProjectId = useMemo(() => {
+    const map = new Map<string, ProjectRealProfitabilitySummary>();
+    for (const p of pmProjects) {
+      map.set(
+        p.id,
+        computeProjectRealProfitability({
+          project: p,
+          milestones: pmMilestones,
+          expenses: pmExpenses,
+          payrollBatches: pmPayrollBatches,
+          attendances: pmAttendances,
+          timesheets: pmTimesheets,
+          printOrders: pmPrintOrders,
+          unifiedDocuments,
+          unifiedPayments,
+        })
+      );
+    }
+    return map;
+  }, [
+    pmProjects,
+    pmMilestones,
+    pmExpenses,
+    pmPayrollBatches,
+    pmAttendances,
+    pmTimesheets,
+    pmPrintOrders,
+    unifiedDocuments,
+    unifiedPayments,
+  ]);
 
   const activeInspectedProject = useMemo(() => {
     if (!inspectedProject) return null;
@@ -797,28 +896,65 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       {
         key: 'budget',
         header: localizeText(language, 'Plafond Budgétaire', 'Budget Cap', 'السقف المالي'),
-        width: '1.5*',
-        minWidth: '150px',
+        width: '1.6*',
+        minWidth: '165px',
         sortable: true,
         align: 'right',
-        renderCell: (proj) => (
-          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
-            {formatMoney(proj.budgetCapDzd, 'DZD')}
-          </div>
-        ),
+        renderCell: (proj) => {
+          const prof = profitabilityByProjectId.get(proj.id);
+          return (
+            <div className="space-y-0.5 text-right rtl:text-left">
+              <div className="tabular-nums t-small font-semibold text-black dark:text-white flex items-center justify-end gap-1.5">
+                {proj.currency && proj.currency !== 'DZD' && (
+                  <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 t-cap font-semibold">
+                    {proj.currency}
+                  </span>
+                )}
+                <span>{formatMoney(proj.budgetCapDzd, 'DZD')}</span>
+              </div>
+              {prof && prof.alertLevel !== 'ok' && (
+                <div
+                  className={`t-cap font-semibold inline-flex items-center gap-1 ${
+                    prof.alertLevel === 'overrun'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-amber-700 dark:text-amber-300'
+                  }`}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>{Math.round(prof.budgetUtilizationPct)}%</span>
+                </div>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: 'margin',
-        header: localizeText(language, 'Marge Brute', 'Margin', 'الهامش'),
-        width: '1*',
-        minWidth: '110px',
+        header: localizeText(language, 'Marge Réelle / Cible', 'Real / Target Margin', 'الهامش الفعلي'),
+        width: '1.2*',
+        minWidth: '130px',
         sortable: true,
         align: 'center',
-        renderCell: (proj) => (
-          <span className="tabular-nums t-small font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-[var(--r-check,6px)]">
-            {proj.targetGrossMarginPercent}%
-          </span>
-        ),
+        renderCell: (proj) => {
+          const prof = profitabilityByProjectId.get(proj.id);
+          const realMargin = prof ? prof.realMarginPct : proj.targetGrossMarginPercent;
+          return (
+            <div className="flex flex-col items-center gap-0.5">
+              <span
+                className={`tabular-nums t-small font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] ${
+                  realMargin < 0
+                    ? 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+                    : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                }`}
+              >
+                {realMargin.toFixed(1)}%
+              </span>
+              <span className="t-cap text-black/50 dark:text-white/50 tabular-nums">
+                {t('pm_depth_target_short')} {proj.targetGrossMarginPercent}%
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: 'deadline',
@@ -874,13 +1010,19 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     (proj: PMProject): KineticRowMeta => {
       const badge = getProjectStatusBadge(proj.status, language);
       const branchInfo = resolveRecordBranch(proj, branchesById, currentBranch, language);
+      const prof = profitabilityByProjectId.get(proj.id);
       return {
         title: proj.title,
         subline: `${proj.clientName} · ${proj.startDate} → ${proj.endDate}`,
         avatarText: proj.title.slice(0, 2).toUpperCase(),
-        categoryLabel: `${proj.targetGrossMarginPercent}% ${isAr ? 'هامش' : 'marge'}`,
-        statusLabel: badge.label,
-        statusVariant: badge.variant,
+        categoryLabel: `${(prof ? prof.realMarginPct : proj.targetGrossMarginPercent).toFixed(1)}% ${isAr ? 'هامش' : 'marge'}${
+          proj.currency && proj.currency !== 'DZD' ? ` · ${proj.currency}` : ''
+        }`,
+        statusLabel:
+          prof?.alertLevel === 'overrun'
+            ? `${badge.label} · ${t('pm_depth_alert_overrun_short')}`
+            : badge.label,
+        statusVariant: prof?.alertLevel === 'overrun' ? 'blocked' : badge.variant,
         metricPrimary: formatMoney(proj.budgetCapDzd, 'DZD'),
         metricSecondary: `Terrain max ${formatMoney(proj.maxFieldExpensesDzd, 'DZD')}`,
         branchName: branchInfo.name,
@@ -899,7 +1041,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         },
       };
     },
-    [language, isAr, branchesById, currentBranch, pinnedProjectIds]
+    [language, isAr, branchesById, currentBranch, pinnedProjectIds, profitabilityByProjectId, t]
   );
 
   const getProjectFanActions = useCallback(
@@ -1001,6 +1143,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       maxFieldExpensesDzd: Number.isFinite(maxField) && maxField >= 0 ? maxField : 0,
       targetGrossMarginPercent:
         Number.isFinite(targetMargin) && targetMargin >= 0 ? targetMargin : 0,
+      currency: newProjectCurrency,
+      fxRateToDzd: normalizeFxRateToDzd(newProjectCurrency, Number(newProjectFxRate || 1)),
+      budgetAlertThresholdPct: Math.min(100, Math.max(50, Number(newProjectAlertThreshold || 85))),
+      maxRevisionLoops: Math.max(1, Number(newProjectMaxRevisions || 3)),
+      isNonPrintPreset: newProjectNonPrint,
       startDate: newProjectStartDate || new Date().toISOString().slice(0, 10),
       endDate: newProjectEndDate || newProjectStartDate || new Date().toISOString().slice(0, 10),
       kvDeadline: newProjectStartDate || new Date().toISOString().slice(0, 10),
@@ -1022,6 +1169,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     setNewProjectBudgetCap('');
     setNewProjectMaxField('');
     setNewProjectMargin('');
+    setNewProjectCurrency('DZD');
+    setNewProjectFxRate('1');
+    setNewProjectAlertThreshold('85');
+    setNewProjectMaxRevisions('3');
   };
 
   const handleRejectConfirm = () => {
@@ -1130,6 +1281,24 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             label: localizeText(language, 'Portefeuille Projets', 'Projects Portfolio', 'محفظة المشاريع'),
             icon: FolderKanban,
             count: pmProjects.length,
+          },
+          {
+            id: 'gantt',
+            label: t('pm_depth_tab_gantt', language),
+            icon: Calendar,
+            count: pmMilestones.length,
+          },
+          {
+            id: 'billing',
+            label: t('pm_depth_tab_billing_portal', language),
+            icon: FileCheck2,
+            count: unifiedDocuments.filter((d) => d.sourceVertical === 'project_milestone').length,
+          },
+          {
+            id: 'timesheets',
+            label: t('pm_depth_tab_timesheets', language),
+            icon: Clock,
+            count: pmTimesheets.length,
           },
           {
             id: 'approvals',
@@ -1606,44 +1775,79 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               onAddFirstItem={() => setActivePmSubScreen('new_project')}
               onResetFilters={resetProjectFilters}
               hasActiveFilters={projectSearch.length > 0 || activeFiltersCount > 0}
-              renderCard={(proj) => (
-                <div className="flex flex-col justify-between h-full space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
-                        {proj.clientName}
-                      </span>
-                      <span className="tabular-nums t-small font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-[var(--r-check,6px)]">
-                        {proj.targetGrossMarginPercent}%
-                      </span>
+              renderCard={(proj) => {
+                const prof = profitabilityByProjectId.get(proj.id);
+                return (
+                  <div className="flex flex-col justify-between h-full space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
+                          {proj.clientName}
+                          {proj.currency && proj.currency !== 'DZD' ? ` · ${proj.currency}` : ''}
+                        </span>
+                        <span
+                          className={`tabular-nums t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] ${
+                            prof && prof.alertLevel === 'overrun'
+                              ? 'text-red-700 bg-red-50 dark:bg-red-950/40 dark:text-red-300'
+                              : prof && prof.alertLevel === 'warning'
+                              ? 'text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300'
+                              : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
+                          }`}
+                        >
+                          {prof ? `${prof.realMarginPct.toFixed(1)}%` : `${proj.targetGrossMarginPercent}%`}
+                        </span>
+                      </div>
+                      <h3 className="t-card font-semibold text-black dark:text-white line-clamp-1">
+                        {proj.title}
+                      </h3>
+                      <p className="t-cap text-black/55 dark:text-white/55 line-clamp-2">
+                        {proj.scopeOfWork}
+                      </p>
+                      {prof && prof.alertLevel !== 'ok' && (
+                        <div
+                          className={`t-cap font-semibold inline-flex items-center gap-1 ${
+                            prof.alertLevel === 'overrun'
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-amber-700 dark:text-amber-300'
+                          }`}
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>
+                            {prof.alertLevel === 'overrun'
+                              ? t('pm_depth_alert_overrun_short')
+                              : t('pm_depth_alert_warning_short')}{' '}
+                            ({Math.round(prof.budgetUtilizationPct)}%)
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <h3 className="t-card font-semibold text-black dark:text-white line-clamp-1">
-                      {proj.title}
-                    </h3>
-                    <p className="t-cap text-black/55 dark:text-white/55 line-clamp-2">
-                      {proj.scopeOfWork}
-                    </p>
+                    <div className="pt-3 border-t border-[var(--atr-divider)] space-y-2 t-cap">
+                      <div className="flex justify-between items-center">
+                        <span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
+                        <span className="tabular-nums font-semibold text-black dark:text-white">
+                          {formatMoney(proj.budgetCapDzd, 'DZD')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-black/55 dark:text-white/55">{t('pm_depth_real_profit')}:</span>
+                        <span
+                          className={`tabular-nums font-semibold ${
+                            (prof?.realProfitDzd || 0) < 0
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          {formatMoney(prof?.realProfitDzd || 0, 'DZD')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55">
+                        <span>CDP: {proj.projectManagerName.split(' ')[0]}</span>
+                        <span>Créa: {proj.leadCreativeName.split(' ')[0]}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="pt-3 border-t border-[var(--atr-divider)] space-y-2 t-cap">
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
-                      <span className="tabular-nums font-semibold text-black dark:text-white">
-                        {formatMoney(proj.budgetCapDzd, 'DZD')}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/55 dark:text-white/55">Plafond Terrain:</span>
-                      <span className="tabular-nums text-black/70 dark:text-white/75">
-                        {formatMoney(proj.maxFieldExpensesDzd, 'DZD')}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55">
-                      <span>CDP: {proj.projectManagerName.split(' ')[0]}</span>
-                      <span>Créa: {proj.leadCreativeName.split(' ')[0]}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+                );
+              }}
             />
           </ScreenPod>
 
@@ -1759,19 +1963,40 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               }
 
               if (tab === 'financials') {
+                const prof = profitabilityByProjectId.get(proj.id);
+                const burnPct = prof ? Math.min(100, Math.round(prof.budgetUtilizationPct)) : totalBurnPct;
                 return (
                   <>
                     <InspectorSection index={0}>
                       <InspectorBigStat
-                        value={formatMoney(spentField + spentPayroll, 'DZD')}
-                        tone={totalBurnPct > 85 ? 'danger' : 'accent'}
-                        caption={`Consommation globale vs Plafond ${formatMoney(proj.budgetCapDzd, 'DZD')} (${totalBurnPct}%)`}
+                        value={formatMoney(prof ? prof.totalRealCostDzd : spentField + spentPayroll, 'DZD')}
+                        tone={burnPct >= (proj.budgetAlertThresholdPct ?? 85) ? 'danger' : 'accent'}
+                        caption={`${t('pm_depth_real_profit')}: ${formatMoney(prof?.realProfitDzd || 0, 'DZD')} (${(prof?.realMarginPct || 0).toFixed(1)}%)`}
                       />
                     </InspectorSection>
-                    <InspectorSection index={1} title="Ventilation Engagements">
+                    <InspectorSection index={1} title={t('pm_depth_pnl_breakdown')}>
                       <InspectorCard>
-                        <InspectorKeyValue label="Plafond Contrat" value={formatMoney(proj.budgetCapDzd, 'DZD')} />
+                        <InspectorKeyValue
+                          label={t('pm_depth_currency_label')}
+                          value={`${proj.currency || 'DZD'} (1 = ${normalizeFxRateToDzd((proj.currency || 'DZD') as UnifiedCurrency, proj.fxRateToDzd)} DZD)`}
+                        />
+                        <InspectorKeyValue
+                          label={t('pm_depth_invoiced_revenue')}
+                          value={formatMoney(prof?.invoicedRevenueDzd || 0, 'DZD')}
+                        />
+                        <InspectorKeyValue
+                          label={t('pm_depth_collected_cash')}
+                          value={formatMoney(prof?.collectedCashDzd || 0, 'DZD')}
+                        />
                         <InspectorKeyValue label="Paies Terrain" value={formatMoney(spentPayroll, 'DZD')} />
+                        <InspectorKeyValue
+                          label={t('pm_depth_ts_labor_cost')}
+                          value={formatMoney(prof?.timesheetCostDzd || 0, 'DZD')}
+                        />
+                        <InspectorKeyValue
+                          label={t('pm_depth_print_orders_cost')}
+                          value={formatMoney(prof?.printOrdersCostDzd || 0, 'DZD')}
+                        />
                         <InspectorKeyValue
                           label="Frais Terrain"
                           value={`${formatMoney(spentField, 'DZD')} / ${formatMoney(proj.maxFieldExpensesDzd, 'DZD')}`}
@@ -1779,8 +2004,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                           isLast
                         />
                         <InspectorProgressBar
-                          percent={totalBurnPct}
-                          tone={totalBurnPct > 85 ? 'danger' : 'accent'}
+                          percent={burnPct}
+                          tone={burnPct >= (proj.budgetAlertThresholdPct ?? 85) ? 'danger' : 'accent'}
                           animateKey={`${proj.id}-fin`}
                         />
                       </InspectorCard>
@@ -1797,29 +2022,36 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         </KineticEmptyStateMotion>
                       ) : (
                         <InspectorCard>
-                          {projExpenses.map((e, idx) => (
-                            <InspectorListItem
-                              key={e.id}
-                              title={e.title}
-                              subtitle={`${e.declaredByUserName} · ${e.category}`}
-                              metaRight={formatMoney(e.amountDzd, 'DZD')}
-                              badge={{
-                                label:
-                                  e.status === 'approved_by_direction'
+                          {projExpenses.map((e, idx) => {
+                            const comp = evaluateExpenseReceiptCompliance(e);
+                            return (
+                              <InspectorListItem
+                                key={e.id}
+                                title={e.title}
+                                subtitle={`${e.declaredByUserName} · ${e.category}${
+                                  comp.missingReceiptFlagged ? ` · ${t('pm_depth_missing_receipt_badge')}` : ''
+                                }`}
+                                metaRight={formatMoney(e.amountDzd, 'DZD')}
+                                badge={{
+                                  label: comp.missingReceiptFlagged
+                                    ? t('pm_depth_missing_receipt_short')
+                                    : e.status === 'approved_by_direction'
                                     ? 'Validé'
                                     : e.status === 'rejected'
                                     ? 'Refusé'
                                     : 'Attente',
-                                tone:
-                                  e.status === 'approved_by_direction'
+                                  tone: comp.missingReceiptFlagged
+                                    ? 'danger'
+                                    : e.status === 'approved_by_direction'
                                     ? 'ok'
                                     : e.status === 'rejected'
                                     ? 'danger'
                                     : 'warn',
-                              }}
-                              isLast={idx === projExpenses.length - 1}
-                            />
-                          ))}
+                                }}
+                                isLast={idx === projExpenses.length - 1}
+                              />
+                            );
+                          })}
                         </InspectorCard>
                       )}
                     </InspectorSection>
@@ -2063,6 +2295,73 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   height={40}
                   corner={12}
                 />
+                <LabelSelect
+                  field="Currency"
+                  label={t('pm_depth_currency_label')}
+                  value={newProjectCurrency}
+                  onChange={(val) => {
+                    const nextCur = val as UnifiedCurrency;
+                    setNewProjectCurrency(nextCur);
+                    setNewProjectFxRate(String(DEFAULT_FX_RATES_TO_DZD[nextCur] || 1));
+                  }}
+                  options={[
+                    { value: 'DZD', label: 'DZD' },
+                    { value: 'EUR', label: 'EUR (€)' },
+                    { value: 'USD', label: 'USD ($)' },
+                  ]}
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="FxRate"
+                  label={t('pm_depth_fx_rate_label')}
+                  type="number"
+                  value={newProjectFxRate}
+                  onChange={setNewProjectFxRate}
+                  disabled={newProjectCurrency === 'DZD'}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="AlertThreshold"
+                  label={t('pm_depth_alert_threshold_label')}
+                  type="number"
+                  value={newProjectAlertThreshold}
+                  onChange={setNewProjectAlertThreshold}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="MaxRevisions"
+                  label={t('pm_depth_max_revisions_label')}
+                  type="number"
+                  value={newProjectMaxRevisions}
+                  onChange={setNewProjectMaxRevisions}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="sm:col-span-2 p-4 bg-[#F5F1EC] dark:bg-[#191716] flex items-center justify-between gap-4"
+                >
+                  <div>
+                    <span className="t-small font-semibold text-black dark:text-white block">
+                      {t('pm_depth_non_print_preset')}
+                    </span>
+                    <span className="t-cap text-black/55 dark:text-white/55">
+                      {t('pm_depth_non_print_preset_desc')}
+                    </span>
+                  </div>
+                  <LiveSwitch
+                    checked={newProjectNonPrint}
+                    onCheckedChange={setNewProjectNonPrint}
+                    aria-label={t('pm_depth_non_print_preset')}
+                  />
+                </div>
               </div>
               <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
                 <button
@@ -2245,75 +2544,93 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   />
                 </KineticEmptyStateMotion>
               ) : (
-                pendingExpenses.map((expense) => (
-                  <div key={expense.id} className="sq-elev-card">
-                    <div
-                      data-sq="card"
-                      data-sq-border="none"
-                      className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                            {expense.category}
-                          </span>
-                          <span className="t-small font-semibold text-black dark:text-white">
-                            {expense.title}
-                          </span>
-                          {expense.hasFiscalInvoice && (
-                            <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
-                              Facture Fiscale
+                pendingExpenses.map((expense) => {
+                  const compliance = evaluateExpenseReceiptCompliance(expense);
+                  return (
+                    <div key={expense.id} className="sq-elev-card">
+                      <div
+                        data-sq="card"
+                        data-sq-border="none"
+                        className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                              {expense.category}
                             </span>
-                          )}
+                            <span className="t-small font-semibold text-black dark:text-white">
+                              {expense.title}
+                            </span>
+                            {expense.hasFiscalInvoice && (
+                              <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
+                                Facture Fiscale
+                              </span>
+                            )}
+                            {compliance.missingReceiptFlagged && (
+                              <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 t-small font-semibold inline-flex items-center gap-1">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {t('pm_depth_missing_receipt_badge')}
+                              </span>
+                            )}
+                          </div>
+                          <p className="t-cap text-black/55 dark:text-white/55">
+                            Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) ·{' '}
+                            {expense.projectTitle}
+                          </p>
                         </div>
-                        <p className="t-cap text-black/55 dark:text-white/55">
-                          Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) ·{' '}
-                          {expense.projectTitle}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        {expense.receiptPhotoUrl && (
+                        <div className="flex items-center gap-3 shrink-0">
+                          {expense.receiptPhotoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
+                              data-sq="ctl"
+                              data-sq-border="none"
+                              className="px-3 py-2 t-cap text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors flex items-center gap-2 cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Justificatif
+                            </button>
+                          )}
+                          <div className="text-right">
+                            <span className="t-small text-black/55 dark:text-white/55 block font-medium">
+                              {t('common_amount')}
+                            </span>
+                            <span className="font-semibold t-card text-black dark:text-white tabular-nums">
+                              {formatMoney(expense.amountDzd, 'DZD')}
+                            </span>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
+                            onClick={() => {
+                              if (compliance.missingReceiptFlagged) {
+                                setOverrideExpenseId(expense.id);
+                                setOverrideReason('');
+                              } else {
+                                approvePmExpense(expense.id);
+                              }
+                            }}
+                            data-sq="ctl"
+                            className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            {compliance.missingReceiptFlagged
+                              ? t('pm_depth_override_approve_btn')
+                              : 'Valider'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRejectionModalId(expense.id)}
                             data-sq="ctl"
                             data-sq-border="none"
-                            className="px-3 py-2 t-cap text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors flex items-center gap-2 cursor-pointer"
+                            className="px-3 py-2 t-small font-semibold text-red-600 dark:text-red-400 bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/80 hover:bg-[#FDE4DF] dark:hover:bg-[#3D1E1A] transition-colors cursor-pointer"
                           >
-                            <Eye className="w-3.5 h-3.5" />
-                            Justificatif
+                            Refuser
                           </button>
-                        )}
-                        <div className="text-right">
-                          <span className="t-small text-black/55 dark:text-white/55 block font-medium">
-                            {t('common_amount')}
-                          </span>
-                          <span className="font-semibold t-card text-black dark:text-white tabular-nums">
-                            {formatMoney(expense.amountDzd, 'DZD')}
-                          </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => approvePmExpense(expense.id)}
-                          data-sq="ctl"
-                          className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          Valider
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRejectionModalId(expense.id)}
-                          data-sq="ctl"
-                          data-sq-border="none"
-                          className="px-3 py-2 t-small font-semibold text-red-600 dark:text-red-400 bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/80 hover:bg-[#FDE4DF] dark:hover:bg-[#3D1E1A] transition-colors cursor-pointer"
-                        >
-                          Refuser
-                        </button>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
@@ -2580,7 +2897,123 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Consolidated Real Project Profitability Matrix (Revenue - Expenses - Payroll - Timesheets - Print) */}
+          <div className="sq-elev-card">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                    {t('pm_depth_pnl_badge')}
+                  </span>
+                  <h3 className="t-label font-semibold text-black dark:text-white">
+                    {t('pm_depth_pnl_title')}
+                  </h3>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left rtl:text-right border-collapse t-cap">
+                  <thead>
+                    <tr className="border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                      <th className="py-2 pr-3 font-semibold">{t('pm_depth_project_label')}</th>
+                      <th className="py-2 px-3 font-semibold">{t('pm_depth_currency_label')}</th>
+                      <th className="py-2 px-3 font-semibold text-right">{t('pm_depth_invoiced_revenue')}</th>
+                      <th className="py-2 px-3 font-semibold text-right">{t('pm_depth_real_costs_total')}</th>
+                      <th className="py-2 px-3 font-semibold text-right">{t('pm_depth_real_profit')}</th>
+                      <th className="py-2 pl-3 font-semibold text-center">{t('pm_depth_alert_status')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pmProjects.map((proj) => {
+                      const prof = profitabilityByProjectId.get(proj.id);
+                      if (!prof) return null;
+                      return (
+                        <tr key={proj.id} className="border-b border-[var(--atr-divider)]/60">
+                          <td className="py-2.5 pr-3 font-semibold text-black dark:text-white">
+                            {proj.title}
+                          </td>
+                          <td className="py-2.5 px-3 tabular-nums">
+                            {prof.currency} ({prof.fxRateToDzd}x)
+                          </td>
+                          <td className="py-2.5 px-3 text-right tabular-nums">
+                            {formatMoney(prof.invoicedRevenueDzd, 'DZD')}
+                          </td>
+                          <td className="py-2.5 px-3 text-right tabular-nums">
+                            {formatMoney(prof.totalRealCostDzd, 'DZD')}
+                          </td>
+                          <td
+                            className={`py-2.5 px-3 text-right tabular-nums font-semibold ${
+                              prof.realProfitDzd < 0
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-emerald-600 dark:text-emerald-400'
+                            }`}
+                          >
+                            {formatMoney(prof.realProfitDzd, 'DZD')} ({prof.realMarginPct.toFixed(1)}%)
+                          </td>
+                          <td className="py-2.5 pl-3 text-center">
+                            <span
+                              className={`px-2 py-0.5 rounded-full t-small font-semibold ${
+                                prof.alertLevel === 'overrun'
+                                  ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+                                  : prof.alertLevel === 'warning'
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              }`}
+                            >
+                              {prof.alertLevel === 'overrun'
+                                ? t('pm_depth_alert_overrun_short')
+                                : prof.alertLevel === 'warning'
+                                ? t('pm_depth_alert_warning_short')
+                                : t('pm_depth_alert_ok_short')}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </ScreenPod>
+      )}
+
+      {currentScreen === 'gantt' && (
+        <ProjectGanttPanel
+          projects={pmProjects}
+          milestones={pmMilestones}
+          onUpsertMilestone={upsertPmMilestone}
+          onApproveMilestonePartial={approvePmMilestonePartial}
+        />
+      )}
+
+      {currentScreen === 'billing' && (
+        <ProjectBillingPortalPanel
+          projects={pmProjects}
+          milestones={pmMilestones}
+          deliverables={pmBatDeliverables}
+          portalReviews={pmClientPortalReviews}
+        />
+      )}
+
+      {currentScreen === 'timesheets' && (
+        <ProjectTimesheetsPanel
+          accountId={account?.id || ''}
+          branchId={currentBranchId || currentBranch?.id || ''}
+          projects={pmProjects}
+          milestones={pmMilestones}
+          staff={staff}
+          timesheets={pmTimesheets}
+          defaultStaffName={currentUser?.fullName || ''}
+          defaultStaffId={currentUser?.id || ''}
+          onRecordTimesheet={recordPmTimesheet}
+          onApproveTimesheet={approvePmTimesheet}
+          onDeleteTimesheet={deletePmTimesheet}
+        />
       )}
 
       <KineticModalShell
@@ -2692,6 +3125,71 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               className="px-4 py-2 t-small font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
             >
               Confirmer le Rejet
+            </button>
+          </div>
+        </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(overrideExpenseId)}
+        onClose={() => setOverrideExpenseId(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="t-label font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              {t('pm_depth_override_modal_title')}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setOverrideExpenseId(null)}
+              data-sq="ctl-sm"
+              className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="t-cap text-black/60 dark:text-white/65">
+            {t('pm_depth_override_modal_desc')}
+          </p>
+          <LabelTextarea
+            field="OverrideReason"
+            label={t('pm_depth_override_reason_label')}
+            rows={3}
+            value={overrideReason}
+            onChange={setOverrideReason}
+            placeholder={t('pm_depth_override_reason_ph')}
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setOverrideExpenseId(null)}
+              className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+            >
+              {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+            </button>
+            <button
+              type="button"
+              disabled={overrideReason.trim().length < 5}
+              onClick={() => {
+                if (!overrideExpenseId) return;
+                const ok = approvePmExpense(overrideExpenseId, overrideReason.trim());
+                if (ok) {
+                  setOverrideExpenseId(null);
+                  setOverrideReason('');
+                }
+              }}
+              data-sq="ctl"
+              className="px-4 py-2 t-small font-semibold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-45 cursor-pointer"
+            >
+              {t('pm_depth_override_confirm_btn')}
             </button>
           </div>
         </div>

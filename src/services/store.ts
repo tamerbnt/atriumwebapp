@@ -89,6 +89,8 @@ import {
   PMPayrollBatch,
   PMCcpSlip,
   PMEquipmentStock,
+  PMTimesheet,
+  PMClientPortalReview,
   SalonWorkstation,
   StylistPayout,
   B2bClient,
@@ -442,6 +444,8 @@ import {
   mapPmPayrollBatchFromDb,
   mapPmCcpSlipFromDb,
   mapPmEquipmentStockFromDb,
+  mapPmTimesheetFromDb,
+  mapPmClientPortalReviewFromDb,
   mapWarehouseFromDb,
   mapB2bClientFromDb,
   mapB2bSupplierFromDb,
@@ -491,6 +495,12 @@ import {
   normalizeUnifiedPaymentMethod,
   type UnifiedLineInput,
 } from '../utils/invoicingEngine';
+import {
+  canApprovePmExpense,
+  evaluateDeliverableRevisionDecision,
+  evaluateExpenseReceiptCompliance,
+  normalizeFxRateToDzd,
+} from '../utils/projectDepth';
 import {
   getDefaultScfChartOfAccounts,
   validateScfJournalLines,
@@ -794,6 +804,8 @@ interface AppState {
   pmPayrollBatches: PMPayrollBatch[];
   pmCcpSlips: PMCcpSlip[];
   pmEquipmentStock: PMEquipmentStock[];
+  pmTimesheets: PMTimesheet[];
+  pmClientPortalReviews: PMClientPortalReview[];
   // Salon, Spa & Beauty Care
   salonWorkstations: SalonWorkstation[];
   stylistPayouts: StylistPayout[];
@@ -1055,6 +1067,8 @@ const DEFAULT_STATE: AppState = {
   pmPayrollBatches: INITIAL_PM_PAYROLL_BATCHES,
   pmCcpSlips: INITIAL_PM_CCP_SLIPS,
   pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
+  pmTimesheets: [],
+  pmClientPortalReviews: [],
   salonWorkstations: INITIAL_SALON_WORKSTATIONS,
   stylistPayouts: INITIAL_STYLIST_PAYOUTS,
   stylistSchedules: [],
@@ -1222,6 +1236,8 @@ function backfillTraceability(state: AppState): AppState {
     pmPayrollBatches: (state.pmPayrollBatches || []).map(patch),
     pmCcpSlips: (state.pmCcpSlips || []).map(patch),
     pmEquipmentStock: (state.pmEquipmentStock || []).map(patch),
+    pmTimesheets: (state.pmTimesheets || []).map(patch),
+    pmClientPortalReviews: (state.pmClientPortalReviews || []).map(patch),
     b2bClients: (state.b2bClients || []).map(patch),
     b2bSuppliers: (state.b2bSuppliers || []).map(patch),
     warehouses: (state.warehouses || []).map(patch),
@@ -1406,6 +1422,8 @@ let globalState: AppState = backfillTraceability((() => {
           pmPayrollBatches: Array.isArray(parsed.pmPayrollBatches) ? parsed.pmPayrollBatches : INITIAL_PM_PAYROLL_BATCHES,
           pmCcpSlips: Array.isArray(parsed.pmCcpSlips) ? parsed.pmCcpSlips : INITIAL_PM_CCP_SLIPS,
           pmEquipmentStock: Array.isArray(parsed.pmEquipmentStock) ? parsed.pmEquipmentStock : INITIAL_PM_EQUIPMENT_STOCK,
+          pmTimesheets: Array.isArray(parsed.pmTimesheets) ? parsed.pmTimesheets : [],
+          pmClientPortalReviews: Array.isArray(parsed.pmClientPortalReviews) ? parsed.pmClientPortalReviews : [],
           // B2B Trading & Commercial Hydration
           b2bClients: Array.isArray(parsed.b2bClients) ? parsed.b2bClients : INITIAL_B2B_CLIENTS,
           b2bSuppliers: Array.isArray(parsed.b2bSuppliers) ? parsed.b2bSuppliers : INITIAL_B2B_SUPPLIERS,
@@ -2152,6 +2170,14 @@ export const selectCurrentPmCcpSlipsFromState = createBranchSelector<PMCcpSlip>(
 );
 export const selectCurrentPmEquipmentStockFromState = createBranchSelector<PMEquipmentStock>(
   (s) => s.pmEquipmentStock,
+  pmBranchMatch
+);
+export const selectCurrentPmTimesheetsFromState = createBranchSelector<PMTimesheet>(
+  (s) => s.pmTimesheets || [],
+  pmBranchMatch
+);
+export const selectCurrentPmClientPortalReviewsFromState = createBranchSelector<PMClientPortalReview>(
+  (s) => s.pmClientPortalReviews || [],
   pmBranchMatch
 );
 
@@ -3592,9 +3618,33 @@ export function addPmProjectAction(projectData: Omit<PMProject, 'id' | 'createdA
   return newProj;
 }
 
-export function approvePmExpenseAction(expenseId: string, notes?: string) {
+export function approvePmExpenseAction(expenseId: string, notesOrOverrideReason?: string): boolean {
   const before = captureStoreSlices(['pmExpenses']);
   const prevExp = (before.pmExpenses || []).find((e) => e.id === expenseId);
+  if (!prevExp) return false;
+  const complianceCheck = canApprovePmExpense(prevExp, notesOrOverrideReason);
+  if (!complianceCheck.allowed) {
+    showToast({
+      type: 'warning',
+      title: ul(
+        'Receipt Required or Override',
+        'Justificatif Requis ou Dérogation',
+        'مطلوب وصل أو تبرير استثنائي'
+      ),
+      message: ul(
+        'This expense has no receipt or fiscal invoice. Enter a Direction override reason (min 5 chars) to approve.',
+        'Cette dépense n’a ni reçu ni facture fiscale. Saisissez un motif de dérogation Direction (5 car. min) pour valider.',
+        'هذا المصروف بدون وصل أو فاتورة. أدخل سبب الاستثناء من الإدارة (5 أحرف على الأقل).'
+      ),
+    });
+    return false;
+  }
+  const compliance = evaluateExpenseReceiptCompliance(prevExp);
+  const trimmedOverride =
+    !compliance.hasReceipt && notesOrOverrideReason && notesOrOverrideReason.trim().length >= 5
+      ? notesOrOverrideReason.trim()
+      : prevExp.missingReceiptOverrideReason;
+
   globalState = {
     ...globalState,
     pmExpenses: (globalState.pmExpenses || []).map((e) =>
@@ -3603,13 +3653,22 @@ export function approvePmExpenseAction(expenseId: string, notes?: string) {
             ...e,
             status: 'approved_by_direction',
             directionApprovedAt: new Date().toISOString(),
-            directionNotes: notes || e.directionNotes,
+            directionNotes: notesOrOverrideReason || e.directionNotes,
+            missingReceiptFlagged: compliance.missingReceiptFlagged,
+            missingReceiptOverrideReason: trimmedOverride,
           }
         : e
     ),
   };
   notify();
-  projectMilestoneService.approveDisbursement('expense', expenseId, globalState.currentUser.id, notes).catch(() => {});
+  const updated = (globalState.pmExpenses || []).find((e) => e.id === expenseId);
+  if (updated && !compliance.hasReceipt) {
+    projectMilestoneService.upsertExpense(updated).catch(() => {});
+  } else {
+    projectMilestoneService
+      .approveDisbursement('expense', expenseId, globalState.currentUser.id, notesOrOverrideReason)
+      .catch(() => {});
+  }
   const after = captureStoreSlices(['pmExpenses']);
   registerUndoEntry({
     vertical: 'project_milestone',
@@ -3622,11 +3681,17 @@ export function approvePmExpenseAction(expenseId: string, notes?: string) {
     entityLabel: prevExp?.title,
     toastType: 'success',
     toastTitle: ul('Expense Approved', 'Frais Validé par la Direction', 'تمت الموافقة على المصروف'),
-    toastMessage: ul(
-      'Disbursement authorization sent to Accounting.',
-      'Autorisation de décaissement transmise à la Comptabilité.',
-      'تم إرسال إذن الصرف إلى المحاسبة.'
-    ),
+    toastMessage: !compliance.hasReceipt
+      ? ul(
+          'Approved under Direction override (missing receipt flagged).',
+          'Validé avec dérogation Direction (absence de reçu tracée).',
+          'تمت الموافقة بتبرير استثنائي من الإدارة (بدون وصل).'
+        )
+      : ul(
+          'Disbursement authorization sent to Accounting.',
+          'Autorisation de décaissement transmise à la Comptabilité.',
+          'تم إرسال إذن الصرف إلى المحاسبة.'
+        ),
     undo: () => {
       restoreStoreSlices(before);
       if (prevExp && isSupabaseConfigured()) {
@@ -3641,6 +3706,7 @@ export function approvePmExpenseAction(expenseId: string, notes?: string) {
       }
     },
   });
+  return true;
 }
 
 export function rejectPmExpenseAction(expenseId: string, notes?: string) {
@@ -3894,47 +3960,94 @@ export function batchApprovePmExpensesAction(expenseIds: string[], notes?: strin
   if (expenseIds.length === 0) return;
   const before = captureStoreSlices(['pmExpenses']);
   const idSet = new Set(expenseIds);
+  const eligibleIds = new Set<string>();
+  let skippedMissingReceipt = 0;
+
+  for (const exp of globalState.pmExpenses || []) {
+    if (!idSet.has(exp.id)) continue;
+    const check = canApprovePmExpense(exp, notes);
+    if (check.allowed) {
+      eligibleIds.add(exp.id);
+    } else {
+      skippedMissingReceipt += 1;
+    }
+  }
+
+  if (eligibleIds.size === 0) {
+    showToast({
+      type: 'warning',
+      title: ul(
+        'Receipts Required',
+        'Justificatifs Requis',
+        'الوصولات مطلوبة'
+      ),
+      message: ul(
+        'Selected expenses have no receipt or override reason. Approve individually with a Direction override reason.',
+        'Les dépenses sélectionnées n’ont pas de justificatif. Validez individuellement avec un motif de dérogation.',
+        'المصاريف المحددة بدون وصولات. يرجى المصادقة الفردية مع ذكر سبب الاستثناء.'
+      ),
+    });
+    return;
+  }
+
   globalState = {
     ...globalState,
-    pmExpenses: (globalState.pmExpenses || []).map((e) =>
-      idSet.has(e.id)
-        ? {
-            ...e,
-            status: 'approved_by_direction',
-            directionApprovedAt: new Date().toISOString(),
-            directionNotes: notes || e.directionNotes,
-          }
-        : e
-    ),
+    pmExpenses: (globalState.pmExpenses || []).map((e) => {
+      if (!eligibleIds.has(e.id)) return e;
+      const compliance = evaluateExpenseReceiptCompliance(e);
+      return {
+        ...e,
+        status: 'approved_by_direction',
+        directionApprovedAt: new Date().toISOString(),
+        directionNotes: notes || e.directionNotes,
+        missingReceiptFlagged: compliance.missingReceiptFlagged,
+        missingReceiptOverrideReason:
+          !compliance.hasReceipt && notes && notes.trim().length >= 5
+            ? notes.trim()
+            : e.missingReceiptOverrideReason,
+      };
+    }),
   };
   notify();
+  const approvedIdList = Array.from(eligibleIds);
   if (isSupabaseConfigured()) {
     runWithConcurrency(
-      expenseIds.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
+      approvedIdList.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
       4
     ).catch(() => {});
+  }
+  if (skippedMissingReceipt > 0) {
+    showToast({
+      type: 'warning',
+      title: ul('Partial Batch Approval', 'Validation Partielle', 'مصادقة جزئية'),
+      message: ul(
+        `${skippedMissingReceipt} expense(s) without receipt skipped — require individual Direction override.`,
+        `${skippedMissingReceipt} dépense(s) sans reçu ignorée(s) — dérogation Direction individuelle requise.`,
+        `تم تخطي ${skippedMissingReceipt} مصروفات بدون وصل — تتطلب استثناءً فردياً.`
+      ),
+    });
   }
   const after = captureStoreSlices(['pmExpenses']);
   registerUndoEntry({
     vertical: 'project_milestone',
     operationType: 'bulk',
-    affectedCount: expenseIds.length,
+    affectedCount: approvedIdList.length,
     summary: ul(
-      `Approved ${expenseIds.length} expense(s)`,
-      `${expenseIds.length} frais validé(s) en lot`,
-      `اعتماد ${expenseIds.length} مصاريف`
+      `Approved ${approvedIdList.length} expense(s)`,
+      `${approvedIdList.length} frais validé(s) en lot`,
+      `اعتماد ${approvedIdList.length} مصاريف`
     ),
     toastType: 'success',
     toastTitle: ul('Expenses Approved', 'Frais Validés en Lot', 'تم اعتماد المصاريف'),
     toastMessage: ul(
-      `${expenseIds.length} expense request(s) approved.`,
-      `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
-      `تمت الموافقة على ${expenseIds.length} طلبات مصاريف.`
+      `${approvedIdList.length} expense request(s) approved.`,
+      `${approvedIdList.length} demande(s) de frais validée(s) par la Direction.`,
+      `تمت الموافقة على ${approvedIdList.length} طلبات مصاريف.`
     ),
     undo: () => {
       restoreStoreSlices(before);
       if (isSupabaseConfigured()) {
-        const prevAffected = (before.pmExpenses || []).filter((e) => idSet.has(e.id));
+        const prevAffected = (before.pmExpenses || []).filter((e) => eligibleIds.has(e.id));
         runWithConcurrency(
           prevAffected.map((e) => () => projectMilestoneService.upsertExpense(e)),
           4
@@ -3945,7 +4058,7 @@ export function batchApprovePmExpensesAction(expenseIds: string[], notes?: strin
       restoreStoreSlices(after);
       if (isSupabaseConfigured()) {
         runWithConcurrency(
-          expenseIds.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
+          approvedIdList.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
           4
         ).catch(() => {});
       }
@@ -4237,6 +4350,8 @@ function pruneDeletedRecords(
     pm_payroll_batches: 'pmPayrollBatches',
     pm_ccp_slips: 'pmCcpSlips',
     pm_equipment_stock: 'pmEquipmentStock',
+    pm_timesheets: 'pmTimesheets',
+    pm_client_portal_reviews: 'pmClientPortalReviews',
     trading_warehouses: 'warehouses',
     trading_b2b_clients: 'b2bClients',
     trading_b2b_suppliers: 'b2bSuppliers',
@@ -5393,6 +5508,20 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           if (rows.length > 0) updates.pmEquipmentStock = mergeById(globalState.pmEquipmentStock || [], rows);
         });
       }
+      if (shouldSyncTable('pm_timesheets')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchTimesheets(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmTimesheets = mergeById(globalState.pmTimesheets || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_client_portal_reviews')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchClientPortalReviews(branchId, updatedAfter);
+          if (rows.length > 0) {
+            updates.pmClientPortalReviews = mergeById(globalState.pmClientPortalReviews || [], rows);
+          }
+        });
+      }
     } else if (activeCategory === 'trading_commercial') {
       if (shouldSyncTable('trading_warehouses')) {
         tasks.push(async () => {
@@ -6026,6 +6155,15 @@ export function applyResolvedRowToSlice(
       return { pmCcpSlips: patchList(globalState.pmCcpSlips, mapPmCcpSlipFromDb) };
     case 'pm_equipment_stock':
       return { pmEquipmentStock: patchList(globalState.pmEquipmentStock, mapPmEquipmentStockFromDb) };
+    case 'pm_timesheets':
+      return { pmTimesheets: patchList(globalState.pmTimesheets || [], mapPmTimesheetFromDb) };
+    case 'pm_client_portal_reviews':
+      return {
+        pmClientPortalReviews: patchList(
+          globalState.pmClientPortalReviews || [],
+          mapPmClientPortalReviewFromDb
+        ),
+      };
     case 'trading_warehouses':
       return { warehouses: patchList(globalState.warehouses, mapWarehouseFromDb) };
     case 'trading_b2b_clients':
@@ -17252,6 +17390,23 @@ function createAtriumActions() {
   const reviewPmBatDeliverable = (batId: string, status: 'approved' | 'revision_requested', comments?: string) => {
     const prev = (globalState.pmBatDeliverables || []).find((b) => b.id === batId);
     if (!prev) return;
+    const evalRes = evaluateDeliverableRevisionDecision({
+      deliverable: prev,
+      decision: status,
+      overrideLimit: false,
+    });
+    if (!evalRes.allowed) {
+      showToast({
+        type: 'warning',
+        title: ul('Revision Limit Reached', 'Limite de Révisions Atteinte', 'تم بلوغ حد التعديلات'),
+        message: ul(
+          `Maximum ${evalRes.maxRevisionLoops} revision loop(s) reached. Grant a revision override in the Client Portal to request more changes.`,
+          `Maximum de ${evalRes.maxRevisionLoops} boucle(s) de révision atteint. Accordez une dérogation dans le Portail Client.`,
+          `تم بلوغ الحد الأقصى للتعديلات (${evalRes.maxRevisionLoops}). امنح تمديداً في بوابة العميل.`
+        ),
+      });
+      return;
+    }
     const before = captureStoreSlices(['pmBatDeliverables']);
     globalState = {
       ...globalState,
@@ -17259,7 +17414,9 @@ function createAtriumActions() {
         b.id === batId
           ? {
               ...b,
-              approvalStatus: status,
+              approvalStatus: evalRes.nextApprovalStatus,
+              revisionCount: evalRes.nextRevisionCount,
+              maxRevisionLoops: evalRes.maxRevisionLoops,
               revisionComments: comments || b.revisionComments,
             }
           : b
@@ -17292,6 +17449,461 @@ function createAtriumActions() {
         }
       },
     });
+  };
+
+  const updatePmProjectConfig = (
+    projectId: string,
+    patch: Partial<
+      Pick<
+        PMProject,
+        | 'currency'
+        | 'fxRateToDzd'
+        | 'budgetAlertThresholdPct'
+        | 'isNonPrintPreset'
+        | 'maxRevisionLoops'
+        | 'budgetCapDzd'
+        | 'maxFieldExpensesDzd'
+        | 'startDate'
+        | 'endDate'
+      >
+    >
+  ) => {
+    const prev = (globalState.pmProjects || []).find((p) => p.id === projectId);
+    if (!prev) return null;
+    const before = captureStoreSlices(['pmProjects']);
+    const nextCurrency = patch.currency || prev.currency || 'DZD';
+    const nextFx = normalizeFxRateToDzd(
+      nextCurrency,
+      patch.fxRateToDzd !== undefined ? patch.fxRateToDzd : prev.fxRateToDzd
+    );
+    const updatedProj: PMProject = {
+      ...prev,
+      ...patch,
+      currency: nextCurrency,
+      fxRateToDzd: nextFx,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmProjects: (globalState.pmProjects || []).map((p) =>
+        p.id === projectId ? updatedProj : p
+      ),
+    };
+    notify();
+    projectMilestoneService.upsertProject(updatedProj).catch(() => {});
+    const after = captureStoreSlices(['pmProjects']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'edit',
+      summary: ul(
+        `Updated project settings: ${prev.title}`,
+        `Configuration projet mise à jour : ${prev.title}`,
+        `تحديث إعدادات المشروع: ${prev.title}`
+      ),
+      entityLabel: prev.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertProject(updatedProj).catch(() => {});
+        }
+      },
+    });
+    return updatedProj;
+  };
+
+  const upsertPmMilestone = (
+    milestoneInput: Omit<PMMilestone, 'id'> & { id?: string }
+  ): PMMilestone => {
+    const trace = getTraceContext();
+    const existing = milestoneInput.id
+      ? (globalState.pmMilestones || []).find((m) => m.id === milestoneInput.id)
+      : undefined;
+    const before = captureStoreSlices(['pmMilestones']);
+    const milestone: PMMilestone = {
+      ...trace,
+      ...(existing || {}),
+      ...milestoneInput,
+      id: milestoneInput.id || `ms_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      approvalStatus:
+        milestoneInput.approvalStatus ||
+        existing?.approvalStatus ||
+        (milestoneInput.isCompleted ? 'approved' : 'pending'),
+      approvedPct:
+        milestoneInput.approvedPct ??
+        existing?.approvedPct ??
+        (milestoneInput.isCompleted ? 100 : 0),
+      invoicedAmountDzd: milestoneInput.invoicedAmountDzd ?? existing?.invoicedAmountDzd ?? 0,
+    };
+    globalState = {
+      ...globalState,
+      pmMilestones: existing
+        ? (globalState.pmMilestones || []).map((m) => (m.id === milestone.id ? milestone : m))
+        : [...(globalState.pmMilestones || []), milestone],
+    };
+    notify();
+    projectMilestoneService
+      .upsertMilestone(milestone, {
+        accountId: milestone.accountId || trace.accountId,
+        businessId: milestone.businessId || trace.businessId,
+        branchId: milestone.branchId || trace.branchId,
+        staffId: milestone.staffId || trace.staffId,
+      })
+      .catch(() => {});
+    const after = captureStoreSlices(['pmMilestones']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: existing ? 'edit' : 'create',
+      summary: ul(
+        `${existing ? 'Updated' : 'Added'} milestone: ${milestone.title}`,
+        `Jalon ${existing ? 'modifié' : 'ajouté'} : ${milestone.title}`,
+        `${existing ? 'تعديل' : 'إضافة'} مرحلة: ${milestone.title}`
+      ),
+      entityLabel: milestone.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          if (existing) projectMilestoneService.upsertMilestone(existing).catch(() => {});
+          else projectMilestoneService.deleteMilestone(milestone.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertMilestone(milestone).catch(() => {});
+        }
+      },
+    });
+    return milestone;
+  };
+
+  const approvePmMilestonePartial = (
+    milestoneId: string,
+    approvedPct: number,
+    invoicedDocumentId?: string,
+    additionalInvoicedDzd?: number
+  ): PMMilestone | null => {
+    const prev = (globalState.pmMilestones || []).find((m) => m.id === milestoneId);
+    if (!prev) return null;
+    const clampedPct = Math.max(0, Math.min(100, Number(approvedPct || 0)));
+    const nextApprovalStatus: PMMilestone['approvalStatus'] =
+      clampedPct >= 100 ? 'approved' : clampedPct > 0 ? 'partial_approved' : 'pending';
+    const nextInvoiced = Math.max(
+      0,
+      Number(prev.invoicedAmountDzd || 0) + Number(additionalInvoicedDzd || 0)
+    );
+    const updated: PMMilestone = {
+      ...prev,
+      approvedPct: clampedPct,
+      approvalStatus: nextApprovalStatus,
+      isCompleted: clampedPct >= 100,
+      completedAt: clampedPct >= 100 ? prev.completedAt || new Date().toISOString() : undefined,
+      invoicedAmountDzd: nextInvoiced,
+      invoicedDocumentId: invoicedDocumentId || prev.invoicedDocumentId,
+    };
+    const before = captureStoreSlices(['pmMilestones']);
+    globalState = {
+      ...globalState,
+      pmMilestones: (globalState.pmMilestones || []).map((m) => (m.id === milestoneId ? updated : m)),
+    };
+    notify();
+    projectMilestoneService
+      .approveMilestoneForBilling(
+        milestoneId,
+        clampedPct,
+        invoicedDocumentId || null,
+        additionalInvoicedDzd ?? null
+      )
+      .catch(() => {});
+    const after = captureStoreSlices(['pmMilestones']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Milestone ${prev.title} approved (${clampedPct}%)`,
+        `Jalon ${prev.title} validé (${clampedPct}%)`,
+        `اعتماد المرحلة ${prev.title} (${clampedPct}%)`
+      ),
+      entityLabel: prev.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertMilestone(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertMilestone(updated).catch(() => {});
+        }
+      },
+    });
+    return updated;
+  };
+
+  const recordPmTimesheet = (
+    input: Omit<PMTimesheet, 'id' | 'createdAt' | 'approvalStatus'> & {
+      approvalStatus?: PMTimesheet['approvalStatus'];
+    }
+  ): PMTimesheet => {
+    const trace = getTraceContext();
+    const before = captureStoreSlices(['pmTimesheets']);
+    const entry: PMTimesheet = {
+      ...trace,
+      ...input,
+      id: `ts_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      approvalStatus: input.approvalStatus || 'submitted',
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmTimesheets: [entry, ...(globalState.pmTimesheets || [])],
+    };
+    notify();
+    projectMilestoneService.upsertTimesheet(entry).catch(() => {});
+    const after = captureStoreSlices(['pmTimesheets']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Logged ${entry.hoursWorked}h for ${entry.staffName}`,
+        `${entry.hoursWorked}h pointées — ${entry.staffName}`,
+        `تسجيل ${entry.hoursWorked} ساعة — ${entry.staffName}`
+      ),
+      entityLabel: entry.taskSummary,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteTimesheet(entry.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertTimesheet(entry).catch(() => {});
+        }
+      },
+    });
+    return entry;
+  };
+
+  const approvePmTimesheet = (timesheetId: string) => {
+    const prev = (globalState.pmTimesheets || []).find((ts) => ts.id === timesheetId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmTimesheets']);
+    const updated: PMTimesheet = {
+      ...prev,
+      approvalStatus: 'approved',
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmTimesheets: (globalState.pmTimesheets || []).map((ts) =>
+        ts.id === timesheetId ? updated : ts
+      ),
+    };
+    notify();
+    projectMilestoneService.upsertTimesheet(updated).catch(() => {});
+    const after = captureStoreSlices(['pmTimesheets']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Approved timesheet: ${prev.staffName} (${prev.hoursWorked}h)`,
+        `Feuille de temps validée : ${prev.staffName} (${prev.hoursWorked}h)`,
+        `اعتماد سجل الوقت: ${prev.staffName}`
+      ),
+      entityLabel: prev.staffName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) projectMilestoneService.upsertTimesheet(prev).catch(() => {});
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) projectMilestoneService.upsertTimesheet(updated).catch(() => {});
+      },
+    });
+  };
+
+  const deletePmTimesheet = (timesheetId: string) => {
+    const prev = (globalState.pmTimesheets || []).find((ts) => ts.id === timesheetId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmTimesheets']);
+    globalState = {
+      ...globalState,
+      pmTimesheets: (globalState.pmTimesheets || []).filter((ts) => ts.id !== timesheetId),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      projectMilestoneService.deleteTimesheet(timesheetId, globalState.currentUser?.id).catch(() => {});
+    }
+    const after = captureStoreSlices(['pmTimesheets']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted timesheet entry (${prev.hoursWorked}h)`,
+        `Pointage supprimé (${prev.hoursWorked}h)`,
+        `حذف سجل الوقت (${prev.hoursWorked} ساعة)`
+      ),
+      entityLabel: prev.taskSummary,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_timesheets', timesheetId, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertTimesheet(prev))
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteTimesheet(timesheetId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
+  };
+
+  const submitClientPortalDeliverableReview = (params: {
+    deliverableId: string;
+    reviewerName: string;
+    decision: 'approved' | 'revision_requested' | 'override_granted';
+    comments?: string;
+    overrideLimit?: boolean;
+  }): {
+    ok: boolean;
+    reason?: string;
+    review?: PMClientPortalReview;
+    nextRevisionCount?: number;
+    maxRevisionLoops?: number;
+  } => {
+    const prev = (globalState.pmBatDeliverables || []).find(
+      (b) => b.id === params.deliverableId
+    );
+    if (!prev) return { ok: false, reason: 'DELIVERABLE_NOT_FOUND' };
+
+    const evalRes = evaluateDeliverableRevisionDecision({
+      deliverable: prev,
+      decision: params.decision,
+      overrideLimit: Boolean(params.overrideLimit),
+    });
+    if (!evalRes.allowed) {
+      showToast({
+        type: 'warning',
+        title: ul(
+          'Revision Loop Cap Reached',
+          'Plafond de Révisions Atteint',
+          'تم بلوغ حد جولات التعديل'
+        ),
+        message: ul(
+          `Revision limit (${evalRes.maxRevisionLoops}) exceeded. Approve deliverable or grant a revision override.`,
+          `Plafond de ${evalRes.maxRevisionLoops} révision(s) atteint. Validez le livrable ou accordez une dérogation.`,
+          `تم تجاوز حد المراجعات (${evalRes.maxRevisionLoops}). اعتمد المخرج أو امنح تمديداً.`
+        ),
+      });
+      return {
+        ok: false,
+        reason: evalRes.blockedReason,
+        nextRevisionCount: evalRes.currentRevisionCount,
+        maxRevisionLoops: evalRes.maxRevisionLoops,
+      };
+    }
+
+    const before = captureStoreSlices(['pmBatDeliverables', 'pmClientPortalReviews']);
+    const nowIso = new Date().toISOString();
+    const trace = getTraceContext();
+    const cleanReviewer = (params.reviewerName || 'Client Portal').trim() || 'Client Portal';
+    const nextBat: PMBatDeliverable = {
+      ...prev,
+      approvalStatus: evalRes.nextApprovalStatus,
+      revisionCount: evalRes.nextRevisionCount,
+      maxRevisionLoops: evalRes.maxRevisionLoops,
+      revisionComments:
+        params.decision === 'revision_requested' && params.comments
+          ? params.comments
+          : prev.revisionComments,
+      clientFeedback: params.comments || prev.clientFeedback,
+      clientApprovedAt: params.decision === 'approved' ? nowIso : prev.clientApprovedAt,
+      clientApprovedByName:
+        params.decision === 'approved' ? cleanReviewer : prev.clientApprovedByName,
+    };
+
+    const reviewRecord: PMClientPortalReview = {
+      ...trace,
+      id: `rev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: prev.tenantId,
+      facilityId: prev.facilityId,
+      projectId: prev.projectId,
+      deliverableId: prev.id,
+      reviewerName: cleanReviewer,
+      decision: params.decision,
+      comments: params.comments,
+      revisionRound: evalRes.nextRevisionCount,
+      createdAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      pmBatDeliverables: (globalState.pmBatDeliverables || []).map((b) =>
+        b.id === prev.id ? nextBat : b
+      ),
+      pmClientPortalReviews: [reviewRecord, ...(globalState.pmClientPortalReviews || [])],
+    };
+    notify();
+
+    projectMilestoneService
+      .recordDeliverableReviewWithLimit(
+        prev.id,
+        cleanReviewer,
+        params.decision,
+        params.comments,
+        Boolean(params.overrideLimit)
+      )
+      .catch(() => {});
+
+    const after = captureStoreSlices(['pmBatDeliverables', 'pmClientPortalReviews']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Portal review (${params.decision}): ${prev.title}`,
+        `Portail Client (${params.decision}) : ${prev.title}`,
+        `بوابة العميل (${params.decision}): ${prev.title}`
+      ),
+      entityLabel: prev.title,
+      toastType: params.decision === 'approved' ? 'success' : 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertBatDeliverable(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertBatDeliverable(nextBat).catch(() => {});
+        }
+      },
+    });
+
+    return {
+      ok: true,
+      review: reviewRecord,
+      nextRevisionCount: evalRes.nextRevisionCount,
+      maxRevisionLoops: evalRes.maxRevisionLoops,
+    };
   };
 
   const addPmTalent = (talentData: Omit<PMTalent, 'id' | 'createdAt' | 'consolidatedScore'>) => {
@@ -17608,9 +18220,11 @@ function createAtriumActions() {
 
   const addPmExpense = (expenseData: Omit<PMExpense, 'id' | 'createdAt' | 'status'>) => {
     const before = captureStoreSlices(['pmExpenses', 'pmEquipmentStock']);
+    const compliance = evaluateExpenseReceiptCompliance(expenseData);
     const newExp: PMExpense = {
       ...getTraceContext(),
       ...expenseData,
+      missingReceiptFlagged: compliance.missingReceiptFlagged,
       id: `exp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       status: 'pending_direction_approval',
       createdAt: new Date().toISOString(),
@@ -17967,6 +18581,8 @@ function createAtriumActions() {
       'pmPayrollBatches',
       'pmCcpSlips',
       'pmEquipmentStock',
+      'pmTimesheets',
+      'pmClientPortalReviews',
     ];
     const before = captureStoreSlices(pmKeys);
     const targetFacilityId = globalState.currentBranchId || 'branch_agency_main';
@@ -18102,6 +18718,8 @@ function createAtriumActions() {
       pmPayrollBatches: freshPayrollBatches,
       pmCcpSlips: freshCcpSlips,
       pmEquipmentStock: freshEquipment,
+      pmTimesheets: [],
+      pmClientPortalReviews: [],
     };
     notify();
     const after = captureStoreSlices(pmKeys);
@@ -18867,6 +19485,8 @@ function createAtriumActions() {
         pmPayrollBatches: INITIAL_PM_PAYROLL_BATCHES,
         pmCcpSlips: INITIAL_PM_CCP_SLIPS,
         pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
+        pmTimesheets: [],
+        pmClientPortalReviews: [],
       };
     } else if (targetCategory === 'membership_session') {
       updates = {
@@ -21840,6 +22460,26 @@ function createAtriumActions() {
     globalState = {
       ...globalState,
       unifiedDocuments: (globalState.unifiedDocuments || []).map((d) => (d.id === id ? issuedDoc : d)),
+      pmMilestones:
+        issuedDoc.docType === 'facture' &&
+        issuedDoc.sourceEntityType === 'pm_milestone' &&
+        issuedDoc.sourceEntityId
+          ? (globalState.pmMilestones || []).map((m) =>
+              m.id === issuedDoc.sourceEntityId
+                ? {
+                    ...m,
+                    invoicedDocumentId: issuedDoc.id,
+                    invoicedAmountDzd: Math.max(
+                      Number(m.invoicedAmountDzd || 0),
+                      Math.round(
+                        (issuedDoc.totalHtFinalCentimes / 100) *
+                          normalizeFxRateToDzd(issuedDoc.currency, issuedDoc.fxRate)
+                      )
+                    ),
+                  }
+                : m
+            )
+          : globalState.pmMilestones,
     };
     notify();
 
@@ -28145,6 +28785,13 @@ function createAtriumActions() {
     markPmCcpSlipPrinted,
     addPmEquipmentStock,
     updatePmEquipmentStatus,
+    updatePmProjectConfig,
+    upsertPmMilestone,
+    approvePmMilestonePartial,
+    recordPmTimesheet,
+    approvePmTimesheet,
+    deletePmTimesheet,
+    submitClientPortalDeliverableReview,
     resetPmMockData,
     deletePmProject,
     batchDeletePmProjects,
@@ -28418,6 +29065,8 @@ export function useAtriumStore() {
   const currentPmPayrollBatches = selectCurrentPmPayrollBatchesFromState(state);
   const currentPmCcpSlips = selectCurrentPmCcpSlipsFromState(state);
   const currentPmEquipmentStock = selectCurrentPmEquipmentStockFromState(state);
+  const currentPmTimesheets = selectCurrentPmTimesheetsFromState(state);
+  const currentPmClientPortalReviews = selectCurrentPmClientPortalReviewsFromState(state);
   const currentDevices = selectCurrentDevicesFromState(state);
   const currentB2bClients = selectCurrentB2bClientsFromState(state);
   const currentWarehouses = selectCurrentWarehousesFromState(state);
@@ -28571,6 +29220,8 @@ export function useAtriumStore() {
     pmPayrollBatches: currentPmPayrollBatches,
     pmCcpSlips: currentPmCcpSlips,
     pmEquipmentStock: currentPmEquipmentStock,
+    pmTimesheets: currentPmTimesheets,
+    pmClientPortalReviews: currentPmClientPortalReviews,
     // B2B Trading & Commercial Collections
     b2bClients: currentB2bClients,
     allB2bClients: state.b2bClients || [],

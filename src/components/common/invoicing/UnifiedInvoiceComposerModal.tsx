@@ -34,6 +34,8 @@ export interface UnifiedInvoiceComposerPrefill {
   partyPhone?: string;
   sourceEntityType?: string;
   sourceEntityId?: string;
+  currency?: UnifiedCurrency;
+  fxRate?: number;
   notesTop?: string;
   items?: UnifiedLineInput[];
 }
@@ -124,8 +126,8 @@ export const UnifiedInvoiceComposerModal: React.FC<UnifiedInvoiceComposerModalPr
     setPartyAddress(prefill?.partyAddress || '');
     setDocDate(new Date().toISOString().slice(0, 10));
     setDueDate('');
-    setCurrency('DZD');
-    setFxRate(1);
+    setCurrency(prefill?.currency || 'DZD');
+    setFxRate(prefill?.fxRate && prefill.fxRate > 0 ? prefill.fxRate : 1);
     setPaymentMethod('bank_transfer');
     setTimbreBasis('commercial_cash');
     setGeneralDiscountPercent(0);

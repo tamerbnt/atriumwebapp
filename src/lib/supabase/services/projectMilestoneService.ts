@@ -16,6 +16,9 @@ import type {
   PMPayrollBatch,
   PMCcpSlip,
   PMEquipmentStock,
+  PMTimesheet,
+  PMClientPortalReview,
+  UnifiedCurrency,
 } from '../../../types/index';
 import { numberToWordsFrench, numberToWordsArabic } from '../../../utils/algerianPtt';
 
@@ -79,6 +82,11 @@ export const mapPmProjectFromDb = (row: any): PMProject => ({
   leadCreativeId: row.lead_creative_id,
   leadCreativeName: row.lead_creative_name,
   status: row.status,
+  currency: (row.currency || 'DZD') as UnifiedCurrency,
+  fxRateToDzd: row.fx_rate_to_dzd != null ? Number(row.fx_rate_to_dzd) : 1,
+  budgetAlertThresholdPct: row.budget_alert_threshold_pct != null ? Number(row.budget_alert_threshold_pct) : 85,
+  isNonPrintPreset: row.is_non_print_preset != null ? Boolean(row.is_non_print_preset) : false,
+  maxRevisionLoops: row.max_revision_loops != null ? Number(row.max_revision_loops) : 3,
   version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -93,10 +101,18 @@ export const mapPmMilestoneFromDb = (row: any): PMMilestone => ({
   projectId: row.project_id,
   title: row.title,
   phase: row.phase,
+  startDate: row.start_date || undefined,
   targetDate: row.target_date,
   completedAt: row.completed_at || undefined,
   isCompleted: Boolean(row.is_completed),
   assignedRole: row.assigned_role || 'project_manager',
+  amountDzd: row.amount_dzd != null ? Number(row.amount_dzd) : 0,
+  billingPct: row.billing_pct != null ? Number(row.billing_pct) : 0,
+  approvalStatus: (row.approval_status || 'pending') as PMMilestone['approvalStatus'],
+  approvedPct: row.approved_pct != null ? Number(row.approved_pct) : 0,
+  invoicedAmountDzd: row.invoiced_amount_dzd != null ? Number(row.invoiced_amount_dzd) : 0,
+  invoicedDocumentId: row.invoiced_document_id || undefined,
+  dependsOnMilestoneId: row.depends_on_milestone_id || undefined,
   version: row.version != null ? Number(row.version) : undefined,
 });
 
@@ -144,6 +160,13 @@ export const mapPmBatDeliverableFromDb = (row: any): PMBatDeliverable => ({
   uploadedByCreativeName: row.uploaded_by_creative_name,
   approvalStatus: row.approval_status,
   revisionComments: row.revision_comments || undefined,
+  revisionCount: row.revision_count != null ? Number(row.revision_count) : 0,
+  maxRevisionLoops: row.max_revision_loops != null ? Number(row.max_revision_loops) : 3,
+  clientPortalToken: row.client_portal_token || undefined,
+  clientApprovedAt: row.client_approved_at || undefined,
+  clientApprovedByName: row.client_approved_by_name || undefined,
+  clientFeedback: row.client_feedback || undefined,
+  deliverableKind: row.deliverable_kind || 'print_bat',
   createdAt: row.created_at,
 });
 
@@ -267,7 +290,53 @@ export const mapPmExpenseFromDb = (row: any): PMExpense => ({
   status: row.status,
   directionApprovedAt: row.direction_approved_at || undefined,
   directionNotes: row.direction_notes || undefined,
+  missingReceiptFlagged: Boolean(row.missing_receipt_flagged),
+  missingReceiptOverrideReason: row.missing_receipt_override_reason || undefined,
   isEquipmentAutoCreated: Boolean(row.is_equipment_auto_created),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmTimesheetFromDb = (row: any): PMTimesheet => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title || '',
+  milestoneId: row.milestone_id || undefined,
+  staffMemberId: row.staff_member_id || undefined,
+  staffName: row.staff_name || '',
+  workDate: row.work_date,
+  hoursWorked: Number(row.hours_worked || 0),
+  capacityHours: Number(row.capacity_hours || 8),
+  billable: row.billable ?? true,
+  hourlyCostDzd: Number(row.hourly_cost_dzd || 0),
+  hourlyBillDzd: Number(row.hourly_bill_dzd || 0),
+  taskSummary: row.task_summary || '',
+  approvalStatus: (row.approval_status || 'submitted') as PMTimesheet['approvalStatus'],
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at || undefined,
+});
+
+export const mapPmClientPortalReviewFromDb = (row: any): PMClientPortalReview => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  deliverableId: row.deliverable_id,
+  reviewerName: row.reviewer_name || 'Client',
+  decision: (row.decision || 'approved') as PMClientPortalReview['decision'],
+  comments: row.comments || undefined,
+  revisionRound: Number(row.revision_round || 0),
   version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
 });
@@ -491,7 +560,7 @@ export const projectMilestoneService = {
         let query = (client as any)
           .from('pm_projects')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, title, scope_of_work, budget_cap_dzd, max_field_expenses_dzd, target_gross_margin_percent, start_date, end_date, kv_deadline, print_deadline, execution_start_date, project_manager_id, project_manager_name, lead_creative_id, lead_creative_name, status, version, created_at, updated_at'
+            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, title, scope_of_work, budget_cap_dzd, max_field_expenses_dzd, target_gross_margin_percent, start_date, end_date, kv_deadline, print_deadline, execution_start_date, project_manager_id, project_manager_name, lead_creative_id, lead_creative_name, status, currency, fx_rate_to_dzd, budget_alert_threshold_pct, is_non_print_preset, max_revision_loops, version, created_at, updated_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -536,6 +605,11 @@ export const projectMilestoneService = {
       lead_creative_id: normalizeUuidOrNull(project.leadCreativeId),
       lead_creative_name: project.leadCreativeName,
       status: project.status,
+      currency: project.currency || 'DZD',
+      fx_rate_to_dzd: project.fxRateToDzd ?? 1,
+      budget_alert_threshold_pct: project.budgetAlertThresholdPct ?? 85,
+      is_non_print_preset: Boolean(project.isNonPrintPreset),
+      max_revision_loops: project.maxRevisionLoops ?? 3,
       created_at: project.createdAt,
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('pm_projects', payload, {
@@ -561,7 +635,7 @@ export const projectMilestoneService = {
         let query = (client as any)
           .from('pm_milestones')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, project_id, title, phase, target_date, completed_at, is_completed, assigned_role, version'
+            'id, account_id, business_id, branch_id, staff_id, project_id, title, phase, start_date, target_date, completed_at, is_completed, assigned_role, amount_dzd, billing_pct, approval_status, approved_pct, invoiced_amount_dzd, invoiced_document_id, depends_on_milestone_id, version'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -595,10 +669,18 @@ export const projectMilestoneService = {
       project_id: toValidUuid(milestone.projectId),
       title: milestone.title,
       phase: milestone.phase,
+      start_date: milestone.startDate || null,
       target_date: milestone.targetDate,
       completed_at: milestone.completedAt || null,
       is_completed: milestone.isCompleted,
       assigned_role: milestone.assignedRole,
+      amount_dzd: milestone.amountDzd ?? 0,
+      billing_pct: milestone.billingPct ?? 0,
+      approval_status: milestone.approvalStatus || (milestone.isCompleted ? 'approved' : 'pending'),
+      approved_pct: milestone.approvedPct ?? (milestone.isCompleted ? 100 : 0),
+      invoiced_amount_dzd: milestone.invoicedAmountDzd ?? 0,
+      invoiced_document_id: normalizeUuidOrNull(milestone.invoicedDocumentId),
+      depends_on_milestone_id: normalizeUuidOrNull(milestone.dependsOnMilestoneId),
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('pm_milestones', payload, {
       expectedVersion: milestone.version,
@@ -611,6 +693,21 @@ export const projectMilestoneService = {
 
   async deleteMilestone(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('pm_milestones', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async approveMilestoneForBilling(
+    milestoneId: string,
+    approvedPct: number,
+    invoicedDocumentId?: string | null,
+    invoicedAmountDzd?: number | null
+  ): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('pm_approve_milestone_for_billing', {
+      p_milestone_id: toValidUuid(milestoneId),
+      p_approved_pct: approvedPct,
+      p_invoiced_document_id: invoicedDocumentId ? toValidUuid(invoicedDocumentId) : null,
+      p_invoiced_amount_dzd: invoicedAmountDzd ?? null,
+    });
     return res.success;
   },
 
@@ -729,7 +826,7 @@ export const projectMilestoneService = {
         let query = (client as any)
           .from('pm_bat_deliverables')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, print_order_id, title, file_format, color_space, resolution_dpi, bleed_mm, has_bleed_included, version, version_code, preview_url, master_source_url, file_size_bytes, uploaded_by_creative_id, uploaded_by_creative_name, approval_status, revision_comments, created_at'
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, print_order_id, title, file_format, color_space, resolution_dpi, bleed_mm, has_bleed_included, version, version_code, preview_url, master_source_url, file_size_bytes, uploaded_by_creative_id, uploaded_by_creative_name, approval_status, revision_comments, revision_count, max_revision_loops, client_portal_token, client_approved_at, client_approved_by_name, client_feedback, deliverable_kind, created_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -775,6 +872,13 @@ export const projectMilestoneService = {
       uploaded_by_creative_name: bat.uploadedByCreativeName,
       approval_status: bat.approvalStatus,
       revision_comments: bat.revisionComments || null,
+      revision_count: bat.revisionCount ?? 0,
+      max_revision_loops: bat.maxRevisionLoops ?? 3,
+      client_portal_token: bat.clientPortalToken || null,
+      client_approved_at: bat.clientApprovedAt || null,
+      client_approved_by_name: bat.clientApprovedByName || null,
+      client_feedback: bat.clientFeedback || null,
+      deliverable_kind: bat.deliverableKind || 'print_bat',
       created_at: bat.createdAt,
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('pm_bat_deliverables', payload, {
@@ -1132,6 +1236,8 @@ export const projectMilestoneService = {
       status: expense.status,
       direction_approved_at: expense.directionApprovedAt || null,
       direction_notes: expense.directionNotes || null,
+      missing_receipt_flagged: Boolean(expense.missingReceiptFlagged),
+      missing_receipt_override_reason: expense.missingReceiptOverrideReason || null,
       is_equipment_auto_created: Boolean(expense.isEquipmentAutoCreated),
       created_at: expense.createdAt,
     };
@@ -1362,6 +1468,122 @@ export const projectMilestoneService = {
 
   async deleteEquipmentStock(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('pm_equipment_stock', id, deletedByStaffId);
+    return res.success;
+  },
+
+  // ============================================================
+  // 7.4 Timesheets & Utilization + Client Portal Reviews
+  // ============================================================
+  async fetchTimesheets(branchId: string, updatedAfter?: string | null): Promise<PMTimesheet[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_timesheets')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, milestone_id, staff_member_id, staff_name, work_date, hours_worked, capacity_hours, billable, hourly_cost_dzd, hourly_bill_dzd, task_summary, approval_status, version, created_at, updated_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('work_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+
+      return rows.map(mapPmTimesheetFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertTimesheet(entry: PMTimesheet): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: entry.accountId || entry.tenantId,
+      businessId: entry.businessId,
+      branchId: entry.branchId || entry.facilityId,
+      staffId: entry.staffId,
+    });
+    const payload = {
+      id: toValidUuid(entry.id),
+      ...trace,
+      project_id: toValidUuid(entry.projectId),
+      project_title: entry.projectTitle,
+      milestone_id: entry.milestoneId ? toValidUuid(entry.milestoneId) : null,
+      staff_member_id: normalizeUuidOrNull(entry.staffMemberId),
+      staff_name: entry.staffName,
+      work_date: entry.workDate,
+      hours_worked: entry.hoursWorked,
+      capacity_hours: entry.capacityHours,
+      billable: entry.billable,
+      hourly_cost_dzd: entry.hourlyCostDzd,
+      hourly_bill_dzd: entry.hourlyBillDzd,
+      task_summary: entry.taskSummary,
+      approval_status: entry.approvalStatus,
+      created_at: entry.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_timesheets', payload, {
+      expectedVersion: entry.version,
+      entityType: 'PMTimesheet',
+      entityLabel: entry.taskSummary,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteTimesheet(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('pm_timesheets', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchClientPortalReviews(
+    branchId: string,
+    updatedAfter?: string | null
+  ): Promise<PMClientPortalReview[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_client_portal_reviews')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, deliverable_id, reviewer_name, decision, comments, revision_round, version, created_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+
+      return rows.map(mapPmClientPortalReviewFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async recordDeliverableReviewWithLimit(
+    deliverableId: string,
+    reviewerName: string,
+    decision: 'approved' | 'revision_requested' | 'override_granted',
+    comments?: string,
+    overrideLimit = false
+  ): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('pm_record_deliverable_review_with_limit', {
+      p_deliverable_id: toValidUuid(deliverableId),
+      p_reviewer_name: reviewerName || 'Client Portal',
+      p_decision: decision,
+      p_comments: comments || null,
+      p_override_limit: overrideLimit,
+    });
     return res.success;
   },
 };

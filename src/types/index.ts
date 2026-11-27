@@ -1656,6 +1656,11 @@ export interface PMProject {
   leadCreativeId: string;
   leadCreativeName: string;
   status: PMProjectStatus;
+  currency?: UnifiedCurrency;
+  fxRateToDzd?: number;
+  budgetAlertThresholdPct?: number;
+  isNonPrintPreset?: boolean;
+  maxRevisionLoops?: number;
   version?: number;
   createdAt: string;
   updatedAt: string;
@@ -1670,10 +1675,18 @@ export interface PMMilestone {
   projectId: string;
   title: string;
   phase: 'brief' | 'concept_kv' | 'client_signoff' | 'print_order' | 'bat_production' | 'field_rollcall' | 'ccp_payroll';
+  startDate?: string;
   targetDate: string;
   completedAt?: string;
   isCompleted: boolean;
   assignedRole: PMRole;
+  amountDzd?: number;
+  billingPct?: number;
+  approvalStatus?: 'pending' | 'partial_approved' | 'approved';
+  approvedPct?: number;
+  invoicedAmountDzd?: number;
+  invoicedDocumentId?: string;
+  dependsOnMilestoneId?: string;
   version?: number;
 }
 
@@ -1745,6 +1758,13 @@ export interface PMBatDeliverable {
   uploadedByCreativeName: string;
   approvalStatus: 'pending_review' | 'approved' | 'revision_requested';
   revisionComments?: string;
+  revisionCount?: number;
+  maxRevisionLoops?: number;
+  clientPortalToken?: string;
+  clientApprovedAt?: string;
+  clientApprovedByName?: string;
+  clientFeedback?: string;
+  deliverableKind?: 'print_bat' | 'digital_asset' | 'software_build' | 'strategy_deck';
   rowVersion?: number;
   createdAt: string;
 }
@@ -1884,7 +1904,53 @@ export interface PMExpense {
   status: 'pending_direction_approval' | 'approved_by_direction' | 'rejected' | 'audited_and_paid';
   directionApprovedAt?: string;
   directionNotes?: string;
+  missingReceiptFlagged?: boolean;
+  missingReceiptOverrideReason?: string;
   isEquipmentAutoCreated?: boolean;
+  version?: number;
+  createdAt: string;
+}
+
+export interface PMTimesheet {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  milestoneId?: string;
+  staffMemberId?: string;
+  staffName: string;
+  workDate: string;
+  hoursWorked: number;
+  capacityHours: number;
+  billable: boolean;
+  hourlyCostDzd: number;
+  hourlyBillDzd: number;
+  taskSummary: string;
+  approvalStatus: 'draft' | 'submitted' | 'approved';
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface PMClientPortalReview {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  deliverableId: string;
+  reviewerName: string;
+  decision: 'approved' | 'revision_requested' | 'override_granted';
+  comments?: string;
+  revisionRound: number;
   version?: number;
   createdAt: string;
 }

@@ -495,6 +495,33 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP TABLE IF EXISTS public.pos_floor_tables');
     expect(downSql).toContain('DROP COLUMN IF EXISTS variants');
   });
+
+  it('verifies Phase 3 Step 4 (7.4) project_milestone depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280004_phase3_project_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280004_phase3_project_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS currency text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS fx_rate_to_dzd numeric');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS approved_pct numeric');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS revision_count int');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS missing_receipt_flagged boolean');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pm_timesheets');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.pm_client_portal_reviews');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pm_record_deliverable_review_with_limit(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.pm_approve_milestone_for_billing(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pm_approve_milestone_for_billing(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.pm_record_deliverable_review_with_limit(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pm_client_portal_reviews');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.pm_timesheets');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS missing_receipt_flagged');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS revision_count');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS approved_pct');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS currency');
+  });
 });
 
 

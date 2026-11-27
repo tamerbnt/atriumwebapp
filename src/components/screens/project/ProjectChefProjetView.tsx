@@ -6,12 +6,28 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentPmProjectsFromState,
+  selectCurrentPmMilestonesFromState,
   selectCurrentPmPrintOrdersFromState,
   selectCurrentPmBatDeliverablesFromState,
   selectCurrentPmExpensesFromState,
+  selectCurrentPmPayrollBatchesFromState,
+  selectCurrentPmAttendancesFromState,
+  selectCurrentPmTimesheetsFromState,
+  selectCurrentPmClientPortalReviewsFromState,
+  selectCurrentUnifiedDocumentsFromState,
+  selectCurrentUnifiedPaymentsFromState,
+  selectCurrentStaffFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { storageService, validateFileForBucket } from '../../../lib/supabase';
+import {
+  computeProjectRealProfitability,
+  evaluateExpenseReceiptCompliance,
+  isNonPrintProjectPreset,
+} from '../../../utils/projectDepth';
+import { ProjectGanttPanel } from './ProjectGanttPanel';
+import { ProjectBillingPortalPanel } from './ProjectBillingPortalPanel';
+import { ProjectTimesheetsPanel } from './ProjectTimesheetsPanel';
 import {
   PMCollateralItem,
   PMPrintOrder,
@@ -37,6 +53,8 @@ import {
   Package,
   Truck,
   Ban,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelTextarea } from '../../ui/LabelTextarea';
@@ -80,7 +98,15 @@ import {
 } from '../../ui/kinetic';
 
 interface ProjectChefProjetViewProps {
-  initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
+  initialTab?:
+    | 'portfolio'
+    | 'gantt'
+    | 'billing'
+    | 'timesheets'
+    | 'catalog'
+    | 'orders'
+    | 'bat'
+    | 'expenses';
 }
 
 interface PrintCartLine {
@@ -185,10 +211,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     currentBranch,
     branches,
     pmProjects,
+    pmMilestones,
     pmCollateralCatalog,
     pmPrintOrders,
     pmBatDeliverables,
     pmExpenses,
+    pmPayrollBatches,
+    pmAttendances,
+    pmTimesheets,
+    pmClientPortalReviews,
+    unifiedDocuments,
+    unifiedPayments,
+    staff,
     activePmSubScreen,
     isSyncing,
     networkMode,
@@ -203,10 +237,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmProjects: selectCurrentPmProjectsFromState(s),
+      pmMilestones: selectCurrentPmMilestonesFromState(s),
       pmCollateralCatalog: s.pmCollateralCatalog || [],
       pmPrintOrders: selectCurrentPmPrintOrdersFromState(s),
       pmBatDeliverables: selectCurrentPmBatDeliverablesFromState(s),
       pmExpenses: selectCurrentPmExpensesFromState(s),
+      pmPayrollBatches: selectCurrentPmPayrollBatchesFromState(s),
+      pmAttendances: selectCurrentPmAttendancesFromState(s),
+      pmTimesheets: selectCurrentPmTimesheetsFromState(s),
+      pmClientPortalReviews: selectCurrentPmClientPortalReviewsFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
+      staff: selectCurrentStaffFromState(s),
       activePmSubScreen: s.activePmSubScreen || 'dashboard',
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -224,14 +266,42 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     batchDeletePmBatDeliverables,
     addPmExpense,
     batchDeletePmExpenses,
+    updatePmProjectConfig,
+    upsertPmMilestone,
+    approvePmMilestonePartial,
+    recordPmTimesheet,
+    approvePmTimesheet,
+    deletePmTimesheet,
     setActivePmSubScreen,
     retryCloudSync,
   } = useAtriumActions();
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-  const activeTab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses' =
-    activePmSubScreen === 'catalog' || initialTab === 'catalog'
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(pmProjects[0]?.id || '');
+
+  const currentSelectedProject = useMemo(
+    () => pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0],
+    [pmProjects, selectedProjectId]
+  );
+
+  const isNonPrintMode = useMemo(
+    () =>
+      isNonPrintProjectPreset(
+        businessConfig?.onboardingContext?.selectedTradeId,
+        currentSelectedProject?.isNonPrintPreset
+      ),
+    [businessConfig?.onboardingContext?.selectedTradeId, currentSelectedProject?.isNonPrintPreset]
+  );
+
+  const rawTab: 'portfolio' | 'gantt' | 'billing' | 'timesheets' | 'catalog' | 'orders' | 'bat' | 'expenses' =
+    activePmSubScreen === 'gantt' || initialTab === 'gantt'
+      ? 'gantt'
+      : activePmSubScreen === 'billing' || initialTab === 'billing'
+      ? 'billing'
+      : activePmSubScreen === 'timesheets' || initialTab === 'timesheets'
+      ? 'timesheets'
+      : activePmSubScreen === 'catalog' || initialTab === 'catalog'
       ? 'catalog'
       : activePmSubScreen === 'orders' || initialTab === 'orders'
       ? 'orders'
@@ -241,14 +311,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       ? 'expenses'
       : 'portfolio';
 
+  const activeTab =
+    isNonPrintMode && (rawTab === 'catalog' || rawTab === 'orders') ? 'portfolio' : rawTab;
+
   const setActiveTab = useCallback(
     (tab: string) => {
       setActivePmSubScreen(tab);
     },
     [setActivePmSubScreen]
   );
-
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(pmProjects[0]?.id || '');
   const [cartItems, setCartItems] = useState<PrintCartLine[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -304,10 +375,32 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
 
-  const selectedProject: PMProject | undefined = useMemo(
-    () => pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0],
-    [pmProjects, selectedProjectId]
-  );
+  const selectedProject: PMProject | undefined = currentSelectedProject;
+
+  const selectedProjectProfitability = useMemo(() => {
+    if (!selectedProject) return null;
+    return computeProjectRealProfitability({
+      project: selectedProject,
+      milestones: pmMilestones,
+      expenses: pmExpenses,
+      payrollBatches: pmPayrollBatches,
+      attendances: pmAttendances,
+      timesheets: pmTimesheets,
+      printOrders: pmPrintOrders,
+      unifiedDocuments,
+      unifiedPayments,
+    });
+  }, [
+    selectedProject,
+    pmMilestones,
+    pmExpenses,
+    pmPayrollBatches,
+    pmAttendances,
+    pmTimesheets,
+    pmPrintOrders,
+    unifiedDocuments,
+    unifiedPayments,
+  ]);
 
   const projectExpenses = useMemo(
     () => pmExpenses.filter((e) => e.projectId === selectedProject?.id),
@@ -331,7 +424,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   );
   const fieldExpensesLimit = selectedProject?.maxFieldExpensesDzd || 1;
   const burnRatePercent = Math.min(Math.round((totalExpensesSpent / fieldExpensesLimit) * 100), 100);
-  const isOverThreshold = burnRatePercent >= 85;
+  const isOverThreshold =
+    burnRatePercent >= (selectedProject?.budgetAlertThresholdPct ?? 85) ||
+    selectedProjectProfitability?.alertLevel !== 'ok';
   const pendingBatCount = useMemo(
     () => pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length,
     [pmBatDeliverables]
@@ -758,6 +853,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const getExpenseRowMeta = useCallback(
     (exp: PMExpense): Partial<KineticRowData> => {
       const br = resolveRecordBranch(exp, branchesById, currentBranch, language);
+      const comp = evaluateExpenseReceiptCompliance(exp);
       const isApp = exp.status === 'approved_by_direction' || exp.status === 'audited_and_paid';
       const isRej = exp.status === 'rejected';
       return {
@@ -765,7 +861,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         subline: `${exp.declaredByUserName} · ${exp.projectTitle}`,
         avatarText: exp.category.slice(0, 2).toUpperCase(),
         categoryLabel: exp.category,
-        statusLabel: isApp
+        statusLabel: comp.missingReceiptFlagged
+          ? t('pm_depth_missing_receipt_short')
+          : isApp
           ? isAr
             ? 'معتمد'
             : 'Validé'
@@ -776,9 +874,19 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           : isAr
           ? 'قيد الانتظار'
           : 'En attente',
-        statusVariant: isApp ? 'active' : isRej ? 'blocked' : 'warning',
+        statusVariant: comp.missingReceiptFlagged
+          ? 'blocked'
+          : isApp
+          ? 'active'
+          : isRej
+          ? 'blocked'
+          : 'warning',
         metricPrimary: formatMoney(exp.amountDzd, 'DZD'),
-        metricSecondary: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple',
+        metricSecondary: comp.missingReceiptFlagged
+          ? t('pm_depth_missing_receipt_badge')
+          : exp.hasFiscalInvoice
+          ? 'Facture NIF'
+          : 'Reçu simple',
         branchName: br.name,
         branchCode: br.code,
         detailCol1: {
@@ -790,7 +898,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         detailCol2: {
           heading: isAr ? 'التصنيف والمستند' : isEn ? 'Category & Proof' : 'Nature & Justificatif',
           primaryText: exp.category,
-          secondaryText: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple',
+          secondaryText: comp.missingReceiptFlagged
+            ? t('pm_depth_missing_receipt_badge')
+            : exp.hasFiscalInvoice
+            ? 'Facture NIF'
+            : 'Reçu simple',
         },
         detailCol3: {
           heading: isAr ? 'المبلغ والحالة' : isEn ? 'Amount & Status' : 'Montant & Statut',
@@ -799,7 +911,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         },
       };
     },
-    [branchesById, currentBranch, language, isAr]
+    [branchesById, currentBranch, language, isAr, isEn, t]
   );
 
   // Columns
@@ -1158,6 +1270,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               : isEn
               ? 'Projects'
               : 'Projets'
+            : activeTab === 'gantt'
+            ? t('pm_depth_tab_gantt')
+            : activeTab === 'billing'
+            ? t('pm_depth_tab_billing_portal')
+            : activeTab === 'timesheets'
+            ? t('pm_depth_tab_timesheets')
             : activeTab === 'catalog'
             ? isAr
               ? 'الكتالوج'
@@ -1171,7 +1289,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               ? 'Orders'
               : 'Commandes'
             : activeTab === 'bat'
-            ? isAr
+            ? isNonPrintMode
+              ? t('pm_depth_nav_deliverables')
+              : isAr
               ? 'المراجعات'
               : isEn
               ? 'Proofs'
@@ -1182,14 +1302,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             ? 'Purchases'
             : 'Achats'
         }
-        primaryAction={{
-          label: `${isAr ? 'سلة الطباعة' : isEn ? 'Print Cart' : 'Panier Print'}${
-            cartCount > 0 ? ` (${cartCount})` : ''
-          }`,
-          icon: <ShoppingBag size={16} />,
-          onClick: () => setIsCartOpen(true),
-          dataAction: 'open-print-cart',
-        }}
+        primaryAction={
+          !isNonPrintMode
+            ? {
+                label: `${isAr ? 'سلة الطباعة' : isEn ? 'Print Cart' : 'Panier Print'}${
+                  cartCount > 0 ? ` (${cartCount})` : ''
+                }`,
+                icon: <ShoppingBag size={16} />,
+                onClick: () => setIsCartOpen(true),
+                dataAction: 'open-print-cart',
+              }
+            : undefined
+        }
       />
 
       <ScreenKpiBanner
@@ -1269,21 +1393,49 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     count: pmProjects.length,
                   },
                   {
-                    value: 'catalog',
-                    label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue',
-                    tooltip: isAr ? 'كتالوج POSM والدعائم' : isEn ? 'POSM & print catalog' : 'Catalogue POSM & PLV',
-                    count: pmCollateralCatalog.length,
+                    value: 'gantt',
+                    label: t('pm_depth_tab_gantt'),
+                    tooltip: t('pm_depth_gantt_title'),
+                    count: pmMilestones.length,
                   },
                   {
-                    value: 'orders',
-                    label: isAr ? 'الطباعة' : isEn ? 'Orders' : 'Commandes',
-                    tooltip: isAr ? 'طلبات الطباعة' : isEn ? 'Print orders' : 'Commandes Print',
-                    count: pmPrintOrders.length,
+                    value: 'billing',
+                    label: t('pm_depth_tab_billing_short'),
+                    tooltip: t('pm_depth_tab_billing_portal'),
+                    count: unifiedDocuments.filter((d) => d.sourceVertical === 'project_milestone').length,
                   },
+                  {
+                    value: 'timesheets',
+                    label: t('pm_depth_tab_timesheets_short'),
+                    tooltip: t('pm_depth_tab_timesheets'),
+                    count: pmTimesheets.length,
+                  },
+                  ...(!isNonPrintMode
+                    ? [
+                        {
+                          value: 'catalog',
+                          label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue',
+                          tooltip: isAr ? 'كتالوج POSM والدعائم' : isEn ? 'POSM & print catalog' : 'Catalogue POSM & PLV',
+                          count: pmCollateralCatalog.length,
+                        },
+                        {
+                          value: 'orders',
+                          label: isAr ? 'الطباعة' : isEn ? 'Orders' : 'Commandes',
+                          tooltip: isAr ? 'طلبات الطباعة' : isEn ? 'Print orders' : 'Commandes Print',
+                          count: pmPrintOrders.length,
+                        },
+                      ]
+                    : []),
                   {
                     value: 'bat',
-                    label: isAr ? 'الاعتماد' : isEn ? 'Proofs' : 'BAT',
-                    tooltip: isAr ? 'مراجعة BAT' : isEn ? 'Artwork proofs review' : 'Revue BAT',
+                    label: isNonPrintMode
+                      ? t('pm_depth_nav_deliverables')
+                      : isAr
+                      ? 'الاعتماد'
+                      : isEn
+                      ? 'Proofs'
+                      : 'BAT',
+                    tooltip: isAr ? 'مراجعة المخرجات' : isEn ? 'Deliverables review' : 'Revue Livrables',
                     count: pmBatDeliverables.length,
                   },
                   {
@@ -1301,22 +1453,106 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             </div>
           </div>
 
+          {activeTab === 'gantt' && (
+            <ProjectGanttPanel
+              projects={pmProjects}
+              milestones={pmMilestones}
+              selectedProjectId={selectedProject?.id}
+              onSelectProjectId={setSelectedProjectId}
+              onUpsertMilestone={upsertPmMilestone}
+              onApproveMilestonePartial={approvePmMilestonePartial}
+            />
+          )}
+
+          {activeTab === 'billing' && (
+            <ProjectBillingPortalPanel
+              projects={pmProjects}
+              milestones={pmMilestones}
+              deliverables={pmBatDeliverables}
+              portalReviews={pmClientPortalReviews}
+              selectedProjectId={selectedProject?.id}
+              onSelectProjectId={setSelectedProjectId}
+            />
+          )}
+
+          {activeTab === 'timesheets' && (
+            <ProjectTimesheetsPanel
+              accountId={account?.id || ''}
+              branchId={currentBranch?.id || ''}
+              projects={pmProjects}
+              milestones={pmMilestones}
+              staff={staff}
+              timesheets={pmTimesheets}
+              defaultStaffName={currentUser?.fullName || ''}
+              defaultStaffId={currentUser?.id || ''}
+              onRecordTimesheet={recordPmTimesheet}
+              onApproveTimesheet={approvePmTimesheet}
+              onDeleteTimesheet={deletePmTimesheet}
+            />
+          )}
+
           {activeTab === 'portfolio' && (
             <div className="space-y-5">
+              {selectedProjectProfitability && selectedProjectProfitability.alertLevel !== 'ok' && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className={`p-4 flex items-center justify-between gap-3 t-small font-semibold ${
+                    selectedProjectProfitability.alertLevel === 'overrun'
+                      ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
+                      : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>
+                      {selectedProjectProfitability.alertLevel === 'overrun'
+                        ? t('pm_depth_alert_overrun_banner', {
+                            pct: String(Math.round(selectedProjectProfitability.budgetUtilizationPct)),
+                          })
+                        : t('pm_depth_alert_warning_banner', {
+                            pct: String(Math.round(selectedProjectProfitability.budgetUtilizationPct)),
+                          })}
+                    </span>
+                  </div>
+                  <span className="tabular-nums shrink-0">
+                    {t('pm_depth_real_profit')}: {formatMoney(selectedProjectProfitability.realProfitDzd, 'DZD')}
+                  </span>
+                </div>
+              )}
+
               <div className="sq-elev-card">
                 <div
                   data-sq="card"
                   data-sq-border="none"
                   className="p-5 bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
-                  <div>
-                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                      {isAr
-                        ? 'مراقبة سقف المصاريف الميدانية'
-                        : isEn
-                        ? 'Field Expense Burn-Rate Control'
-                        : 'Contrôle des Plafonds Dépenses Terrain'}
-                    </span>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                        {isAr
+                          ? 'مراقبة سقف المصاريف الميدانية'
+                          : isEn
+                          ? 'Field Expense Burn-Rate Control'
+                          : 'Contrôle des Plafonds Dépenses Terrain'}
+                      </span>
+                      {selectedProject && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updatePmProjectConfig(selectedProject.id, {
+                              isNonPrintPreset: !isNonPrintMode,
+                            })
+                          }
+                          data-sq="ctl-sm"
+                          className="px-2.5 py-0.5 t-cap font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80 hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] cursor-pointer"
+                        >
+                          {isNonPrintMode
+                            ? t('pm_depth_preset_non_print_on')
+                            : t('pm_depth_preset_non_print_off')}
+                        </button>
+                      )}
+                    </div>
                     <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
                       {selectedProject?.title}
                     </h3>
@@ -1329,6 +1565,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       <span className="tabular-nums font-semibold">
                         {formatMoney(selectedProject?.maxFieldExpensesDzd || 0, 'DZD')}
                       </span>
+                      {selectedProjectProfitability && (
+                        <>
+                          {' '}
+                          · {t('pm_depth_real_profit')}:{' '}
+                          <span className="tabular-nums font-semibold">
+                            {formatMoney(selectedProjectProfitability.realProfitDzd, 'DZD')}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="w-full sm:w-64 space-y-2">
@@ -1848,12 +2093,19 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       <h3 className="t-label font-semibold text-black dark:text-white truncate">
                         {bat.title}
                       </h3>
-                      <div className="flex items-center gap-2 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                      <div className="flex items-center gap-2 t-cap text-black/55 dark:text-white/55 tabular-nums flex-wrap">
                         <span>{bat.colorSpace}</span>
                         <span>·</span>
                         <span>{bat.resolutionDpi} DPI</span>
                         <span>·</span>
                         <span>{bat.bleedMm}mm</span>
+                        <span>·</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#F3EDE7] dark:bg-[#2B2825] font-semibold">
+                          {t('pm_depth_revision_counter', {
+                            count: String(bat.revisionCount ?? 0),
+                            max: String(bat.maxRevisionLoops ?? selectedProject?.maxRevisionLoops ?? 3),
+                          })}
+                        </span>
                       </div>
                       {bat.revisionComments && (
                         <div
@@ -1960,26 +2212,34 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         ]
                       : []),
                   ]}
-                  renderCard={(exp) => (
-                    <div className="p-4 flex items-center justify-between gap-4">
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                            {exp.category}
-                          </span>
-                          <span className="font-semibold t-small text-black dark:text-white truncate">
-                            {exp.title}
-                          </span>
+                  renderCard={(exp) => {
+                    const comp = evaluateExpenseReceiptCompliance(exp);
+                    return (
+                      <div className="p-4 flex items-center justify-between gap-4">
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                              {exp.category}
+                            </span>
+                            <span className="font-semibold t-small text-black dark:text-white truncate">
+                              {exp.title}
+                            </span>
+                            {comp.missingReceiptFlagged && (
+                              <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] t-cap font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+                                {t('pm_depth_missing_receipt_badge')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="t-cap text-black/55 dark:text-white/55">
+                            {exp.declaredByUserName} · {exp.status}
+                          </div>
                         </div>
-                        <div className="t-cap text-black/55 dark:text-white/55">
-                          {exp.declaredByUserName} · {exp.status}
-                        </div>
+                        <span className="tabular-nums font-semibold t-label text-black dark:text-white shrink-0">
+                          {formatMoney(exp.amountDzd, 'DZD')}
+                        </span>
                       </div>
-                      <span className="tabular-nums font-semibold t-label text-black dark:text-white shrink-0">
-                        {formatMoney(exp.amountDzd, 'DZD')}
-                      </span>
-                    </div>
-                  )}
+                    );
+                  }}
                 />
               </div>
 
@@ -2071,6 +2331,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       onChange={handlePurchaseReceiptChange}
                       className="block w-full t-cap text-black dark:text-white file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-[#F5F1EC] dark:file:bg-[#2B2825] file:font-semibold file:cursor-pointer"
                     />
+                    {!purchaseReceiptFile && !businessConfig?.fiscalProfile?.nif && (
+                      <p className="t-cap text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t('pm_depth_missing_receipt_hint')}</span>
+                      </p>
+                    )}
                     {purchaseReceiptFile && (
                       <div className="t-cap text-emerald-700 dark:text-emerald-400">
                         {purchaseReceiptFile.name} ({(purchaseReceiptFile.size / 1024).toFixed(0)} KB)

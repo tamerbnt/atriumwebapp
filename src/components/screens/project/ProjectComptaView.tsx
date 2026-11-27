@@ -4,19 +4,38 @@ import {
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
+  selectCurrentPmProjectsFromState,
+  selectCurrentPmMilestonesFromState,
+  selectCurrentPmPrintOrdersFromState,
   selectCurrentPmPayrollBatchesFromState,
   selectCurrentPmCcpSlipsFromState,
   selectCurrentPmExpensesFromState,
+  selectCurrentPmAttendancesFromState,
+  selectCurrentPmTimesheetsFromState,
   selectCurrentPmEquipmentStockFromState,
+  selectCurrentUnifiedDocumentsFromState,
+  selectCurrentUnifiedPaymentsFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import {
+  computeProjectRealProfitability,
+  evaluateExpenseReceiptCompliance,
+  isUnifiedDocumentLinkedToProject,
+  normalizeFxRateToDzd,
+} from '../../../utils/projectDepth';
+import { centimesToDzd } from '../../../utils/money';
+import {
   PMCcpSlip,
   PMExpense,
   PMEquipmentStock,
+  UnifiedDocument,
 } from '../../../types/index';
 import { CcpSlipModal } from './CcpSlipModal';
+import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
+import { UnifiedPaymentModal } from '../../common/invoicing/UnifiedPaymentModal';
+import { UnifiedPaymentsLedgerPanel } from '../../common/invoicing/UnifiedPaymentsLedgerPanel';
+import { LabelTextarea } from '../../ui/LabelTextarea';
 import {
   CreditCard,
   Receipt,
@@ -29,6 +48,8 @@ import {
   X,
   Wrench,
   PackageCheck,
+  AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
@@ -64,7 +85,7 @@ import {
 } from '../../ui/kinetic';
 
 interface ProjectComptaViewProps {
-  initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock';
+  initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock' | 'receivables';
 }
 
 const getEquipmentStatusBadge = (
@@ -114,18 +135,44 @@ const getEquipmentStatusBadge = (
 };
 
 export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab }) => {
-  const { language, isRtl } = useTranslation();
+  const { language, t, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { currentBranch, branches, pmPayrollBatches, pmCcpSlips, pmExpenses, pmEquipmentStock, activePmSubScreen, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const {
+    currentBranch,
+    branches,
+    pmProjects,
+    pmMilestones,
+    pmPrintOrders,
+    pmPayrollBatches,
+    pmCcpSlips,
+    pmExpenses,
+    pmAttendances,
+    pmTimesheets,
+    pmEquipmentStock,
+    unifiedDocuments,
+    unifiedPayments,
+    activePmSubScreen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
     (s) => ({
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
+      pmProjects: selectCurrentPmProjectsFromState(s),
+      pmMilestones: selectCurrentPmMilestonesFromState(s),
+      pmPrintOrders: selectCurrentPmPrintOrdersFromState(s),
       pmPayrollBatches: selectCurrentPmPayrollBatchesFromState(s),
       pmCcpSlips: selectCurrentPmCcpSlipsFromState(s),
       pmExpenses: selectCurrentPmExpensesFromState(s),
+      pmAttendances: selectCurrentPmAttendancesFromState(s),
+      pmTimesheets: selectCurrentPmTimesheetsFromState(s),
       pmEquipmentStock: selectCurrentPmEquipmentStockFromState(s),
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      unifiedPayments: selectCurrentUnifiedPaymentsFromState(s),
       activePmSubScreen: s.activePmSubScreen || 'dashboard',
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -149,13 +196,15 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-  const activeTab: 'payroll' | 'ccp' | 'expenses' | 'stock' =
+  const activeTab: 'payroll' | 'ccp' | 'expenses' | 'stock' | 'receivables' =
     activePmSubScreen === 'ccp' || initialTab === 'ccp'
       ? 'ccp'
       : activePmSubScreen === 'expenses' || initialTab === 'expenses'
       ? 'expenses'
       : activePmSubScreen === 'stock' || initialTab === 'stock'
       ? 'stock'
+      : activePmSubScreen === 'receivables' || initialTab === 'receivables'
+      ? 'receivables'
       : 'payroll';
 
   const setActiveTab = useCallback(
@@ -167,6 +216,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
   const [selectedSlip, setSelectedSlip] = useState<PMCcpSlip | null>(null);
   const [selectedReceiptUrl, setSelectedReceiptUrl] = useState<string | null>(null);
+  const [overrideExpenseId, setOverrideExpenseId] = useState<string | null>(null);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [printDoc, setPrintDoc] = useState<UnifiedDocument | null>(null);
+  const [paymentDoc, setPaymentDoc] = useState<UnifiedDocument | null>(null);
 
   // CCP state
   const [ccpSearch, setCcpSearch] = useState('');
@@ -673,18 +726,29 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
       {
         key: 'fiscal',
         header: isAr ? 'الجبائية' : isEn ? 'Fiscal' : 'Fiscalité',
-        width: '1.2*',
-        minWidth: '110px',
+        width: '1.3*',
+        minWidth: '130px',
         align: 'center',
-        renderCell: (exp) => (
-          <span
-            className={`t-small font-semibold ${
-              exp.hasFiscalInvoice ? 'text-emerald-600' : 'text-black/55 dark:text-white/55'
-            }`}
-          >
-            {exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple'}
-          </span>
-        ),
+        renderCell: (exp) => {
+          const comp = evaluateExpenseReceiptCompliance(exp);
+          return (
+            <span
+              className={`t-small font-semibold ${
+                comp.missingReceiptFlagged
+                  ? 'text-red-600 dark:text-red-400'
+                  : exp.hasFiscalInvoice
+                  ? 'text-emerald-600'
+                  : 'text-black/55 dark:text-white/55'
+              }`}
+            >
+              {comp.missingReceiptFlagged
+                ? t('pm_depth_missing_receipt_short')
+                : exp.hasFiscalInvoice
+                ? 'Facture NIF'
+                : 'Reçu simple'}
+            </span>
+          );
+        },
       },
       {
         key: 'actions',
@@ -825,6 +889,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               : isEn
               ? 'Receipts'
               : 'Frais'
+            : activeTab === 'receivables'
+            ? t('pm_depth_tab_receivables')
             : isAr
             ? 'المعدات'
             : isEn
@@ -951,6 +1017,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     value: 'stock',
                     label: isAr ? 'العتاد' : isEn ? 'Equipment' : 'Stock & Mobilier',
                     count: pmEquipmentStock.length,
+                  },
+                  {
+                    value: 'receivables',
+                    label: t('pm_depth_tab_receivables_short'),
+                    count: unifiedDocuments.filter((d) => d.sourceVertical === 'project_milestone').length,
                   },
                 ]}
                 aria-label="Project Compta Sub-Tabs"
@@ -1284,7 +1355,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           id: 'approve',
                           label: 'Valider',
                           icon: <CheckCircle size={14} />,
-                          onClick: () => approvePmExpense(exp.id),
+                          onClick: () => {
+                            if (evaluateExpenseReceiptCompliance(exp).missingReceiptFlagged) {
+                              setOverrideExpenseId(exp.id);
+                              setOverrideReason('');
+                            } else {
+                              approvePmExpense(exp.id);
+                            }
+                          },
                         },
                       ]
                     : []),
@@ -1312,7 +1390,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           id: 'approve',
                           label: isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider',
                           icon: <CheckCircle size={14} />,
-                          onClick: () => approvePmExpense(exp.id),
+                          onClick: () => {
+                            if (evaluateExpenseReceiptCompliance(exp).missingReceiptFlagged) {
+                              setOverrideExpenseId(exp.id);
+                              setOverrideReason('');
+                            } else {
+                              approvePmExpense(exp.id);
+                            }
+                          },
                         },
                       ]
                     : []),
@@ -1327,42 +1412,51 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       ]
                     : []),
                 ]}
-                renderCard={(exp) => (
-                  <div className="flex flex-col justify-between h-full space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between t-cap">
-                        <span className="tabular-nums text-black/55 dark:text-white/55">
-                          {exp.missionCode || exp.projectTitle}
+                renderCard={(exp) => {
+                  const comp = evaluateExpenseReceiptCompliance(exp);
+                  return (
+                    <div className="flex flex-col justify-between h-full space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between t-cap">
+                          <span className="tabular-nums text-black/55 dark:text-white/55">
+                            {exp.missionCode || exp.projectTitle}
+                          </span>
+                          <span className="capitalize text-black/55 dark:text-white/55 font-semibold">
+                            {exp.category}
+                          </span>
+                        </div>
+                        <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
+                          {exp.title}
+                        </h4>
+                        <p className="t-cap text-black/55 dark:text-white/55">
+                          Par {exp.declaredByUserName}
+                        </p>
+                        {comp.missingReceiptFlagged && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--r-check,6px)] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 t-cap font-semibold">
+                            <AlertTriangle className="w-3 h-3" />
+                            {t('pm_depth_missing_receipt_badge')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
+                        <span className="tabular-nums font-semibold t-label text-[#DC2626]">
+                          {formatMoney(exp.amountDzd, 'DZD')}
                         </span>
-                        <span className="capitalize text-black/55 dark:text-white/55 font-semibold">
-                          {exp.category}
+                        <span
+                          className={`px-2 py-1 rounded-full t-small font-semibold ${
+                            exp.status === 'approved_by_direction'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : exp.status === 'rejected'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {exp.status.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
-                        {exp.title}
-                      </h4>
-                      <p className="t-cap text-black/55 dark:text-white/55">
-                        Par {exp.declaredByUserName}
-                      </p>
                     </div>
-                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
-                      <span className="tabular-nums font-semibold t-label text-[#DC2626]">
-                        {formatMoney(exp.amountDzd, 'DZD')}
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded-full t-small font-semibold ${
-                          exp.status === 'approved_by_direction'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : exp.status === 'rejected'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {exp.status.replace(/_/g, ' ')}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  );
+                }}
               />
             </div>
           )}
@@ -1485,6 +1579,150 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     </div>
                   </div>
                 )}
+              />
+            </div>
+          )}
+
+          {activeTab === 'receivables' && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pmProjects.map((proj) => {
+                  const prof = computeProjectRealProfitability({
+                    project: proj,
+                    milestones: pmMilestones,
+                    expenses: pmExpenses,
+                    payrollBatches: pmPayrollBatches,
+                    attendances: pmAttendances,
+                    timesheets: pmTimesheets,
+                    printOrders: pmPrintOrders,
+                    unifiedDocuments,
+                    unifiedPayments,
+                  });
+                  return (
+                    <div key={proj.id} className="sq-elev-card">
+                      <div
+                        data-sq="card"
+                        data-sq-border="none"
+                        className="p-4 bg-white dark:bg-[#22201E] space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="t-small font-semibold text-black dark:text-white truncate">
+                            {proj.title}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-[#F3EDE7] dark:bg-[#2B2825] t-cap font-semibold tabular-nums">
+                            {prof.currency}
+                          </span>
+                        </div>
+                        <div className="t-cap text-black/55 dark:text-white/55 space-y-1 tabular-nums">
+                          <div className="flex justify-between">
+                            <span>{t('pm_depth_invoiced_revenue')}</span>
+                            <span className="font-semibold text-black dark:text-white">
+                              {formatMoney(prof.invoicedRevenueDzd, 'DZD')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t('pm_depth_collected_cash')}</span>
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                              {formatMoney(prof.collectedCashDzd, 'DZD')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t('pm_depth_real_costs_total')}</span>
+                            <span>{formatMoney(prof.totalRealCostDzd, 'DZD')}</span>
+                          </div>
+                          <div className="flex justify-between pt-1 border-t border-[var(--atr-divider)]">
+                            <span>{t('pm_depth_real_profit')}</span>
+                            <span
+                              className={`font-semibold ${
+                                prof.realProfitDzd < 0
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : 'text-emerald-600 dark:text-emerald-400'
+                              }`}
+                            >
+                              {formatMoney(prof.realProfitDzd, 'DZD')} ({prof.realMarginPct.toFixed(1)}%)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="sq-elev-card">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-5 bg-white dark:bg-[#22201E] space-y-3"
+                >
+                  <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                    <span>{t('pm_depth_unified_docs_title')}</span>
+                  </h3>
+                  {unifiedDocuments.filter((d) => d.sourceVertical === 'project_milestone').length === 0 ? (
+                    <p className="t-cap text-black/55 dark:text-white/55">{t('pm_depth_no_docs_desc')}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {unifiedDocuments
+                        .filter((d) => d.sourceVertical === 'project_milestone')
+                        .map((doc) => {
+                          const totalAmt = centimesToDzd(doc.totalTtcCentimes);
+                          const dueAmt = centimesToDzd(doc.balanceDueCentimes);
+                          const linkedProj = pmProjects.find((p) => {
+                            const msSet = new Set(pmMilestones.filter((m) => m.projectId === p.id).map((m) => m.id));
+                            return isUnifiedDocumentLinkedToProject(doc, p, msSet);
+                          });
+                          return (
+                            <div
+                              key={doc.id}
+                              data-sq="ctl"
+                              data-sq-border="none"
+                              className="p-3 bg-[#F5F1EC] dark:bg-[#191716] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                            >
+                              <div>
+                                <div className="t-small font-semibold text-black dark:text-white">
+                                  {doc.docNumber || doc.draftNumber} · {doc.partyName}
+                                  {linkedProj ? ` (${linkedProj.title})` : ''}
+                                </div>
+                                <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
+                                  {doc.docType.toUpperCase()} · {doc.status} ·{' '}
+                                  {totalAmt.toLocaleString('fr-FR')} {doc.currency || 'DZD'} · Due:{' '}
+                                  {dueAmt.toLocaleString('fr-FR')} {doc.currency || 'DZD'}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => setPrintDoc(doc)}
+                                  data-sq="ctl-sm"
+                                  className="px-3 py-1.5 t-cap font-semibold bg-white dark:bg-[#2B2825] text-black dark:text-white cursor-pointer"
+                                >
+                                  {isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
+                                </button>
+                                {doc.status !== 'Draft' &&
+                                  doc.docType === 'facture' &&
+                                  doc.balanceDueCentimes > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPaymentDoc(doc)}
+                                      data-sq="ctl-sm"
+                                      className="px-3 py-1.5 t-cap font-semibold bg-emerald-600 text-white cursor-pointer"
+                                    >
+                                      {isAr ? 'تحصيل' : isEn ? 'Collect (6.2)' : 'Encaisser (6.2)'}
+                                    </button>
+                                  )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <UnifiedPaymentsLedgerPanel
+                payments={unifiedPayments.filter((p) => p.sourceVertical === 'project_milestone')}
+                title={t('pm_depth_payments_ledger_title')}
               />
             </div>
           )}
@@ -1668,8 +1906,19 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               <div className="space-y-2">
                 {exp.status === 'pending_direction_approval' && (
                   <InspectorWideButton
-                    label="Valider le Remboursement"
-                    onClick={() => approvePmExpense(exp.id)}
+                    label={
+                      evaluateExpenseReceiptCompliance(exp).missingReceiptFlagged
+                        ? t('pm_depth_override_approve_btn')
+                        : 'Valider le Remboursement'
+                    }
+                    onClick={() => {
+                      if (evaluateExpenseReceiptCompliance(exp).missingReceiptFlagged) {
+                        setOverrideExpenseId(exp.id);
+                        setOverrideReason('');
+                      } else {
+                        approvePmExpense(exp.id);
+                      }
+                    }}
                   />
                 )}
                 {exp.receiptPhotoUrl && (
@@ -1833,6 +2082,95 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           </div>
         )}
       </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(overrideExpenseId)}
+        onClose={() => setOverrideExpenseId(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="t-label font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              {t('pm_depth_override_modal_title')}
+            </h3>
+            <button
+              type="button"
+              aria-label="Fermer"
+              onClick={() => setOverrideExpenseId(null)}
+              data-sq="ctl-sm"
+              className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="t-cap text-black/60 dark:text-white/65">
+            {t('pm_depth_override_modal_desc')}
+          </p>
+          <LabelTextarea
+            field="ComptaOverrideReason"
+            label={t('pm_depth_override_reason_label')}
+            rows={3}
+            value={overrideReason}
+            onChange={setOverrideReason}
+            placeholder={t('pm_depth_override_reason_ph')}
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setOverrideExpenseId(null)}
+              className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+            >
+              {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+            </button>
+            <button
+              type="button"
+              disabled={overrideReason.trim().length < 5}
+              onClick={() => {
+                if (!overrideExpenseId) return;
+                const ok = approvePmExpense(overrideExpenseId, overrideReason.trim());
+                if (ok) {
+                  setOverrideExpenseId(null);
+                  setOverrideReason('');
+                }
+              }}
+              data-sq="ctl"
+              className="px-4 py-2 t-small font-semibold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-45 cursor-pointer"
+            >
+              {t('pm_depth_override_confirm_btn')}
+            </button>
+          </div>
+        </div>
+      </KineticModalShell>
+
+      <UnifiedInvoicePrintModal
+        isOpen={Boolean(printDoc)}
+        onClose={() => setPrintDoc(null)}
+        document={printDoc}
+      />
+
+      <UnifiedPaymentModal
+        isOpen={Boolean(paymentDoc)}
+        onClose={() => setPaymentDoc(null)}
+        sourceVertical="project_milestone"
+        partyId={paymentDoc?.partyId}
+        partyName={paymentDoc?.partyName || ''}
+        initialSelectedDocId={paymentDoc?.id}
+        defaultAmountDzd={
+          paymentDoc
+            ? Math.round(
+                centimesToDzd(paymentDoc.balanceDueCentimes) *
+                  normalizeFxRateToDzd(paymentDoc.currency, paymentDoc.fxRate)
+              )
+            : 0
+        }
+      />
     </div>
   );
 };

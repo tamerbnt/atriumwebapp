@@ -192,6 +192,14 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   salon_consent_forms: 42,
   salon_hammam_sessions: 40,
   salon_loyalty_ledger: 44,
+  pm_clients: 19,
+  pm_projects: 20,
+  pm_milestones: 24,
+  pm_print_orders: 30,
+  pm_bat_deliverables: 32,
+  pm_expenses: 36,
+  pm_timesheets: 38,
+  pm_client_portal_reviews: 41,
   immutable_audit_logs: 50,
 };
 

@@ -53,6 +53,7 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
   selectTerminologyFromState,
   setScreenAction as setScreen,
   ActiveScreen,
@@ -65,6 +66,7 @@ import {
   normalizeBusinessCategory,
 } from '../../utils/staffRules';
 import { canAccessRoute } from '../../utils/routePermissions';
+import { isNonPrintProjectPreset } from '../../utils/projectDepth';
 import { preloadCategoryScreens, preloadScreen } from '../screens/lazyScreens';
 
 interface SidebarProps {
@@ -87,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const {
     terminology,
     currentBusiness,
+    businessConfig,
     activePmRole,
     activeGarageRole,
     activeRealEstateRole,
@@ -107,6 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     (s) => ({
       terminology: selectTerminologyFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
+      businessConfig: selectCurrentBusinessConfigFromState(s),
       currentBusinessId: s.currentBusinessId,
       rbacPermissions: s.rbacPermissions,
       activePmRole: s.activePmRole || 'direction',
@@ -132,6 +136,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isRtl = language === 'ar';
 
   const category = normalizeBusinessCategory(currentBusiness?.category);
+  const isNonPrintProjectTrade = isNonPrintProjectPreset(
+    businessConfig?.onboardingContext?.selectedTradeId
+  );
 
   // Memoize the entire nav-item construction so it only reruns when category/role/language
   // changes — NOT on every screen navigation. This is the single biggest perf win.
@@ -210,23 +217,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: t('nav_pm_cp_projects', language),
           label: t('nav_pm_cp_projects', language),
         },
-        {
-          id: 'pm_cp_catalog',
-          icon: <ShoppingBag size={19} />,
-          title: t('nav_pm_cp_catalog', language),
-          label: t('nav_pm_cp_catalog', language),
-        },
-        {
-          id: 'pm_cp_orders',
-          icon: <Sparkles size={19} />,
-          title: t('nav_pm_cp_orders', language),
-          label: t('nav_pm_cp_orders', language),
-        },
+        ...(!isNonPrintProjectTrade
+          ? [
+              {
+                id: 'pm_cp_catalog' as ActiveScreen,
+                icon: <ShoppingBag size={19} />,
+                title: t('nav_pm_cp_catalog', language),
+                label: t('nav_pm_cp_catalog', language),
+              },
+              {
+                id: 'pm_cp_orders' as ActiveScreen,
+                icon: <Sparkles size={19} />,
+                title: t('nav_pm_cp_orders', language),
+                label: t('nav_pm_cp_orders', language),
+              },
+            ]
+          : []),
         {
           id: 'pm_cp_files',
           icon: <FileText size={19} />,
-          title: t('nav_pm_cp_files', language),
-          label: t('nav_pm_cp_files', language),
+          title: isNonPrintProjectTrade
+            ? t('pm_depth_nav_deliverables', language)
+            : t('nav_pm_cp_files', language),
+          label: isNonPrintProjectTrade
+            ? t('pm_depth_nav_deliverables', language)
+            : t('nav_pm_cp_files', language),
         },
         {
           id: 'pm_cp_expenses',
@@ -1962,7 +1977,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
      activeManufacturingRole, activeLegalRole, activeLogisticsRole,
      activeContractorRole, activeAgriRole, activeMembershipRole,
      activeAppointmentRole, activePosRole, activeEducationRole,
-     currentUser, language, terminology, t]);
+     currentUser, language, terminology, t, isNonPrintProjectTrade]);
 
   // Preload screen chunks for the current category during browser idle time
   React.useEffect(() => {

@@ -1565,6 +1565,119 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 22. Phase 3 Step 4 (7.4 project_milestone): Multi-currency, Timesheets,
+--     Client Portal Revision Loop Cap RPC & Partial-Approval Milestone Billing
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_biz_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_br_a  uuid := '22222222-2222-2222-2222-222222222222';
+  v_user_a uuid := '99999999-1111-1111-1111-111111111111';
+  v_user_b uuid := '99999999-2222-2222-2222-222222222222';
+  v_proj_id uuid := gen_random_uuid();
+  v_ms_id uuid := gen_random_uuid();
+  v_bat_id uuid := gen_random_uuid();
+  v_ts_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean := false;
+  v_res jsonb;
+BEGIN
+  INSERT INTO public.pm_projects (
+    id, account_id, business_id, branch_id, client_name, title, scope_of_work,
+    budget_cap_dzd, max_field_expenses_dzd, target_gross_margin_percent,
+    start_date, end_date, kv_deadline, print_deadline, execution_start_date,
+    project_manager_name, lead_creative_name, status,
+    currency, fx_rate_to_dzd, budget_alert_threshold_pct, is_non_print_preset, max_revision_loops
+  ) VALUES (
+    v_proj_id, v_acc_a, v_biz_a, v_br_a, 'Client SaaS DZ', 'Platform Launch', 'Web & App Rollout',
+    2900000, 300000, 35,
+    CURRENT_DATE, CURRENT_DATE + 30, CURRENT_DATE + 7, CURRENT_DATE + 14, CURRENT_DATE + 15,
+    'Rami PM', 'Lina Crea', 'production',
+    'EUR', 145.0000, 85, true, 2
+  );
+
+  INSERT INTO public.pm_milestones (
+    id, account_id, business_id, branch_id, project_id, title, phase, target_date,
+    is_completed, assigned_role, start_date, amount_dzd, billing_pct, approval_status, approved_pct
+  ) VALUES (
+    v_ms_id, v_acc_a, v_biz_a, v_br_a, v_proj_id, 'Design & UX Lot 1', 'concept_kv', CURRENT_DATE + 10,
+    false, 'crea', CURRENT_DATE, 1000000, 40, 'pending', 0
+  );
+
+  INSERT INTO public.pm_bat_deliverables (
+    id, account_id, business_id, branch_id, project_id, project_title, title,
+    file_format, color_space, resolution_dpi, bleed_mm, has_bleed_included,
+    version, version_code, preview_url, file_size_bytes, uploaded_by_creative_id, uploaded_by_creative_name,
+    approval_status, revision_count, max_revision_loops, deliverable_kind
+  ) VALUES (
+    v_bat_id, v_acc_a, v_biz_a, v_br_a, v_proj_id, 'Platform Launch', 'Homepage Prototype v1',
+    'pdf', 'RVB', 150, 0, false,
+    1, 'v1', 'https://example.dz/proto.pdf', 102400, v_user_a, 'Lina Crea',
+    'pending_review', 1, 2, 'digital_asset'
+  );
+
+  INSERT INTO public.pm_timesheets (
+    id, account_id, business_id, branch_id, project_id, project_title, milestone_id,
+    staff_name, work_date, hours_worked, capacity_hours, billable, hourly_cost_dzd, hourly_bill_dzd, task_summary
+  ) VALUES (
+    v_ts_id, v_acc_a, v_biz_a, v_br_a, v_proj_id, 'Platform Launch', v_ms_id,
+    'Yacine Dev', CURRENT_DATE, 6.5, 8, true, 2500, 6000, 'Frontend architecture sprint'
+  );
+
+  -- Tenant B must not read Tenant A pm_timesheets or pm_projects
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.pm_timesheets WHERE id = v_ts_id;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Tenant B unexpectedly read Tenant A pm_timesheets';
+  END IF;
+  RESET ROLE;
+
+  -- Tenant A exercises revision loop cap + override + partial milestone billing RPC
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- Round 2 allowed (1 -> 2, max = 2)
+  v_res := public.pm_record_deliverable_review_with_limit(
+    v_bat_id, 'Client Contact', 'revision_requested', 'Adjust hero spacing', false
+  );
+  IF (v_res ->> 'revision_count')::int <> 2 THEN
+    RAISE EXCEPTION 'Expected revision_count=2, got %', v_res;
+  END IF;
+
+  -- Round 3 MUST block when p_override_limit = false
+  v_blocked := false;
+  BEGIN
+    PERFORM public.pm_record_deliverable_review_with_limit(
+      v_bat_id, 'Client Contact', 'revision_requested', 'One more tweak', false
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected revision loop beyond max_revision_loops to fail';
+  END IF;
+
+  -- Over-billing above approved_pct (50% of 1,000,000 = 500,000) MUST block
+  v_blocked := false;
+  BEGIN
+    PERFORM public.pm_approve_milestone_for_billing(v_ms_id, 50, NULL, 700000);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected milestone over-billing beyond approved_pct to fail';
+  END IF;
+
+  v_res := public.pm_approve_milestone_for_billing(v_ms_id, 50, NULL, 500000);
+  IF (v_res ->> 'approval_status') <> 'partial_approved' THEN
+    RAISE EXCEPTION 'Expected partial_approved status, got %', v_res;
+  END IF;
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 
 

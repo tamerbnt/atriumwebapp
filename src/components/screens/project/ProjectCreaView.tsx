@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
@@ -11,6 +12,7 @@ import {
 } from '../../../services/store';
 import { storageService, validateFileForBucket } from '../../../lib/supabase';
 import { inspectBatFile, BatMetadataResult } from '../../../utils/batMetadata';
+import { isNonPrintProjectPreset } from '../../../utils/projectDepth';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { PMBatDeliverable } from '../../../types/index';
 import {
@@ -106,6 +108,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     account,
     currentUser,
     currentBusinessId,
+    businessConfig,
     currentBranch,
     branches,
     pmProjects,
@@ -120,6 +123,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       account: s.account,
       currentUser: s.currentUser,
       currentBusinessId: s.currentBusinessId,
+      businessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmProjects: selectCurrentPmProjectsFromState(s),
@@ -198,6 +202,17 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   }, [inspectedBat, pmBatDeliverables]);
 
   const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
+
+  const isNonPrintProject = isNonPrintProjectPreset(
+    businessConfig?.onboardingContext?.selectedTradeId,
+    selectedProject?.isNonPrintPreset
+  );
+
+  const [deliverableKind, setDeliverableKind] = useState<
+    NonNullable<PMBatDeliverable['deliverableKind']>
+  >(() => (isNonPrintProject ? 'digital_asset' : 'print_bat'));
+
+  const isNonPrintMode = isNonPrintProject || deliverableKind !== 'print_bat';
 
   const cmjnCompliantPct = useMemo(
     () =>
@@ -637,8 +652,13 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       });
       return;
     }
-    const parsedDpi = Number(resolutionDpi);
-    if (!Number.isFinite(parsedDpi) || parsedDpi <= 0) {
+    const rawParsedDpi = Number(resolutionDpi);
+    const parsedDpi = isNonPrintMode
+      ? Number.isFinite(rawParsedDpi) && rawParsedDpi > 0
+        ? rawParsedDpi
+        : 72
+      : rawParsedDpi;
+    if (!isNonPrintMode && (!Number.isFinite(parsedDpi) || parsedDpi <= 0)) {
       showToast({
         type: 'warning',
         title: isAr ? 'دقة غير صالحة' : isEn ? 'Invalid DPI' : 'Résolution DPI invalide',
@@ -687,12 +707,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         projectId: selectedProject.id,
         projectTitle: selectedProject.title,
         printOrderId: selectedOrderId || undefined,
+        deliverableKind,
+        maxRevisionLoops: selectedProject.maxRevisionLoops ?? 3,
         title: nextTitle,
         fileFormat: fileFormat as PMBatDeliverable['fileFormat'],
-        colorSpace: colorSpace as PMBatDeliverable['colorSpace'],
+        colorSpace: (isNonPrintMode ? 'RVB' : colorSpace) as PMBatDeliverable['colorSpace'],
         resolutionDpi: parsedDpi,
-        bleedMm: hasBleedIncluded ? 3 : 0,
-        hasBleedIncluded,
+        bleedMm: isNonPrintMode ? 0 : hasBleedIncluded ? 3 : 0,
+        hasBleedIncluded: isNonPrintMode ? false : hasBleedIncluded,
         metadataStatus,
         version: nextVersion,
         versionCode: `v${nextVersion}`,
@@ -1192,7 +1214,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   </div>
                   <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap tabular-nums">
                     <span>
-                      {bat.colorSpace} · {bat.resolutionDpi} DPI
+                      {bat.deliverableKind && bat.deliverableKind !== 'print_bat'
+                        ? bat.deliverableKind.replace(/_/g, ' ')
+                        : `${bat.colorSpace} · ${bat.resolutionDpi} DPI`}{' '}
+                      · R{bat.revisionCount ?? 0}/{bat.maxRevisionLoops ?? 3}
                     </span>
                     <button
                       type="button"
@@ -1316,6 +1341,31 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 height={40}
                 corner={12}
               />
+              <LabelSelect
+                field="DeliverableKind"
+                label={t('pm_depth_deliverable_kind_label')}
+                value={deliverableKind}
+                onChange={(v) =>
+                  setDeliverableKind(v as NonNullable<PMBatDeliverable['deliverableKind']>)
+                }
+                options={[
+                  { value: 'print_bat', label: t('pm_depth_kind_print_bat') },
+                  { value: 'digital_asset', label: t('pm_depth_kind_digital_asset') },
+                  { value: 'software_build', label: t('pm_depth_kind_software_build') },
+                  { value: 'strategy_deck', label: t('pm_depth_kind_strategy_deck') },
+                ]}
+                height={40}
+                corner={12}
+              />
+              {isNonPrintMode && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-3 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 t-cap font-medium"
+                >
+                  {t('pm_depth_non_print_upload_notice')}
+                </div>
+              )}
               <LabelInput
                 field="ArtworkTitle"
                 label="Nom du Fichier d'Exécution"
@@ -1339,46 +1389,52 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     { value: 'png', label: 'PNG', tooltip: 'PNG Raster' },
                   ]}
                 />
-                <FilterSelect
-                  label="Espace Colorimétrique"
-                  value={colorSpace}
-                  onChange={setColorSpace}
-                  options={[
-                    { value: 'CMJN', label: 'CMJN', tooltip: 'CMJN (Quadrichromie)' },
-                    { value: 'RVB', label: 'RVB', tooltip: 'RVB (Rejeté imprimeur)' },
-                  ]}
-                />
-                <LabelInput
-                  field="Resolution"
-                  label="Résolution (DPI)"
-                  type="number"
-                  placeholder="300"
-                  value={resolutionDpi}
-                  onChange={setResolutionDpi}
-                  required
-                  height={40}
-                  corner={12}
-                />
+                {!isNonPrintMode && (
+                  <>
+                    <FilterSelect
+                      label="Espace Colorimétrique"
+                      value={colorSpace}
+                      onChange={setColorSpace}
+                      options={[
+                        { value: 'CMJN', label: 'CMJN', tooltip: 'CMJN (Quadrichromie)' },
+                        { value: 'RVB', label: 'RVB', tooltip: 'RVB (Rejeté imprimeur)' },
+                      ]}
+                    />
+                    <LabelInput
+                      field="Resolution"
+                      label="Résolution (DPI)"
+                      type="number"
+                      placeholder="300"
+                      value={resolutionDpi}
+                      onChange={setResolutionDpi}
+                      required
+                      height={40}
+                      corner={12}
+                    />
+                  </>
+                )}
               </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
-              >
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-black dark:text-white">
-                    Fond Perdu & Traits de Coupe (+3mm)
-                  </span>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    Indispensable pour éviter tout liseré blanc au massicotage.
-                  </p>
+              {!isNonPrintMode && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
+                >
+                  <div className="space-y-0.5">
+                    <span className="font-semibold text-black dark:text-white">
+                      Fond Perdu & Traits de Coupe (+3mm)
+                    </span>
+                    <p className="t-cap text-black/55 dark:text-white/55">
+                      Indispensable pour éviter tout liseré blanc au massicotage.
+                    </p>
+                  </div>
+                  <LiveSwitch
+                    checked={hasBleedIncluded}
+                    onCheckedChange={setHasBleedIncluded}
+                    aria-label="Fond Perdu & Traits de Coupe (+3mm)"
+                  />
                 </div>
-                <LiveSwitch
-                  checked={hasBleedIncluded}
-                  onCheckedChange={setHasBleedIncluded}
-                  aria-label="Fond Perdu & Traits de Coupe (+3mm)"
-                />
-              </div>
+              )}
               <AtriumButton
                 type="submit"
                 variant="primary"
@@ -1388,9 +1444,8 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   !batFile ||
                   !artworkTitle.trim() ||
                   isUploadingBat ||
-                  colorSpace !== 'CMJN' ||
-                  Number(resolutionDpi) < 300 ||
-                  !hasBleedIncluded
+                  (!isNonPrintMode &&
+                    (colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded))
                 }
                 icon={<UploadCloud className="w-4 h-4" />}
               >
@@ -1546,6 +1601,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 <InspectorKeyValue label="Format" value={bat.fileFormat.toUpperCase()} />
                 <InspectorKeyValue label="Espace Couleur" value={bat.colorSpace} tone={bat.colorSpace === 'CMJN' ? 'ok' : 'danger'} />
                 <InspectorKeyValue label="Résolution" value={`${bat.resolutionDpi} DPI`} />
+                <InspectorKeyValue
+                  label={t('pm_depth_revision_loops_label')}
+                  value={`${bat.revisionCount ?? 0} / ${bat.maxRevisionLoops ?? 3}`}
+                  tone={(bat.revisionCount ?? 0) >= (bat.maxRevisionLoops ?? 3) ? 'danger' : 'ok'}
+                />
                 {bat.metadataStatus && (
                   <InspectorKeyValue
                     label="Métadonnées"
