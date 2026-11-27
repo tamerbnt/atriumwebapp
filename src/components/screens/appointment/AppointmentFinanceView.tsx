@@ -6,6 +6,9 @@ import {
   Printer,
   CheckCircle2,
   Eye,
+  Wallet,
+  Package,
+  Gift,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -13,11 +16,14 @@ import {
   shallowEqualObjects,
   selectCurrentAppointmentsFromState,
   selectCurrentBranchFromState,
+  selectCurrentSalonPrepaidPackagesFromState,
+  selectCurrentSalonGiftCardsFromState,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
 import { computeAppointmentFinanceMetrics } from '../../../utils/appointmentMetrics';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -48,6 +54,8 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
   const {
     appointments,
     stylistPayouts,
+    prepaidPackages,
+    giftCards,
     branches,
     currentBranch,
     language,
@@ -59,6 +67,8 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
     (s) => ({
       appointments: selectCurrentAppointmentsFromState(s),
       stylistPayouts: s.stylistPayouts || [],
+      prepaidPackages: selectCurrentSalonPrepaidPackagesFromState(s),
+      giftCards: selectCurrentSalonGiftCardsFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
@@ -99,6 +109,33 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
       ),
     [stylistPayouts, appointments, branchesById, currentBranch, language]
   );
+
+  const salonDeepFinance = useMemo(() => {
+    const heldDepositsDzd = appointments
+      .filter((a) => a.depositStatus === 'held')
+      .reduce((sum, a) => sum + centimesToDzd(a.depositCentimes || 0), 0);
+    const forfeitedDepositsDzd = appointments
+      .filter((a) => a.depositStatus === 'forfeited')
+      .reduce((sum, a) => sum + centimesToDzd(a.depositCentimes || 0), 0);
+    const refundedDepositsDzd = appointments
+      .filter((a) => a.depositStatus === 'refunded')
+      .reduce((sum, a) => sum + centimesToDzd(a.refundedDepositCentimes || 0), 0);
+    const prepaidPackagesRevenueDzd = prepaidPackages
+      .filter((p) => p.status !== 'refunded')
+      .reduce((sum, p) => sum + centimesToDzd(p.priceCentimes || 0), 0);
+    const giftCardLiabilityDzd = giftCards
+      .filter((g) => g.status === 'active')
+      .reduce((sum, g) => sum + centimesToDzd(g.remainingCentimes || 0), 0);
+    return {
+      heldDepositsDzd,
+      forfeitedDepositsDzd,
+      refundedDepositsDzd,
+      prepaidPackagesRevenueDzd,
+      activePackagesCount: prepaidPackages.filter((p) => p.status === 'active').length,
+      giftCardLiabilityDzd,
+      activeGiftCardsCount: giftCards.filter((g) => g.status === 'active').length,
+    };
+  }, [appointments, prepaidPackages, giftCards]);
 
   const filteredPayouts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -474,7 +511,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         language={language}
         primaryCard={{
           label: isAr ? 'العمولات المدفوعة' : isEn ? 'Settled Payouts' : 'Commissions Réglées',
-          badgeText: `↗ ${stylistPayouts.length} stylistes`,
+          badgeText: `↗ ${stylistPayouts.length} ${isAr ? 'مصففات' : isEn ? 'stylists' : 'stylistes'}`,
           count: metrics.paidCount,
           tone: 'emerald',
           isActive: selectedStatusFilter === 'Paid',
@@ -482,7 +519,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         }}
         secondaryCard={{
           label: isAr ? 'قيد الانتظار والاعتماد' : isEn ? 'Pending Approval' : 'Bordereaux en Attente',
-          badgeText: `${metrics.approvedCount} approuvés`,
+          badgeText: isAr ? 'قيد الانتظار' : isEn ? 'pending' : 'en attente',
           count: metrics.pendingCount,
           tone: 'terracotta',
           isActive: selectedStatusFilter === 'Pending',
@@ -496,9 +533,62 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
           valuePrefix: '',
           valueCount: metrics.totalCommissionsDue,
           formatValue: (n) => formatMoney(n),
-          caption: `Espèces ${formatMoney(metrics.cash)} · BaridiMob ${formatMoney(metrics.baridiMob)}`,
+          caption: `${isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces'} ${formatMoney(metrics.cash)} · BaridiMob ${formatMoney(metrics.baridiMob)}`,
         }}
       />
+
+      <ScreenPod>
+        <div
+          data-testid="salon-finance-depth-strip"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+        >
+          <div className="p-4 rounded-xl bg-[#FAF7F4] dark:bg-[#1E1C1A] border border-[var(--atr-divider)]">
+            <div className="flex items-center justify-between text-black/62 dark:text-white/65 mb-1">
+              <span className="t-cap font-semibold">{isAr ? 'العربون المحجوز' : isEn ? 'Held Deposits' : 'Acomptes Détenus'}</span>
+              <Wallet size={15} />
+            </div>
+            <p className="t-card font-semibold tabular-nums text-black dark:text-white">
+              {formatMoney(salonDeepFinance.heldDepositsDzd)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-[#FAF7F4] dark:bg-[#1E1C1A] border border-[var(--atr-divider)]">
+            <div className="flex items-center justify-between text-black/62 dark:text-white/65 mb-1">
+              <span className="t-cap font-semibold">{isAr ? 'عربون ملغى / مصادَر' : isEn ? 'Forfeited / Refunded' : 'Acomptes Retenus / Remb.'}</span>
+              <Wallet size={15} />
+            </div>
+            <p className="t-card font-semibold tabular-nums text-black dark:text-white">
+              {formatMoney(salonDeepFinance.forfeitedDepositsDzd)}
+            </p>
+            <p className="t-cap tabular-nums text-black/55 dark:text-white/55">
+              {isEn ? 'Refunded' : 'Remb.'}: {formatMoney(salonDeepFinance.refundedDepositsDzd)}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-[#FAF7F4] dark:bg-[#1E1C1A] border border-[var(--atr-divider)]">
+            <div className="flex items-center justify-between text-black/62 dark:text-white/65 mb-1">
+              <span className="t-cap font-semibold">{isAr ? 'إيراد الباقات المسبقة' : isEn ? 'Prepaid Packages' : 'Forfaits Prépayés'}</span>
+              <Package size={15} />
+            </div>
+            <p className="t-card font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+              {formatMoney(salonDeepFinance.prepaidPackagesRevenueDzd)}
+            </p>
+            <p className="t-cap tabular-nums text-black/55 dark:text-white/55">
+              {salonDeepFinance.activePackagesCount} {isEn ? 'active' : 'actifs'}
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-[#FAF7F4] dark:bg-[#1E1C1A] border border-[var(--atr-divider)]">
+            <div className="flex items-center justify-between text-black/62 dark:text-white/65 mb-1">
+              <span className="t-cap font-semibold">{isAr ? 'رصيد بطاقات الهدايا' : isEn ? 'Gift Card Liability' : 'Encours Cartes Cadeaux'}</span>
+              <Gift size={15} />
+            </div>
+            <p className="t-card font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+              {formatMoney(salonDeepFinance.giftCardLiabilityDzd)}
+            </p>
+            <p className="t-cap tabular-nums text-black/55 dark:text-white/55">
+              {salonDeepFinance.activeGiftCardsCount} {isEn ? 'active' : 'actives'}
+            </p>
+          </div>
+        </div>
+      </ScreenPod>
 
       <ScreenPod>
         <ScreenCollectionToolbar
@@ -604,15 +694,15 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
               ? [
                   {
                     id: 'pay',
-                    label: 'Régler',
+                    label: isAr ? 'صرف' : isEn ? 'Settle' : 'Régler',
                     icon: <CheckCircle2 size={13} />,
                     onClick: () => updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob'),
                   },
                 ]
               : []
           }
-          emptyTitle={isAr ? 'لا توجد كشوفات' : 'Aucun bordereau trouvé'}
-          emptyDescription={isAr ? 'ستظهر العمولات هنا' : 'Les commissions générées apparaîtront ici.'}
+          emptyTitle={isAr ? 'لا توجد كشوفات' : isEn ? 'No payout slips found' : 'Aucun bordereau trouvé'}
+          emptyDescription={isAr ? 'ستظهر العمولات هنا' : isEn ? 'Generated stylist commissions will appear here.' : 'Les commissions générées apparaîtront ici.'}
           onResetFilters={handleResetFilters}
           hasActiveFilters={hasActiveAdvancedFilters || selectedStatusFilter !== 'All' || searchQuery.trim().length > 0}
         />
@@ -624,7 +714,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         triggerRef={filterButtonRef}
         language={language}
         displayCount={sortedPayouts.length}
-        entityPluralLabel={isAr ? 'كشوفات' : 'bordereaux'}
+        entityPluralLabel={isAr ? 'كشوفات' : isEn ? 'slips' : 'bordereaux'}
         hasActiveFilters={hasActiveAdvancedFilters}
         onResetFilters={handleResetFilters}
         sections={filterSections}

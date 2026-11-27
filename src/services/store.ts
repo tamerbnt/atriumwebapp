@@ -213,6 +213,17 @@ import {
   BiReportSnapshot,
   BiReportType,
   BiSavedReport,
+  StylistDayHours,
+  StylistTimeOffRange,
+  StylistScheduleConfig,
+  SalonPrepaidPackage,
+  SalonGiftCard,
+  SalonLoyaltyEntry,
+  SalonConsentProtocolType,
+  SalonConsentForm,
+  HammamGenderBlock,
+  HammamSessionStatus,
+  SalonHammamSession,
 } from '../types/index';
 import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
@@ -582,6 +593,19 @@ import {
   evaluateMemberResume,
   evaluateUnusedSessionRefund,
 } from '../utils/membershipDepth';
+import {
+  computeAppointmentEndTime as computeSalonEndTime,
+  computeSalonCheckoutSettlement,
+  createDefaultWeeklyHours,
+  detectClientAllergyConflicts,
+  evaluateConsumableDepletionPlan,
+  evaluateDepositCancellationPolicy,
+  evaluateHammamSessionSlot,
+  evaluateStylistAvailability,
+  findStylistAppointmentOverlap,
+  migrateSalonClientsWalkInVisibility,
+  normalizeSalonMemberRecord,
+} from '../utils/appointmentDepth';
 
 const generateClientUuid = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -758,6 +782,12 @@ interface AppState {
   // Salon, Spa & Beauty Care
   salonWorkstations: SalonWorkstation[];
   stylistPayouts: StylistPayout[];
+  stylistSchedules: StylistScheduleConfig[];
+  salonPrepaidPackages: SalonPrepaidPackage[];
+  salonGiftCards: SalonGiftCard[];
+  salonLoyaltyLedger: SalonLoyaltyEntry[];
+  salonConsentForms: SalonConsentForm[];
+  salonHammamSessions: SalonHammamSession[];
   // Automotive Garage & Fleet Maintenance (Category 10: auto_garage)
   activeGarageRole: GarageRole;
   // Real Estate & Property Brokerage (Category 11: real_estate)
@@ -1007,6 +1037,12 @@ const DEFAULT_STATE: AppState = {
   pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
   salonWorkstations: INITIAL_SALON_WORKSTATIONS,
   stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+  stylistSchedules: [],
+  salonPrepaidPackages: [],
+  salonGiftCards: [],
+  salonLoyaltyLedger: [],
+  salonConsentForms: [],
+  salonHammamSessions: [],
   activeGarageRole: 'gerant',
   activeRealEstateRole: 'direction',
   activeManufacturingRole: 'gerant',
@@ -1256,6 +1292,23 @@ let globalState: AppState = backfillTraceability((() => {
         const effectiveLanguage = langConfig.isAuto ? getSystemDefaultLanguage() : (parsed.language || langConfig.language);
         const effectiveIsAuto = langConfig.isAuto;
 
+        const salonBranchIds = new Set(
+          branches
+            .filter((br: any) => {
+              const biz = businesses.find((b: any) => b.id === br.businessId);
+              return biz?.category === 'appointment_service';
+            })
+            .map((br: any) => br.id)
+        );
+        mergedMembers = mergedMembers.map((m: any) => {
+          const isSalonMember =
+            salonBranchIds.has(m.branchId || m.facilityId) ||
+            String(m.source || '').toLowerCase().includes('walk') ||
+            String(m.membershipPlanName || '').toLowerCase().includes('walk-in') ||
+            m.clientType === 'walkin';
+          return isSalonMember ? normalizeSalonMemberRecord(m) : m;
+        });
+
         return {
           ...DEFAULT_STATE,
           ...parsed,
@@ -1283,6 +1336,12 @@ let globalState: AppState = backfillTraceability((() => {
           servicesCatalog: Array.isArray(parsed.servicesCatalog) ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
           salonWorkstations: Array.isArray(parsed.salonWorkstations) ? parsed.salonWorkstations : INITIAL_SALON_WORKSTATIONS,
           stylistPayouts: Array.isArray(parsed.stylistPayouts) ? parsed.stylistPayouts : INITIAL_STYLIST_PAYOUTS,
+          stylistSchedules: Array.isArray(parsed.stylistSchedules) ? parsed.stylistSchedules : [],
+          salonPrepaidPackages: Array.isArray(parsed.salonPrepaidPackages) ? parsed.salonPrepaidPackages : [],
+          salonGiftCards: Array.isArray(parsed.salonGiftCards) ? parsed.salonGiftCards : [],
+          salonLoyaltyLedger: Array.isArray(parsed.salonLoyaltyLedger) ? parsed.salonLoyaltyLedger : [],
+          salonConsentForms: Array.isArray(parsed.salonConsentForms) ? parsed.salonConsentForms : [],
+          salonHammamSessions: Array.isArray(parsed.salonHammamSessions) ? parsed.salonHammamSessions : [],
           freelanceClients: Array.isArray(parsed.freelanceClients) ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
           freelanceProjects: Array.isArray(parsed.freelanceProjects) ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
           timeLogs: Array.isArray(parsed.timeLogs) ? parsed.timeLogs : INITIAL_TIME_LOGS,
@@ -1828,6 +1887,30 @@ export const selectCurrentAppointmentsFromState = createBranchSelector<Appointme
 export const selectCurrentServicesFromState = createBranchSelector<ServiceItem>(
   (s) => s.servicesCatalog,
   (sv, b) => sv.facilityId === b
+);
+export const selectCurrentStylistSchedulesFromState = createBranchSelector<StylistScheduleConfig>(
+  (s) => s.stylistSchedules || [],
+  (sc, b) => !sc.branchId || sc.branchId === b
+);
+export const selectCurrentSalonPrepaidPackagesFromState = createBranchSelector<SalonPrepaidPackage>(
+  (s) => s.salonPrepaidPackages || [],
+  (pkg, b) => !pkg.branchId || pkg.branchId === b
+);
+export const selectCurrentSalonGiftCardsFromState = createBranchSelector<SalonGiftCard>(
+  (s) => s.salonGiftCards || [],
+  (gc, b) => !gc.branchId || gc.branchId === b
+);
+export const selectCurrentSalonLoyaltyLedgerFromState = createBranchSelector<SalonLoyaltyEntry>(
+  (s) => s.salonLoyaltyLedger || [],
+  (le, b) => !le.branchId || le.branchId === b
+);
+export const selectCurrentSalonConsentFormsFromState = createBranchSelector<SalonConsentForm>(
+  (s) => s.salonConsentForms || [],
+  (cf, b) => !cf.branchId || cf.branchId === b
+);
+export const selectCurrentSalonHammamSessionsFromState = createBranchSelector<SalonHammamSession>(
+  (s) => s.salonHammamSessions || [],
+  (hs, b) => !hs.branchId || hs.branchId === b
 );
 export const selectCurrentParkedOrdersFromState = createBranchSelector<ParkedOrder>(
   (s) => s.parkedOrders,
@@ -4058,6 +4141,12 @@ function pruneDeletedRecords(
     salon_workstations: 'salonWorkstations',
     salon_stylist_payouts: 'stylistPayouts',
     salon_chair_stations: 'salonChairStations',
+    salon_stylist_schedules: 'stylistSchedules',
+    salon_prepaid_packages: 'salonPrepaidPackages',
+    salon_gift_cards: 'salonGiftCards',
+    salon_loyalty_ledger: 'salonLoyaltyLedger',
+    salon_consent_forms: 'salonConsentForms',
+    salon_hammam_sessions: 'salonHammamSessions',
     pos_products: 'products',
     pos_sales: 'sales',
     pos_parked_orders: 'parkedOrders',
@@ -4898,6 +4987,42 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
                 })()
               : stations;
           }
+        });
+      }
+      if (shouldSyncTable('salon_stylist_schedules')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchStylistSchedules(branchId);
+          if (rows.length > 0) updates.stylistSchedules = mergeById(globalState.stylistSchedules || [], rows);
+        });
+      }
+      if (shouldSyncTable('salon_prepaid_packages')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchPrepaidPackages(branchId);
+          if (rows.length > 0) updates.salonPrepaidPackages = mergeById(globalState.salonPrepaidPackages || [], rows);
+        });
+      }
+      if (shouldSyncTable('salon_gift_cards')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchGiftCards(branchId);
+          if (rows.length > 0) updates.salonGiftCards = mergeById(globalState.salonGiftCards || [], rows);
+        });
+      }
+      if (shouldSyncTable('salon_loyalty_ledger')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchLoyaltyLedger(branchId);
+          if (rows.length > 0) updates.salonLoyaltyLedger = mergeById(globalState.salonLoyaltyLedger || [], rows);
+        });
+      }
+      if (shouldSyncTable('salon_consent_forms')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchConsentForms(branchId);
+          if (rows.length > 0) updates.salonConsentForms = mergeById(globalState.salonConsentForms || [], rows);
+        });
+      }
+      if (shouldSyncTable('salon_hammam_sessions')) {
+        tasks.push(async () => {
+          const rows = await appointmentService.fetchHammamSessions(branchId);
+          if (rows.length > 0) updates.salonHammamSessions = mergeById(globalState.salonHammamSessions || [], rows);
         });
       }
     } else if (activeCategory === 'pos_inventory') {
@@ -6496,13 +6621,21 @@ function createAtriumActions() {
   const addMember = (newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
     const before = captureStoreSlices(['members', 'selectedMemberId', 'isDetailOpen']);
     const trace = getTraceContext();
-    const member: Member = {
+    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+    const cat = currentBiz?.category || 'membership_session';
+    const rawMember: Member = {
       ...trace,
       ...newMember,
       id: `mem_${Date.now()}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    const isSalonOrWalkIn =
+      cat === 'appointment_service' ||
+      String(rawMember.source || '').toLowerCase().includes('walk') ||
+      String(rawMember.membershipPlanName || '').toLowerCase().includes('walk-in') ||
+      rawMember.clientType === 'walkin';
+    const member: Member = isSalonOrWalkIn ? normalizeSalonMemberRecord(rawMember) : rawMember;
     globalState = {
       ...globalState,
       members: [member, ...globalState.members],
@@ -6510,9 +6643,6 @@ function createAtriumActions() {
       isDetailOpen: true,
     };
     notify();
-
-    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
-    const cat = currentBiz?.category || 'membership_session';
     const lang = globalState.language || 'fr';
     const terms = getCategoryTerminology(cat, lang);
 
@@ -6557,17 +6687,23 @@ function createAtriumActions() {
     const target = globalState.members.find((m) => m.id === id);
     if (!target) return;
     const before = captureStoreSlices(['members']);
-    globalState = {
-      ...globalState,
-      members: globalState.members.map((m) =>
-        m.id === id ? { ...m, ...updates, updatedAt: new Date().toISOString() } : m
-      ),
-    };
-    notify();
-
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
     const lang = globalState.language || 'fr';
+
+    const mergedRaw: Member = { ...target, ...updates, updatedAt: new Date().toISOString() };
+    const isSalonOrWalkIn =
+      cat === 'appointment_service' ||
+      String(mergedRaw.source || '').toLowerCase().includes('walk') ||
+      String(mergedRaw.membershipPlanName || '').toLowerCase().includes('walk-in') ||
+      mergedRaw.clientType === 'walkin';
+    const nextMember = isSalonOrWalkIn ? normalizeSalonMemberRecord(mergedRaw) : mergedRaw;
+
+    globalState = {
+      ...globalState,
+      members: globalState.members.map((m) => (m.id === id ? nextMember : m)),
+    };
+    notify();
 
     const updatedMember = globalState.members.find((m) => m.id === id);
     if (isSupabaseConfigured() && updatedMember) {
@@ -10093,13 +10229,48 @@ function createAtriumActions() {
   };
 
   const createAppointment = (
-    aptData: Omit<Appointment, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
+    aptData: Omit<Appointment, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>,
+    options?: { allowOverlap?: boolean }
   ) => {
+    const duration = Math.max(5, Number(aptData.durationMinutes || 30));
+    const computed = computeSalonEndTime(aptData.startTime, duration);
+    const branchAppointments = selectCurrentAppointmentsFromState(globalState);
+    if (!options?.allowOverlap) {
+      const overlap = findStylistAppointmentOverlap({
+        appointments: branchAppointments,
+        staffId: aptData.staffId,
+        date: aptData.date,
+        startTime: aptData.startTime,
+        durationMinutes: duration,
+      });
+      if (overlap) {
+        showToast({
+          type: 'error',
+          title: ul('Stylist Slot Overlap', 'Chevauchement créneau', 'تعارض في الموعد'),
+          message: ul(
+            `${aptData.staffName} already has an appointment with ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`,
+            `${aptData.staffName} a déjà un RDV avec ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`,
+            `${aptData.staffName} لديه موعد مع ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`
+          ),
+        });
+        throw new Error('APPOINTMENT_OVERLAP');
+      }
+    }
+
     const before = captureStoreSlices(['appointments']);
+    const depositCentimes = Math.max(0, Math.round(Number(aptData.depositCentimes || 0)));
     const newApt: Appointment = {
       ...getTraceContext(),
       ...aptData,
-      id: `apt_${Date.now()}`,
+      endTime: aptData.endTime || computed.endTime,
+      durationMinutes: duration,
+      depositCentimes: depositCentimes > 0 ? depositCentimes : undefined,
+      depositStatus:
+        aptData.depositStatus || (depositCentimes > 0 ? 'held' : 'none'),
+      cancellationCutoffHours:
+        aptData.cancellationCutoffHours ?? 24,
+      bookingChannel: aptData.bookingChannel || 'desk',
+      id: `apt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
@@ -10146,22 +10317,50 @@ function createAtriumActions() {
     return newApt;
   };
 
-  const updateAppointmentStatus = (id: string, status: AppointmentStatus) => {
+  const updateAppointmentStatus = (
+    id: string,
+    status: AppointmentStatus,
+    options?: { cancelledAtIso?: string }
+  ) => {
     const apt = (globalState.appointments || []).find((a) => a.id === id);
     if (!apt) return;
     const before = captureStoreSlices(['appointments']);
+    const cancelAt = options?.cancelledAtIso || new Date().toISOString();
+    let depositPatch: Partial<Appointment> = {};
+    if (
+      (status === 'Cancelled' || status === 'NoShow') &&
+      apt.depositStatus === 'held' &&
+      Number(apt.depositCentimes || 0) > 0
+    ) {
+      const decision = evaluateDepositCancellationPolicy({
+        appointment: apt,
+        cancelledAtIso: cancelAt,
+        newStatus: status,
+      });
+      depositPatch = {
+        depositStatus: decision.depositStatus,
+        refundedDepositCentimes: decision.refundedDepositCentimes,
+      };
+    }
+
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) =>
-        a.id === id ? { ...a, status } : a
+        a.id === id ? { ...a, status, ...depositPatch } : a
       ),
     };
     notify();
 
     if (isSupabaseConfigured()) {
-      appointmentService.updateStatus(id, status, apt?.version).catch((err) => {
-        console.warn('[store] Failed to update appointment status in Supabase:', err);
-      });
+      if ((status === 'Cancelled' || status === 'NoShow') && apt.depositStatus === 'held') {
+        appointmentService.cancelWithDeposit(id, cancelAt, status).catch(() => {
+          appointmentService.updateStatus(id, status, apt?.version).catch(() => {});
+        });
+      } else {
+        appointmentService.updateStatus(id, status, apt?.version).catch((err) => {
+          console.warn('[store] Failed to update appointment status in Supabase:', err);
+        });
+      }
     }
 
     const after = captureStoreSlices(['appointments']);
@@ -10174,17 +10373,18 @@ function createAtriumActions() {
         `${apt.clientName}: ${status}`
       ),
       entityLabel: apt.clientName,
-      toastType: status === 'Cancelled' ? 'warning' : 'info',
+      toastType: status === 'Cancelled' || status === 'NoShow' ? 'warning' : 'info',
       undo: () => {
         restoreStoreSlices(before);
         if (isSupabaseConfigured()) {
-          appointmentService.updateStatus(id, apt.status, apt.version).catch(() => {});
+          appointmentService.upsertAppointment(apt).catch(() => {});
         }
       },
       redo: () => {
         restoreStoreSlices(after);
         if (isSupabaseConfigured()) {
-          appointmentService.updateStatus(id, status, apt.version).catch(() => {});
+          const updated = (globalState.appointments || []).find((a) => a.id === id);
+          if (updated) appointmentService.upsertAppointment(updated).catch(() => {});
         }
       },
     });
@@ -10196,10 +10396,41 @@ function createAtriumActions() {
     startTime: string,
     endTime: string,
     staffId?: string,
-    staffName?: string
+    staffName?: string,
+    durationMinutes?: number,
+    extras?: Partial<Pick<Appointment, 'serviceId' | 'serviceName' | 'price' | 'notes' | 'depositCentimes' | 'depositStatus' | 'cancellationCutoffHours' | 'bookingChannel' | 'allergyOverrideConfirmed'>>,
+    options?: { allowOverlap?: boolean }
   ) => {
     const apt = (globalState.appointments || []).find((a) => a.id === id);
     if (!apt) return;
+    const nextDuration = durationMinutes ?? apt.durationMinutes;
+    const computedEnd = computeSalonEndTime(startTime, nextDuration).endTime;
+    const targetStaffId = staffId || apt.staffId;
+    const targetStaffName = staffName || apt.staffName;
+
+    if (!options?.allowOverlap) {
+      const overlap = findStylistAppointmentOverlap({
+        appointments: selectCurrentAppointmentsFromState(globalState),
+        staffId: targetStaffId,
+        date,
+        startTime,
+        durationMinutes: nextDuration,
+        excludeAppointmentId: id,
+      });
+      if (overlap) {
+        showToast({
+          type: 'error',
+          title: ul('Stylist Slot Overlap', 'Chevauchement créneau', 'تعارض في الموعد'),
+          message: ul(
+            `${targetStaffName} already has an appointment with ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`,
+            `${targetStaffName} a déjà un RDV avec ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`,
+            `${targetStaffName} لديه موعد مع ${overlap.clientName} (${overlap.startTime}-${overlap.endTime}).`
+          ),
+        });
+        throw new Error('APPOINTMENT_OVERLAP');
+      }
+    }
+
     const before = captureStoreSlices(['appointments']);
     globalState = {
       ...globalState,
@@ -10209,8 +10440,10 @@ function createAtriumActions() {
             ...a,
             date,
             startTime,
-            endTime,
-            ...(staffId ? { staffId, staffName: staffName || a.staffName } : {}),
+            endTime: durationMinutes != null ? computedEnd : (endTime || computedEnd),
+            durationMinutes: nextDuration,
+            ...(staffId ? { staffId, staffName: targetStaffName } : {}),
+            ...(extras || {}),
           };
         }
         return a;
@@ -10305,7 +10538,7 @@ function createAtriumActions() {
       ...getTraceContext(),
       ...serviceData,
       tenantId: serviceData.tenantId || activeAccountId,
-      id: `srv_${Date.now()}`,
+      id: `srv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       facilityId: activeBranchId,
     };
     globalState = {
@@ -10347,20 +10580,76 @@ function createAtriumActions() {
 
   const checkoutAppointment = (
     appointmentId: string,
-    paymentMethod: 'Cash' | 'Card' | 'MemberBalance' = 'Cash'
+    paymentMethod: 'Cash' | 'Card' | 'MemberBalance' = 'Cash',
+    options?: {
+      prepaidPackageId?: string;
+      giftCardCode?: string;
+      loyaltyPointsToRedeem?: number;
+      retailTotalDzd?: number;
+      tipAmountDzd?: number;
+      allergyOverrideConfirmed?: boolean;
+    }
   ) => {
     const apt = (globalState.appointments || []).find((a) => a.id === appointmentId);
     if (!apt) throw new Error('Appointment not found');
 
-    const before = captureStoreSlices(['appointments', 'sales']);
+    const service = (globalState.servicesCatalog || []).find((s) => s.id === apt.serviceId);
+    const client = (globalState.members || []).find((m) => m.id === apt.clientId);
+    const prepaidPackage = options?.prepaidPackageId
+      ? (globalState.salonPrepaidPackages || []).find((p) => p.id === options.prepaidPackageId)
+      : undefined;
+    const normalizedGcCode = (options?.giftCardCode || '').trim().toUpperCase();
+    const giftCard = normalizedGcCode
+      ? (globalState.salonGiftCards || []).find(
+          (gc) => gc.code.trim().toUpperCase() === normalizedGcCode && gc.status === 'active'
+        )
+      : undefined;
+
+    const currentClientPoints = Number(client?.segmentData?.loyaltyPoints || 0);
+    const requestedLoyalty = Math.min(
+      currentClientPoints,
+      Math.max(0, Math.round(Number(options?.loyaltyPointsToRedeem || 0)))
+    );
+
+    const settlement = computeSalonCheckoutSettlement({
+      servicePriceDzd: apt.price,
+      retailTotalDzd: options?.retailTotalDzd ?? apt.retailProductsTotal ?? 0,
+      tipAmountDzd: options?.tipAmountDzd ?? apt.tipAmount ?? 0,
+      depositCentimes: apt.depositCentimes || 0,
+      depositStatus: apt.depositStatus,
+      prepaidPackage,
+      giftCard,
+      loyaltyPointsToRedeem: requestedLoyalty,
+    });
+
+    const depletionPlan = evaluateConsumableDepletionPlan({
+      service,
+      products: globalState.products || [],
+      alreadyDeducted: Boolean(apt.consumablesDeducted),
+    });
+
+    const before = captureStoreSlices([
+      'appointments',
+      'sales',
+      'products',
+      'stockMovements',
+      'members',
+      'salonPrepaidPackages',
+      'salonGiftCards',
+      'salonLoyaltyLedger',
+    ]);
+
+    const nowIso = new Date().toISOString();
+    const trace = getTraceContext();
+    const saleAmountDzd = settlement.netPayableDzd;
     const sale: Sale = {
-      ...getTraceContext(),
-      id: `sale_${Date.now()}`,
+      ...trace,
+      id: `sale_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
       memberId: apt.clientId,
       memberName: apt.clientName,
-      totalAmount: apt.price,
+      totalAmount: saleAmountDzd,
       paymentMethod,
       items: [
         {
@@ -10368,19 +10657,152 @@ function createAtriumActions() {
           productName: `${apt.serviceName} (${apt.staffName})`,
           quantity: 1,
           unitPrice: apt.price,
-          totalPrice: apt.price,
+          totalPrice: saleAmountDzd,
         },
       ],
-      notes: `Salon Appointment Checkout — Stylist: ${apt.staffName}`,
-      createdAt: new Date().toISOString(),
+      notes: `Salon Appointment Checkout — Stylist: ${apt.staffName}${prepaidPackage ? ` · Pack: ${prepaidPackage.packageName}` : ''}${giftCard ? ` · GiftCard: ${giftCard.code}` : ''}`,
+      createdAt: nowIso,
     };
+
+    // 1. Deplete service-linked consumables from inventory
+    const depletionMap = new Map(depletionPlan.lines.map((l) => [l.productId, l]));
+    const nextProducts =
+      depletionMap.size > 0
+        ? (globalState.products || []).map((prod) => {
+            const line = depletionMap.get(prod.id);
+            if (!line) return prod;
+            return { ...prod, stockQuantity: line.nextStock };
+          })
+        : globalState.products;
+
+    const newStockMovements: StockMovement[] = depletionPlan.lines.map((line, idx) => ({
+      ...trace,
+      id: `stk_cons_${Date.now()}_${idx}`,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
+      productId: line.productId,
+      productName: line.productName,
+      type: 'Sale',
+      quantity: -line.deductQty,
+      previousStock: line.previousStock,
+      newStock: line.nextStock,
+      createdBy: apt.staffName || globalState.currentUser?.fullName || 'Stylist',
+      reason: `Salon service consumable (${apt.serviceName}) · Apt ${apt.id}`,
+      createdAt: nowIso,
+    }));
+
+    // 2. Redeem prepaid package session if applied
+    const nextPackages =
+      prepaidPackage && settlement.packageCoveredCentimes > 0
+        ? (globalState.salonPrepaidPackages || []).map((pkg) => {
+            if (pkg.id !== prepaidPackage.id) return pkg;
+            const nextRem = Math.max(0, pkg.remainingSessions - 1);
+            return {
+              ...pkg,
+              remainingSessions: nextRem,
+              status: nextRem === 0 ? ('exhausted' as const) : pkg.status,
+            };
+          })
+        : globalState.salonPrepaidPackages || [];
+
+    // 3. Redeem gift card balance if applied
+    const nextGiftCards =
+      giftCard && settlement.giftCardAppliedCentimes > 0
+        ? (globalState.salonGiftCards || []).map((gc) => {
+            if (gc.id !== giftCard.id) return gc;
+            const nextRem = Math.max(0, gc.remainingCentimes - settlement.giftCardAppliedCentimes);
+            return {
+              ...gc,
+              remainingCentimes: nextRem,
+              status: nextRem === 0 ? ('redeemed' as const) : gc.status,
+            };
+          })
+        : globalState.salonGiftCards || [];
+
+    // 4. Update loyalty ledger & client profile
+    const newLoyaltyEntries: SalonLoyaltyEntry[] = [];
+    let runningBalance = currentClientPoints;
+    if (client && requestedLoyalty > 0) {
+      runningBalance = Math.max(0, runningBalance - requestedLoyalty);
+      newLoyaltyEntries.push({
+        id: `loy_red_${Date.now()}`,
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        clientId: client.id,
+        clientName: client.fullName,
+        appointmentId: apt.id,
+        pointsDelta: -requestedLoyalty,
+        balanceAfter: runningBalance,
+        reason: `Redeemed at checkout (${apt.serviceName})`,
+        recordedAt: nowIso,
+      });
+    }
+    if (client && settlement.loyaltyPointsEarned > 0) {
+      runningBalance += settlement.loyaltyPointsEarned;
+      newLoyaltyEntries.push({
+        id: `loy_earn_${Date.now() + 1}`,
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        clientId: client.id,
+        clientName: client.fullName,
+        appointmentId: apt.id,
+        pointsDelta: settlement.loyaltyPointsEarned,
+        balanceAfter: runningBalance,
+        reason: `Earned on ${apt.serviceName}`,
+        recordedAt: nowIso,
+      });
+    }
+
+    const nextMembers = client
+      ? (globalState.members || []).map((m) => {
+          if (m.id !== client.id) return m;
+          const prevSeg = m.segmentData || {};
+          const nextSpent = Number(prevSeg.lifetimeSpent || 0) + saleAmountDzd + centimesToDzd(settlement.depositAppliedCentimes);
+          return normalizeSalonMemberRecord({
+            ...m,
+            segmentData: {
+              ...prevSeg,
+              loyaltyPoints: runningBalance,
+              totalVisits: Number(prevSeg.totalVisits || 0) + 1,
+              lifetimeSpent: nextSpent,
+              isVip: prevSeg.isVip || nextSpent >= 50000,
+            },
+            updatedAt: nowIso,
+          });
+        })
+      : globalState.members;
 
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) =>
-        a.id === appointmentId ? { ...a, status: 'Completed' as AppointmentStatus } : a
+        a.id === appointmentId
+          ? {
+              ...a,
+              status: 'Completed' as AppointmentStatus,
+              isPaid: true,
+              paymentMethod: paymentMethod === 'MemberBalance' ? undefined : paymentMethod,
+              consumablesDeducted: a.consumablesDeducted || depletionPlan.lines.length > 0,
+              depositStatus:
+                settlement.depositAppliedCentimes > 0 ? 'applied' : a.depositStatus,
+              packageId: prepaidPackage ? prepaidPackage.id : a.packageId,
+              giftCardCode: giftCard ? giftCard.code : a.giftCardCode,
+              loyaltyPointsUsed: requestedLoyalty || a.loyaltyPointsUsed,
+              loyaltyPointsEarned: settlement.loyaltyPointsEarned || a.loyaltyPointsEarned,
+              retailProductsTotal: options?.retailTotalDzd ?? a.retailProductsTotal,
+              tipAmount: options?.tipAmountDzd ?? a.tipAmount,
+              allergyOverrideConfirmed: options?.allergyOverrideConfirmed ?? a.allergyOverrideConfirmed,
+            }
+          : a
       ),
       sales: [sale, ...globalState.sales],
+      products: nextProducts,
+      stockMovements: [...newStockMovements, ...(globalState.stockMovements || [])],
+      members: nextMembers,
+      salonPrepaidPackages: nextPackages,
+      salonGiftCards: nextGiftCards,
+      salonLoyaltyLedger: [...newLoyaltyEntries, ...(globalState.salonLoyaltyLedger || [])],
     };
     notify();
 
@@ -10388,18 +10810,44 @@ function createAtriumActions() {
       appointmentService
         .checkoutAppointment(appointmentId, paymentMethod, getActiveDeviceId())
         .catch(() => {});
+      if ((prepaidPackage && settlement.packageCoveredCentimes > 0) || (giftCard && settlement.giftCardAppliedCentimes > 0)) {
+        appointmentService
+          .redeemPackageOrGiftCard({
+            packageId: prepaidPackage?.id,
+            giftCardId: giftCard?.id,
+            amountCentimes: settlement.giftCardAppliedCentimes,
+          })
+          .catch(() => {});
+      }
+      const ctx = {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+      };
+      for (const entry of newLoyaltyEntries) {
+        appointmentService.upsertLoyaltyEntry(entry, ctx).catch(() => {});
+      }
     }
 
     const checkoutLang = globalState.language || 'fr';
     const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, checkoutLang);
-    const after = captureStoreSlices(['appointments', 'sales']);
+    const after = captureStoreSlices([
+      'appointments',
+      'sales',
+      'products',
+      'stockMovements',
+      'members',
+      'salonPrepaidPackages',
+      'salonGiftCards',
+      'salonLoyaltyLedger',
+    ]);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'status',
       summary: ul(
-        `Checked out: ${apt.clientName} (${formatMoney(apt.price)})`,
-        `Encaissé : ${apt.clientName} (${localizedService} · ${formatMoney(apt.price)})`,
-        `تحصيل موعد: ${apt.clientName} (${formatMoney(apt.price)})`
+        `Checked out: ${apt.clientName} (${formatMoney(saleAmountDzd)})`,
+        `Encaissé : ${apt.clientName} (${localizedService} · ${formatMoney(saleAmountDzd)})`,
+        `تحصيل موعد: ${apt.clientName} (${formatMoney(saleAmountDzd)})`
       ),
       entityLabel: apt.clientName,
       toastType: 'success',
@@ -10755,6 +11203,12 @@ function createAtriumActions() {
       members: [...salonClients, ...existingNonSalonMembers],
       salonWorkstations: INITIAL_SALON_WORKSTATIONS,
       stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+      stylistSchedules: [],
+      salonPrepaidPackages: [],
+      salonGiftCards: [],
+      salonLoyaltyLedger: [],
+      salonConsentForms: [],
+      salonHammamSessions: [],
     };
     notify();
 
@@ -10772,6 +11226,312 @@ function createAtriumActions() {
       undo: () => restoreStoreSlices(before),
       redo: () => restoreStoreSlices(after),
     });
+  };
+
+  // Phase 3 Step 2 (7.2 appointment_service) Deep Salon & Spa Actions
+  const upsertStylistSchedule = (input: {
+    id?: string;
+    staffId: string;
+    staffName: string;
+    salonClosingTime?: string;
+    weeklyHours?: Record<number, StylistDayHours>;
+    timeOffRanges?: StylistTimeOffRange[];
+  }): StylistScheduleConfig => {
+    const existing = (globalState.stylistSchedules || []).find(
+      (s) =>
+        (input.id && s.id === input.id) ||
+        (s.staffId === input.staffId && (!s.branchId || s.branchId === globalState.currentBranchId))
+    );
+    const nowIso = new Date().toISOString();
+    const record: StylistScheduleConfig = {
+      id: existing?.id || input.id || `sched_${input.staffId}_${Date.now()}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      staffId: input.staffId,
+      staffName: input.staffName,
+      salonClosingTime: input.salonClosingTime || existing?.salonClosingTime || '20:00',
+      weeklyHours: input.weeklyHours || existing?.weeklyHours || createDefaultWeeklyHours(),
+      timeOffRanges: input.timeOffRanges ?? existing?.timeOffRanges ?? [],
+      updatedAt: nowIso,
+      version: existing ? (existing.version ?? 1) + 1 : 1,
+    };
+    const nextList = existing
+      ? (globalState.stylistSchedules || []).map((s) => (s.id === existing.id ? record : s))
+      : [record, ...(globalState.stylistSchedules || [])];
+    globalState = { ...globalState, stylistSchedules: nextList };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertStylistSchedule(record, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    return record;
+  };
+
+  const createSalonPrepaidPackage = (input: {
+    clientId: string;
+    clientName: string;
+    packageName: string;
+    serviceIds?: string[];
+    categoryFilter?: string;
+    totalSessions: number;
+    priceDzd: number;
+    expiresAt?: string;
+  }): SalonPrepaidPackage => {
+    const total = Math.max(1, Math.round(Number(input.totalSessions || 1)));
+    const pkg: SalonPrepaidPackage = {
+      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      clientId: input.clientId,
+      clientName: input.clientName,
+      packageName: input.packageName.trim(),
+      serviceIds: input.serviceIds || [],
+      categoryFilter: input.categoryFilter,
+      totalSessions: total,
+      remainingSessions: total,
+      priceCentimes: dzdToCentimes(input.priceDzd),
+      expiresAt: input.expiresAt,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      salonPrepaidPackages: [pkg, ...(globalState.salonPrepaidPackages || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertPrepaidPackage(pkg, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    return pkg;
+  };
+
+  const createSalonGiftCard = (input: {
+    code?: string;
+    recipientName: string;
+    recipientPhone?: string;
+    purchaserName?: string;
+    amountDzd: number;
+    expiresAt?: string;
+  }): SalonGiftCard => {
+    const cents = Math.max(0, dzdToCentimes(input.amountDzd));
+    const generatedCode =
+      (input.code || '').trim().toUpperCase() ||
+      `GC-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${String(Date.now()).slice(-4)}`;
+    const gc: SalonGiftCard = {
+      id: `gc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      code: generatedCode,
+      recipientName: input.recipientName.trim(),
+      recipientPhone: input.recipientPhone?.trim(),
+      purchaserName: input.purchaserName?.trim(),
+      initialCentimes: cents,
+      remainingCentimes: cents,
+      expiresAt: input.expiresAt,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      salonGiftCards: [gc, ...(globalState.salonGiftCards || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertGiftCard(gc, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    return gc;
+  };
+
+  const voidSalonGiftCard = (id: string) => {
+    const existing = (globalState.salonGiftCards || []).find((g) => g.id === id);
+    if (!existing) return;
+    const updated: SalonGiftCard = { ...existing, status: 'void' };
+    globalState = {
+      ...globalState,
+      salonGiftCards: (globalState.salonGiftCards || []).map((g) => (g.id === id ? updated : g)),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertGiftCard(updated, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+  };
+
+  const saveSalonConsentForm = (input: {
+    clientId: string;
+    clientName: string;
+    appointmentId?: string;
+    serviceId?: string;
+    serviceName: string;
+    protocolType: SalonConsentProtocolType;
+    medicalChecklist: Record<string, boolean>;
+    allergiesAcknowledged: boolean;
+    signatureDataUrl: string;
+    beforePhotoPath?: string;
+    afterPhotoPath?: string;
+  }): SalonConsentForm => {
+    const form: SalonConsentForm = {
+      id: `cons_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      clientId: input.clientId,
+      clientName: input.clientName,
+      appointmentId: input.appointmentId,
+      serviceId: input.serviceId,
+      serviceName: input.serviceName,
+      protocolType: input.protocolType,
+      medicalChecklist: input.medicalChecklist || {},
+      allergiesAcknowledged: Boolean(input.allergiesAcknowledged),
+      signatureDataUrl: input.signatureDataUrl,
+      beforePhotoPath: input.beforePhotoPath,
+      afterPhotoPath: input.afterPhotoPath,
+      signedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      salonConsentForms: [form, ...(globalState.salonConsentForms || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertConsentForm(form, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    return form;
+  };
+
+  const createHammamSession = (input: {
+    cabinName: string;
+    genderBlock: HammamGenderBlock;
+    clientId?: string;
+    clientName: string;
+    clientPhone?: string;
+    attendantId?: string;
+    attendantName?: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    capacity?: number;
+    bookedCount?: number;
+    addons?: string[];
+    priceDzd: number;
+    notes?: string;
+  }): { success: true; session: SalonHammamSession } | { success: false; error: string; remainingCapacity: number } => {
+    const existingForBranch = selectCurrentSalonHammamSessionsFromState(globalState);
+    const booked = Math.max(1, Math.round(Number(input.bookedCount || 1)));
+    const cap = Math.max(1, Math.round(Number(input.capacity || (input.genderBlock === 'private' ? 2 : 6))));
+    const slotCheck = evaluateHammamSessionSlot({
+      existingSessions: existingForBranch,
+      cabinName: input.cabinName,
+      genderBlock: input.genderBlock,
+      date: input.date,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      requestedSeats: booked,
+      cabinCapacity: cap,
+    });
+    if (!slotCheck.allowed) {
+      return {
+        success: false,
+        error: slotCheck.reason || 'CAPACITY_EXCEEDED',
+        remainingCapacity: slotCheck.remainingCapacity,
+      };
+    }
+
+    const session: SalonHammamSession = {
+      id: `ham_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      cabinName: input.cabinName,
+      genderBlock: input.genderBlock,
+      clientId: input.clientId,
+      clientName: input.clientName.trim(),
+      clientPhone: input.clientPhone?.trim(),
+      attendantId: input.attendantId,
+      attendantName: input.attendantName,
+      date: input.date,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      capacity: cap,
+      bookedCount: booked,
+      addons: input.addons || [],
+      priceCentimes: dzdToCentimes(input.priceDzd),
+      status: 'Booked',
+      notes: input.notes?.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      salonHammamSessions: [session, ...(globalState.salonHammamSessions || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertHammamSession(session, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    return { success: true, session };
+  };
+
+  const updateHammamSessionStatus = (id: string, status: HammamSessionStatus) => {
+    const existing = (globalState.salonHammamSessions || []).find((s) => s.id === id);
+    if (!existing) return;
+    const updated: SalonHammamSession = { ...existing, status };
+    globalState = {
+      ...globalState,
+      salonHammamSessions: (globalState.salonHammamSessions || []).map((s) =>
+        s.id === id ? updated : s
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertHammamSession(updated, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
   };
 
 
@@ -11141,7 +11901,7 @@ function createAtriumActions() {
     const newProduct: Product = {
       ...getTraceContext(),
       ...productData,
-      id: `prod_${Date.now()}`,
+      id: `prod_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
     };
@@ -17243,6 +18003,12 @@ function createAtriumActions() {
         servicesCatalog: INITIAL_SALON_SERVICES,
         salonWorkstations: INITIAL_SALON_WORKSTATIONS,
         stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+        stylistSchedules: [],
+        salonPrepaidPackages: [],
+        salonGiftCards: [],
+        salonLoyaltyLedger: [],
+        salonConsentForms: [],
+        salonHammamSessions: [],
       };
     } else if (targetCategory === 'project_milestone') {
       updates = {
@@ -18357,6 +19123,12 @@ function createAtriumActions() {
       biReportSnapshots: Array.isArray(parsed.biReportSnapshots) ? parsed.biReportSnapshots : [],
       memberFreezeLogs: Array.isArray(parsed.memberFreezeLogs) ? parsed.memberFreezeLogs : [],
       trainerCommissions: Array.isArray(parsed.trainerCommissions) ? parsed.trainerCommissions : [],
+      stylistSchedules: Array.isArray(parsed.stylistSchedules) ? parsed.stylistSchedules : [],
+      salonPrepaidPackages: Array.isArray(parsed.salonPrepaidPackages) ? parsed.salonPrepaidPackages : [],
+      salonGiftCards: Array.isArray(parsed.salonGiftCards) ? parsed.salonGiftCards : [],
+      salonLoyaltyLedger: Array.isArray(parsed.salonLoyaltyLedger) ? parsed.salonLoyaltyLedger : [],
+      salonConsentForms: Array.isArray(parsed.salonConsentForms) ? parsed.salonConsentForms : [],
+      salonHammamSessions: Array.isArray(parsed.salonHammamSessions) ? parsed.salonHammamSessions : [],
       toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
@@ -26403,6 +27175,13 @@ function createAtriumActions() {
     batchDeleteServiceItems,
     updateStylistPayoutStatus,
     resetSalonMockData,
+    upsertStylistSchedule,
+    createSalonPrepaidPackage,
+    createSalonGiftCard,
+    voidSalonGiftCard,
+    saveSalonConsentForm,
+    createHammamSession,
+    updateHammamSessionStatus,
     addStaff,
     addBusiness,
     addBranch,
@@ -26910,6 +27689,12 @@ export function useAtriumStore() {
     isDetailOpen: state.isDetailOpen,
     salonWorkstations: state.salonWorkstations || INITIAL_SALON_WORKSTATIONS,
     stylistPayouts: state.stylistPayouts || INITIAL_STYLIST_PAYOUTS,
+    stylistSchedules: selectCurrentStylistSchedulesFromState(state),
+    salonPrepaidPackages: selectCurrentSalonPrepaidPackagesFromState(state),
+    salonGiftCards: selectCurrentSalonGiftCardsFromState(state),
+    salonLoyaltyLedger: selectCurrentSalonLoyaltyLedgerFromState(state),
+    salonConsentForms: selectCurrentSalonConsentFormsFromState(state),
+    salonHammamSessions: selectCurrentSalonHammamSessionsFromState(state),
     // Project & Milestone State
     activePmRole: state.activePmRole || 'direction',
     activePmSubScreen: state.activePmSubScreen || 'dashboard',

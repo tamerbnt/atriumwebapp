@@ -12,6 +12,10 @@ import {
   Eye,
   Edit2,
   Trash2,
+  Share2,
+  Copy,
+  MessageCircle,
+  XCircle,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -20,11 +24,23 @@ import {
   selectCurrentAppointmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  selectCurrentStylistSchedulesFromState,
+  showToast,
 } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
+import { StylistScheduleModal } from './StylistScheduleModal';
+import { SalonHammamPanel } from './SalonHammamPanel';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Button } from '@/atrium/core';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { t, getLocalizedServiceName } from '../../../utils/i18n';
+import { centimesToDzd } from '../../../utils/money';
+import {
+  buildOnlineBookingLink,
+  buildWhatsappBookingUrl,
+  evaluateStylistAvailability,
+} from '../../../utils/appointmentDepth';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -79,8 +95,11 @@ const TIME_SLOTS = [
 
 export const AppointmentScheduleView: React.FC = React.memo(() => {
   const {
+    account,
+    currentBusinessId,
     appointments,
     staff,
+    stylistSchedules,
     branches,
     currentBranch,
     language,
@@ -90,8 +109,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
     isSyncTimeout,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentBusinessId: s.currentBusinessId,
       appointments: selectCurrentAppointmentsFromState(s),
       staff: selectCurrentStaffFromState(s),
+      stylistSchedules: selectCurrentStylistSchedulesFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
@@ -115,6 +137,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
+  const [scheduleTab, setScheduleTab] = useState<'appointments' | 'hammam'>('appointments');
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [sharePopoverOpen, setSharePopoverOpen] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [selectedStylistId, setSelectedStylistId] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -137,6 +163,27 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
   const salonStylists = useMemo(() => staff.filter((s) => s.isActive), [staff]);
+  const onlineBookingLink = useMemo(
+    () =>
+      buildOnlineBookingLink({
+        origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+        businessId: currentBusinessId || account?.id || 'salon',
+        branchId: currentBranch?.id || 'main',
+      }),
+    [currentBusinessId, account?.id, currentBranch?.id]
+  );
+
+  const handleCopyBookingLink = useCallback(() => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(onlineBookingLink).catch(() => {});
+    }
+    setSharePopoverOpen((p) => !p);
+    showToast?.({
+      type: 'success',
+      title: isAr ? 'تم نسخ رابط الحجز' : isEn ? 'Booking Link Copied' : 'Lien de réservation copié',
+      message: onlineBookingLink,
+    });
+  }, [onlineBookingLink, isAr, isEn]);
 
   const { dayAppointments, stats, branchOptionsWithCounts } = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -563,12 +610,78 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
       <ScreenHeaderBar
         icon={<Scissors size={22} />}
         title={t('salon_schedule_title', language)}
+        secondaryActions={
+          <div className="flex flex-wrap items-center gap-2">
+            <LiveSegmentedControl
+              size="sm"
+              value={scheduleTab}
+              onValueChange={(v) => setScheduleTab(v as 'appointments' | 'hammam')}
+              aria-label={isEn ? 'Schedule Mode' : 'Mode planning'}
+              options={[
+                { value: 'appointments', label: isAr ? 'المواعيد' : isEn ? 'Appointments' : 'Rendez-vous' },
+                { value: 'hammam', label: isAr ? 'كبائن الحمام' : isEn ? 'Hammam Cabins' : 'Hammam & Spa' },
+              ]}
+            />
+            <Button
+              type="button"
+              tone="soft"
+              size={36}
+              onClick={() => setIsScheduleModalOpen(true)}
+            >
+              <Clock size={14} className="mr-1.5" />
+              {isAr ? 'ساعات المصففين' : isEn ? 'Stylist Hours' : 'Horaires Stylistes'}
+            </Button>
+            <Button
+              type="button"
+              tone="soft"
+              size={36}
+              onClick={handleCopyBookingLink}
+            >
+              <Share2 size={14} className="mr-1.5" />
+              {isAr ? 'رابط الحجز' : isEn ? 'Share Online Link' : 'Lien en ligne'}
+            </Button>
+          </div>
+        }
         primaryAction={{
           label: t('salon_btn_new_appointment', language),
           icon: <Plus size={15} strokeWidth={2.5} />,
           onClick: () => handleOpenAddModal('10:00'),
         }}
       />
+
+      {sharePopoverOpen && (
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#22201E] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        >
+          <div className="min-w-0">
+            <p className="t-small font-semibold text-black dark:text-white">
+              {isAr ? 'رابط الحجز عبر الإنترنت وواتساب' : isEn ? 'Online & WhatsApp Booking Link' : 'Lien de Réservation En Ligne & WhatsApp'}
+            </p>
+            <p className="t-cap text-black/62 dark:text-white/65 truncate">{onlineBookingLink}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button type="button" tone="soft" size={32} onClick={handleCopyBookingLink}>
+              <Copy size={13} className="mr-1" />
+              {isAr ? 'نسخ' : isEn ? 'Copy' : 'Copier'}
+            </Button>
+            <a
+              href={buildWhatsappBookingUrl({
+                phone: '',
+                businessName: currentBranch?.name || account?.fullName,
+                bookingLink: onlineBookingLink,
+              })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg bg-emerald-600 text-white t-small font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              <MessageCircle size={13} />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      )}
 
       <ScreenKpiBanner
         heading={isAr ? 'مؤشرات جدول المواعيد' : isEn ? 'Daily Chair Schedule' : 'Occupation des Postes & Recette Jour'}
@@ -601,6 +714,9 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         }}
       />
 
+      {scheduleTab === 'hammam' ? (
+        <SalonHammamPanel />
+      ) : (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={
@@ -747,6 +863,20 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                         </div>
                         {salonStylists.map((stylist, index) => {
                           const apt = dayAppointments.find((a) => a.staffId === stylist.id && a.startTime === time);
+                          const schedule = stylistSchedules.find((sc) => sc.staffId === stylist.id) || null;
+                          const slotAvail = !apt
+                            ? evaluateStylistAvailability({
+                                schedule,
+                                appointments,
+                                staffId: stylist.id,
+                                date: selectedDate,
+                                startTime: time,
+                                durationMinutes: 30,
+                              })
+                            : null;
+                          const closedReason = slotAvail?.issues.find((iss) =>
+                            iss === 'TIME_OFF' || iss === 'DAY_OFF' || iss === 'IN_BREAK_WINDOW' || iss === 'EXCEEDS_CLOSING_TIME' || iss === 'OUTSIDE_WORKING_HOURS'
+                          );
                           return (
                             <div
                               key={stylist.id}
@@ -754,7 +884,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                 index < salonStylists.length - 1
                                   ? 'border-r border-[var(--atr-divider)]'
                                   : ''
-                              }`}
+                              } ${closedReason ? 'bg-[#F6F2EE]/75 dark:bg-[#191715]/60' : ''}`}
                             >
                               {apt ? (
                                 <button
@@ -787,6 +917,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                   <div className="flex items-center justify-between t-cap text-black/62 dark:text-white/65 mt-1 tabular-nums">
                                     <span>
                                       {apt.startTime}-{apt.endTime}
+                                      {apt.depositStatus === 'held' && apt.depositCentimes ? ' · Acompte' : ''}
                                     </span>
                                     <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(apt.price)}</span>
                                   </div>
@@ -797,9 +928,21 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                   data-sq="ctl"
                                   data-sq-border="dashed"
                                   onClick={() => handleOpenAddModal(time, stylist.id)}
-                                  className="w-full h-full min-h-[50px] border-0 [--sq-stroke:var(--sq-stroke-dashed)] flex items-center justify-center text-black/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                  className={`w-full h-full min-h-[50px] border-0 [--sq-stroke:var(--sq-stroke-dashed)] flex items-center justify-center text-black/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-all cursor-pointer ${
+                                    closedReason ? 'opacity-70' : 'opacity-0 group-hover:opacity-100'
+                                  }`}
                                 >
-                                  <Plus size={14} />
+                                  {closedReason ? (
+                                    <span className="t-cap text-black/45 dark:text-white/45">
+                                      {closedReason === 'IN_BREAK_WINDOW'
+                                        ? isAr ? 'استراحة' : isEn ? 'Break' : 'Pause'
+                                        : closedReason === 'TIME_OFF' || closedReason === 'DAY_OFF'
+                                        ? isAr ? 'عطلة' : isEn ? 'Off' : 'Repos'
+                                        : isAr ? 'مغلق' : isEn ? 'Closed' : 'Fermé'}
+                                    </span>
+                                  ) : (
+                                    <Plus size={14} />
+                                  )}
                                 </button>
                               )}
                             </div>
@@ -887,6 +1030,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
           hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
         />
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -980,8 +1124,15 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                       subtitle={`${apt.date} · ${apt.startTime}-${apt.endTime}`}
                       badge={{ label: apt.isPaid ? 'Réglé' : 'À payer', tone: apt.isPaid ? 'ok' : 'warn' }}
                       metaRight={formatMoney(apt.price)}
-                      isLast
+                      isLast={!apt.depositCentimes}
                     />
+                    {Number(apt.depositCentimes || 0) > 0 && (
+                      <InspectorKeyValue
+                        label={isAr ? 'العربون' : isEn ? 'Deposit' : 'Acompte'}
+                        value={`${formatMoney(centimesToDzd(apt.depositCentimes || 0))} (${apt.depositStatus || 'none'})`}
+                        isLast
+                      />
+                    )}
                   </InspectorCard>
                 </InspectorSection>
               </>
@@ -1007,7 +1158,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                           },
                         ]
                       : []),
-                    ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                    ...(apt.status !== 'Completed' && apt.status !== 'Cancelled' && apt.status !== 'NoShow'
                       ? [
                           {
                             id: 'checkout',
@@ -1016,6 +1167,24 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                             primary: apt.status === 'InChair',
                             onClick: () => {
                               handleOneClickCheckout(apt);
+                              setInspectingApt(null);
+                            },
+                          },
+                          {
+                            id: 'noshow',
+                            label: 'No-Show',
+                            icon: <XCircle className="w-[18px] h-[18px]" />,
+                            onClick: () => {
+                              updateAppointmentStatus(apt.id, 'NoShow');
+                              setInspectingApt(null);
+                            },
+                          },
+                          {
+                            id: 'cancel',
+                            label: isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler',
+                            icon: <XCircle className="w-[18px] h-[18px]" />,
+                            onClick: () => {
+                              updateAppointmentStatus(apt.id, 'Cancelled');
                               setInspectingApt(null);
                             },
                           },
@@ -1040,20 +1209,48 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                   <InspectorKeyValue label="Horaire" value={`${apt.date} · ${apt.startTime}-${apt.endTime}`} />
                   <InspectorKeyValue label="Styliste" value={apt.staffName} mono={false} />
                   <InspectorKeyValue label="Tarif" value={formatMoney(apt.price)} tone="ok" />
+                  <InspectorKeyValue label={isAr ? 'القناة' : isEn ? 'Channel' : 'Canal'} value={apt.bookingChannel || 'desk'} mono={false} />
+                  {Number(apt.depositCentimes || 0) > 0 && (
+                    <InspectorKeyValue
+                      label={isAr ? 'العربون' : isEn ? 'Deposit' : 'Acompte'}
+                      value={`${formatMoney(centimesToDzd(apt.depositCentimes || 0))} · ${apt.depositStatus || 'held'}`}
+                    />
+                  )}
                   <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
                 </InspectorCard>
               </InspectorSection>
 
               <InspectorSection index={2}>
-                <InspectorWideButton
-                  label={isAr ? 'تعديل الموعد' : isEn ? 'Edit Appointment' : 'Modifier le Rendez-Vous'}
-                  icon={<Edit2 className="w-4 h-4" />}
-                  tone="dark"
-                  onClick={() => {
-                    setInspectingApt(null);
-                    handleOpenEditModal(apt);
-                  }}
-                />
+                <div className="space-y-2">
+                  <InspectorWideButton
+                    label={isAr ? 'تعديل الموعد' : isEn ? 'Edit Appointment' : 'Modifier le Rendez-Vous'}
+                    icon={<Edit2 className="w-4 h-4" />}
+                    tone="dark"
+                    onClick={() => {
+                      setInspectingApt(null);
+                      handleOpenEditModal(apt);
+                    }}
+                  />
+                  {apt.clientPhone && (
+                    <a
+                      href={buildWhatsappBookingUrl({
+                        phone: apt.clientPhone,
+                        clientName: apt.clientName,
+                        businessName: currentBranch?.name || account?.fullName,
+                        serviceName: apt.serviceName,
+                        date: apt.date,
+                        startTime: apt.startTime,
+                        bookingLink: onlineBookingLink,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full h-10 rounded-xl bg-emerald-600 text-white t-small font-semibold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors"
+                    >
+                      <MessageCircle size={15} />
+                      {isAr ? 'تأكيد واتساب' : isEn ? 'Send WhatsApp Confirmation' : 'Envoyer Confirmation WhatsApp'}
+                    </a>
+                  )}
+                </div>
               </InspectorSection>
             </>
           );
@@ -1067,6 +1264,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         initialDate={slotPrefill?.date || selectedDate}
         initialTime={slotPrefill?.time || '10:00'}
         initialStaffId={slotPrefill?.staffId}
+      />
+
+      <StylistScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
       />
     </div>
   );

@@ -13,6 +13,10 @@ import {
   Trash2,
   Phone,
   Edit2,
+  MessageCircle,
+  Package,
+  FileCheck2,
+  Sparkles,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -22,6 +26,9 @@ import {
   selectCurrentAppointmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  selectCurrentSalonLoyaltyLedgerFromState,
+  selectCurrentSalonPrepaidPackagesFromState,
+  selectCurrentSalonConsentFormsFromState,
   showToast,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
@@ -33,6 +40,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
+import { buildWhatsappBookingUrl, normalizeSalonMemberRecord } from '../../../utils/appointmentDepth';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -66,7 +75,7 @@ interface AppointmentClientsViewProps {
   onEditMember?: (member: Member) => void;
 }
 
-type ClientSegmentFilter = 'all' | 'vip' | 'allergies';
+type ClientSegmentFilter = 'all' | 'vip' | 'walkin' | 'allergies';
 
 export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = React.memo(
   ({ onEditMember }) => {
@@ -74,6 +83,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       members,
       appointments,
       staff,
+      loyaltyLedger,
+      prepaidPackages,
+      consentForms,
       branches,
       currentBranch,
       language,
@@ -86,6 +98,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
         members: selectCurrentMembersFromState(s),
         appointments: selectCurrentAppointmentsFromState(s),
         staff: selectCurrentStaffFromState(s),
+        loyaltyLedger: selectCurrentSalonLoyaltyLedgerFromState(s),
+        prepaidPackages: selectCurrentSalonPrepaidPackagesFromState(s),
+        consentForms: selectCurrentSalonConsentFormsFromState(s),
         branches: s.branches,
         currentBranch: selectCurrentBranchFromState(s),
         language: s.language,
@@ -102,6 +117,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     const isEn = language === 'en';
 
     const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
+    const [bookingClientId, setBookingClientId] = useState<string | undefined>(undefined);
     const [segmentFilter, setSegmentFilter] = useState<ClientSegmentFilter>('all');
     const [selectedStylistFilter, setSelectedStylistFilter] = useState('All');
     const [selectedHairFilter, setSelectedHairFilter] = useState('All');
@@ -123,7 +139,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     const filterButtonRef = useRef<HTMLButtonElement | null>(null);
     const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-    const salonClients = members;
+    const salonClients = useMemo(() => members.map(normalizeSalonMemberRecord), [members]);
 
     const salonStylists = useMemo(
       () =>
@@ -142,6 +158,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       const totalClients = salonClients.length;
       const vipCount = salonClients.filter(
         (c) => c.segmentData?.isVip || c.membershipPlanName === 'VIP'
+      ).length;
+      const walkinCount = salonClients.filter(
+        (c) => c.clientType === 'walkin' || c.segmentData?.isWalkIn
       ).length;
       const allergiesCount = salonClients.filter(
         (c) => c.segmentData?.allergies && c.segmentData.allergies.length > 0
@@ -162,6 +181,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       return {
         totalClients,
         vipCount,
+        walkinCount,
         allergiesCount,
         totalFormulasCount,
         totalLifetimeSpend,
@@ -181,6 +201,13 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           segmentFilter === 'vip' &&
           !client.segmentData?.isVip &&
           client.membershipPlanName !== 'VIP'
+        ) {
+          return false;
+        }
+        if (
+          segmentFilter === 'walkin' &&
+          client.clientType !== 'walkin' &&
+          !client.segmentData?.isWalkIn
         ) {
           return false;
         }
@@ -387,9 +414,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       () => [
         { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: salonClients.length },
         { value: 'vip', label: 'VIP', count: metrics.vipCount },
+        { value: 'walkin', label: isAr ? 'زائر عابر' : isEn ? 'Walk-in' : 'Sans RDV', count: metrics.walkinCount },
         { value: 'allergies', label: isAr ? 'الحساسيات' : isEn ? 'Alerts' : 'Allergies', count: metrics.allergiesCount },
       ],
-      [isAr, isEn, salonClients.length, metrics.vipCount, metrics.allergiesCount]
+      [isAr, isEn, salonClients.length, metrics.vipCount, metrics.walkinCount, metrics.allergiesCount]
     );
 
     const filterSections = useMemo<KineticFilterSection[]>(
@@ -480,6 +508,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           sortable: true,
           renderCell: (client) => {
             const isVip = client.segmentData?.isVip || client.membershipPlanName === 'VIP';
+            const isWalkIn = client.clientType === 'walkin' || client.segmentData?.isWalkIn;
             const hasAllergies = client.segmentData?.allergies && client.segmentData.allergies.length > 0;
             return (
               <div className="flex items-center gap-3 min-w-0">
@@ -487,23 +516,28 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                   {client.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="t-label font-semibold text-black dark:text-white truncate">
                       {client.fullName}
                     </span>
                     {isVip && (
-                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                      <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] t-cap font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300">
                         VIP
                       </span>
                     )}
+                    {isWalkIn && (
+                      <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] t-cap font-semibold bg-sky-500/15 text-sky-700 dark:text-sky-300">
+                        {isAr ? 'عابر' : isEn ? 'Walk-in' : 'Sans RDV'}
+                      </span>
+                    )}
                     {hasAllergies && (
-                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
+                      <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] t-cap font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
                         <AlertTriangle size={10} />
                       </span>
                     )}
                   </div>
                   <span className="t-cap text-black/62 dark:text-white/65 tabular-nums truncate block">
-                    {client.phoneNumber || '—'}
+                    {client.phoneNumber || '—'} · {Number(client.segmentData?.loyaltyPoints || 0)} pts
                   </span>
                 </div>
               </div>
@@ -617,7 +651,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           id: 'book',
           label: isAr ? 'حجز موعد' : isEn ? 'Book' : 'Prendre RDV',
           icon: <Calendar className="w-[15px] h-[15px]" />,
-          onClick: () => setIsNewBookingModalOpen(true),
+          onClick: () => {
+            setBookingClientId(client.id);
+            setIsNewBookingModalOpen(true);
+          },
         },
         {
           id: 'view',
@@ -654,7 +691,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           id: 'book',
           label: isAr ? 'حجز جديد' : isEn ? 'New Booking' : 'Nouveau RDV',
           icon: <Calendar className="w-3.5 h-3.5 text-[#096b40]" />,
-          onClick: () => setIsNewBookingModalOpen(true),
+          onClick: () => {
+            setBookingClientId(client.id);
+            setIsNewBookingModalOpen(true);
+          },
         },
       ],
       [isAr, isEn]
@@ -692,7 +732,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           primaryAction={{
             label: isAr ? 'حجز موعد' : isEn ? 'Book Appointment' : 'Prendre RDV',
             icon: <Plus size={15} strokeWidth={2.5} />,
-            onClick: () => setIsNewBookingModalOpen(true),
+            onClick: () => {
+              setBookingClientId(undefined);
+              setIsNewBookingModalOpen(true);
+            },
           }}
         />
 
@@ -949,6 +992,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                       action={{
                         label: isAr ? 'برمجة موعد' : isEn ? 'Schedule Visit' : 'Programmer un Soin',
                         onClick: () => {
+                          setBookingClientId(client.id);
                           setInspectingClient(null);
                           setIsNewBookingModalOpen(true);
                         },
@@ -994,6 +1038,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
               );
             }
 
+            const clientLoyaltyEntries = loyaltyLedger.filter((l) => l.clientId === client.id).slice(0, 4);
+            const clientPackages = prepaidPackages.filter((p) => p.clientId === client.id);
+            const clientConsents = consentForms.filter((c) => c.clientId === client.id);
+
             return (
               <>
                 <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
@@ -1005,6 +1053,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                         icon: <Calendar className="w-[18px] h-[18px]" />,
                         primary: true,
                         onClick: () => {
+                          setBookingClientId(client.id);
                           setInspectingClient(null);
                           setIsNewBookingModalOpen(true);
                         },
@@ -1058,7 +1107,66 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                   </InspectorCard>
                 </InspectorSection>
 
-                <InspectorSection index={2} title="Préférences & Alertes">
+                <InspectorSection index={2} title={isEn ? 'Loyalty, Packages & Consents' : 'Fidélité, Forfaits & Décharges'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isEn ? 'Loyalty Points' : 'Points Fidélité'}
+                      icon={<Sparkles className="w-[15px] h-[15px]" />}
+                      value={`${Number(client.segmentData?.loyaltyPoints || 0)} pts`}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isEn ? 'Active Packages' : 'Forfaits Prépayés'}
+                      icon={<Package className="w-[15px] h-[15px]" />}
+                      value={
+                        clientPackages.length > 0
+                          ? clientPackages.map((p) => `${p.packageName} (${p.remainingSessions}/${p.totalSessions})`).join(' · ')
+                          : isEn ? 'None' : 'Aucun'
+                      }
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isEn ? 'Signed Consents' : 'Consentements Signés'}
+                      icon={<FileCheck2 className="w-[15px] h-[15px]" />}
+                      value={
+                        clientConsents.length > 0
+                          ? `${clientConsents.length} (${clientConsents[0].protocolType})`
+                          : isEn ? '0 signed' : 'Aucun'
+                      }
+                      tone={clientConsents.length > 0 ? 'ok' : undefined}
+                      isLast
+                    />
+                  </InspectorCard>
+                  {clientLoyaltyEntries.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {clientLoyaltyEntries.map((entry) => (
+                        <div key={entry.id} className="px-3 py-1.5 rounded-lg bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap">
+                          <span>{entry.reason}</span>
+                          <span className="font-semibold tabular-nums">
+                            {entry.pointsDelta > 0 ? `+${entry.pointsDelta}` : entry.pointsDelta} pts
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-2">
+                    <a
+                      href={buildWhatsappBookingUrl({
+                        phone: client.phoneNumber || '',
+                        clientName: client.fullName,
+                        businessName: currentBranch?.name,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 t-small font-semibold hover:bg-emerald-500/25"
+                    >
+                      <MessageCircle size={15} />
+                      <span>{isEn ? 'Message on WhatsApp' : 'Contacter via WhatsApp'}</span>
+                    </a>
+                  </div>
+                </InspectorSection>
+
+                <InspectorSection index={3} title="Préférences & Alertes">
                   <InspectorCard>
                     <InspectorKeyValue
                       label="Styliste attitrée"
@@ -1095,7 +1203,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
 
         <AppointmentModal
           isOpen={isNewBookingModalOpen}
-          onClose={() => setIsNewBookingModalOpen(false)}
+          onClose={() => {
+            setIsNewBookingModalOpen(false);
+            setBookingClientId(undefined);
+          }}
+          initialClientId={bookingClientId}
         />
       </div>
     );

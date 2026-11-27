@@ -16,10 +16,13 @@ import {
   shallowEqualObjects,
   selectCurrentServicesFromState,
   selectCurrentBranchFromState,
+  selectCurrentProductsFromState,
   showToast,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
-import { ServiceItem } from '../../../types/index';
+import { ServiceConsumableItem, ServiceItem } from '../../../types/index';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { SalonPackagesConsentPanel } from './SalonPackagesConsentPanel';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -67,6 +70,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
   const {
     account,
     servicesCatalog,
+    products,
     branches,
     currentBranch,
     language,
@@ -78,6 +82,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     (s) => ({
       account: s.account,
       servicesCatalog: selectCurrentServicesFromState(s),
+      products: selectCurrentProductsFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
@@ -100,6 +105,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
+  const [serviceTab, setServiceTab] = useState<'catalog' | 'packages' | 'consent'>('catalog');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [tierFilter, setTierFilter] = useState<'All' | 'Hair' | 'Premium'>('All');
   const [branchFilter, setBranchFilter] = useState<string>('All');
@@ -127,6 +133,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
   const [formBuffer, setFormBuffer] = useState('');
   const [formColor, setFormColor] = useState('#d4522f');
   const [formDescription, setFormDescription] = useState('');
+  const [formAllergyKeywords, setFormAllergyKeywords] = useState('');
+  const [formRequiresConsent, setFormRequiresConsent] = useState(false);
+  const [formConsumables, setFormConsumables] = useState<ServiceConsumableItem[]>([]);
+  const [consumableProductId, setConsumableProductId] = useState('');
+  const [consumableQty, setConsumableQty] = useState('1');
 
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -230,8 +241,13 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     setFormBuffer('');
     setFormColor('#d4522f');
     setFormDescription('');
+    setFormAllergyKeywords('');
+    setFormRequiresConsent(false);
+    setFormConsumables([]);
+    setConsumableProductId(products[0]?.id || '');
+    setConsumableQty('1');
     setIsServiceModalOpen(true);
-  }, []);
+  }, [products]);
 
   const handleOpenEditModal = useCallback((service: ServiceItem) => {
     setEditingService(service);
@@ -244,8 +260,26 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     setFormBuffer(String(service.bufferMinutes ?? ''));
     setFormColor(service.color || '#d4522f');
     setFormDescription(service.description || '');
+    setFormAllergyKeywords((service.allergyKeywords || []).join(', '));
+    setFormRequiresConsent(Boolean(service.requiresConsent));
+    setFormConsumables(service.consumables || []);
+    setConsumableProductId(products[0]?.id || '');
+    setConsumableQty('1');
     setIsServiceModalOpen(true);
-  }, []);
+  }, [products]);
+
+  const handleAddConsumable = useCallback(() => {
+    const prod = products.find((p) => p.id === consumableProductId);
+    const qty = Math.max(0.1, parseFloat(consumableQty) || 1);
+    if (!prod) return;
+    setFormConsumables((prev) => {
+      const existing = prev.find((c) => c.productId === prod.id);
+      if (existing) {
+        return prev.map((c) => (c.productId === prod.id ? { ...c, quantity: c.quantity + qty } : c));
+      }
+      return [...prev, { productId: prod.id, productName: prod.name, quantity: qty, unit: 'unit' }];
+    });
+  }, [products, consumableProductId, consumableQty]);
 
   const handleSaveService = useCallback(
     (e: React.FormEvent) => {
@@ -263,6 +297,10 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
       const parsedCost = formCostPrice.trim() ? parseFloat(formCostPrice) || 0 : 0;
       const parsedComm = formCommission.trim() ? parseFloat(formCommission) || 0 : 0;
       const parsedBuf = formBuffer.trim() ? parseInt(formBuffer, 10) || 0 : 0;
+      const allergyKeywords = formAllergyKeywords
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean);
 
       if (editingService) {
         updateServiceItem(editingService.id, {
@@ -275,6 +313,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           bufferMinutes: parsedBuf,
           color: formColor,
           description: formDescription.trim(),
+          allergyKeywords,
+          requiresConsent: formRequiresConsent,
+          consumables: formConsumables,
         });
       } else {
         const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
@@ -299,6 +340,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           color: formColor,
           colorCode: formColor,
           description: formDescription.trim(),
+          allergyKeywords,
+          requiresConsent: formRequiresConsent,
+          consumables: formConsumables,
           isActive: true,
         });
       }
@@ -315,6 +359,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
       formBuffer,
       formColor,
       formDescription,
+      formAllergyKeywords,
+      formRequiresConsent,
+      formConsumables,
       account,
       currentBranch,
       language,
@@ -469,7 +516,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
               {formatMoney(service.price)}
             </span>
             <span className="t-cap text-black/62 dark:text-white/65 tabular-nums block">
-              Coût: {formatMoney(service.costPrice || 0)}
+              {isEn ? 'Cost:' : 'Coût:'} {formatMoney(service.costPrice || 0)}
             </span>
           </div>
         ),
@@ -498,21 +545,23 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         statusLabel: `${service.commissionRate || 40}% comm.`,
         statusVariant: service.price >= 4500 ? 'warning' : 'active',
         metricPrimary: formatMoney(service.price),
-        metricSecondary: `${margin}% marge`,
+        metricSecondary: `${margin}% ${isEn ? 'margin' : 'marge'}`,
         detailCol1: {
-          heading: isAr ? 'التصنيف والمدة' : 'Protocole & Durée',
+          heading: isAr ? 'التصنيف والمدة' : isEn ? 'Protocol & Duration' : 'Protocole & Durée',
           primaryText: `${service.durationMinutes} min`,
-          secondaryText: service.bufferMinutes ? `+${service.bufferMinutes} min tampon` : 'Sans tampon',
+          secondaryText: service.bufferMinutes
+            ? `+${service.bufferMinutes} min ${isEn ? 'buffer' : 'tampon'}`
+            : isEn ? 'No buffer' : 'Sans tampon',
           tertiaryText: branch.name,
         },
         detailCol2: {
-          heading: isAr ? 'التكلفة والهامش' : 'Rentabilité',
-          primaryText: `${margin}% marge brute`,
-          secondaryText: `Coût: ${formatMoney(service.costPrice || 0)}`,
+          heading: isAr ? 'التكلفة والهامش' : isEn ? 'Profitability' : 'Rentabilité',
+          primaryText: `${margin}% ${isEn ? 'gross margin' : 'marge brute'}`,
+          secondaryText: `${isEn ? 'Cost:' : 'Coût:'} ${formatMoney(service.costPrice || 0)}`,
         },
         detailCol3: {
           heading: isAr ? 'العمولة' : 'Commission',
-          primaryText: `${service.commissionRate || 40}% styliste`,
+          primaryText: `${service.commissionRate || 40}% ${isEn ? 'stylist' : 'styliste'}`,
           secondaryText: formatMoney(Math.round((service.price * (service.commissionRate || 40)) / 100)),
         },
       };
@@ -597,6 +646,19 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
       <ScreenHeaderBar
         icon={<Scissors size={22} />}
         title={isAr ? 'الخدمات' : isEn ? 'Services' : 'Soins'}
+        secondaryActions={
+          <LiveSegmentedControl
+            size="sm"
+            value={serviceTab}
+            onValueChange={(v) => setServiceTab(v as 'catalog' | 'packages' | 'consent')}
+            aria-label={isEn ? 'Services View Mode' : 'Onglet Soins'}
+            options={[
+              { value: 'catalog', label: isAr ? 'الكتالوج' : isEn ? 'Services Catalog' : 'Catalogue Soins' },
+              { value: 'packages', label: isAr ? 'الباقات والهدايا' : isEn ? 'Packages & Gift Cards' : 'Forfaits & Cartes Cadeaux' },
+              { value: 'consent', label: isAr ? 'الموافقة الطبية' : isEn ? 'Tattoo & Laser Consent' : 'Consentement & Photos' },
+            ]}
+          />
+        }
         primaryAction={{
           label: isAr ? 'خدمة جديدة' : isEn ? 'New Service' : 'Nouvelle Prestation',
           icon: <Plus size={15} strokeWidth={2.5} />,
@@ -609,7 +671,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         language={language}
         primaryCard={{
           label: isAr ? 'خدمات تصفيف الشعر' : isEn ? 'Hair & Styling' : 'Coiffure & Coupe',
-          badgeText: `↗ ${catalogMetrics.avgDuration} min moy.`,
+          badgeText: `↗ ${catalogMetrics.avgDuration} ${isEn ? 'min avg' : 'min moy.'}`,
           count: catalogMetrics.hairCount,
           tone: 'emerald',
           isActive: tierFilter === 'Hair',
@@ -617,7 +679,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         }}
         secondaryCard={{
           label: isAr ? 'عناية فاخرة وسبا' : isEn ? 'Signature & Spa' : 'Soins Signature & Spa',
-          badgeText: `${catalogMetrics.totalServices} total`,
+          badgeText: isAr ? 'فاخرة' : isEn ? 'signature' : 'signature',
           count: catalogMetrics.premiumCount,
           tone: 'terracotta',
           isActive: tierFilter === 'Premium',
@@ -627,14 +689,20 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           label: isAr ? 'متوسط التعريفة' : isEn ? 'Average Service Tariff' : 'Tarif Moyen au Barème',
           badgePrefix: '~',
           badgeCount: catalogMetrics.avgGrossMargin,
-          badgeSuffix: '% marge',
+          badgeSuffix: isAr ? '% هامش' : isEn ? '% margin' : '% marge',
           valuePrefix: '',
           valueCount: catalogMetrics.avgPrice,
           formatValue: (n) => formatMoney(n),
-          caption: `${currentBranch?.name || 'Salon Principal'} · ${isAr ? 'التسعيرة الرسمية' : 'Grille Certifiée'}`,
+          caption: `${currentBranch?.name || 'Salon Principal'} · ${isAr ? 'التسعيرة الرسمية' : isEn ? 'Certified Tariff' : 'Grille Certifiée'}`,
         }}
       />
 
+      {serviceTab === 'packages' ? (
+        <SalonPackagesConsentPanel mode="packages" />
+      ) : serviceTab === 'consent' ? (
+        <SalonPackagesConsentPanel mode="consent" />
+      ) : (
+      <>
       <ScreenPod>
         <ScreenCollectionToolbar
           title={isAr ? 'كتالوج الخدمات والأسعار' : isEn ? 'Services Catalog' : 'Prestations & Forfaits'}
@@ -715,6 +783,8 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           hasActiveFilters={hasActiveAdvancedFilters || tierFilter !== 'All' || searchQuery.trim().length > 0}
         />
       </ScreenPod>
+      </>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -789,11 +859,37 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   <InspectorCard>
                     <InspectorKeyValue label="Durée active" icon={<Clock className="w-[15px] h-[15px]" />} value={`${service.durationMinutes} min`} />
                     <InspectorKeyValue label="Temps tampon" value={`${service.bufferMinutes || 0} min`} />
+                    <InspectorKeyValue
+                      label={isAr ? 'يتطلب موافقة' : isEn ? 'Consent Required' : 'Consentement requis'}
+                      value={service.requiresConsent ? (isEn ? 'Yes' : 'Oui') : (isEn ? 'No' : 'Non')}
+                      tone={service.requiresConsent ? 'warn' : undefined}
+                    />
                     <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
                   </InspectorCard>
                 </InspectorSection>
+                {Array.isArray(service.consumables) && service.consumables.length > 0 && (
+                  <InspectorSection index={1} title={isAr ? 'المواد المستهلكة' : isEn ? 'Consumables Linked' : 'Consommables liés'}>
+                    <InspectorCard>
+                      {service.consumables.map((c, idx) => (
+                        <InspectorKeyValue
+                          key={c.productId}
+                          label={c.productName}
+                          value={`-${c.quantity}`}
+                          isLast={idx === service.consumables!.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
+                {Array.isArray(service.allergyKeywords) && service.allergyKeywords.length > 0 && (
+                  <InspectorSection index={2} title={isAr ? 'مسببات الحساسية' : isEn ? 'Allergy Keywords' : 'Mots-clés allergènes'}>
+                    <InspectorCard className="py-3 t-small text-amber-700 dark:text-amber-300">
+                      {service.allergyKeywords.join(', ')}
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
                 {service.description && (
-                  <InspectorSection index={1} title="Description technique">
+                  <InspectorSection index={3} title="Description technique">
                     <InspectorCard className="py-4 t-body text-black/75 dark:text-white/80">
                       <p className="py-1 leading-relaxed">{service.description}</p>
                     </InspectorCard>
@@ -876,6 +972,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
+                  aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
                   className="p-2 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 >
                   <X size={18} />
@@ -899,7 +996,13 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   width="100%"
                   label="Catégorie"
                   value={formCategory}
-                  onChange={(val) => setFormCategory(val as any)}
+                  onChange={(val) => {
+                    const nextCat = val as ServiceItem['category'];
+                    setFormCategory(nextCat);
+                    if (nextCat === 'Tattoo' || nextCat === 'Laser') {
+                      setFormRequiresConsent(true);
+                    }
+                  }}
                   options={[
                     { value: 'Hair', label: 'Coiffure & Lissage' },
                     { value: 'Nails', label: 'Onglerie Russe' },
@@ -907,6 +1010,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                     { value: 'Bridal', label: 'Haute Mariée' },
                     { value: 'Massage', label: 'Massages & Corps' },
                     { value: 'Barber', label: 'Barbier' },
+                    { value: 'Hammam', label: 'Hammam & Spa' },
+                    { value: 'Laser', label: 'Épilation Laser' },
+                    { value: 'Tattoo', label: 'Tatouage / Dermopigmentation' },
                   ]}
                   height={40}
                   corner={12}
@@ -949,6 +1055,102 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   corner={12}
                 />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  field="CostPrice"
+                  label={isAr ? 'تكلفة المواد (دج)' : isEn ? 'Consumables Cost (DZD)' : 'Coût matière (DZD)'}
+                  type="number"
+                  placeholder="800"
+                  value={formCostPrice}
+                  onChange={setFormCostPrice}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="BufferMinutes"
+                  label={isAr ? 'وقت التجهيز (دقائق)' : isEn ? 'Buffer Time (min)' : 'Temps tampon (min)'}
+                  type="number"
+                  placeholder="10"
+                  value={formBuffer}
+                  onChange={setFormBuffer}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <LabelInput
+                field="AllergyKeywords"
+                label={isAr ? 'كلمات التحسس (مفصولة بفاصلة)' : isEn ? 'Allergy Keywords (comma-separated)' : 'Allergènes (séparés par virgule)'}
+                value={formAllergyKeywords}
+                onChange={setFormAllergyKeywords}
+                placeholder="ammonia, peroxide, latex..."
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <label className="flex items-center gap-2.5 t-small font-medium text-black dark:text-white cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formRequiresConsent}
+                  onChange={(e) => setFormRequiresConsent(e.target.checked)}
+                  className="rounded border-black/30"
+                />
+                {isAr ? 'يتطلب نموذج موافقة موقع (ليزر/تاتو)' : isEn ? 'Requires signed consent form (Tattoo / Laser)' : 'Consentement médical signé requis (Tatouage / Laser)'}
+              </label>
+
+              {products.length > 0 && (
+                <div className="p-3 rounded-xl bg-[#FAF7F4] dark:bg-[#1E1C1A] border border-[var(--atr-divider)] space-y-2">
+                  <p className="t-small font-semibold text-black dark:text-white">
+                    {isAr ? 'ربط المواد المستهلكة من المخزون' : isEn ? 'Consumables Stock Mapping' : 'Consommables déduits du stock'}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_90px_auto] gap-2 items-end">
+                    <LabelSelect
+                      field="ConsumableProduct"
+                      label={isAr ? 'المنتج' : isEn ? 'Stock Product' : 'Produit stock'}
+                      value={consumableProductId}
+                      onChange={setConsumableProductId}
+                      options={products.map((p) => ({ value: p.id, label: `${p.name} (${p.stockQuantity})` }))}
+                      width="100%"
+                      height={36}
+                      corner={10}
+                    />
+                    <LabelInput
+                      field="ConsumableQty"
+                      label={isAr ? 'الكمية' : isEn ? 'Qty' : 'Qté'}
+                      type="number"
+                      value={consumableQty}
+                      onChange={setConsumableQty}
+                      width="100%"
+                      height={36}
+                      corner={10}
+                    />
+                    <Button type="button" tone="soft" size={36} onClick={handleAddConsumable}>
+                      <Plus size={14} />
+                    </Button>
+                  </div>
+                  {formConsumables.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {formConsumables.map((c) => (
+                        <span
+                          key={c.productId}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-[#2B2825] border border-[var(--atr-divider)] t-cap font-semibold"
+                        >
+                          {c.productName} × {c.quantity}
+                          <button
+                            type="button"
+                            onClick={() => setFormConsumables((prev) => prev.filter((item) => item.productId !== c.productId))}
+                            className="text-rose-600 hover:text-rose-700 cursor-pointer"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <LabelInput
                 field="Description"
                 label="Description & Protocole"
