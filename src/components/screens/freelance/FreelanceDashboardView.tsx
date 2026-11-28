@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FileText, Pause, Play } from 'lucide-react';
+import { AlertTriangle, FileText, Pause, Play, ShieldCheck } from 'lucide-react';
 import {
   AreaTrendChart,
   ConversionFunnel,
@@ -23,6 +23,7 @@ import {
   selectCurrentFreelanceInvoicesFromState,
   selectCurrentFreelanceProposalsFromState,
   selectCurrentFreelanceExpensesFromState,
+  selectCurrentFreelanceAeConfigsFromState,
 } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -65,6 +66,7 @@ export const FreelanceDashboardView: React.FC = () => {
     freelanceInvoices,
     freelanceProposals,
     freelanceExpenses,
+    freelanceAeConfigs,
     isTimerRunning,
     isTimerPaused,
   } = useAtriumSelector(
@@ -75,6 +77,7 @@ export const FreelanceDashboardView: React.FC = () => {
       freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
       freelanceProposals: selectCurrentFreelanceProposalsFromState(s),
       freelanceExpenses: selectCurrentFreelanceExpensesFromState(s),
+      freelanceAeConfigs: selectCurrentFreelanceAeConfigsFromState(s),
       isTimerRunning: Boolean(s.activeTimer?.isRunning),
       isTimerPaused: Boolean(s.activeTimer?.isPaused),
     }),
@@ -134,11 +137,12 @@ export const FreelanceDashboardView: React.FC = () => {
         invoices: freelanceInvoices,
         proposals: freelanceProposals,
         expenses: freelanceExpenses,
+        aeConfigs: freelanceAeConfigs,
         period: '30d',
         cardFilters: filters,
         language,
       }),
-    [freelanceClients, freelanceProjects, timeLogs, freelanceInvoices, freelanceProposals, freelanceExpenses, filters, language]
+    [freelanceClients, freelanceProjects, timeLogs, freelanceInvoices, freelanceProposals, freelanceExpenses, freelanceAeConfigs, filters, language]
   );
 
   if (showSkeleton && freelanceClients.length === 0 && freelanceInvoices.length === 0) {
@@ -266,6 +270,116 @@ export const FreelanceDashboardView: React.FC = () => {
             )}
           />
         </DashboardPodGrid>
+      </DashboardPod>
+
+      <DashboardPod title={t('free_depth_ae_pod_title', language)}>
+        <div
+          data-testid="freelance-ae-threshold-pod"
+          data-sq="card"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-5 space-y-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="t-label font-semibold text-black dark:text-white tabular-nums">
+                {data.autoEntrepreneur.year}
+              </span>
+              <span className="text-black/30 dark:text-white/30" aria-hidden="true">·</span>
+              <span className="t-small text-black/65 dark:text-white/70 tabular-nums">
+                {t('free_depth_ae_effective_from', language)}: {data.autoEntrepreneur.activeConfig.effectiveFrom}
+              </span>
+              {data.autoEntrepreneur.isUnverified ? (
+                <span
+                  data-testid="freelance-ae-unverified-badge"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 border border-amber-300/70 dark:border-amber-700/60 text-amber-800 dark:text-amber-200 t-small font-semibold"
+                >
+                  <AlertTriangle size={13} />
+                  <span>{t('free_depth_ae_unverified_warn', language)}</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
+                  <ShieldCheck size={13} />
+                  <span>{t('free_depth_ae_verified_badge', language)}</span>
+                </span>
+              )}
+              {data.autoEntrepreneur.isOverCeiling ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 t-small font-semibold">
+                  <AlertTriangle size={13} />
+                  <span>{t('free_depth_ae_over_ceiling', language)}</span>
+                </span>
+              ) : data.autoEntrepreneur.isApproachingCeiling ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 t-small font-semibold">
+                  {t('free_depth_ae_approaching', language)}
+                </span>
+              ) : null}
+            </div>
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              onClick={() => setScreen('finance')}
+            >
+              {t('free_depth_ae_config_btn', language)}
+            </AtriumButton>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between t-small">
+              <span className="text-black/65 dark:text-white/70">
+                {t('free_depth_ae_collected', language)} / {t('free_depth_ae_ceiling', language)}
+              </span>
+              <span className="font-semibold text-black dark:text-white tabular-nums">
+                {data.autoEntrepreneur.collectedTurnoverDzd.toLocaleString()} / {data.autoEntrepreneur.annualCeilingDzd.toLocaleString()} DZD ({data.autoEntrepreneur.utilizationPct}%)
+              </span>
+            </div>
+            <div className="w-full h-2.5 rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  data.autoEntrepreneur.isOverCeiling
+                    ? 'bg-rose-600'
+                    : data.autoEntrepreneur.isApproachingCeiling
+                    ? 'bg-amber-500'
+                    : 'bg-[#d4522f]'
+                }`}
+                style={{ width: `${Math.min(100, Math.max(0, data.autoEntrepreneur.utilizationPct))}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t border-[var(--atr-divider)] t-cap">
+            <div>
+              <span className="text-black/55 dark:text-white/55 block">
+                {t('free_depth_ae_remaining', language)}
+              </span>
+              <span className="t-label font-semibold tabular-nums text-black dark:text-white">
+                {data.autoEntrepreneur.remainingHeadroomDzd.toLocaleString()} DZD
+              </span>
+            </div>
+            <div>
+              <span className="text-black/55 dark:text-white/55 block">
+                {t('free_depth_ae_contrib_est', language)} ({data.autoEntrepreneur.activeConfig.contributionRatePct}%)
+              </span>
+              <span className="t-label font-semibold tabular-nums text-black dark:text-white">
+                {data.autoEntrepreneur.estimatedContributionDzd.toLocaleString()} DZD
+              </span>
+            </div>
+            <div>
+              <span className="text-black/55 dark:text-white/55 block">
+                {t('free_depth_ae_tax_est', language)} ({data.autoEntrepreneur.activeConfig.taxRatePct}%)
+              </span>
+              <span className="t-label font-semibold tabular-nums text-black dark:text-white">
+                {data.autoEntrepreneur.estimatedTaxDzd.toLocaleString()} DZD
+              </span>
+            </div>
+            <div>
+              <span className="text-black/55 dark:text-white/55 block">
+                {t('free_depth_ae_total_due', language)}
+              </span>
+              <span className="t-label font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                {data.autoEntrepreneur.estimatedTotalDueDzd.toLocaleString()} DZD
+              </span>
+            </div>
+          </div>
+        </div>
       </DashboardPod>
 
       <DashboardPod title={getDashboardPodTitle('freelance', 'utilization', language)}>

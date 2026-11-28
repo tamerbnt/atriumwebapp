@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { FreelanceInvoice } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { computeInvoiceDzdEquivalent, resolveFreelanceFxRate } from '../../../utils/freelanceDepth';
 import {
   useAtriumSelector,
   shallowEqualObjects,
@@ -152,12 +153,25 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               <span className="t-kpi-m uppercase text-black tabular-nums block text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
               </span>
-              <div className="t-cap text-black/55 flex items-center gap-2 pt-1 sm:justify-end">
+              {invoice.currency !== 'DZD' && (
+                <span className="t-cap text-black/65 tabular-nums block">
+                  {t('free_depth_inv_dzd_equiv', language)}: {computeInvoiceDzdEquivalent(invoice.totalAmount, invoice.currency, invoice.fxRateToDzd).toLocaleString()} DZD (1 {invoice.currency} = {resolveFreelanceFxRate(invoice.currency, invoice.fxRateToDzd)} DZD)
+                </span>
+              )}
+              <div className="t-cap text-black/55 flex items-center gap-2 pt-1 sm:justify-end flex-wrap">
                 <span>{t('free_inv_table_date', language)}: {invoice.issueDate}</span>
                 <span aria-hidden="true">·</span>
                 <span className="font-semibold text-black">
                   {t('free_inv_table_due', language)}: {invoice.dueDate}
                 </span>
+                {invoice.isRecurring && invoice.recurrenceInterval && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="font-semibold text-[var(--brand-text,#BF431F)]">
+                      {t('free_depth_inv_recurring', language)} ({invoice.recurrenceInterval})
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -191,6 +205,11 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               {invoice.paidAt && (
                 <span className="t-small text-emerald-600 font-semibold block mt-1">
                   ✓ {t('free_inv_doc_paid_badge', language)} ({new Date(invoice.paidAt).toLocaleDateString(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-DZ' : 'en-US')})
+                </span>
+              )}
+              {invoice.lastRemindedAt && (
+                <span className="t-cap text-black/65 block mt-0.5 tabular-nums">
+                  {t('free_depth_inv_last_reminded', language)}: {new Date(invoice.lastRemindedAt).toLocaleDateString(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-DZ' : 'en-US')}
                 </span>
               )}
             </div>

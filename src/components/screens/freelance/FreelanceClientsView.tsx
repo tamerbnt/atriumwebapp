@@ -495,8 +495,13 @@ export const FreelanceClientsView: React.FC = () => {
               <div className="font-semibold text-black dark:text-white truncate hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
                 {client.name}
               </div>
-              <div className="t-cap text-black/55 dark:text-white/55 truncate">
-                {client.company || t('free_clients_private_client', language)}
+              <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+                <span className="truncate">{client.company || t('free_clients_private_client', language)}</span>
+                {client.crmPartyId && (
+                  <span className="shrink-0 text-emerald-700 dark:text-emerald-300 font-medium">
+                    · {t('free_depth_crm_linked', language)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1297,8 +1302,17 @@ export const FreelanceClientsView: React.FC = () => {
                     label={isAr ? 'البلد والعملة' : isFr ? 'Pays & Devise' : 'Country & Billing'}
                     value={`${client.country || 'Algeria'} · ${client.currency}`}
                     icon={<Globe size={13} />}
-                    isLast
+                    isLast={!client.crmPartyId}
                   />
+                  {client.crmPartyId && (
+                    <InspectorKeyValue
+                      label={t('free_depth_crm_linked', language)}
+                      value={client.crmPartyId}
+                      mono
+                      tone="ok"
+                      isLast
+                    />
+                  )}
                 </InspectorCard>
               </InspectorSection>
               <InspectorSection index={2} title={t('free_clients_contract_terms', language)}>

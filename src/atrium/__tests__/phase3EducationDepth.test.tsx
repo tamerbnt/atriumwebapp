@@ -53,6 +53,7 @@ function seedEducationTestEntities(actions: ReturnType<typeof useAtriumActions>)
   const teacher1 = actions.createStaffMember({
     fullName: 'Prof. Amine Mansouri',
     role: 'Senior Instructor',
+    roleRank: 2,
     pinCode: '1111',
     phoneNumber: '0551100200',
     email: 'amine@atlas.dz',
@@ -67,6 +68,7 @@ function seedEducationTestEntities(actions: ReturnType<typeof useAtriumActions>)
   const teacher2 = actions.createStaffMember({
     fullName: 'Mme. Salima Khelifi',
     role: 'Language Instructor',
+    roleRank: 2,
     pinCode: '2222',
     phoneNumber: '0552200300',
     email: 'salima@atlas.dz',
@@ -89,13 +91,13 @@ function seedEducationTestEntities(actions: ReturnType<typeof useAtriumActions>)
 
   const course = actions.addEduCourse({
     title: 'Full-Stack Web Bootcamp',
-    category: 'Tech',
-    level: 'Intermediate',
-    durationHours: 120,
-    defaultTuitionFee: 45000,
+    code: 'WEB-101',
+    category: 'Technology',
+    durationWeeks: 12,
+    totalHours: 120,
+    defaultPrice: 45000,
     currency: 'DZD',
     description: 'TypeScript, React & SQL systems track',
-    isActive: true,
     gradeScale: 20,
     tradeMode: 'academy',
   });
@@ -728,7 +730,6 @@ describe('Phase 3 Step 6 (7.6 education_cohort) — Deep Vertical Integration', 
           isOpen
           onClose={() => {}}
           certificate={cert}
-          preselectedStudent={student1}
         />
       )
     ).toContain('div');

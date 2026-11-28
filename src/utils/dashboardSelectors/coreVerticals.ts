@@ -9,6 +9,7 @@ import type {
   EduEnrollment,
   EduGrade,
   EduStudent,
+  FreelanceAutoEntrepreneurConfig,
   FreelanceClient,
   FreelanceExpense,
   FreelanceInvoice,
@@ -34,6 +35,10 @@ import type {
   TimeLogEntry,
   WarehouseDepot,
 } from '../../types/index';
+import {
+  evaluateAutoEntrepreneurTurnover,
+  type AutoEntrepreneurTurnoverSummary,
+} from '../freelanceDepth';
 import type {
   AreaPoint,
   BubbleGroup,
@@ -1133,6 +1138,7 @@ export interface FreelanceDashboardInput {
   invoices: FreelanceInvoice[];
   proposals: FreelanceProposal[];
   expenses: FreelanceExpense[];
+  aeConfigs?: FreelanceAutoEntrepreneurConfig[];
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
@@ -1140,7 +1146,19 @@ export interface FreelanceDashboardInput {
 }
 
 export function selectFreelanceDashboard(input: FreelanceDashboardInput) {
-  const { clients, projects, timeLogs, invoices, proposals, expenses, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const {
+    clients,
+    projects,
+    timeLogs,
+    invoices,
+    proposals,
+    expenses,
+    aeConfigs = [],
+    period,
+    language,
+    anchorDate = new Date(),
+    cardFilters = {},
+  } = input;
   const revPeriod = resolvePeriodKey(cardFilters.revenue, period);
   const trendPeriod = resolvePeriodKey(cardFilters.trend, period);
   const unpaidScope = cardFilters.unpaid || 'all';
@@ -1238,6 +1256,14 @@ export function selectFreelanceDashboard(input: FreelanceDashboardInput) {
     color: PALETTE[i % PALETTE.length],
   }));
 
+  const autoEntrepreneur: AutoEntrepreneurTurnoverSummary = evaluateAutoEntrepreneurTurnover({
+    invoices,
+    expenses,
+    configs: aeConfigs,
+    year: anchorDate.getFullYear(),
+    asOfDate: anchorDate.toISOString().slice(0, 10),
+  });
+
   return {
     collectedRevenue: revSeries.currentTotal,
     revenueDelta: revSeries.deltaPercent,
@@ -1250,6 +1276,7 @@ export function selectFreelanceDashboard(input: FreelanceDashboardInput) {
     funnelStages,
     hoursDumbbell,
     donutSegments,
+    autoEntrepreneur,
   };
 }
 

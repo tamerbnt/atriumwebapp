@@ -897,6 +897,7 @@ export interface FreelanceClient {
   monthlyRetainerAmount?: number;
   notes?: string;
   lifetimeBilled: number;
+  crmPartyId?: string;
   version?: number;
   createdAt: string;
 }
@@ -970,11 +971,15 @@ export interface TimeLogEntry {
   rateAtMoment: number;
   currency: CurrencyCode;
   date: string; // YYYY-MM-DD
+  startedAt?: string;
+  endedAt?: string;
+  splitGroupId?: string;
   version?: number;
   createdAt: string;
 }
 
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue';
+export type FreelanceRecurrenceInterval = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
 export interface FreelanceInvoiceItem {
   id: string;
@@ -998,6 +1003,9 @@ export interface FreelanceInvoice {
   clientEmail: string;
   invoiceNumber: string; // e.g. INV-2026-001
   currency: CurrencyCode;
+  fxRateToDzd?: number;
+  totalAmountDzdCentimes?: number;
+  unifiedDocumentId?: string;
   issueDate: string;
   dueDate: string;
   status: InvoiceStatus;
@@ -1006,6 +1014,11 @@ export interface FreelanceInvoice {
   taxPercent: number; // e.g. 0% for international or 19%
   taxAmount: number;
   totalAmount: number;
+  isRecurring?: boolean;
+  recurrenceInterval?: FreelanceRecurrenceInterval;
+  nextRecurrenceDate?: string;
+  lastRemindedAt?: string;
+  shareToken?: string;
   notes?: string;
   paymentDetails?: {
     bankName: string;
@@ -1068,11 +1081,16 @@ export interface FreelanceExpense {
   date: string;
   isTaxDeductible: boolean;
   receiptUrl?: string;
+  receiptStoragePath?: string;
+  receiptFileName?: string;
+  receiptMimeType?: string;
+  receiptSizeBytes?: number;
   version?: number;
   createdAt: string;
 }
 
 export interface ActiveTimerState {
+  id?: string;
   isRunning: boolean;
   isPaused: boolean;
   clientId: string;
@@ -1083,11 +1101,148 @@ export interface ActiveTimerState {
   deliverableTitle?: string;
   taskDescription: string;
   elapsedSeconds: number;
+  accumulatedSeconds?: number;
   isBillable: boolean;
   isPomodoro: boolean;
   pomodoroRemainingSeconds: number; // 25 mins = 1500
   pomodoroMode: 'work' | 'break';
   startedAt: string | null;
+  lastHeartbeatAt?: string | null;
+  sourceDeviceId?: string | null;
+  version?: number;
+}
+
+export interface FreelanceAutoEntrepreneurConfig {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  effectiveFrom: string;
+  annualTurnoverCeilingDzd: number;
+  contributionRatePct: number;
+  taxRatePct: number;
+  tradeSpecialty?: string;
+  verificationStatus: 'unverified' | 'verified';
+  verifiedBy?: string;
+  verifiedAt?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+}
+
+export type FreelanceContractCategory =
+  | 'service_agreement'
+  | 'nda'
+  | 'retainer_sow'
+  | 'translation_terms'
+  | 'photography_release';
+
+export interface FreelanceContractTemplate {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  templateKey: string;
+  category: FreelanceContractCategory;
+  title: string;
+  bodyTemplate: string;
+  variablesSchema: string[];
+  isSystemPreset?: boolean;
+  version?: number;
+  createdAt: string;
+}
+
+export type FreelanceContractStatus = 'draft' | 'sent' | 'signed' | 'cancelled';
+
+export interface FreelanceClientContract {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  clientId: string;
+  clientName: string;
+  templateId?: string;
+  contractNumber: string;
+  category: FreelanceContractCategory;
+  title: string;
+  renderedBody: string;
+  currency: CurrencyCode;
+  contractValue: number;
+  effectiveDate: string;
+  expiryDate?: string;
+  status: FreelanceContractStatus;
+  signedAt?: string;
+  signerName?: string;
+  signatureHash?: string;
+  version?: number;
+  createdAt: string;
+}
+
+export type TranslationPricingUnit = 'word' | 'page' | 'fixed';
+export type TranslationCertificationKind = 'sworn_official' | 'certified_copy' | 'apostille_prep' | 'standard';
+export type TranslationRegisterStatus = 'logged' | 'certified' | 'billed' | 'delivered';
+
+export interface FreelanceTranslationEntry {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  registerNumber: string;
+  clientId: string;
+  clientName: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  documentTitle: string;
+  certificationKind: TranslationCertificationKind;
+  pricingUnit: TranslationPricingUnit;
+  unitCount: number;
+  unitRate: number;
+  totalAmount: number;
+  currency: CurrencyCode;
+  issuedDate: string;
+  swornSealRef?: string;
+  invoiceId?: string;
+  status: TranslationRegisterStatus;
+  version?: number;
+  createdAt: string;
+}
+
+export type PhotoGalleryStatus =
+  | 'scheduled'
+  | 'shot'
+  | 'editing'
+  | 'proofing'
+  | 'watermarked_preview'
+  | 'final_delivered'
+  | 'cancelled';
+
+export interface FreelancePhotoShoot {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  clientId: string;
+  clientName: string;
+  shootTitle: string;
+  location?: string;
+  shootDate: string;
+  startTime: string;
+  endTime: string;
+  packageName?: string;
+  packageFee: number;
+  currency: CurrencyCode;
+  galleryUrl?: string;
+  galleryStatus: PhotoGalleryStatus;
+  deliverablesCount: number;
+  selectedCount: number;
+  watermarkEnabled: boolean;
+  invoiceId?: string;
+  version?: number;
+  createdAt: string;
 }
 
 // ==========================================

@@ -10,6 +10,9 @@ import {
   AlertTriangle,
   XCircle,
   Eye,
+  FileSignature,
+  ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -17,12 +20,26 @@ import {
   useDashboardShellState,
   shallowEqualObjects,
   selectCurrentFreelanceProposalsFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceContractTemplatesFromState,
+  selectCurrentFreelanceClientContractsFromState,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
-import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
+import {
+  buildDefaultFreelanceContractTemplates,
+  renderFreelanceContractBody,
+} from '../../../utils/freelanceDepth';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import {
+  FreelanceProposal,
+  FreelanceClientContract,
+  FreelanceContractCategory,
+  PricingModel,
+  CurrencyCode,
+} from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LabelTextarea } from '../../ui/LabelTextarea';
@@ -66,11 +83,19 @@ export const FreelanceProposalsView: React.FC = () => {
 
   const {
     freelanceProposals,
+    freelanceClients,
+    contractTemplates,
+    clientContracts,
+    account,
     branches,
     currentBranch,
   } = useAtriumSelector(
     (s) => ({
       freelanceProposals: selectCurrentFreelanceProposalsFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      contractTemplates: selectCurrentFreelanceContractTemplatesFromState(s),
+      clientContracts: selectCurrentFreelanceClientContractsFromState(s),
+      account: s.account,
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
     }),
@@ -83,8 +108,35 @@ export const FreelanceProposalsView: React.FC = () => {
     updateFreelanceProposal,
     deleteFreelanceProposal,
     convertProposalToProject,
+    createFreelanceContract,
+    signFreelanceContract,
+    deleteFreelanceContract,
     setScreen,
   } = useAtriumActions();
+
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'proposals' | 'contracts'>('proposals');
+  const [isNewContractOpen, setIsNewContractOpen] = useState(false);
+  const [contractToSign, setContractToSign] = useState<FreelanceClientContract | null>(null);
+  const [signerNameInput, setSignerNameInput] = useState('');
+
+  const availableTemplates = useMemo(() => {
+    const defaults = buildDefaultFreelanceContractTemplates();
+    if (!contractTemplates || contractTemplates.length === 0) return defaults;
+    const seen = new Set(contractTemplates.map((tpl) => tpl.templateKey));
+    return [...contractTemplates, ...defaults.filter((tpl) => !seen.has(tpl.templateKey))];
+  }, [contractTemplates]);
+
+  const [contractClientId, setContractClientId] = useState(freelanceClients[0]?.id || '');
+  const [contractTemplateId, setContractTemplateId] = useState(
+    () => availableTemplates[0]?.id || 'tpl_freelance_msa'
+  );
+  const [contractTitle, setContractTitle] = useState('');
+  const [contractScope, setContractScope] = useState('');
+  const [contractValue, setContractValue] = useState(150000);
+  const [contractCurrency, setContractCurrency] = useState<CurrencyCode>('DZD');
+  const [contractEffectiveDate, setContractEffectiveDate] = useState(
+    new Date().toISOString().split('T')[0]
+  );
 
   const [selectedProposalIds, setSelectedProposalIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedProposalIds, setPinnedProposalIds] = useState<Set<string>>(() => new Set<string>());
@@ -775,7 +827,59 @@ export const FreelanceProposalsView: React.FC = () => {
   const retainedProposalToEdit = useRetainedModalValue(proposalToEdit);
   const retainedProposalToDelete = useRetainedModalValue(proposalToDelete);
 
-  if (showSkeleton && (freelanceProposals.length === 0 || networkMode === 'force_skeleton')) {
+  const selectedTemplate = useMemo(
+    () => availableTemplates.find((tpl) => tpl.id === contractTemplateId) || availableTemplates[0],
+    [availableTemplates, contractTemplateId]
+  );
+
+  const contractPreview = useMemo(() => {
+    const cl =
+      freelanceClients.find((c) => c.id === contractClientId) || freelanceClients[0];
+    return renderFreelanceContractBody(selectedTemplate?.bodyTemplate || '', {
+      provider_name: account?.fullName || 'Studio Provider',
+      client_name: cl?.name || 'Client',
+      client_company: cl?.company || cl?.name || 'Client',
+      scope_summary: contractScope || contractTitle || selectedTemplate?.title || '',
+      contract_value: contractValue,
+      currency: contractCurrency,
+      effective_date: contractEffectiveDate,
+    });
+  }, [
+    selectedTemplate,
+    freelanceClients,
+    contractClientId,
+    account?.fullName,
+    contractScope,
+    contractTitle,
+    contractValue,
+    contractCurrency,
+    contractEffectiveDate,
+  ]);
+
+  const handleCreateContractSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const resolvedClientId = contractClientId || freelanceClients[0]?.id;
+    if (!resolvedClientId || !contractTitle.trim()) return;
+    createFreelanceContract({
+      clientId: resolvedClientId,
+      templateId: selectedTemplate?.id,
+      category: (selectedTemplate?.category || 'service_agreement') as FreelanceContractCategory,
+      title: contractTitle.trim(),
+      renderedBody: contractPreview.renderedBody,
+      currency: contractCurrency,
+      contractValue: Number(contractValue) || 0,
+      effectiveDate: contractEffectiveDate,
+    });
+    setContractTitle('');
+    setContractScope('');
+    setIsNewContractOpen(false);
+  };
+
+  if (
+    activeWorkspaceTab === 'proposals' &&
+    showSkeleton &&
+    (freelanceProposals.length === 0 || networkMode === 'force_skeleton')
+  ) {
     return (
       <SkeletonCollectionScreen
         kpiCount={3}
@@ -800,15 +904,186 @@ export const FreelanceProposalsView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <ScreenHeaderBar
-        icon={<FileText size={22} />}
-        title={t('free_prop_title', language)}
+        icon={activeWorkspaceTab === 'contracts' ? <FileSignature size={22} /> : <FileText size={22} />}
+        title={
+          activeWorkspaceTab === 'contracts'
+            ? t('free_depth_tab_contracts', language)
+            : t('free_prop_title', language)
+        }
+        secondaryActions={
+          <LiveSegmentedControl
+            size="md"
+            value={activeWorkspaceTab}
+            onValueChange={(v) => setActiveWorkspaceTab(v as 'proposals' | 'contracts')}
+            aria-label={t('free_prop_title', language)}
+            options={[
+              { value: 'proposals', label: t('free_depth_tab_proposals', language) },
+              { value: 'contracts', label: t('free_depth_tab_contracts', language) },
+            ]}
+          />
+        }
         primaryAction={{
-          label: t('free_prop_btn_new', language),
-          onClick: () => setIsDraftModalOpen(true),
+          label:
+            activeWorkspaceTab === 'contracts'
+              ? t('free_depth_ctr_new', language)
+              : t('free_prop_btn_new', language),
+          onClick: () => {
+            if (activeWorkspaceTab === 'contracts') {
+              if (!contractClientId && freelanceClients[0]?.id) {
+                setContractClientId(freelanceClients[0].id);
+              }
+              setIsNewContractOpen(true);
+            } else {
+              setIsDraftModalOpen(true);
+            }
+          },
           icon: <Plus size={16} strokeWidth={2.2} />,
-          dataAction: 'add-freelance-proposal',
+          dataAction:
+            activeWorkspaceTab === 'contracts' ? 'add-freelance-contract' : 'add-freelance-proposal',
         }}
       />
+
+      {activeWorkspaceTab === 'contracts' ? (
+        <ScreenPod>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h3 className="t-label font-semibold text-black dark:text-white">
+                  {t('free_depth_tab_contracts', language)} ({clientContracts.length})
+                </h3>
+              </div>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                size="sm"
+                icon={<Plus size={14} />}
+                onClick={() => {
+                  if (!contractClientId && freelanceClients[0]?.id) {
+                    setContractClientId(freelanceClients[0].id);
+                  }
+                  setIsNewContractOpen(true);
+                }}
+              >
+                {t('free_depth_ctr_new', language)}
+              </AtriumButton>
+            </div>
+
+            {clientContracts.length === 0 ? (
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-8 text-center space-y-3"
+              >
+                <p className="t-body text-black/65 dark:text-white/70">
+                  {isAr
+                    ? 'لا توجد عقود عملاء مسجلة بعد. أنشئ عقداً من القوالب الجاهزة.'
+                    : isFr
+                    ? 'Aucun contrat client généré pour l’instant. Créez-en un depuis les modèles.'
+                    : 'No client contracts drafted yet. Generate an MSA, NDA, or release from presets.'}
+                </p>
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<FileSignature size={14} />}
+                  onClick={() => setIsNewContractOpen(true)}
+                >
+                  {t('free_depth_ctr_new', language)}
+                </AtriumButton>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {clientContracts.map((ctr) => {
+                  const isSigned = ctr.status === 'signed';
+                  return (
+                    <div
+                      key={ctr.id}
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-4 lg:p-5 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono t-small font-semibold text-black/65 dark:text-white/65">
+                              {ctr.contractNumber}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full t-small font-semibold ${
+                                isSigned
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                                  : 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/75 dark:text-white/80'
+                              }`}
+                            >
+                              {isSigned && <Lock size={11} />}
+                              <span>
+                                {isSigned
+                                  ? t('free_depth_ctr_signed_badge', language)
+                                  : t('free_depth_ctr_draft_badge', language)}
+                              </span>
+                            </span>
+                          </div>
+                          <h4 className="t-label font-semibold text-black dark:text-white mt-1 truncate">
+                            {ctr.title}
+                          </h4>
+                          <p className="t-cap text-black/60 dark:text-white/65">
+                            {ctr.clientName} · {ctr.effectiveDate} ·{' '}
+                            <span className="tabular-nums font-semibold">
+                              {formatCurrencyAmount(ctr.contractValue, ctr.currency)}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {!isSigned && (
+                            <AtriumButton
+                              type="button"
+                              variant="primary"
+                              size="sm"
+                              icon={<FileSignature size={13} />}
+                              onClick={() => {
+                                setContractToSign(ctr);
+                                setSignerNameInput(ctr.clientName);
+                              }}
+                            >
+                              {t('free_depth_ctr_sign_btn', language)}
+                            </AtriumButton>
+                          )}
+                          {!isSigned && (
+                            <button
+                              type="button"
+                              onClick={() => deleteFreelanceContract(ctr.id)}
+                              className="p-2 rounded-lg text-black/50 dark:text-white/50 hover:text-rose-600 cursor-pointer"
+                              aria-label={`${t('common_delete', language)} ${ctr.contractNumber}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <pre className="whitespace-pre-wrap font-sans t-small text-black/75 dark:text-white/80 bg-[#F7F3EE] dark:bg-[#191715] p-3 rounded-xl max-h-36 overflow-y-auto">
+                        {ctr.renderedBody}
+                      </pre>
+                      {isSigned && (
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--atr-divider)] t-small text-black/60 dark:text-white/65">
+                          <span>
+                            {t('free_depth_ctr_signer_name', language)}:{' '}
+                            <strong className="text-black dark:text-white">{ctr.signerName}</strong>
+                          </span>
+                          <span className="font-mono">
+                            {t('free_depth_ctr_hash', language)}: {ctr.signatureHash}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </ScreenPod>
+      ) : (
+        <>
 
       <ScreenKpiBanner
         heading={
@@ -1263,6 +1538,8 @@ export const FreelanceProposalsView: React.FC = () => {
           );
         }}
       />
+        </>
+      )}
 
       {/* Draft Proposal Modal */}
       <KineticModalShell
@@ -1752,6 +2029,200 @@ export const FreelanceProposalsView: React.FC = () => {
                 {t('free_prop_delete_modal_title', language)}
               </AtriumButton>
             </div>
+          </div>
+        )}
+      </KineticModalShell>
+
+      {/* New Client Contract Modal */}
+      <KineticModalShell
+        isOpen={isNewContractOpen}
+        onClose={() => setIsNewContractOpen(false)}
+        maxWidthClass="max-w-xl"
+        zIndexClass="z-[60]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_ctr_new', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_depth_ctr_new', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsNewContractOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateContractSubmit} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelSelect
+                field="CtrClient"
+                label={t('free_invoice_client', language)}
+                value={contractClientId || freelanceClients[0]?.id || ''}
+                onChange={setContractClientId}
+                options={freelanceClients.map((c) => ({
+                  value: c.id,
+                  label: c.company || c.name,
+                }))}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="CtrTemplate"
+                label={t('free_depth_ctr_template', language)}
+                value={contractTemplateId}
+                onChange={setContractTemplateId}
+                options={availableTemplates.map((tpl) => ({
+                  value: tpl.id,
+                  label: tpl.title,
+                }))}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <LabelInput
+              field="CtrTitle"
+              label={t('free_prop_field_title', language)}
+              required
+              value={contractTitle}
+              onChange={setContractTitle}
+              placeholder={selectedTemplate?.title}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelInput
+                field="CtrDate"
+                label={t('free_depth_ae_effective_from', language)}
+                type="date"
+                required
+                value={contractEffectiveDate}
+                onChange={setContractEffectiveDate}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="CtrValue"
+                label={t('common_amount', language)}
+                type="number"
+                min={0}
+                value={String(contractValue)}
+                onChange={(v) => setContractValue(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="CtrCurrency"
+                label={t('common_currency', language)}
+                value={contractCurrency}
+                onChange={(v) => setContractCurrency(v as CurrencyCode)}
+                options={[
+                  { value: 'DZD', label: 'DZD' },
+                  { value: 'EUR', label: 'EUR' },
+                  { value: 'USD', label: 'USD' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <LabelInput
+              field="CtrScope"
+              label={t('free_prop_scope_items', language)}
+              value={contractScope}
+              onChange={setContractScope}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div className="space-y-1">
+              <span className="t-small font-medium text-black/60 dark:text-white/65">
+                {selectedTemplate?.title}
+              </span>
+              <pre className="whitespace-pre-wrap font-sans t-small text-black/80 dark:text-white/85 bg-[#F5F1EC] dark:bg-[#22201E] p-3 rounded-xl max-h-36 overflow-y-auto">
+                {contractPreview.renderedBody}
+              </pre>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsNewContractOpen(false)}>
+                {t('free_clients_cancel', language)}
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {t('free_depth_ctr_new', language)}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      {/* Sign & Lock Contract Modal */}
+      <KineticModalShell
+        isOpen={Boolean(contractToSign)}
+        onClose={() => setContractToSign(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[75]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_ctr_sign_btn', language)}
+      >
+        {contractToSign && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_depth_ctr_sign_btn', language)} · {contractToSign.contractNumber}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setContractToSign(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!signerNameInput.trim()) return;
+                signFreelanceContract(contractToSign.id, signerNameInput.trim());
+                setContractToSign(null);
+              }}
+              className="space-y-4 t-cap"
+            >
+              <LabelInput
+                field="SignerFullName"
+                label={t('free_depth_ctr_signer_name', language)}
+                required
+                value={signerNameInput}
+                onChange={setSignerNameInput}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setContractToSign(null)}>
+                  {t('free_clients_cancel', language)}
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
+                  {t('free_depth_ctr_sign_btn', language)}
+                </Button>
+              </div>
+            </form>
           </div>
         )}
       </KineticModalShell>

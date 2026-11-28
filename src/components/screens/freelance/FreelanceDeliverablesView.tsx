@@ -14,6 +14,12 @@ import {
   Trash2,
   CheckCircle,
   Eye,
+  Languages,
+  Camera,
+  Award,
+  Receipt,
+  ShieldAlert,
+  ExternalLink,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -22,13 +28,25 @@ import {
   shallowEqualObjects,
   selectCurrentFreelanceProjectsFromState,
   selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceTranslationEntriesFromState,
+  selectCurrentFreelancePhotoShootsFromState,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import {
+  computeTranslationQuote,
+  detectPhotoShootOverlap,
+  canTransitionGalleryStage,
+} from '../../../utils/freelanceDepth';
+import {
   FreelanceProject,
   FreelanceDeliverable,
+  FreelanceTranslationEntry,
+  FreelancePhotoShoot,
+  TranslationCertificationKind,
+  TranslationPricingUnit,
+  PhotoGalleryStatus,
   DeliverableStage,
   PricingModel,
   CurrencyCode,
@@ -117,12 +135,16 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const {
     freelanceProjects,
     freelanceClients,
+    translationEntries,
+    photoShoots,
     branches,
     currentBranch,
   } = useAtriumSelector(
     (s) => ({
       freelanceProjects: selectCurrentFreelanceProjectsFromState(s),
       freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      translationEntries: selectCurrentFreelanceTranslationEntriesFromState(s),
+      photoShoots: selectCurrentFreelancePhotoShootsFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
     }),
@@ -138,8 +160,41 @@ export const FreelanceDeliverablesView: React.FC = () => {
     addFreelanceProject,
     deleteFreelanceProject,
     startTimer,
+    upsertTranslationEntry,
+    deleteTranslationEntry,
+    billTranslationEntry,
+    upsertPhotoShoot,
+    deletePhotoShoot,
+    billPhotoShoot,
     setScreen,
   } = useAtriumActions();
+
+  const [workspaceTab, setWorkspaceTab] = useState<'deliverables' | 'translator' | 'photo'>('deliverables');
+  const [isNewTranslationOpen, setIsNewTranslationOpen] = useState(false);
+  const [isNewShootOpen, setIsNewShootOpen] = useState(false);
+
+  const [trClientId, setTrClientId] = useState(freelanceClients[0]?.id || '');
+  const [trDocTitle, setTrDocTitle] = useState('');
+  const [trSourceLang, setTrSourceLang] = useState('AR');
+  const [trTargetLang, setTrTargetLang] = useState('FR');
+  const [trCertKind, setTrCertKind] = useState<TranslationCertificationKind>('sworn_official');
+  const [trPricingUnit, setTrPricingUnit] = useState<TranslationPricingUnit>('page');
+  const [trUnitCount, setTrUnitCount] = useState(3);
+  const [trUnitRate, setTrUnitRate] = useState(1200);
+  const [trCurrency, setTrCurrency] = useState<CurrencyCode>('DZD');
+  const [trIssuedDate, setTrIssuedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [trSealRef, setTrSealRef] = useState('');
+
+  const [phClientId, setPhClientId] = useState(freelanceClients[0]?.id || '');
+  const [phTitle, setPhTitle] = useState('');
+  const [phLocation, setPhLocation] = useState('');
+  const [phDate, setPhDate] = useState(new Date().toISOString().split('T')[0]);
+  const [phStartTime, setPhStartTime] = useState('09:00');
+  const [phEndTime, setPhEndTime] = useState('12:00');
+  const [phPackageName, setPhPackageName] = useState('Full Editorial Coverage');
+  const [phPackageFee, setPhPackageFee] = useState(45000);
+  const [phCurrency, setPhCurrency] = useState<CurrencyCode>('DZD');
+  const [phGalleryUrl, setPhGalleryUrl] = useState('');
 
   const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
   const [collectionViewMode, setCollectionViewMode] = useState<'list' | 'grid'>('list');
@@ -866,7 +921,84 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const retainedDeliverableToDelete = useRetainedModalValue(deliverableToDelete);
   const retainedProjectToDelete = useRetainedModalValue(projectToDelete);
 
-  if (showSkeleton && (freelanceProjects.length === 0 || networkMode === 'force_skeleton')) {
+  const trQuotePreview = useMemo(
+    () =>
+      computeTranslationQuote({
+        pricingUnit: trPricingUnit,
+        unitCount: Number(trUnitCount) || 0,
+        unitRate: Number(trUnitRate) || 0,
+      }),
+    [trPricingUnit, trUnitCount, trUnitRate]
+  );
+
+  const phOverlapCheck = useMemo(
+    () =>
+      detectPhotoShootOverlap(
+        {
+          shootDate: phDate,
+          startTime: phStartTime,
+          endTime: phEndTime,
+          galleryStatus: 'scheduled',
+        },
+        photoShoots
+      ),
+    [phDate, phStartTime, phEndTime, photoShoots]
+  );
+
+  const handleSaveTranslationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const resolvedClient = trClientId || freelanceClients[0]?.id;
+    if (!resolvedClient || !trDocTitle.trim()) return;
+    upsertTranslationEntry({
+      clientId: resolvedClient,
+      documentTitle: trDocTitle.trim(),
+      sourceLanguage: trSourceLang,
+      targetLanguage: trTargetLang,
+      certificationKind: trCertKind,
+      pricingUnit: trPricingUnit,
+      unitCount: Number(trUnitCount) || 1,
+      unitRate: Number(trUnitRate) || 0,
+      currency: trCurrency,
+      issuedDate: trIssuedDate,
+      swornSealRef: trSealRef.trim() || undefined,
+    });
+    setTrDocTitle('');
+    setTrSealRef('');
+    setIsNewTranslationOpen(false);
+  };
+
+  const handleSavePhotoShootSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (phOverlapCheck.hasConflict) return;
+    const resolvedClient = phClientId || freelanceClients[0]?.id;
+    if (!resolvedClient || !phTitle.trim()) return;
+    const saved = upsertPhotoShoot({
+      clientId: resolvedClient,
+      shootTitle: phTitle.trim(),
+      location: phLocation.trim() || undefined,
+      shootDate: phDate,
+      startTime: phStartTime,
+      endTime: phEndTime,
+      packageName: phPackageName.trim() || undefined,
+      packageFee: Number(phPackageFee) || 0,
+      currency: phCurrency,
+      galleryUrl: phGalleryUrl.trim() || undefined,
+      galleryStatus: 'scheduled',
+      watermarkEnabled: true,
+    });
+    if (saved) {
+      setPhTitle('');
+      setPhLocation('');
+      setPhGalleryUrl('');
+      setIsNewShootOpen(false);
+    }
+  };
+
+  if (
+    workspaceTab === 'deliverables' &&
+    showSkeleton &&
+    (freelanceProjects.length === 0 || networkMode === 'force_skeleton')
+  ) {
     return (
       <SkeletonKanbanPipeline
         columnsCount={4}
@@ -880,37 +1012,377 @@ export const FreelanceDeliverablesView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <ScreenHeaderBar
-        icon={<Kanban size={22} />}
-        title={t('free_deliv_title', language)}
+        icon={
+          workspaceTab === 'translator' ? (
+            <Languages size={22} />
+          ) : workspaceTab === 'photo' ? (
+            <Camera size={22} />
+          ) : (
+            <Kanban size={22} />
+          )
+        }
+        title={
+          workspaceTab === 'translator'
+            ? t('free_depth_tab_translator', language)
+            : workspaceTab === 'photo'
+            ? t('free_depth_tab_photo', language)
+            : t('free_deliv_title', language)
+        }
         secondaryActions={
           <div className="flex items-center gap-2 flex-wrap">
-            <AtriumButton
-              type="button"
-              variant="secondary"
+            <LiveSegmentedControl
               size="md"
-              icon={<Clock size={15} />}
-              onClick={() => setScreen('analytics')}
-            >
-              {isAr ? 'الميقاتي' : isFr ? 'Minuteur' : 'Timer'}
-            </AtriumButton>
-            <AtriumButton
-              type="button"
-              variant="secondary"
-              size="md"
-              icon={<Layers size={15} />}
-              onClick={() => setIsAddProjectModalOpen(true)}
-            >
-              {t('free_deliv_field_project', language)}
-            </AtriumButton>
+              value={workspaceTab}
+              onValueChange={(val) =>
+                setWorkspaceTab(val as 'deliverables' | 'translator' | 'photo')
+              }
+              aria-label={t('free_deliv_title', language)}
+              options={[
+                { value: 'deliverables', label: t('free_depth_tab_deliverables', language) },
+                { value: 'translator', label: t('free_depth_tab_translator', language) },
+                { value: 'photo', label: t('free_depth_tab_photo', language) },
+              ]}
+            />
+            {workspaceTab === 'deliverables' && (
+              <>
+                <AtriumButton
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  icon={<Clock size={15} />}
+                  onClick={() => setScreen('analytics')}
+                >
+                  {isAr ? 'الميقاتي' : isFr ? 'Minuteur' : 'Timer'}
+                </AtriumButton>
+                <AtriumButton
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  icon={<Layers size={15} />}
+                  onClick={() => setIsAddProjectModalOpen(true)}
+                >
+                  {t('free_deliv_field_project', language)}
+                </AtriumButton>
+              </>
+            )}
           </div>
         }
         primaryAction={{
-          label: t('free_deliv_btn_new', language),
-          onClick: () => setIsAddDeliverableModalOpen(true),
+          label:
+            workspaceTab === 'translator'
+              ? t('free_depth_tr_new', language)
+              : workspaceTab === 'photo'
+              ? t('free_depth_ph_new', language)
+              : t('free_deliv_btn_new', language),
+          onClick: () => {
+            if (workspaceTab === 'translator') {
+              if (!trClientId && freelanceClients[0]?.id) setTrClientId(freelanceClients[0].id);
+              setIsNewTranslationOpen(true);
+            } else if (workspaceTab === 'photo') {
+              if (!phClientId && freelanceClients[0]?.id) setPhClientId(freelanceClients[0].id);
+              setIsNewShootOpen(true);
+            } else {
+              setIsAddDeliverableModalOpen(true);
+            }
+          },
           icon: <Plus size={16} strokeWidth={2.2} />,
-          dataAction: 'add-deliverable',
+          dataAction:
+            workspaceTab === 'translator'
+              ? 'add-translation-entry'
+              : workspaceTab === 'photo'
+              ? 'add-photo-shoot'
+              : 'add-deliverable',
         }}
       />
+
+      {workspaceTab === 'translator' ? (
+        <ScreenPod>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Award size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h3 className="t-label font-semibold text-black dark:text-white">
+                  {t('free_depth_tab_translator', language)} ({translationEntries.length})
+                </h3>
+              </div>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                size="sm"
+                icon={<Plus size={14} />}
+                onClick={() => {
+                  if (!trClientId && freelanceClients[0]?.id) setTrClientId(freelanceClients[0].id);
+                  setIsNewTranslationOpen(true);
+                }}
+              >
+                {t('free_depth_tr_new', language)}
+              </AtriumButton>
+            </div>
+
+            {translationEntries.length === 0 ? (
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-8 text-center space-y-3"
+              >
+                <p className="t-body text-black/65 dark:text-white/70">
+                  {isAr
+                    ? 'سجل الترجمة المحلفة فارغ حالياً.'
+                    : isFr
+                    ? 'Aucune entrée au registre assermenté pour le moment.'
+                    : 'No sworn translation register entries logged yet.'}
+                </p>
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<Languages size={14} />}
+                  onClick={() => setIsNewTranslationOpen(true)}
+                >
+                  {t('free_depth_tr_new', language)}
+                </AtriumButton>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {translationEntries.map((entry: FreelanceTranslationEntry) => (
+                  <div
+                    key={entry.id}
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-4 lg:p-5 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono t-small font-semibold text-black/65 dark:text-white/65">
+                            {entry.registerNumber}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white">
+                            {entry.sourceLanguage} → {entry.targetLanguage}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full t-small font-semibold ${
+                              entry.invoiceId
+                                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                                : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                            }`}
+                          >
+                            {entry.status}
+                          </span>
+                        </div>
+                        <h4 className="t-label font-semibold text-black dark:text-white mt-1 truncate">
+                          {entry.documentTitle}
+                        </h4>
+                        <p className="t-cap text-black/60 dark:text-white/65 tabular-nums">
+                          {entry.clientName} · {entry.unitCount} × {entry.unitRate.toLocaleString()}{' '}
+                          {entry.currency} ={' '}
+                          <strong className="text-black dark:text-white">
+                            {entry.totalAmount.toLocaleString()} {entry.currency}
+                          </strong>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {!entry.invoiceId && (
+                          <AtriumButton
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            icon={<Receipt size={13} />}
+                            onClick={() => billTranslationEntry(entry.id)}
+                          >
+                            {t('free_depth_tr_bill', language)}
+                          </AtriumButton>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteTranslationEntry(entry.id)}
+                          className="p-2 rounded-lg text-black/50 dark:text-white/50 hover:text-rose-600 cursor-pointer"
+                          aria-label={`${t('common_delete', language)} ${entry.registerNumber}`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--atr-divider)] t-small text-black/55 dark:text-white/60">
+                      <span>{entry.certificationKind}</span>
+                      <span>
+                        {entry.swornSealRef ? `${t('free_depth_tr_seal_ref', language)}: ${entry.swornSealRef}` : entry.issuedDate}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </ScreenPod>
+      ) : workspaceTab === 'photo' ? (
+        <ScreenPod>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Camera size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h3 className="t-label font-semibold text-black dark:text-white">
+                  {t('free_depth_tab_photo', language)} ({photoShoots.length})
+                </h3>
+              </div>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                size="sm"
+                icon={<Plus size={14} />}
+                onClick={() => {
+                  if (!phClientId && freelanceClients[0]?.id) setPhClientId(freelanceClients[0].id);
+                  setIsNewShootOpen(true);
+                }}
+              >
+                {t('free_depth_ph_new', language)}
+              </AtriumButton>
+            </div>
+
+            {photoShoots.length === 0 ? (
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-8 text-center space-y-3"
+              >
+                <p className="t-body text-black/65 dark:text-white/70">
+                  {isAr
+                    ? 'لا توجد جلسات تصوير مجدولة بعد.'
+                    : isFr
+                    ? 'Aucune séance photo planifiée pour le moment.'
+                    : 'No photo shoots scheduled yet.'}
+                </p>
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<Camera size={14} />}
+                  onClick={() => setIsNewShootOpen(true)}
+                >
+                  {t('free_depth_ph_new', language)}
+                </AtriumButton>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {photoShoots.map((shoot: FreelancePhotoShoot) => {
+                  const stageOptions: PhotoGalleryStatus[] = [
+                    'scheduled',
+                    'shot',
+                    'editing',
+                    'proofing',
+                    'watermarked_preview',
+                    'final_delivered',
+                    'cancelled',
+                  ];
+                  return (
+                    <div
+                      key={shoot.id}
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-4 lg:p-5 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono t-small text-black/65 dark:text-white/65">
+                              {shoot.shootDate} · {shoot.startTime}–{shoot.endTime}
+                            </span>
+                            {shoot.watermarkEnabled && (
+                              <span className="px-2 py-0.5 rounded-full t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                                {t('free_depth_ph_watermark', language)}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="t-label font-semibold text-black dark:text-white mt-1 truncate">
+                            {shoot.shootTitle}
+                          </h4>
+                          <p className="t-cap text-black/60 dark:text-white/65 tabular-nums">
+                            {shoot.clientName}
+                            {shoot.location ? ` · ${shoot.location}` : ''} ·{' '}
+                            <strong className="text-black dark:text-white">
+                              {shoot.packageFee.toLocaleString()} {shoot.currency}
+                            </strong>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {!shoot.invoiceId && (
+                            <AtriumButton
+                              type="button"
+                              variant="primary"
+                              size="sm"
+                              icon={<Receipt size={13} />}
+                              onClick={() => billPhotoShoot(shoot.id)}
+                            >
+                              {t('free_depth_ph_bill', language)}
+                            </AtriumButton>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => deletePhotoShoot(shoot.id)}
+                            className="p-2 rounded-lg text-black/50 dark:text-white/50 hover:text-rose-600 cursor-pointer"
+                            aria-label={`${t('common_delete', language)} ${shoot.shootTitle}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)]">
+                        <div className="flex items-center gap-2">
+                          <label
+                            htmlFor={`gallery-stage-${shoot.id}`}
+                            className="t-small text-black/60 dark:text-white/65"
+                          >
+                            {t('free_depth_ph_gallery_stage', language)}:
+                          </label>
+                          <select
+                            id={`gallery-stage-${shoot.id}`}
+                            value={shoot.galleryStatus}
+                            onChange={(e) =>
+                              upsertPhotoShoot({
+                                id: shoot.id,
+                                clientId: shoot.clientId,
+                                shootTitle: shoot.shootTitle,
+                                location: shoot.location,
+                                shootDate: shoot.shootDate,
+                                startTime: shoot.startTime,
+                                endTime: shoot.endTime,
+                                packageName: shoot.packageName,
+                                packageFee: shoot.packageFee,
+                                currency: shoot.currency,
+                                galleryUrl: shoot.galleryUrl,
+                                galleryStatus: e.target.value as PhotoGalleryStatus,
+                                watermarkEnabled: e.target.value !== 'final_delivered',
+                              })
+                            }
+                            className="px-2.5 py-1 rounded-lg bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white t-small font-medium"
+                          >
+                            {stageOptions.map((st) => (
+                              <option
+                                key={st}
+                                value={st}
+                                disabled={!canTransitionGalleryStage(shoot.galleryStatus, st)}
+                              >
+                                {st}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {shoot.galleryUrl && (
+                          <span className="inline-flex items-center gap-1 t-small text-black/55 dark:text-white/60 truncate max-w-[160px]">
+                            <ExternalLink size={12} />
+                            <span className="truncate">{shoot.galleryUrl}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </ScreenPod>
+      ) : (
+        <>
 
       <ScreenKpiBanner
         heading={
@@ -1566,6 +2038,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
           );
         }}
       />
+        </>
+      )}
 
       {/* Add Deliverable Modal */}
       <KineticModalShell
@@ -2043,6 +2517,359 @@ export const FreelanceDeliverablesView: React.FC = () => {
             </div>
           </div>
         )}
+      </KineticModalShell>
+
+      {/* Log Sworn Translation Entry Modal */}
+      <KineticModalShell
+        isOpen={isNewTranslationOpen}
+        onClose={() => setIsNewTranslationOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-[60]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_tr_new', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_depth_tr_new', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsNewTranslationOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveTranslationSubmit} className="space-y-4 t-cap">
+            <LabelSelect
+              field="TrClient"
+              label={t('free_invoice_client', language)}
+              value={trClientId || freelanceClients[0]?.id || ''}
+              onChange={setTrClientId}
+              options={freelanceClients.map((c) => ({
+                value: c.id,
+                label: c.company || c.name,
+              }))}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              field="TrDocTitle"
+              label={`${t('free_depth_tr_doc_title', language)} *`}
+              required
+              value={trDocTitle}
+              onChange={setTrDocTitle}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelInput
+                field="TrSrcLang"
+                label="Source Lang"
+                required
+                value={trSourceLang}
+                onChange={setTrSourceLang}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="TrTgtLang"
+                label="Target Lang"
+                required
+                value={trTargetLang}
+                onChange={setTrTargetLang}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="TrCert"
+                label={t('free_depth_tr_cert_kind', language)}
+                value={trCertKind}
+                onChange={(v) => setTrCertKind(v as TranslationCertificationKind)}
+                options={[
+                  { value: 'sworn_official', label: 'Sworn Official' },
+                  { value: 'certified_copy', label: 'Certified Copy' },
+                  { value: 'apostille_prep', label: 'Apostille Prep' },
+                  { value: 'standard', label: 'Standard' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <LabelSelect
+                field="TrUnit"
+                label={t('free_depth_tr_pricing_unit', language)}
+                value={trPricingUnit}
+                onChange={(v) => setTrPricingUnit(v as TranslationPricingUnit)}
+                options={[
+                  { value: 'page', label: 'Page' },
+                  { value: 'word', label: 'Word' },
+                  { value: 'fixed', label: 'Fixed' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="TrCount"
+                label={t('free_depth_tr_unit_count', language)}
+                type="number"
+                min={1}
+                disabled={trPricingUnit === 'fixed'}
+                value={String(trPricingUnit === 'fixed' ? 1 : trUnitCount)}
+                onChange={(v) => setTrUnitCount(Number(v) || 1)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="TrRate"
+                label={t('free_depth_tr_unit_rate', language)}
+                type="number"
+                min={0}
+                value={String(trUnitRate)}
+                onChange={(v) => setTrUnitRate(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="TrCurr"
+                label={t('common_currency', language)}
+                value={trCurrency}
+                onChange={(v) => setTrCurrency(v as CurrencyCode)}
+                options={[
+                  { value: 'DZD', label: 'DZD' },
+                  { value: 'EUR', label: 'EUR' },
+                  { value: 'USD', label: 'USD' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="TrIssued"
+                label="Issued Date"
+                type="date"
+                required
+                value={trIssuedDate}
+                onChange={setTrIssuedDate}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="TrSealRef"
+                label={t('free_depth_tr_seal_ref', language)}
+                value={trSealRef}
+                onChange={setTrSealRef}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap tabular-nums">
+              <span className="text-black/65 dark:text-white/70">{t('common_total', language)}</span>
+              <strong className="t-card text-black dark:text-white">
+                {trQuotePreview.totalAmount.toLocaleString()} {trCurrency}
+              </strong>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsNewTranslationOpen(false)}>
+                {t('common_cancel', language)}
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {t('free_depth_tr_new', language)}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      {/* Schedule Photo Shoot Modal (half-open overlap check) */}
+      <KineticModalShell
+        isOpen={isNewShootOpen}
+        onClose={() => setIsNewShootOpen(false)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-[65]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_ph_new', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_depth_ph_new', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsNewShootOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {phOverlapCheck.hasConflict && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 t-small font-medium">
+              <ShieldAlert size={15} className="shrink-0 mt-0.5" />
+              <span>
+                {t('free_depth_ph_overlap_err', language)}
+                {phOverlapCheck.conflictingShoot
+                  ? `: ${phOverlapCheck.conflictingShoot.shootTitle} (${phOverlapCheck.conflictingShoot.startTime}–${phOverlapCheck.conflictingShoot.endTime})`
+                  : ''}
+              </span>
+            </div>
+          )}
+          <form onSubmit={handleSavePhotoShootSubmit} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelSelect
+                field="PhClient"
+                label={t('free_invoice_client', language)}
+                value={phClientId || freelanceClients[0]?.id || ''}
+                onChange={setPhClientId}
+                options={freelanceClients.map((c) => ({
+                  value: c.id,
+                  label: c.company || c.name,
+                }))}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="PhTitle"
+                label={`${t('free_depth_ph_title', language)} *`}
+                required
+                value={phTitle}
+                onChange={setPhTitle}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelInput
+                field="PhDate"
+                label={t('free_depth_ph_date', language)}
+                type="date"
+                required
+                value={phDate}
+                onChange={setPhDate}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="PhStart"
+                label={t('free_depth_ph_start', language)}
+                type="time"
+                required
+                value={phStartTime}
+                onChange={setPhStartTime}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="PhEnd"
+                label={t('free_depth_ph_end', language)}
+                type="time"
+                required
+                value={phEndTime}
+                onChange={setPhEndTime}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelInput
+                field="PhPackage"
+                label={t('free_depth_ph_package', language)}
+                value={phPackageName}
+                onChange={setPhPackageName}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="PhFee"
+                label={t('free_depth_ph_fee', language)}
+                type="number"
+                min={0}
+                value={String(phPackageFee)}
+                onChange={(v) => setPhPackageFee(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="PhCurr"
+                label={t('common_currency', language)}
+                value={phCurrency}
+                onChange={(v) => setPhCurrency(v as CurrencyCode)}
+                options={[
+                  { value: 'DZD', label: 'DZD' },
+                  { value: 'EUR', label: 'EUR' },
+                  { value: 'USD', label: 'USD' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="PhLocation"
+                label={t('free_depth_ph_location', language)}
+                value={phLocation}
+                onChange={setPhLocation}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="PhGalleryUrl"
+                label="Gallery URL"
+                value={phGalleryUrl}
+                onChange={setPhGalleryUrl}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsNewShootOpen(false)}>
+                {t('common_cancel', language)}
+              </Button>
+              <Button
+                type="submit"
+                tone="accent"
+                size={40}
+                disabled={phOverlapCheck.hasConflict}
+              >
+                {t('free_depth_ph_new', language)}
+              </Button>
+            </div>
+          </form>
+        </div>
       </KineticModalShell>
     </div>
   );

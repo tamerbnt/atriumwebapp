@@ -8,6 +8,11 @@ import {
   Pin,
   CheckCircle2,
   Eye,
+  BadgeCheck,
+  AlertTriangle,
+  Upload,
+  FileCheck2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -16,12 +21,16 @@ import {
   shallowEqualObjects,
   selectCurrentFreelanceInvoicesFromState,
   selectCurrentFreelanceExpensesFromState,
+  selectCurrentFreelanceAeConfigsFromState,
   selectCurrentTimeLogsFromState,
   selectCurrentBranchFromState,
   selectCurrentBusinessConfigFromState,
+  showToast,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { evaluateAutoEntrepreneurTurnover } from '../../../utils/freelanceDepth';
+import { validateFileForBucket } from '../../../lib/supabase';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -64,6 +73,7 @@ export const FreelanceFinanceView: React.FC = () => {
   const {
     freelanceInvoices,
     freelanceExpenses,
+    freelanceAeConfigs,
     timeLogs,
     branches,
     currentBranch,
@@ -72,6 +82,7 @@ export const FreelanceFinanceView: React.FC = () => {
     (s) => ({
       freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
       freelanceExpenses: selectCurrentFreelanceExpensesFromState(s),
+      freelanceAeConfigs: selectCurrentFreelanceAeConfigsFromState(s),
       timeLogs: selectCurrentTimeLogsFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
@@ -81,14 +92,44 @@ export const FreelanceFinanceView: React.FC = () => {
   );
   const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
     useDashboardShellState();
-  const { addFreelanceExpense, deleteFreelanceExpense } = useAtriumActions();
+  const {
+    addFreelanceExpense,
+    deleteFreelanceExpense,
+    attachExpenseReceipt,
+    upsertFreelanceAeConfig,
+    markFreelanceAeConfigVerified,
+  } = useAtriumActions();
 
   const defaultTaxReserve = currentBusinessConfig.categorySettings?.taxReservePercent ?? 20;
   const defaultCurrency = (currentBusinessConfig.currency as CurrencyCode) || 'EUR';
   const configuredHourlyRate = currentBusinessConfig.categorySettings?.defaultHourlyRate ?? 85;
 
+  const aeSummary = useMemo(
+    () =>
+      evaluateAutoEntrepreneurTurnover({
+        invoices: freelanceInvoices,
+        expenses: freelanceExpenses,
+        configs: freelanceAeConfigs,
+      }),
+    [freelanceInvoices, freelanceExpenses, freelanceAeConfigs]
+  );
+
   const [taxRate, setTaxRate] = useState(defaultTaxReserve);
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [isAeModalOpen, setIsAeModalOpen] = useState(false);
+
+  const [aeEffectiveFrom, setAeEffectiveFrom] = useState(
+    aeSummary.activeConfig.effectiveFrom || `${new Date().getFullYear()}-01-01`
+  );
+  const [aeCeilingDzd, setAeCeilingDzd] = useState(aeSummary.annualCeilingDzd);
+  const [aeContribPct, setAeContribPct] = useState(aeSummary.activeConfig.contributionRatePct);
+  const [aeTaxPct, setAeTaxPct] = useState(aeSummary.activeConfig.taxRatePct);
+  const [aeSpecialty, setAeSpecialty] = useState(aeSummary.activeConfig.tradeSpecialty || '');
+  const [aeVerifyOnSave, setAeVerifyOnSave] = useState(false);
+
+  const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
+  const [receiptValidationError, setReceiptValidationError] = useState<string | null>(null);
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -289,10 +330,61 @@ export const FreelanceFinanceView: React.FC = () => {
     );
   }, [sortedExpenses, branchesById, currentBranch, language, isAr, isFr]);
 
-  const handleCreateExpense = (e: React.FormEvent) => {
+  const handleSelectModalReceipt = (file?: File | null) => {
+    if (!file) {
+      setPendingReceiptFile(null);
+      setReceiptValidationError(null);
+      return;
+    }
+    const check = validateFileForBucket('expense-receipts', file);
+    if (!check.valid) {
+      setReceiptValidationError(check.error || 'Invalid receipt file');
+      setPendingReceiptFile(null);
+      return;
+    }
+    setReceiptValidationError(null);
+    setPendingReceiptFile(file);
+  };
+
+  const handleAttachInspectorReceipt = async (expenseId: string, file?: File | null) => {
+    if (!file) return;
+    const check = validateFileForBucket('expense-receipts', file);
+    if (!check.valid) {
+      showToast({
+        type: 'error',
+        title: t('free_depth_exp_receipt', language),
+        message: check.error || 'Invalid file',
+      });
+      return;
+    }
+    setIsUploadingReceipt(true);
+    try {
+      await attachExpenseReceipt(expenseId, file);
+    } finally {
+      setIsUploadingReceipt(false);
+    }
+  };
+
+  const handleSaveAeConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    const saved = upsertFreelanceAeConfig({
+      effectiveFrom: aeEffectiveFrom,
+      annualTurnoverCeilingDzd: Number(aeCeilingDzd) || 5000000,
+      contributionRatePct: Number(aeContribPct),
+      taxRatePct: Number(aeTaxPct),
+      tradeSpecialty: aeSpecialty.trim() || undefined,
+      verificationStatus: aeVerifyOnSave ? 'verified' : 'unverified',
+    });
+    if (aeVerifyOnSave) {
+      markFreelanceAeConfigVerified(saved.id);
+    }
+    setIsAeModalOpen(false);
+  };
+
+  const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vendor.trim() || !description.trim()) return;
-    addFreelanceExpense({
+    const created = addFreelanceExpense({
       vendor,
       description,
       category,
@@ -301,8 +393,13 @@ export const FreelanceFinanceView: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       isTaxDeductible,
     });
+    if (created?.id && pendingReceiptFile) {
+      await attachExpenseReceipt(created.id, pendingReceiptFile);
+    }
     setVendor('');
     setDescription('');
+    setPendingReceiptFile(null);
+    setReceiptValidationError(null);
     setIsAddExpenseModalOpen(false);
   };
 
@@ -421,6 +518,13 @@ export const FreelanceFinanceView: React.FC = () => {
               <div className="min-w-0">
                 <div className="font-semibold t-label text-black dark:text-white truncate flex items-center gap-2">
                   <span>{exp.vendor}</span>
+                  {exp.receiptFileName && (
+                    <FileCheck2
+                      size={12}
+                      className="text-emerald-600 dark:text-emerald-400 shrink-0"
+                      aria-label={t('free_depth_exp_receipt_attached', language)}
+                    />
+                  )}
                   {isPinned && <Pin size={11} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
                 </div>
                 <div className="t-cap text-black/55 dark:text-white/55 truncate">
@@ -808,6 +912,137 @@ export const FreelanceFinanceView: React.FC = () => {
         </div>
       </ScreenPod>
 
+      {/* Auto-Entrepreneur Statutory Ceiling & Rates Pod */}
+      <ScreenPod>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <BadgeCheck size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              <h3 className="t-label font-semibold text-black dark:text-white">
+                {t('free_depth_ae_pod_title', language)}
+              </h3>
+              {aeSummary.isUnverified ? (
+                <span
+                  data-testid="finance-ae-unverified-badge"
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                >
+                  <AlertTriangle size={12} />
+                  <span>{t('free_depth_ae_unverified_warn', language)}</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full t-small font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 size={12} />
+                  <span>{t('free_depth_ae_verified_badge', language)}</span>
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {aeSummary.isUnverified && (
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<BadgeCheck size={14} />}
+                  onClick={() => markFreelanceAeConfigVerified(aeSummary.activeConfig.id)}
+                >
+                  {t('free_depth_ae_verify_btn', language)}
+                </AtriumButton>
+              )}
+              <AtriumButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                icon={<SlidersHorizontal size={14} />}
+                onClick={() => {
+                  setAeEffectiveFrom(aeSummary.activeConfig.effectiveFrom);
+                  setAeCeilingDzd(aeSummary.annualCeilingDzd);
+                  setAeContribPct(aeSummary.activeConfig.contributionRatePct);
+                  setAeTaxPct(aeSummary.activeConfig.taxRatePct);
+                  setAeSpecialty(aeSummary.activeConfig.tradeSpecialty || '');
+                  setAeVerifyOnSave(aeSummary.activeConfig.verificationStatus === 'verified');
+                  setIsAeModalOpen(true);
+                }}
+              >
+                {t('free_depth_ae_config_btn', language)}
+              </AtriumButton>
+            </div>
+          </div>
+
+          <div className="sq-elev-card">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-4 lg:p-5 space-y-4"
+            >
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between t-cap tabular-nums">
+                  <span className="text-black/65 dark:text-white/70">
+                    {t('free_depth_ae_collected', language)}:{' '}
+                    <strong className="text-black dark:text-white">
+                      {aeSummary.collectedTurnoverDzd.toLocaleString()} DZD
+                    </strong>
+                  </span>
+                  <span className="text-black/65 dark:text-white/70">
+                    {t('free_depth_ae_ceiling', language)}:{' '}
+                    <strong className="text-black dark:text-white">
+                      {aeSummary.annualCeilingDzd.toLocaleString()} DZD
+                    </strong>{' '}
+                    ({aeSummary.utilizationPct}%)
+                  </span>
+                </div>
+                <div className="h-2.5 w-full rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      aeSummary.isOverCeiling
+                        ? 'bg-rose-600'
+                        : aeSummary.isApproachingCeiling
+                        ? 'bg-amber-500'
+                        : 'bg-[#d4522f]'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.max(0, aeSummary.utilizationPct))}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[var(--atr-divider)] t-cap tabular-nums">
+                <div>
+                  <span className="text-black/55 dark:text-white/55 block">
+                    {t('free_depth_ae_remaining', language)}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {aeSummary.remainingHeadroomDzd.toLocaleString()} DZD
+                  </span>
+                </div>
+                <div>
+                  <span className="text-black/55 dark:text-white/55 block">
+                    {t('free_depth_ae_contrib_est', language)} ({aeSummary.activeConfig.contributionRatePct}%)
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {aeSummary.estimatedContributionDzd.toLocaleString()} DZD
+                  </span>
+                </div>
+                <div>
+                  <span className="text-black/55 dark:text-white/55 block">
+                    {t('free_depth_ae_tax_est', language)} ({aeSummary.activeConfig.taxRatePct}%)
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {aeSummary.estimatedTaxDzd.toLocaleString()} DZD
+                  </span>
+                </div>
+                <div>
+                  <span className="text-black/55 dark:text-white/55 block">
+                    {t('free_depth_ae_effective_from', language)}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {aeSummary.activeConfig.effectiveFrom}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ScreenPod>
+
       <ScreenPod>
         <ScreenCollectionToolbar
           title={t('free_fin_operational_overhead', language)}
@@ -1125,9 +1360,37 @@ export const FreelanceFinanceView: React.FC = () => {
                   <InspectorKeyValue
                     label={t('common_currency', language)}
                     value={exp.currency}
+                  />
+                  <InspectorKeyValue
+                    label={t('free_depth_exp_receipt', language)}
+                    value={exp.receiptFileName || t('free_depth_exp_receipt_none', language)}
+                    tone={exp.receiptFileName ? 'ok' : undefined}
                     isLast
                   />
                 </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2} title={t('free_depth_exp_receipt', language)}>
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white t-small font-semibold cursor-pointer hover:bg-[#EAE3DA] dark:hover:bg-[#35312D] transition-colors">
+                  <Upload size={14} />
+                  <span>
+                    {isUploadingReceipt
+                      ? '...'
+                      : exp.receiptFileName
+                      ? exp.receiptFileName
+                      : t('free_depth_exp_receipt_upload', language)}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="sr-only"
+                    disabled={isUploadingReceipt}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      handleAttachInspectorReceipt(exp.id, file);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
               </InspectorSection>
             </>
           );
@@ -1245,12 +1508,152 @@ export const FreelanceFinanceView: React.FC = () => {
                 aria-label={t('free_fin_tax_deductible_prompt', language)}
               />
             </div>
+            <div className="space-y-1.5">
+              <label className="inline-flex items-center justify-between w-full gap-2 px-3.5 py-2.5 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] text-black/80 dark:text-white/85 t-small font-medium cursor-pointer hover:bg-[#ECE5DC] dark:hover:bg-[#2B2825] transition-colors">
+                <span className="flex items-center gap-2 truncate">
+                  <Upload size={14} />
+                  <span>
+                    {pendingReceiptFile
+                      ? pendingReceiptFile.name
+                      : t('free_depth_exp_receipt_upload', language)}
+                  </span>
+                </span>
+                <span className="t-small text-black/50 dark:text-white/50 shrink-0">PDF / IMG</span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="sr-only"
+                  onChange={(e) => handleSelectModalReceipt(e.target.files?.[0])}
+                />
+              </label>
+              {receiptValidationError && (
+                <p className="t-small text-rose-600 dark:text-rose-400">{receiptValidationError}</p>
+              )}
+            </div>
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
               <Button type="button" tone="soft" size={40} onClick={() => setIsAddExpenseModalOpen(false)}>
                 {t('action_cancel', language)}
               </Button>
               <Button type="submit" tone="accent" size={40}>
                 {t('free_fin_btn_save_expense', language)}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      {/* Auto-Entrepreneur Statutory Config Modal */}
+      <KineticModalShell
+        isOpen={isAeModalOpen}
+        onClose={() => setIsAeModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[60]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_ae_config_btn', language)}
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">
+              {t('free_depth_ae_config_btn', language)}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAeModalOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveAeConfig} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="AeEffectiveFrom"
+                label={t('free_depth_ae_effective_from', language)}
+                type="date"
+                required
+                value={aeEffectiveFrom}
+                onChange={setAeEffectiveFrom}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="AeCeilingDzd"
+                label={`${t('free_depth_ae_ceiling', language)} (DZD)`}
+                type="number"
+                min={100000}
+                required
+                value={String(aeCeilingDzd)}
+                onChange={(v) => setAeCeilingDzd(Number(v) || 5000000)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="AeContribPct"
+                label={t('free_depth_ae_contrib_pct', language)}
+                type="number"
+                min={0}
+                max={100}
+                step="0.1"
+                required
+                value={String(aeContribPct)}
+                onChange={(v) => setAeContribPct(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="AeTaxPct"
+                label={t('free_depth_ae_tax_pct', language)}
+                type="number"
+                min={0}
+                max={100}
+                step="0.1"
+                required
+                value={String(aeTaxPct)}
+                onChange={(v) => setAeTaxPct(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+            <LabelInput
+              field="AeSpecialty"
+              label={isAr ? 'التخصص المهني' : isFr ? 'Activité / Spécialité' : 'Trade Specialty'}
+              value={aeSpecialty}
+              onChange={setAeSpecialty}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="flex items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]"
+            >
+              <span className="font-medium text-black/80 dark:text-white/85">
+                {t('free_depth_ae_verify_btn', language)}
+              </span>
+              <LiveSwitch
+                checked={aeVerifyOnSave}
+                onCheckedChange={setAeVerifyOnSave}
+                aria-label={t('free_depth_ae_verify_btn', language)}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setIsAeModalOpen(false)}>
+                {t('action_cancel', language)}
+              </Button>
+              <Button type="submit" tone="accent" size={40}>
+                {t('common_save', language)}
               </Button>
             </div>
           </form>

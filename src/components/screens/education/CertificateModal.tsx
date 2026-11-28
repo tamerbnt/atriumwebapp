@@ -39,18 +39,19 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   const isEn = language === 'en';
   const L = (en: string, fr: string, ar: string) => (isAr ? ar : isEn ? en : fr);
 
-  const { eduStudents, eduCohorts, currentBusiness } = useAtriumSelector(
+  const { eduStudents, eduCohorts, currentBusiness, accountFullName } = useAtriumSelector(
     (s) => ({
       eduStudents: selectCurrentEduStudentsFromState(s),
       eduCohorts: selectCurrentEduCohortsFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
+      accountFullName: s.account?.fullName,
     }),
     shallowEqualObjects
   );
   const { issueEduCertificate, reissueEduCertificate, revokeEduCertificate } = useAtriumActions();
 
   const defaultOrgName = currentBusiness?.displayName || L('Academic Institute', 'Établissement de Formation', 'المؤسسة التكوينية');
-  const defaultSignatory = currentBusiness?.ownerName || L('Academic Director', 'Directeur Pédagogique', 'المدير البيداغوجي');
+  const defaultSignatory = accountFullName || L('Academic Director', 'Directeur Pédagogique', 'المدير البيداغوجي');
   const defaultTitle = L('Academic Dean & Program Director', 'Direction Pédagogique', 'الإدارة البيداغوجية');
 
   const [studentId, setStudentId] = useState<string>(

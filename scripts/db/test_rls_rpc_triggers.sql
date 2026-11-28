@@ -1973,4 +1973,179 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 25. Phase 3 Step 7 (7.7 freelance_solo): Tenant B RLS Isolation,
+--     Invoiced Time-Log Lock Trigger, Non-Draft Invoice Currency/FX Lock,
+--     Photo Shoot Overlap Trigger, and Midnight Active-Timer Split RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_biz_a uuid := '11111111-0000-4000-8000-000000000001';
+  v_br_a  uuid := '33333333-0000-4000-8000-000000000001';
+  v_user_a uuid := 'aaaaaaaa-0000-4000-8000-000000000001';
+  v_user_b uuid := 'bbbbbbbb-0000-4000-8000-000000000002';
+  v_cli_id uuid := gen_random_uuid();
+  v_proj_id uuid := gen_random_uuid();
+  v_log_id uuid := gen_random_uuid();
+  v_inv_draft uuid := gen_random_uuid();
+  v_inv_sent uuid := gen_random_uuid();
+  v_ae_id uuid := gen_random_uuid();
+  v_tpl_id uuid := gen_random_uuid();
+  v_ctr_id uuid := gen_random_uuid();
+  v_tr_id uuid := gen_random_uuid();
+  v_shoot_id uuid := gen_random_uuid();
+  v_timer_json jsonb;
+  v_stop_json jsonb;
+  v_count int;
+  v_blocked boolean := false;
+BEGIN
+  INSERT INTO public.freelance_clients (
+    id, account_id, business_id, branch_id, name, company, email, currency, hourly_rate, status
+  ) VALUES (
+    v_cli_id, v_acc_a, v_biz_a, v_br_a, 'Nabil Saadi', 'Casbah Labs', 'nabil@casbah.dz', 'EUR', 60, 'ProjectBased'
+  );
+
+  INSERT INTO public.freelance_projects (
+    id, account_id, business_id, branch_id, client_id, client_name, title, pricing_model, currency, budget
+  ) VALUES (
+    v_proj_id, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', 'Platform Redesign', 'Hourly', 'EUR', 2400
+  );
+
+  INSERT INTO public.freelance_time_logs (
+    id, account_id, business_id, branch_id, client_id, client_name, project_id, project_title,
+    task_description, duration_seconds, is_billable, is_invoiced, rate_at_moment, currency, date
+  ) VALUES (
+    v_log_id, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', v_proj_id, 'Platform Redesign',
+    'API Architecture', 3600, true, true, 60, 'EUR', CURRENT_DATE
+  );
+
+  INSERT INTO public.freelance_invoices (
+    id, account_id, business_id, branch_id, client_id, client_name, client_email, invoice_number,
+    currency, fx_rate_to_dzd, issue_date, due_date, status, subtotal, tax_percent, tax_amount, total_amount
+  ) VALUES
+  (
+    v_inv_draft, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', 'nabil@casbah.dz', 'INV-2026-D01',
+    'EUR', 145, CURRENT_DATE, CURRENT_DATE + 15, 'Draft', 600, 0, 0, 600
+  ),
+  (
+    v_inv_sent, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', 'nabil@casbah.dz', 'INV-2026-S01',
+    'EUR', 145, CURRENT_DATE, CURRENT_DATE + 15, 'Sent', 600, 0, 0, 600
+  );
+
+  INSERT INTO public.freelance_auto_entrepreneur_configs (
+    id, account_id, business_id, branch_id, effective_from, annual_turnover_ceiling_dzd,
+    contribution_rate_pct, tax_rate_pct, verification_status
+  ) VALUES (
+    v_ae_id, v_acc_a, v_biz_a, v_br_a, CURRENT_DATE, 5000000, 5.0, 0.5, 'unverified'
+  );
+
+  INSERT INTO public.freelance_contract_templates (
+    id, account_id, business_id, branch_id, template_key, category, title, body_template
+  ) VALUES (
+    v_tpl_id, v_acc_a, v_biz_a, v_br_a, 'service_msa', 'service_agreement', 'Service Agreement',
+    'Between {{provider_name}} and {{client_name}} for {{contract_value}} {{currency}}.'
+  );
+
+  INSERT INTO public.freelance_client_contracts (
+    id, account_id, business_id, branch_id, client_id, client_name, template_id,
+    contract_number, title, rendered_body, currency, contract_value, status
+  ) VALUES (
+    v_ctr_id, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', v_tpl_id,
+    'CTR-2026-001', 'Platform Redesign MSA', 'Signed body', 'EUR', 2400, 'sent'
+  );
+
+  INSERT INTO public.freelance_translation_registers (
+    id, account_id, business_id, branch_id, register_number, client_id, client_name,
+    source_language, target_language, document_title, pricing_unit, unit_count, unit_rate, total_amount, currency
+  ) VALUES (
+    v_tr_id, v_acc_a, v_biz_a, v_br_a, 'REG-2026-0001', v_cli_id, 'Nabil Saadi',
+    'AR', 'FR', 'Extrait Acte de Naissance', 'page', 2, 1500, 3000, 'DZD'
+  );
+
+  INSERT INTO public.freelance_photo_shoots (
+    id, account_id, business_id, branch_id, client_id, client_name, shoot_title,
+    shoot_date, start_time, end_time, package_fee, currency, gallery_status
+  ) VALUES (
+    v_shoot_id, v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', 'Studio Brand Session',
+    CURRENT_DATE + 3, '10:00', '12:00', 35000, 'DZD', 'scheduled'
+  );
+
+  -- Tenant B must NOT read any 7.7 freelance table
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.freelance_auto_entrepreneur_configs WHERE id = v_ae_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read freelance_auto_entrepreneur_configs'; END IF;
+  SELECT count(*) INTO v_count FROM public.freelance_contract_templates WHERE id = v_tpl_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read freelance_contract_templates'; END IF;
+  SELECT count(*) INTO v_count FROM public.freelance_client_contracts WHERE id = v_ctr_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read freelance_client_contracts'; END IF;
+  SELECT count(*) INTO v_count FROM public.freelance_translation_registers WHERE id = v_tr_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read freelance_translation_registers'; END IF;
+  SELECT count(*) INTO v_count FROM public.freelance_photo_shoots WHERE id = v_shoot_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read freelance_photo_shoots'; END IF;
+  RESET ROLE;
+
+  -- Tenant A exercises locks, overlap guard, and midnight split timer RPC
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 1. Invoiced time log update MUST fail without uninvoice bypass RPC
+  v_blocked := false;
+  BEGIN
+    UPDATE public.freelance_time_logs SET duration_seconds = 7200 WHERE id = v_log_id;
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected invoiced freelance_time_logs update to be blocked';
+  END IF;
+
+  -- 2. Draft invoice allows currency edit; Sent invoice blocks currency/FX edit
+  UPDATE public.freelance_invoices SET currency = 'USD', fx_rate_to_dzd = 135 WHERE id = v_inv_draft;
+  v_blocked := false;
+  BEGIN
+    UPDATE public.freelance_invoices SET currency = 'USD' WHERE id = v_inv_sent;
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected non-draft invoice currency mutation to be blocked';
+  END IF;
+
+  -- 3. Overlapping photo shoot on same date/time MUST fail
+  v_blocked := false;
+  BEGIN
+    INSERT INTO public.freelance_photo_shoots (
+      account_id, business_id, branch_id, client_id, client_name, shoot_title,
+      shoot_date, start_time, end_time, package_fee, currency, gallery_status
+    ) VALUES (
+      v_acc_a, v_biz_a, v_br_a, v_cli_id, 'Nabil Saadi', 'Conflict Session',
+      CURRENT_DATE + 3, '11:00', '13:00', 25000, 'DZD', 'scheduled'
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected overlapping photo shoot to be blocked';
+  END IF;
+
+  -- 4. Active timer upsert & cross-midnight stop splits cleanly into 2 daily logs
+  v_timer_json := public.upsert_freelance_active_timer(
+    v_acc_a, v_biz_a, v_br_a, NULL,
+    v_cli_id, 'Nabil Saadi', v_proj_id, 'Platform Redesign', NULL, NULL,
+    'Overnight sprint', '2026-11-27T23:30:00Z'::timestamptz, 0, true, false, true, false, 1500, 'work', 'dev_laptop'
+  );
+  v_stop_json := public.stop_freelance_active_timer(
+    (v_timer_json ->> 'id')::uuid,
+    '2026-11-28T01:15:00Z'::timestamptz
+  );
+  IF (v_stop_json ->> 'segments_created')::int <> 2 OR (v_stop_json ->> 'total_seconds')::int <> 6300 THEN
+    RAISE EXCEPTION 'Expected cross-midnight timer split (2 segments, 6300s), got %', v_stop_json;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+

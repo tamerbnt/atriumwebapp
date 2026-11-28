@@ -1066,7 +1066,8 @@ export const EducationTimetableView: React.FC = () => {
                           {isAr ? 'ناجح' : isEn ? 'Pass' : 'Admis'}
                         </Button>
                         <Button
-                          tone={log.examResult === 'failed' ? 'danger' : 'soft'}
+                          tone={log.examResult === 'failed' ? 'outline' : 'soft'}
+                          className={log.examResult === 'failed' ? 'text-rose-600 border-rose-300 dark:text-rose-400 dark:border-rose-500/40' : ''}
                           size={32}
                           onClick={() => updateEduDrivingLog(log.id, { examResult: 'failed' })}
                         >

@@ -1174,7 +1174,7 @@ export const educationService = {
     allowWaitlist?: boolean;
     reason?: string;
   }): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueRpc('edu_transfer_student_cohort_atomic', {
+    const res = await syncCoordinator.rpcOrQueue('edu_transfer_student_cohort_atomic', {
       p_enrollment_id: toValidUuid(params.enrollmentId),
       p_target_cohort_id: toValidUuid(params.targetCohortId),
       p_transfer_date: params.transferDate || new Date().toISOString().slice(0, 10),
@@ -1189,7 +1189,7 @@ export const educationService = {
     action: 'reissue' | 'revoke';
     reason?: string;
   }): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueRpc('edu_reissue_or_revoke_certificate', {
+    const res = await syncCoordinator.rpcOrQueue('edu_reissue_or_revoke_certificate', {
       p_certificate_id: toValidUuid(params.certificateId),
       p_action: params.action,
       p_reason: params.reason || null,
@@ -1198,8 +1198,8 @@ export const educationService = {
   },
 
   async postVacataireLogsToPayroll(logIds: string[], payrollRunId?: string): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueRpc('edu_post_vacataire_hours_to_payroll', {
-      p_log_ids: logIds.map(toValidUuid),
+    const res = await syncCoordinator.rpcOrQueue('edu_post_vacataire_hours_to_payroll', {
+      p_log_ids: logIds.map((id) => toValidUuid(id)),
       p_payroll_run_id: payrollRunId ? toValidUuid(payrollRunId) : null,
     });
     return res.success;

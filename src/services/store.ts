@@ -35,6 +35,16 @@ import {
   FreelanceProposal,
   FreelanceExpense,
   ActiveTimerState,
+  FreelanceAutoEntrepreneurConfig,
+  FreelanceContractTemplate,
+  FreelanceClientContract,
+  FreelanceTranslationEntry,
+  FreelancePhotoShoot,
+  FreelanceContractCategory,
+  TranslationPricingUnit,
+  TranslationCertificationKind,
+  PhotoGalleryStatus,
+  FreelanceRecurrenceInterval,
   CurrencyCode,
   DeliverableStage,
   InvoiceStatus,
@@ -279,6 +289,11 @@ import {
   INITIAL_FREELANCE_INVOICES,
   INITIAL_FREELANCE_PROPOSALS,
   INITIAL_FREELANCE_EXPENSES,
+  INITIAL_FREELANCE_AE_CONFIGS,
+  INITIAL_FREELANCE_CONTRACT_TEMPLATES,
+  INITIAL_FREELANCE_CLIENT_CONTRACTS,
+  INITIAL_FREELANCE_TRANSLATION_REGISTERS,
+  INITIAL_FREELANCE_PHOTO_SHOOTS,
   INITIAL_ACTIVE_TIMER,
   INITIAL_PARKED_ORDERS,
   INITIAL_STOCK_MOVEMENTS,
@@ -437,6 +452,13 @@ import {
   mapFreelanceInvoiceFromDb,
   mapFreelanceProposalFromDb,
   mapFreelanceExpenseFromDb,
+  mapActiveTimerFromDb,
+  mapFreelanceAeConfigFromDb,
+  mapFreelanceContractTemplateFromDb,
+  mapFreelanceClientContractFromDb,
+  mapFreelanceTranslationFromDb,
+  mapFreelancePhotoShootFromDb,
+  storageService,
   mapRentalUnitFromDb,
   mapRentalRenterFromDb,
   mapRentalBookingFromDb,
@@ -551,6 +573,24 @@ import {
   evaluateExpenseReceiptCompliance,
   normalizeFxRateToDzd,
 } from '../utils/projectDepth';
+import {
+  computeAuthoritativeElapsedSeconds,
+  splitCrossMidnightTimeSpan,
+  reconcileRemoteActiveTimer,
+  validateTimeLogMutation,
+  validateInvoiceCurrencyUpdate,
+  resolveFreelanceFxRate,
+  computeInvoiceDzdEquivalentCentimes,
+  computeNextRecurrenceDate,
+  buildRecurringDraftFromInvoice,
+  buildDefaultFreelanceContractTemplates,
+  renderFreelanceContractBody,
+  computeTranslationQuote,
+  formatNextSwornRegisterNumber,
+  detectPhotoShootOverlap,
+  canTransitionGalleryStage,
+  buildNextContractNumber,
+} from '../utils/freelanceDepth';
 import {
   getDefaultScfChartOfAccounts,
   validateScfJournalLines,
@@ -817,6 +857,11 @@ interface AppState {
   freelanceInvoices: FreelanceInvoice[];
   freelanceProposals: FreelanceProposal[];
   freelanceExpenses: FreelanceExpense[];
+  freelanceAeConfigs: FreelanceAutoEntrepreneurConfig[];
+  freelanceContractTemplates: FreelanceContractTemplate[];
+  freelanceClientContracts: FreelanceClientContract[];
+  freelanceTranslationEntries: FreelanceTranslationEntry[];
+  freelancePhotoShoots: FreelancePhotoShoot[];
   activeTimer: ActiveTimerState;
   // POS & Inventory System
   parkedOrders: ParkedOrder[];
@@ -1089,6 +1134,11 @@ const DEFAULT_STATE: AppState = {
   freelanceInvoices: INITIAL_FREELANCE_INVOICES,
   freelanceProposals: INITIAL_FREELANCE_PROPOSALS,
   freelanceExpenses: INITIAL_FREELANCE_EXPENSES,
+  freelanceAeConfigs: INITIAL_FREELANCE_AE_CONFIGS,
+  freelanceContractTemplates: INITIAL_FREELANCE_CONTRACT_TEMPLATES,
+  freelanceClientContracts: INITIAL_FREELANCE_CLIENT_CONTRACTS,
+  freelanceTranslationEntries: INITIAL_FREELANCE_TRANSLATION_REGISTERS,
+  freelancePhotoShoots: INITIAL_FREELANCE_PHOTO_SHOOTS,
   activeTimer: INITIAL_ACTIVE_TIMER,
   parkedOrders: INITIAL_PARKED_ORDERS,
   stockMovements: INITIAL_STOCK_MOVEMENTS,
@@ -1463,7 +1513,18 @@ let globalState: AppState = backfillTraceability((() => {
           freelanceInvoices: Array.isArray(parsed.freelanceInvoices) ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
           freelanceProposals: Array.isArray(parsed.freelanceProposals) ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
           freelanceExpenses: Array.isArray(parsed.freelanceExpenses) ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
-          activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
+          freelanceAeConfigs: Array.isArray(parsed.freelanceAeConfigs) ? parsed.freelanceAeConfigs : INITIAL_FREELANCE_AE_CONFIGS,
+          freelanceContractTemplates: Array.isArray(parsed.freelanceContractTemplates) ? parsed.freelanceContractTemplates : INITIAL_FREELANCE_CONTRACT_TEMPLATES,
+          freelanceClientContracts: Array.isArray(parsed.freelanceClientContracts) ? parsed.freelanceClientContracts : INITIAL_FREELANCE_CLIENT_CONTRACTS,
+          freelanceTranslationEntries: Array.isArray(parsed.freelanceTranslationEntries) ? parsed.freelanceTranslationEntries : INITIAL_FREELANCE_TRANSLATION_REGISTERS,
+          freelancePhotoShoots: Array.isArray(parsed.freelancePhotoShoots) ? parsed.freelancePhotoShoots : INITIAL_FREELANCE_PHOTO_SHOOTS,
+          activeTimer: parsed.activeTimer
+            ? {
+                ...INITIAL_ACTIVE_TIMER,
+                ...parsed.activeTimer,
+                elapsedSeconds: computeAuthoritativeElapsedSeconds(parsed.activeTimer),
+              }
+            : INITIAL_ACTIVE_TIMER,
           parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
           stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
           receiptConfig: parsed.receiptConfig || DEFAULT_RECEIPT_CONFIG,
@@ -2123,6 +2184,31 @@ export const selectCurrentFreelanceProposalsFromState = createBranchSelector<Fre
 export const selectCurrentFreelanceExpensesFromState = createBranchSelector<FreelanceExpense>(
   (s) => s.freelanceExpenses,
   (e, b) => e.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceAeConfigsFromState = createBranchSelector<FreelanceAutoEntrepreneurConfig>(
+  (s) => s.freelanceAeConfigs || [],
+  (c, b) => c.branchId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceContractTemplatesFromState = createBranchSelector<FreelanceContractTemplate>(
+  (s) => s.freelanceContractTemplates || [],
+  (tpl, b) => tpl.branchId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceClientContractsFromState = createBranchSelector<FreelanceClientContract>(
+  (s) => s.freelanceClientContracts || [],
+  (c, b) => c.branchId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceTranslationEntriesFromState = createBranchSelector<FreelanceTranslationEntry>(
+  (s) => s.freelanceTranslationEntries || [],
+  (e, b) => e.branchId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelancePhotoShootsFromState = createBranchSelector<FreelancePhotoShoot>(
+  (s) => s.freelancePhotoShoots || [],
+  (s, b) => s.branchId === b,
   'branch_freelance_main'
 );
 
@@ -3424,6 +3510,8 @@ export function startTimerAction(
   isBillable = true,
   isPomodoro = false
 ) {
+  const nowIso = new Date().toISOString();
+  const deviceId = getActiveDeviceId() || 'web_client';
   const nextTimer: ActiveTimerState = {
     isRunning: true,
     isPaused: false,
@@ -3435,41 +3523,113 @@ export function startTimerAction(
     deliverableTitle,
     taskDescription,
     elapsedSeconds: 0,
+    accumulatedSeconds: 0,
     isBillable,
     isPomodoro,
     pomodoroRemainingSeconds: 1500,
     pomodoroMode: 'work',
-    startedAt: new Date().toISOString(),
+    startedAt: nowIso,
+    lastHeartbeatAt: nowIso,
+    sourceDeviceId: deviceId,
   };
   setTimerMicroState(nextTimer, true);
   ensureTimerTick(true, false);
   notify();
+
+  if (isSupabaseConfigured()) {
+    freelanceService
+      .upsertActiveTimer(nextTimer, {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        staffId: globalState.currentUser?.id,
+      })
+      .catch(() => {});
+  }
 }
 
 export function pauseTimerAction() {
-  const nextTimer: ActiveTimerState = { ...timerState, isPaused: true };
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  const elapsed = computeAuthoritativeElapsedSeconds(timerState, nowMs);
+  const nextTimer: ActiveTimerState = {
+    ...timerState,
+    isPaused: true,
+    startedAt: null,
+    accumulatedSeconds: elapsed,
+    elapsedSeconds: elapsed,
+    lastHeartbeatAt: nowIso,
+    sourceDeviceId: getActiveDeviceId() || timerState.sourceDeviceId || 'web_client',
+  };
   setTimerMicroState(nextTimer, true);
   ensureTimerTick(nextTimer.isRunning, true);
   notify();
+
+  if (isSupabaseConfigured()) {
+    freelanceService
+      .upsertActiveTimer(nextTimer, {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        staffId: globalState.currentUser?.id,
+      })
+      .catch(() => {});
+  }
 }
 
 export function resumeTimerAction() {
-  const nextTimer: ActiveTimerState = { ...timerState, isPaused: false };
+  const nowIso = new Date().toISOString();
+  const baseAcc = timerState.accumulatedSeconds ?? timerState.elapsedSeconds ?? 0;
+  const nextTimer: ActiveTimerState = {
+    ...timerState,
+    isPaused: false,
+    startedAt: nowIso,
+    accumulatedSeconds: baseAcc,
+    elapsedSeconds: baseAcc,
+    lastHeartbeatAt: nowIso,
+    sourceDeviceId: getActiveDeviceId() || timerState.sourceDeviceId || 'web_client',
+  };
   setTimerMicroState(nextTimer, true);
   ensureTimerTick(nextTimer.isRunning, false);
   notify();
+
+  if (isSupabaseConfigured()) {
+    freelanceService
+      .upsertActiveTimer(nextTimer, {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        staffId: globalState.currentUser?.id,
+      })
+      .catch(() => {});
+  }
 }
 
 export function stopTimerAction() {
   const timer = timerState;
-  if (timer.elapsedSeconds >= 10) {
+  const nowMs = Date.now();
+  const totalSeconds = computeAuthoritativeElapsedSeconds(timer, nowMs);
+
+  if (totalSeconds >= 10) {
     const before = captureStoreSlices(['timeLogs', 'freelanceProjects', 'activeTimer']);
     const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
     const rate = client?.hourlyRate || 85;
     const currency = client?.currency || 'EUR';
 
-    const newEntry: TimeLogEntry = {
-      id: `time_${Date.now()}`,
+    const endIso = new Date(nowMs).toISOString();
+    const startIso = new Date(nowMs - totalSeconds * 1000).toISOString();
+    const segments = splitCrossMidnightTimeSpan(startIso, endIso);
+    const splitGroupId = segments.length > 1 ? `split_${nowMs}` : undefined;
+
+    const newEntries: TimeLogEntry[] = (
+      segments.length > 0
+        ? segments
+        : [{ date: endIso.slice(0, 10), startedAt: startIso, endedAt: endIso, durationSeconds: totalSeconds }]
+    ).map((seg, idx) => ({
+      id: `time_${nowMs}_${idx}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
       clientId: timer.clientId,
@@ -3479,16 +3639,19 @@ export function stopTimerAction() {
       deliverableId: timer.deliverableId,
       deliverableTitle: timer.deliverableTitle,
       taskDescription: timer.taskDescription || 'Focus sprint session',
-      durationSeconds: timer.elapsedSeconds,
+      durationSeconds: seg.durationSeconds,
       isBillable: timer.isBillable,
       isInvoiced: false,
       rateAtMoment: rate,
       currency,
-      date: new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
-    };
+      date: seg.date,
+      startedAt: seg.startedAt,
+      endedAt: seg.endedAt,
+      splitGroupId,
+      createdAt: endIso,
+    }));
 
-    const additionalHours = Number((timer.elapsedSeconds / 3600).toFixed(2));
+    const additionalHours = Number((totalSeconds / 3600).toFixed(2));
     const updatedProjects = globalState.freelanceProjects.map((p) => {
       if (p.id === timer.projectId) {
         const updatedDeliverables = p.deliverables.map((d) => {
@@ -3511,12 +3674,14 @@ export function stopTimerAction() {
       isRunning: false,
       isPaused: false,
       elapsedSeconds: 0,
+      accumulatedSeconds: 0,
       startedAt: null,
+      lastHeartbeatAt: endIso,
     };
 
     globalState = {
       ...globalState,
-      timeLogs: [newEntry, ...globalState.timeLogs],
+      timeLogs: [...newEntries, ...globalState.timeLogs],
       freelanceProjects: updatedProjects,
       activeTimer: stoppedTimer,
     };
@@ -3525,7 +3690,13 @@ export function stopTimerAction() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.upsertTimeLog(newEntry).catch(() => {});
+      if (timer.id) {
+        freelanceService.stopActiveTimer(timer.id, endIso).catch(() => {});
+      } else {
+        newEntries.forEach((entry) => {
+          freelanceService.upsertTimeLog(entry).catch(() => {});
+        });
+      }
       const updatedProject = updatedProjects.find((p) => p.id === timer.projectId);
       if (updatedProject) {
         freelanceService.upsertProject(updatedProject).catch(() => {});
@@ -3533,26 +3704,29 @@ export function stopTimerAction() {
     }
 
     const after = captureStoreSlices(['timeLogs', 'freelanceProjects', 'activeTimer']);
-    const hours = Math.floor(newEntry.durationSeconds / 3600);
-    const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
-    const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
-    const msg = `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`;
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${totalSeconds % 60}s`;
+    const splitNote = newEntries.length > 1 ? ` (${newEntries.length} daily segments)` : '';
+    const msg = `${timeStr} recorded for "${newEntries[0].projectTitle || 'Project'}"${splitNote}.`;
     registerUndoEntry({
       vertical: 'freelance_solo',
       operationType: 'create',
       summary: ul(
-        `Logged ${timeStr} for ${newEntry.projectTitle || 'Project'}`,
-        `Temps enregistré (${timeStr}) — ${newEntry.projectTitle || 'Projet'}`,
-        `تسجيل وقت (${timeStr}) — ${newEntry.projectTitle || 'المشروع'}`
+        `Logged ${timeStr} for ${newEntries[0].projectTitle || 'Project'}${splitNote}`,
+        `Temps enregistré (${timeStr}) — ${newEntries[0].projectTitle || 'Projet'}`,
+        `تسجيل وقت (${timeStr}) — ${newEntries[0].projectTitle || 'المشروع'}`
       ),
-      entityLabel: newEntry.projectTitle || newEntry.taskDescription,
+      entityLabel: newEntries[0].projectTitle || newEntries[0].taskDescription,
       toastType: 'success',
       toastTitle: ul('Time Logged', 'Temps enregistré', 'تم تسجيل الوقت'),
       toastMessage: msg,
       undo: () => {
         restoreStoreSlices({ timeLogs: before.timeLogs, freelanceProjects: before.freelanceProjects });
         if (isSupabaseConfigured()) {
-          freelanceService.deleteTimeLog(newEntry.id, globalState.currentUser?.id).catch(() => {});
+          newEntries.forEach((e) => {
+            freelanceService.deleteTimeLog(e.id, globalState.currentUser?.id).catch(() => {});
+          });
           const prevProj = before.freelanceProjects.find((p) => p.id === timer.projectId);
           if (prevProj) freelanceService.upsertProject(prevProj).catch(() => {});
         }
@@ -3560,43 +3734,72 @@ export function stopTimerAction() {
       redo: () => {
         restoreStoreSlices({ timeLogs: after.timeLogs, freelanceProjects: after.freelanceProjects });
         if (isSupabaseConfigured()) {
-          syncCoordinator.restoreRow('freelance_time_logs', newEntry.id, globalState.currentUser?.id).catch(() => {});
-          freelanceService.upsertTimeLog(newEntry).catch(() => {});
+          newEntries.forEach((e) => {
+            syncCoordinator
+              .restoreRow('freelance_time_logs', e.id, globalState.currentUser?.id)
+              .then(() => freelanceService.upsertTimeLog(e))
+              .catch(() => {});
+          });
           const nextProj = after.freelanceProjects.find((p) => p.id === timer.projectId);
           if (nextProj) freelanceService.upsertProject(nextProj).catch(() => {});
         }
       },
     });
 
-    return newEntry;
+    return newEntries[0];
   } else {
     const stoppedTimer: ActiveTimerState = {
       ...timer,
       isRunning: false,
       isPaused: false,
       elapsedSeconds: 0,
+      accumulatedSeconds: 0,
       startedAt: null,
+      lastHeartbeatAt: new Date(nowMs).toISOString(),
     };
     setTimerMicroState(stoppedTimer, true);
     ensureTimerTick(false, false);
     notify();
+    if (isSupabaseConfigured()) {
+      freelanceService
+        .upsertActiveTimer(stoppedTimer, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
     return null;
   }
 }
 
 export function resetTimerAction() {
   const before = captureStoreSlices(['activeTimer']);
-  const hadProgress = before.activeTimer.elapsedSeconds > 0 || before.activeTimer.isRunning;
+  const currentElapsed = computeAuthoritativeElapsedSeconds(before.activeTimer);
+  const hadProgress = currentElapsed > 0 || before.activeTimer.isRunning;
   const resetTimer: ActiveTimerState = {
     ...timerState,
     isRunning: false,
     isPaused: false,
     elapsedSeconds: 0,
+    accumulatedSeconds: 0,
     startedAt: null,
+    lastHeartbeatAt: new Date().toISOString(),
   };
   setTimerMicroState(resetTimer, true);
   ensureTimerTick(false, false);
   notify();
+  if (isSupabaseConfigured()) {
+    freelanceService
+      .upsertActiveTimer(resetTimer, {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+        staffId: globalState.currentUser?.id,
+      })
+      .catch(() => {});
+  }
   if (hadProgress) {
     const after = captureStoreSlices(['activeTimer']);
     registerUndoEntry({
@@ -4441,6 +4644,11 @@ function pruneDeletedRecords(
     freelance_invoices: 'freelanceInvoices',
     freelance_proposals: 'freelanceProposals',
     freelance_expenses: 'freelanceExpenses',
+    freelance_auto_entrepreneur_configs: 'freelanceAeConfigs',
+    freelance_contract_templates: 'freelanceContractTemplates',
+    freelance_client_contracts: 'freelanceClientContracts',
+    freelance_translation_registers: 'freelanceTranslationEntries',
+    freelance_photo_shoots: 'freelancePhotoShoots',
     rental_units: 'rentableUnits',
     rental_bookings: 'rentalBookings',
     rental_renters: 'rentalRenters',
@@ -5455,6 +5663,46 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           if (rows.length > 0) updates.freelanceExpenses = mergeById(globalState.freelanceExpenses, rows);
         });
       }
+      if (shouldSyncTable('freelance_auto_entrepreneur_configs')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchAeConfigs(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceAeConfigs = mergeById(globalState.freelanceAeConfigs || [], rows);
+        });
+      }
+      if (shouldSyncTable('freelance_contract_templates')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchContractTemplates(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceContractTemplates = mergeById(globalState.freelanceContractTemplates || [], rows);
+        });
+      }
+      if (shouldSyncTable('freelance_client_contracts')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchClientContracts(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceClientContracts = mergeById(globalState.freelanceClientContracts || [], rows);
+        });
+      }
+      if (shouldSyncTable('freelance_translation_registers')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchTranslationRegisters(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceTranslationEntries = mergeById(globalState.freelanceTranslationEntries || [], rows);
+        });
+      }
+      if (shouldSyncTable('freelance_photo_shoots')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchPhotoShoots(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelancePhotoShoots = mergeById(globalState.freelancePhotoShoots || [], rows);
+        });
+      }
+      if (shouldSyncTable('freelance_active_timers')) {
+        tasks.push(async () => {
+          const remoteTimer = await freelanceService.fetchActiveTimer(branchId);
+          if (remoteTimer) {
+            const reconciled = reconcileRemoteActiveTimer(timerState, remoteTimer);
+            setTimerMicroState(reconciled, false);
+            updates.activeTimer = reconciled;
+          }
+        });
+      }
     } else if (activeCategory === 'rental_booking') {
       if (shouldSyncTable('rental_units')) {
         tasks.push(async () => {
@@ -6288,6 +6536,24 @@ export function applyResolvedRowToSlice(
       return { freelanceProposals: patchList(globalState.freelanceProposals, mapFreelanceProposalFromDb) };
     case 'freelance_expenses':
       return { freelanceExpenses: patchList(globalState.freelanceExpenses, mapFreelanceExpenseFromDb) };
+    case 'freelance_auto_entrepreneur_configs':
+      return { freelanceAeConfigs: patchList(globalState.freelanceAeConfigs || [], mapFreelanceAeConfigFromDb) };
+    case 'freelance_contract_templates':
+      return { freelanceContractTemplates: patchList(globalState.freelanceContractTemplates || [], mapFreelanceContractTemplateFromDb) };
+    case 'freelance_client_contracts':
+      return { freelanceClientContracts: patchList(globalState.freelanceClientContracts || [], mapFreelanceClientContractFromDb) };
+    case 'freelance_translation_registers':
+      return { freelanceTranslationEntries: patchList(globalState.freelanceTranslationEntries || [], mapFreelanceTranslationFromDb) };
+    case 'freelance_photo_shoots':
+      return { freelancePhotoShoots: patchList(globalState.freelancePhotoShoots || [], mapFreelancePhotoShootFromDb) };
+    case 'freelance_active_timers':
+      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+        const remote = mapActiveTimerFromDb(payload.new);
+        const reconciled = reconcileRemoteActiveTimer(timerState, remote);
+        setTimerMicroState(reconciled, false);
+        return { activeTimer: reconciled };
+      }
+      return {};
     case 'rental_units':
       return { rentableUnits: patchList(globalState.rentableUnits, mapRentalUnitFromDb) };
     case 'rental_renters':
@@ -6619,7 +6885,8 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
           return;
         }
 
-        const newElapsed = current.elapsedSeconds + 1;
+        const nowMs = Date.now();
+        const newElapsed = computeAuthoritativeElapsedSeconds(current, nowMs);
         let newPomodoroSecs = current.pomodoroRemainingSeconds;
         let newPomodoroMode = current.pomodoroMode;
 
@@ -6641,6 +6908,26 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
           },
           false
         );
+
+        if (isSupabaseConfigured() && newElapsed > 0 && newElapsed % 15 === 0) {
+          const heartbeatIso = new Date(nowMs).toISOString();
+          freelanceService
+            .upsertActiveTimer(
+              {
+                ...current,
+                elapsedSeconds: newElapsed,
+                lastHeartbeatAt: heartbeatIso,
+                sourceDeviceId: getActiveDeviceId() || current.sourceDeviceId || 'web_client',
+              },
+              {
+                accountId: globalState.account.id,
+                businessId: globalState.currentBusinessId,
+                branchId: globalState.currentBranchId,
+                staffId: globalState.currentUser?.id,
+              }
+            )
+            .catch(() => {});
+        }
       }, 1000);
     }
   } else {
@@ -13752,12 +14039,31 @@ function createAtriumActions() {
 
   const addFreelanceClient = (clientData: Omit<FreelanceClient, 'id' | 'tenantId' | 'facilityId' | 'lifetimeBilled' | 'createdAt'>) => {
     const before = captureStoreSlices(['freelanceClients']);
+    const clientId = `fcli_${Date.now()}`;
+    let crmPartyId = clientData.crmPartyId;
+    if (!crmPartyId) {
+      try {
+        const linked = ensurePartyForEntity({
+          sourceVertical: 'freelance_solo',
+          entityType: 'freelance_client',
+          entityId: clientId,
+          partyKind: clientData.company ? 'company' : 'person',
+          displayName: clientData.company || clientData.name,
+          phone: clientData.phone,
+          email: clientData.email,
+        });
+        crmPartyId = linked.party.id;
+      } catch {
+        // ignore if CRM store context unavailable
+      }
+    }
     const newClient: FreelanceClient = {
       ...getTraceContext(),
       ...clientData,
-      id: `fcli_${Date.now()}`,
+      id: clientId,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
+      crmPartyId,
       lifetimeBilled: 0,
       createdAt: new Date().toISOString(),
     };
@@ -14389,6 +14695,19 @@ function createAtriumActions() {
   const updateTimeLog = (id: string, updates: Partial<TimeLogEntry>) => {
     const current = globalState.timeLogs.find((t) => t.id === id);
     if (!current) return;
+    const guard = validateTimeLogMutation(current);
+    if (!guard.allowed) {
+      showToast({
+        type: 'error',
+        title: ul('Invoiced Entry Locked', 'Entrée facturée verrouillée', 'السجل المفوتر مقفل'),
+        message: ul(
+          'Invoiced time logs cannot be edited. Delete or void the linked invoice first.',
+          'Les temps facturés sont verrouillés. Supprimez d’abord la facture liée.',
+          'سجلات الوقت المفوترة مقفلة. احذف الفاتورة المرتبطة أولاً.'
+        ),
+      });
+      return;
+    }
     const before = captureStoreSlices(['timeLogs', 'freelanceProjects']);
     const prevProject = globalState.freelanceProjects.find((p) => p.id === current.projectId);
 
@@ -14462,6 +14781,19 @@ function createAtriumActions() {
   const deleteTimeLog = (id: string) => {
     const current = globalState.timeLogs.find((t) => t.id === id);
     if (!current) return;
+    const guard = validateTimeLogMutation(current);
+    if (!guard.allowed) {
+      showToast({
+        type: 'error',
+        title: ul('Invoiced Entry Locked', 'Entrée facturée verrouillée', 'السجل المفوتر مقفل'),
+        message: ul(
+          'Invoiced time logs cannot be deleted. Delete or void the linked invoice first.',
+          'Les temps facturés ne peuvent pas être supprimés. Supprimez d’abord la facture liée.',
+          'لا يمكن حذف سجلات الوقت المفوترة قبل حذف الفاتورة المرتبطة.'
+        ),
+      });
+      return;
+    }
     const before = captureStoreSlices(['timeLogs', 'freelanceProjects']);
     const prevProject = globalState.freelanceProjects.find((p) => p.id === current.projectId);
 
@@ -14540,6 +14872,8 @@ function createAtriumActions() {
     const totalAmount = roundedSubtotal + taxAmount;
 
     const invoiceNum = `INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
+    const fxRateToDzd = resolveFreelanceFxRate(client.currency, undefined);
+    const totalAmountDzdCentimes = computeInvoiceDzdEquivalentCentimes(totalAmount, client.currency, fxRateToDzd);
     const newInvoice: FreelanceInvoice = {
       ...getTraceContext(),
       id: `inv_${Date.now()}`,
@@ -14551,6 +14885,9 @@ function createAtriumActions() {
       clientEmail: client.email,
       invoiceNumber: invoiceNum,
       currency: client.currency,
+      fxRateToDzd,
+      totalAmountDzdCentimes,
+      shareToken: `share_${Date.now()}`,
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
       status: 'Sent',
@@ -14638,12 +14975,28 @@ function createAtriumActions() {
   const createFreelanceInvoice = (invoiceData: Omit<FreelanceInvoice, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const before = captureStoreSlices(['freelanceInvoices', 'freelanceClients']);
     const prevClient = globalState.freelanceClients.find((c) => c.id === invoiceData.clientId);
+    const fxRateToDzd = resolveFreelanceFxRate(invoiceData.currency, invoiceData.fxRateToDzd);
+    const totalAmountDzdCentimes = computeInvoiceDzdEquivalentCentimes(
+      invoiceData.totalAmount,
+      invoiceData.currency,
+      fxRateToDzd
+    );
+    const nextRecurrenceDate =
+      invoiceData.isRecurring && invoiceData.recurrenceInterval
+        ? invoiceData.nextRecurrenceDate ||
+          computeNextRecurrenceDate(invoiceData.issueDate, invoiceData.recurrenceInterval)
+        : invoiceData.nextRecurrenceDate;
+
     const newInv: FreelanceInvoice = {
       ...getTraceContext(),
       ...invoiceData,
       id: `inv_${Date.now()}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
+      fxRateToDzd,
+      totalAmountDzdCentimes,
+      nextRecurrenceDate,
+      shareToken: invoiceData.shareToken || `share_${Date.now()}`,
       createdAt: new Date().toISOString(),
     };
     const updatedClients = globalState.freelanceClients.map((c) =>
@@ -14747,16 +15100,117 @@ function createAtriumActions() {
     });
   };
 
+  const updateFreelanceInvoice = (invoiceId: string, updates: Partial<FreelanceInvoice>): boolean => {
+    const prev = globalState.freelanceInvoices.find((inv) => inv.id === invoiceId);
+    if (!prev) return false;
+    const guard = validateInvoiceCurrencyUpdate(prev, updates.currency, updates.fxRateToDzd);
+    if (!guard.allowed) {
+      showToast({
+        type: 'error',
+        title: ul('Currency & FX Locked', 'Devise et taux verrouillés', 'العملة وسعر الصرف مقفلان'),
+        message:
+          guard.code === 'INVALID_FX_RATE'
+            ? ul('Exchange rate must be greater than zero.', 'Le taux de change doit être strictement positif.', 'يجب أن يكون سعر الصرف أكبر من الصفر.')
+            : ul(
+                'Currency and exchange rate are locked once an invoice leaves Draft status.',
+                'La devise et le taux de change sont verrouillés après émission du brouillon.',
+                'يتم قفل العملة وسعر الصرف بعد خروج الفاتورة من حالة المسودة.'
+              ),
+      });
+      return false;
+    }
+
+    const before = captureStoreSlices(['freelanceInvoices', 'freelanceClients']);
+    const nextCurrency = updates.currency ?? prev.currency;
+    const nextFx = resolveFreelanceFxRate(nextCurrency, updates.fxRateToDzd ?? prev.fxRateToDzd);
+    const nextTotal = updates.totalAmount !== undefined ? Number(updates.totalAmount) : prev.totalAmount;
+    const nextCentimes = computeInvoiceDzdEquivalentCentimes(nextTotal, nextCurrency, nextFx);
+    const nextIsRecurring = updates.isRecurring !== undefined ? updates.isRecurring : prev.isRecurring;
+    const nextInterval = updates.recurrenceInterval ?? prev.recurrenceInterval;
+    const nextRecDate =
+      nextIsRecurring && nextInterval
+        ? updates.nextRecurrenceDate ??
+          prev.nextRecurrenceDate ??
+          computeNextRecurrenceDate(updates.issueDate ?? prev.issueDate, nextInterval)
+        : undefined;
+
+    const updatedInvoices = globalState.freelanceInvoices.map((inv) =>
+      inv.id === invoiceId
+        ? {
+            ...inv,
+            ...updates,
+            currency: nextCurrency,
+            fxRateToDzd: nextFx,
+            totalAmountDzdCentimes: nextCentimes,
+            isRecurring: nextIsRecurring,
+            recurrenceInterval: nextIsRecurring ? nextInterval : undefined,
+            nextRecurrenceDate: nextRecDate,
+            paidAt: (updates.status ?? inv.status) === 'Paid' ? inv.paidAt || new Date().toISOString() : inv.paidAt,
+          }
+        : inv
+    );
+
+    const deltaAmount = nextTotal - prev.totalAmount;
+    const updatedClients =
+      deltaAmount !== 0
+        ? globalState.freelanceClients.map((c) =>
+            c.id === prev.clientId ? { ...c, lifetimeBilled: Math.max(0, c.lifetimeBilled + deltaAmount) } : c
+          )
+        : globalState.freelanceClients;
+
+    globalState = {
+      ...globalState,
+      freelanceInvoices: updatedInvoices,
+      freelanceClients: updatedClients,
+    };
+    notify();
+
+    const target = updatedInvoices.find((inv) => inv.id === invoiceId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertInvoice(target).catch((err) => {
+        console.warn('[store] Supabase updateFreelanceInvoice notice:', err);
+      });
+    }
+
+    const after = captureStoreSlices(['freelanceInvoices', 'freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated invoice #${prev.invoiceNumber}`,
+        `Facture mise à jour #${prev.invoiceNumber}`,
+        `تحديث الفاتورة #${prev.invoiceNumber}`
+      ),
+      entityLabel: prev.clientName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertInvoice(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertInvoice(target).catch(() => {});
+        }
+      },
+    });
+
+    return true;
+  };
+
   const deleteFreelanceInvoice = (invoiceId: string) => {
     const target = globalState.freelanceInvoices.find((inv) => inv.id === invoiceId);
     if (!target) return;
     const before = captureStoreSlices(['freelanceInvoices', 'timeLogs', 'freelanceClients']);
     const prevClient = globalState.freelanceClients.find((c) => c.id === target.clientId);
 
+    const knownLogIds = new Set(globalState.timeLogs.map((l) => l.id));
     const loggedIds = new Set(
       target.items
-        .filter((item) => item.id.startsWith('item_time_'))
-        .map((item) => item.id.replace('item_', ''))
+        .map((item) => (item.id.startsWith('item_') ? item.id.slice('item_'.length) : ''))
+        .filter((logId) => Boolean(logId) && (logId.startsWith('time_') || knownLogIds.has(logId)))
     );
 
     const updatedTimeLogs = globalState.timeLogs.map((t) =>
@@ -14778,17 +15232,14 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteInvoice(invoiceId, globalState.currentUser?.id).catch((err) => {
-        console.warn('[store] Supabase deleteInvoice notice:', err);
-      });
-      loggedIds.forEach((tId) => {
-        const logItem = updatedTimeLogs.find((l) => l.id === tId);
-        if (logItem) {
-          freelanceService.upsertTimeLog(logItem).catch((err) => {
-            console.warn('[store] Failed to update time log in Supabase:', err);
-          });
+      const logIdArr = Array.from(loggedIds);
+      const runDelete = async () => {
+        if (logIdArr.length > 0) {
+          await freelanceService.uninvoiceTimeLogs(invoiceId, logIdArr).catch(() => {});
         }
-      });
+        await freelanceService.deleteInvoice(invoiceId, globalState.currentUser?.id).catch(() => {});
+      };
+      void runDelete();
     }
 
     const updatedClient = updatedClients.find((c) => c.id === target.clientId);
@@ -15178,6 +15629,736 @@ function createAtriumActions() {
         }
       },
     });
+  };
+
+  const generateRecurringFreelanceInvoice = (sourceInvoiceId: string): FreelanceInvoice | null => {
+    const source = globalState.freelanceInvoices.find((inv) => inv.id === sourceInvoiceId);
+    if (!source || !source.recurrenceInterval) return null;
+    const issueDate = new Date().toISOString().slice(0, 10);
+    const nextNum = `INV-${new Date().getFullYear()}-${String(globalState.freelanceInvoices.length + 101).padStart(3, '0')}`;
+    const draftPayload = buildRecurringDraftFromInvoice(source, nextNum, issueDate);
+    const created = createFreelanceInvoice(draftPayload);
+    const advancedNextDate = computeNextRecurrenceDate(issueDate, source.recurrenceInterval);
+    updateFreelanceInvoice(source.id, { nextRecurrenceDate: advancedNextDate });
+    return created;
+  };
+
+  const sendFreelanceInvoiceReminder = (invoiceId: string): ReminderDeliveryLog | null => {
+    const inv = globalState.freelanceInvoices.find((i) => i.id === invoiceId);
+    if (!inv) return null;
+    const client = globalState.freelanceClients.find((c) => c.id === inv.clientId);
+    const ctx = resolveUnifiedContext('freelance_solo');
+    const nowIso = new Date().toISOString();
+
+    const partyLink = ensurePartyForEntity({
+      sourceVertical: 'freelance_solo',
+      entityType: 'freelance_client',
+      entityId: client?.id || inv.clientId || inv.id,
+      partyKind: inv.clientCompany || client?.company ? 'company' : 'person',
+      displayName: inv.clientCompany || inv.clientName,
+      phone: client?.phone,
+      email: inv.clientEmail || client?.email,
+    });
+
+    const title = ul(
+      `Invoice Overdue: ${inv.invoiceNumber}`,
+      `Relance facture impayée : ${inv.invoiceNumber}`,
+      `تذكير بفاتورة مستحقة: ${inv.invoiceNumber}`
+    );
+    const message = ul(
+      `${inv.clientName} — ${inv.totalAmount.toLocaleString()} ${inv.currency} due since ${inv.dueDate}`,
+      `${inv.clientName} — ${inv.totalAmount.toLocaleString()} ${inv.currency} échue le ${inv.dueDate}`,
+      `${inv.clientName} — ${inv.totalAmount.toLocaleString()} ${inv.currency} مستحقة منذ ${inv.dueDate}`
+    );
+
+    const idempotencyKey = `freelance_inv_${inv.id}_${nowIso.slice(0, 10)}`;
+    const commLog: CrmCommunicationLog = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      partyId: partyLink.party.id,
+      channel: inv.clientEmail ? 'email' : 'in_app',
+      recipientAddress: inv.clientEmail || partyLink.party.phoneE164 || '',
+      language: globalState.language || 'fr',
+      subject: title,
+      renderedBody: message,
+      missingVariables: [],
+      status: 'sent',
+      providerName: 'atrium_reminder_engine',
+      attempts: 1,
+      lastAttemptAt: nowIso,
+      sentAt: nowIso,
+      sentByStaffId: globalState.currentUser?.id,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const log: ReminderDeliveryLog = {
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      ruleId: 'freelance_invoice_overdue',
+      eventType: 'invoice_overdue',
+      entityType: 'freelance_invoice',
+      entityId: inv.id,
+      entityLabel: inv.invoiceNumber,
+      partyId: partyLink.party.id,
+      channel: inv.clientEmail ? 'email' : 'in_app',
+      idempotencyKey,
+      status: 'sent',
+      scheduledFor: nowIso,
+      deliveredAt: nowIso,
+      title,
+      message,
+      crmCommLogId: commLog.id,
+      attempts: 1,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    const updatedInvoices = globalState.freelanceInvoices.map((i) =>
+      i.id === inv.id ? { ...i, lastRemindedAt: nowIso } : i
+    );
+
+    globalState = {
+      ...globalState,
+      freelanceInvoices: updatedInvoices,
+      reminderDeliveryLogs: [log, ...(globalState.reminderDeliveryLogs || [])],
+      crmCommunicationLogs: [commLog, ...(globalState.crmCommunicationLogs || [])],
+    };
+    notify();
+
+    addNotification({
+      id: `rem_${idempotencyKey}_${Date.now()}`,
+      title,
+      message,
+      type: 'warning',
+      category: 'activity',
+      targetScreen: 'shop',
+    });
+
+    if (isSupabaseConfigured()) {
+      const updatedInv = updatedInvoices.find((i) => i.id === inv.id);
+      if (updatedInv) freelanceService.upsertInvoice(updatedInv).catch(() => {});
+      crmService.recordCommunicationAttempt(commLog).catch(() => {});
+      reminderService.dispatchReminderIdempotent(log).catch(() => {});
+    }
+
+    showToast({
+      type: 'success',
+      title,
+      message,
+    });
+    return log;
+  };
+
+  const createFreelanceUnifiedInvoice = (
+    invoiceId: string,
+    options?: {
+      docType?: UnifiedDocType;
+      paymentMethod?: UnifiedPaymentMethod | string;
+      issueImmediately?: boolean;
+    }
+  ): UnifiedDocument | null => {
+    const inv = globalState.freelanceInvoices.find((i) => i.id === invoiceId);
+    if (!inv) return null;
+    if (inv.unifiedDocumentId) {
+      const existing = (globalState.unifiedDocuments || []).find((d) => d.id === inv.unifiedDocumentId);
+      if (existing) return existing;
+    }
+
+    const client = globalState.freelanceClients.find((c) => c.id === inv.clientId);
+    const partyLink = ensurePartyForEntity({
+      sourceVertical: 'freelance_solo',
+      entityType: 'freelance_client',
+      entityId: client?.id || inv.clientId || inv.id,
+      partyKind: inv.clientCompany || client?.company ? 'company' : 'person',
+      displayName: inv.clientCompany || inv.clientName,
+      phone: client?.phone,
+      email: inv.clientEmail || client?.email,
+    });
+    if (client && client.crmPartyId !== partyLink.party.id) {
+      updateFreelanceClient(client.id, { crmPartyId: partyLink.party.id });
+    }
+
+    const lines: UnifiedLineInput[] = inv.items.map((item) => ({
+      description: item.description,
+      isService: true,
+      quantity: Number(item.quantity || 1),
+      unit: 'u',
+      unitPriceHt: Number(item.unitRate || 0),
+      tvaPercent: Number(inv.taxPercent || 0),
+    }));
+
+    const createdDoc = createUnifiedDocument({
+      docType: options?.docType || 'facture',
+      sourceVertical: 'freelance_solo',
+      partyId: partyLink.party.id,
+      partyName: inv.clientCompany || inv.clientName,
+      docDate: inv.issueDate,
+      dueDate: inv.dueDate,
+      paymentMethod: options?.paymentMethod || 'bank_transfer',
+      currency: (inv.currency as UnifiedCurrency) || 'DZD',
+      fxRate: resolveFreelanceFxRate(inv.currency, inv.fxRateToDzd),
+      sourceEntityType: 'freelance_invoice',
+      sourceEntityId: inv.id,
+      items: lines,
+      issueImmediately: options?.issueImmediately ?? inv.status !== 'Draft',
+    });
+
+    const updatedInvoices = globalState.freelanceInvoices.map((i) =>
+      i.id === inv.id ? { ...i, unifiedDocumentId: createdDoc.id } : i
+    );
+    globalState = { ...globalState, freelanceInvoices: updatedInvoices };
+    notify();
+    const target = updatedInvoices.find((i) => i.id === inv.id);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertInvoice(target).catch(() => {});
+    }
+    return createdDoc;
+  };
+
+  const recordFreelanceInvoicePayment = (
+    invoiceId: string,
+    input: {
+      amount?: number;
+      method: UnifiedPaymentMethod | string;
+      paymentDate?: string;
+      notes?: string;
+    }
+  ): UnifiedPayment | null => {
+    const inv = globalState.freelanceInvoices.find((i) => i.id === invoiceId);
+    if (!inv) return null;
+    const fx = resolveFreelanceFxRate(inv.currency, inv.fxRateToDzd);
+    const amountCurrency = Math.max(0, Number(input.amount ?? inv.totalAmount));
+    const amountDzd = Math.round(amountCurrency * fx * 100) / 100;
+    if (amountDzd <= 0) return null;
+
+    const linkedDoc = inv.unifiedDocumentId
+      ? (globalState.unifiedDocuments || []).find((d) => d.id === inv.unifiedDocumentId)
+      : createFreelanceUnifiedInvoice(inv.id, { paymentMethod: input.method, issueImmediately: true });
+
+    const client = globalState.freelanceClients.find((c) => c.id === inv.clientId);
+    const partyLink = ensurePartyForEntity({
+      sourceVertical: 'freelance_solo',
+      entityType: 'freelance_client',
+      entityId: client?.id || inv.clientId || inv.id,
+      partyKind: inv.clientCompany || client?.company ? 'company' : 'person',
+      displayName: inv.clientCompany || inv.clientName,
+      phone: client?.phone,
+      email: inv.clientEmail || client?.email,
+    });
+
+    const payment = recordUnifiedPayment({
+      sourceVertical: 'freelance_solo',
+      partyId: partyLink.party.id,
+      partyName: inv.clientCompany || inv.clientName,
+      method: input.method,
+      direction: 'inflow',
+      amountDzd,
+      currency: (inv.currency as UnifiedCurrency) || 'DZD',
+      fxRate: fx,
+      paymentDate: input.paymentDate,
+      allocations: linkedDoc ? [{ documentId: linkedDoc.id, requestedDzd: amountDzd }] : undefined,
+      notes: input.notes || `Freelance Invoice ${inv.invoiceNumber}`,
+    });
+
+    if (payment) {
+      updateInvoiceStatus(inv.id, 'Paid');
+    }
+    return payment;
+  };
+
+  const attachExpenseReceipt = async (expenseId: string, file: File) => {
+    const exp = globalState.freelanceExpenses.find((e) => e.id === expenseId);
+    if (!exp) return { success: false, error: 'Expense not found' };
+    const upload = await storageService.uploadScopedFile({
+      bucket: 'expense-receipts',
+      file,
+      accountId: globalState.account?.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      prefix: 'freelance_expense',
+    });
+    if (!upload.success) {
+      showToast({
+        type: 'error',
+        title: ul('Receipt Upload Failed', 'Échec import justificatif', 'فشل رفع الإيصال'),
+        message: upload.error || 'Upload error',
+      });
+      return upload;
+    }
+
+    const updatedExpenses = globalState.freelanceExpenses.map((e) =>
+      e.id === expenseId
+        ? {
+            ...e,
+            receiptUrl: upload.signedUrl || upload.localPreviewUrl,
+            receiptStoragePath: upload.storagePath,
+            receiptFileName: file.name,
+            receiptMimeType: file.type,
+            receiptSizeBytes: file.size,
+          }
+        : e
+    );
+    globalState = { ...globalState, freelanceExpenses: updatedExpenses };
+    notify();
+
+    const updated = updatedExpenses.find((e) => e.id === expenseId);
+    if (updated && isSupabaseConfigured()) {
+      freelanceService.upsertExpense(updated).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: ul('Receipt Attached', 'Justificatif joint', 'تم إرفاق الإيصال'),
+      message: file.name,
+    });
+    return upload;
+  };
+
+  const upsertFreelanceAeConfig = (
+    input: Partial<FreelanceAutoEntrepreneurConfig> &
+      Pick<FreelanceAutoEntrepreneurConfig, 'effectiveFrom' | 'annualTurnoverCeilingDzd' | 'contributionRatePct' | 'taxRatePct'>
+  ): FreelanceAutoEntrepreneurConfig => {
+    const ctx = resolveUnifiedContext('freelance_solo');
+    const existing = input.id ? (globalState.freelanceAeConfigs || []).find((c) => c.id === input.id) : undefined;
+    const item: FreelanceAutoEntrepreneurConfig = {
+      ...getTraceContext(),
+      id: existing?.id || generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      effectiveFrom: input.effectiveFrom,
+      annualTurnoverCeilingDzd: Number(input.annualTurnoverCeilingDzd),
+      contributionRatePct: Number(input.contributionRatePct),
+      taxRatePct: Number(input.taxRatePct),
+      tradeSpecialty: input.tradeSpecialty,
+      verificationStatus: input.verificationStatus || existing?.verificationStatus || 'unverified',
+      verifiedBy: existing?.verifiedBy,
+      verifiedAt: existing?.verifiedAt,
+      notes: input.notes,
+      version: existing?.version,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+    };
+    const nextList = existing
+      ? (globalState.freelanceAeConfigs || []).map((c) => (c.id === item.id ? item : c))
+      : [item, ...(globalState.freelanceAeConfigs || [])];
+    globalState = { ...globalState, freelanceAeConfigs: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertAeConfig(item).catch(() => {});
+    }
+    return item;
+  };
+
+  const markFreelanceAeConfigVerified = (configId?: string): FreelanceAutoEntrepreneurConfig | null => {
+    const existing = configId
+      ? (globalState.freelanceAeConfigs || []).find((c) => c.id === configId)
+      : (globalState.freelanceAeConfigs || [])[0];
+    const nowIso = new Date().toISOString();
+    const verifier = globalState.currentUser?.fullName || 'Owner';
+    const verifiedItem: FreelanceAutoEntrepreneurConfig = existing
+      ? {
+          ...existing,
+          verificationStatus: 'verified',
+          verifiedBy: verifier,
+          verifiedAt: nowIso,
+        }
+      : {
+          ...getTraceContext(),
+          id: generateClientUuid(),
+          effectiveFrom: `${new Date().getFullYear()}-01-01`,
+          annualTurnoverCeilingDzd: 5000000,
+          contributionRatePct: 5.0,
+          taxRatePct: 0.5,
+          verificationStatus: 'verified',
+          verifiedBy: verifier,
+          verifiedAt: nowIso,
+          createdAt: nowIso,
+        };
+    const nextList = existing
+      ? (globalState.freelanceAeConfigs || []).map((c) => (c.id === verifiedItem.id ? verifiedItem : c))
+      : [verifiedItem, ...(globalState.freelanceAeConfigs || [])];
+    globalState = { ...globalState, freelanceAeConfigs: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertAeConfig(verifiedItem).catch(() => {});
+    }
+    showToast({
+      type: 'success',
+      title: ul('Auto-Entrepreneur Rates Verified', 'Barème Auto-Entrepreneur vérifié', 'تم توثيق نسب المقاول الذاتي'),
+      message: `${verifiedItem.annualTurnoverCeilingDzd.toLocaleString()} DZD · ${verifiedItem.contributionRatePct}%`,
+    });
+    return verifiedItem;
+  };
+
+  const createFreelanceContract = (input: {
+    clientId: string;
+    templateId?: string;
+    category: FreelanceContractCategory;
+    title: string;
+    renderedBody?: string;
+    bodyTemplate?: string;
+    variables?: Record<string, string | number | undefined>;
+    currency: CurrencyCode;
+    contractValue: number;
+    effectiveDate: string;
+    expiryDate?: string;
+  }): FreelanceClientContract => {
+    const ctx = resolveUnifiedContext('freelance_solo');
+    const client = globalState.freelanceClients.find((c) => c.id === input.clientId);
+    const tpl =
+      (globalState.freelanceContractTemplates || []).find((t) => t.id === input.templateId) ||
+      buildDefaultFreelanceContractTemplates(ctx).find((t) => t.id === input.templateId);
+    const rendered =
+      input.renderedBody ??
+      renderFreelanceContractBody(input.bodyTemplate || tpl?.bodyTemplate || '', {
+        provider_name: globalState.account.fullName,
+        client_name: client?.name || '',
+        client_company: client?.company || client?.name || '',
+        scope_summary: input.title,
+        contract_value: input.contractValue,
+        currency: input.currency,
+        effective_date: input.effectiveDate,
+        ...(input.variables || {}),
+      }).renderedBody;
+
+    const existingBranch = selectCurrentFreelanceClientContractsFromState(globalState);
+    const contract: FreelanceClientContract = {
+      ...getTraceContext(),
+      id: generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      clientId: input.clientId,
+      clientName: client?.company || client?.name || 'Client',
+      templateId: tpl?.id,
+      contractNumber: buildNextContractNumber(existingBranch),
+      category: input.category,
+      title: input.title,
+      renderedBody: rendered,
+      currency: input.currency,
+      contractValue: Number(input.contractValue || 0),
+      effectiveDate: input.effectiveDate,
+      expiryDate: input.expiryDate,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceClientContracts: [contract, ...(globalState.freelanceClientContracts || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertClientContract(contract).catch(() => {});
+    }
+    return contract;
+  };
+
+  const signFreelanceContract = (contractId: string, signerName: string): FreelanceClientContract | null => {
+    const existing = (globalState.freelanceClientContracts || []).find((c) => c.id === contractId);
+    if (!existing) return null;
+    const nowIso = new Date().toISOString();
+    const signatureHash = `SIG-${Math.abs((existing.contractNumber + signerName + nowIso).split('').reduce((a, ch) => ((a << 5) - a + ch.charCodeAt(0)) | 0, 0)).toString(16).toUpperCase()}`;
+    const signed: FreelanceClientContract = {
+      ...existing,
+      status: 'signed',
+      signedAt: nowIso,
+      signerName: signerName.trim() || existing.clientName,
+      signatureHash,
+    };
+    globalState = {
+      ...globalState,
+      freelanceClientContracts: (globalState.freelanceClientContracts || []).map((c) =>
+        c.id === contractId ? signed : c
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertClientContract(signed).catch(() => {});
+    }
+    return signed;
+  };
+
+  const deleteFreelanceContract = (contractId: string) => {
+    globalState = {
+      ...globalState,
+      freelanceClientContracts: (globalState.freelanceClientContracts || []).filter((c) => c.id !== contractId),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteClientContract(contractId, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const upsertTranslationEntry = (input: {
+    id?: string;
+    clientId: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+    documentTitle: string;
+    certificationKind: TranslationCertificationKind;
+    pricingUnit: TranslationPricingUnit;
+    unitCount: number;
+    unitRate: number;
+    currency: CurrencyCode;
+    issuedDate: string;
+    swornSealRef?: string;
+  }): FreelanceTranslationEntry => {
+    const ctx = resolveUnifiedContext('freelance_solo');
+    const existing = input.id
+      ? (globalState.freelanceTranslationEntries || []).find((e) => e.id === input.id)
+      : undefined;
+    const client = globalState.freelanceClients.find((c) => c.id === input.clientId);
+    const quote = computeTranslationQuote({
+      pricingUnit: input.pricingUnit,
+      unitCount: input.unitCount,
+      unitRate: input.unitRate,
+    });
+    const branchEntries = selectCurrentFreelanceTranslationEntriesFromState(globalState);
+    const entry: FreelanceTranslationEntry = {
+      ...getTraceContext(),
+      id: existing?.id || generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      registerNumber: existing?.registerNumber || formatNextSwornRegisterNumber(branchEntries),
+      clientId: input.clientId,
+      clientName: client?.company || client?.name || 'Client',
+      sourceLanguage: input.sourceLanguage,
+      targetLanguage: input.targetLanguage,
+      documentTitle: input.documentTitle,
+      certificationKind: input.certificationKind,
+      pricingUnit: input.pricingUnit,
+      unitCount: input.pricingUnit === 'fixed' ? 1 : Number(input.unitCount || 1),
+      unitRate: Number(input.unitRate || 0),
+      totalAmount: quote.totalAmount,
+      currency: input.currency,
+      issuedDate: input.issuedDate,
+      swornSealRef: input.swornSealRef,
+      invoiceId: existing?.invoiceId,
+      status: existing?.status || (input.certificationKind === 'sworn_official' ? 'certified' : 'logged'),
+      version: existing?.version,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+    };
+    const nextList = existing
+      ? (globalState.freelanceTranslationEntries || []).map((e) => (e.id === entry.id ? entry : e))
+      : [entry, ...(globalState.freelanceTranslationEntries || [])];
+    globalState = { ...globalState, freelanceTranslationEntries: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertTranslationRegister(entry).catch(() => {});
+    }
+    return entry;
+  };
+
+  const deleteTranslationEntry = (entryId: string) => {
+    globalState = {
+      ...globalState,
+      freelanceTranslationEntries: (globalState.freelanceTranslationEntries || []).filter((e) => e.id !== entryId),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteTranslationRegister(entryId, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const billTranslationEntry = (entryId: string): FreelanceInvoice | null => {
+    const entry = (globalState.freelanceTranslationEntries || []).find((e) => e.id === entryId);
+    if (!entry) return null;
+    const client = globalState.freelanceClients.find((c) => c.id === entry.clientId);
+    const invNum = `INV-TR-${new Date().getFullYear()}-${String(globalState.freelanceInvoices.length + 1).padStart(3, '0')}`;
+    const inv = createFreelanceInvoice({
+      clientId: entry.clientId,
+      clientName: entry.clientName,
+      clientCompany: client?.company,
+      clientEmail: client?.email || '',
+      invoiceNumber: invNum,
+      currency: entry.currency,
+      issueDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+      status: 'Sent',
+      items: [
+        {
+          id: `item_tr_${entry.id}`,
+          description: `${entry.registerNumber} — ${entry.documentTitle} (${entry.sourceLanguage} -> ${entry.targetLanguage})`,
+          quantity: entry.unitCount,
+          unitRate: entry.unitRate,
+          total: entry.totalAmount,
+        },
+      ],
+      subtotal: entry.totalAmount,
+      taxPercent: 0,
+      taxAmount: 0,
+      totalAmount: entry.totalAmount,
+    });
+    const updated: FreelanceTranslationEntry = {
+      ...entry,
+      invoiceId: inv.id,
+      status: 'billed',
+    };
+    globalState = {
+      ...globalState,
+      freelanceTranslationEntries: (globalState.freelanceTranslationEntries || []).map((e) =>
+        e.id === entry.id ? updated : e
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertTranslationRegister(updated).catch(() => {});
+    }
+    return inv;
+  };
+
+  const upsertPhotoShoot = (input: {
+    id?: string;
+    clientId: string;
+    shootTitle: string;
+    location?: string;
+    shootDate: string;
+    startTime: string;
+    endTime: string;
+    packageName?: string;
+    packageFee: number;
+    currency: CurrencyCode;
+    galleryUrl?: string;
+    galleryStatus?: PhotoGalleryStatus;
+    deliverablesCount?: number;
+    selectedCount?: number;
+    watermarkEnabled?: boolean;
+  }): FreelancePhotoShoot | null => {
+    const existing = input.id
+      ? (globalState.freelancePhotoShoots || []).find((s) => s.id === input.id)
+      : undefined;
+    const branchShoots = selectCurrentFreelancePhotoShootsFromState(globalState);
+    const nextStatus: PhotoGalleryStatus = input.galleryStatus || existing?.galleryStatus || 'scheduled';
+    if (existing && !canTransitionGalleryStage(existing.galleryStatus, nextStatus)) {
+      showToast({
+        type: 'warning',
+        title: ul('Invalid Gallery Stage', 'Étape galerie invalide', 'مرحلة المعرض غير صالحة'),
+        message: `${existing.galleryStatus} -> ${nextStatus}`,
+      });
+      return null;
+    }
+
+    const overlap = detectPhotoShootOverlap(
+      {
+        id: existing?.id,
+        shootDate: input.shootDate,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        galleryStatus: nextStatus,
+      },
+      branchShoots
+    );
+    if (overlap.hasConflict) {
+      showToast({
+        type: 'error',
+        title: ul('Shoot Conflict', 'Conflit horaire séance', 'تعارض موعد الجلسة'),
+        message:
+          overlap.reason === 'INVALID_WINDOW'
+            ? ul('End time must be after start time.', 'L’heure de fin doit suivre l’heure de début.', 'يجب أن يكون وقت الانتهاء بعد وقت البدء.')
+            : ul(
+                `Overlaps with "${overlap.conflictingShoot?.shootTitle}" (${overlap.conflictingShoot?.startTime}–${overlap.conflictingShoot?.endTime}).`,
+                `Chevauchement avec « ${overlap.conflictingShoot?.shootTitle} » (${overlap.conflictingShoot?.startTime}–${overlap.conflictingShoot?.endTime}).`,
+                `تداخل مع "${overlap.conflictingShoot?.shootTitle}"`
+              ),
+      });
+      return null;
+    }
+
+    const ctx = resolveUnifiedContext('freelance_solo');
+    const client = globalState.freelanceClients.find((c) => c.id === input.clientId);
+    const shoot: FreelancePhotoShoot = {
+      ...getTraceContext(),
+      id: existing?.id || generateClientUuid(),
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      clientId: input.clientId,
+      clientName: client?.company || client?.name || 'Client',
+      shootTitle: input.shootTitle,
+      location: input.location,
+      shootDate: input.shootDate,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      packageName: input.packageName,
+      packageFee: Number(input.packageFee || 0),
+      currency: input.currency,
+      galleryUrl: input.galleryUrl,
+      galleryStatus: nextStatus,
+      deliverablesCount: Number(input.deliverablesCount ?? existing?.deliverablesCount ?? 0),
+      selectedCount: Number(input.selectedCount ?? existing?.selectedCount ?? 0),
+      watermarkEnabled: input.watermarkEnabled ?? existing?.watermarkEnabled ?? nextStatus !== 'final_delivered',
+      invoiceId: existing?.invoiceId,
+      version: existing?.version,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+    };
+    const nextList = existing
+      ? (globalState.freelancePhotoShoots || []).map((s) => (s.id === shoot.id ? shoot : s))
+      : [shoot, ...(globalState.freelancePhotoShoots || [])];
+    globalState = { ...globalState, freelancePhotoShoots: nextList };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertPhotoShoot(shoot).catch(() => {});
+    }
+    return shoot;
+  };
+
+  const deletePhotoShoot = (shootId: string) => {
+    globalState = {
+      ...globalState,
+      freelancePhotoShoots: (globalState.freelancePhotoShoots || []).filter((s) => s.id !== shootId),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.deletePhotoShoot(shootId, globalState.currentUser?.id).catch(() => {});
+    }
+  };
+
+  const billPhotoShoot = (shootId: string): FreelanceInvoice | null => {
+    const shoot = (globalState.freelancePhotoShoots || []).find((s) => s.id === shootId);
+    if (!shoot) return null;
+    const client = globalState.freelanceClients.find((c) => c.id === shoot.clientId);
+    const invNum = `INV-PH-${new Date().getFullYear()}-${String(globalState.freelanceInvoices.length + 1).padStart(3, '0')}`;
+    const inv = createFreelanceInvoice({
+      clientId: shoot.clientId,
+      clientName: shoot.clientName,
+      clientCompany: client?.company,
+      clientEmail: client?.email || '',
+      invoiceNumber: invNum,
+      currency: shoot.currency,
+      issueDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+      status: 'Sent',
+      items: [
+        {
+          id: `item_ph_${shoot.id}`,
+          description: `${shoot.shootTitle}${shoot.packageName ? ` (${shoot.packageName})` : ''} — ${shoot.shootDate}`,
+          quantity: 1,
+          unitRate: shoot.packageFee,
+          total: shoot.packageFee,
+        },
+      ],
+      subtotal: shoot.packageFee,
+      taxPercent: 0,
+      taxAmount: 0,
+      totalAmount: shoot.packageFee,
+    });
+    const updated: FreelancePhotoShoot = { ...shoot, invoiceId: inv.id };
+    globalState = {
+      ...globalState,
+      freelancePhotoShoots: (globalState.freelancePhotoShoots || []).map((s) =>
+        s.id === shoot.id ? updated : s
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertPhotoShoot(updated).catch(() => {});
+    }
+    return inv;
   };
 
   // ==========================================
@@ -16903,6 +18084,11 @@ function createAtriumActions() {
       'freelanceInvoices',
       'freelanceProposals',
       'freelanceExpenses',
+      'freelanceAeConfigs',
+      'freelanceContractTemplates',
+      'freelanceClientContracts',
+      'freelanceTranslationEntries',
+      'freelancePhotoShoots',
     ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_freelance_main';
     const targetAccountId =
@@ -16955,6 +18141,11 @@ function createAtriumActions() {
       freelanceInvoices: freshInvoices,
       freelanceProposals: freshProposals,
       freelanceExpenses: freshExpenses,
+      freelanceAeConfigs: INITIAL_FREELANCE_AE_CONFIGS,
+      freelanceContractTemplates: INITIAL_FREELANCE_CONTRACT_TEMPLATES,
+      freelanceClientContracts: INITIAL_FREELANCE_CLIENT_CONTRACTS,
+      freelanceTranslationEntries: INITIAL_FREELANCE_TRANSLATION_REGISTERS,
+      freelancePhotoShoots: INITIAL_FREELANCE_PHOTO_SHOOTS,
     };
     notify();
 
@@ -16965,6 +18156,11 @@ function createAtriumActions() {
       'freelanceInvoices',
       'freelanceProposals',
       'freelanceExpenses',
+      'freelanceAeConfigs',
+      'freelanceContractTemplates',
+      'freelanceClientContracts',
+      'freelanceTranslationEntries',
+      'freelancePhotoShoots',
     ]);
     registerUndoEntry({
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
@@ -18151,19 +19347,23 @@ function createAtriumActions() {
     return newEnrollment;
   };
 
-  const issueEduCertificate = (certData: Omit<EduCertificate, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'certificateNumber' | 'verificationHash'>) => {
+  const issueEduCertificate = (
+    certData: Omit<EduCertificate, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'certificateNumber' | 'verificationHash' | 'issueDate'> & { issueDate?: string }
+  ) => {
     const before = captureStoreSlices(['eduCertificates']);
     const certNum = `ATRIUM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const hash = '0x' + Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const nowIso = new Date().toISOString();
     const newCert: EduCertificate = {
       ...getTraceContext(),
       ...certData,
+      issueDate: certData.issueDate || nowIso.slice(0, 10),
       id: `cert_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
       certificateNumber: certNum,
       verificationHash: hash,
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
     };
     globalState = {
       ...globalState,
@@ -18340,8 +19540,8 @@ function createAtriumActions() {
       fromCohortName: sourceCohort.name,
       toCohortId: targetCohort.id,
       toCohortName: targetCohort.name,
-      transferredAt: new Date().toISOString(),
-      proratedCreditDzd: proration.carriedCreditDzd,
+      transferDate,
+      carriedCreditCentimes: proration.carriedCreditCentimes,
       reason: options?.reason,
     };
 
@@ -18445,7 +19645,7 @@ function createAtriumActions() {
     const student = (globalState.eduStudents || []).find((s) => s.id === en.studentId);
     const partyRes = ensurePartyForEntity({
       sourceVertical: 'education_cohort',
-      entityType: 'edu_student',
+      entityType: 'student',
       entityId: en.studentId,
       displayName: student?.guardianName || en.studentName,
       phone: student?.guardianPhone || student?.phone,
@@ -18540,7 +19740,7 @@ function createAtriumActions() {
       const student = (globalState.eduStudents || []).find((s) => s.id === en.studentId);
       const partyRes = ensurePartyForEntity({
         sourceVertical: 'education_cohort',
-        entityType: 'edu_student',
+        entityType: 'student',
         entityId: en.studentId,
         displayName: student?.guardianName || en.studentName,
         phone: student?.guardianPhone || student?.phone,
@@ -18692,10 +19892,10 @@ function createAtriumActions() {
   const sendEduParentCommunication = (input: {
     studentId: string;
     channel: 'portal' | 'sms' | 'whatsapp' | 'email';
-    category?: 'announcement' | 'attendance' | 'dunning' | 'report_card' | 'general';
+    category?: 'announcement' | 'attendance' | 'dunning' | 'grades' | 'general';
     subject: string;
     body: string;
-    direction?: 'outbound' | 'inbound_parent';
+    direction?: 'outbound' | 'portal_announcement' | 'reply';
   }): EduParentCommunication | null => {
     const student = (globalState.eduStudents || []).find((s) => s.id === input.studentId);
     if (!student) return null;
@@ -18705,7 +19905,7 @@ function createAtriumActions() {
 
     const partyRes = ensurePartyForEntity({
       sourceVertical: 'education_cohort',
-      entityType: 'edu_student',
+      entityType: 'student',
       entityId: student.id,
       displayName: student.guardianName || student.fullName,
       phone: student.guardianPhone || student.phone,
@@ -19084,7 +20284,7 @@ function createAtriumActions() {
   };
 
   const addEduDrivingLog = (
-    input: Omit<EduDrivingLog, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'createdAt' | 'updatedAt'>
+    input: Omit<EduDrivingLog, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'tenantId' | 'createdAt' | 'updatedAt'>
   ): EduDrivingLog | null => {
     const branchLogs = (globalState.eduDrivingLogs || []).filter(
       (l) => (l.branchId || l.facilityId) === globalState.currentBranchId
@@ -19153,7 +20353,7 @@ function createAtriumActions() {
   };
 
   const upsertEduK12Service = (
-    input: Omit<EduK12Service, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'createdAt' | 'updatedAt'> & { id?: string }
+    input: Omit<EduK12Service, 'id' | 'accountId' | 'businessId' | 'branchId' | 'facilityId' | 'tenantId' | 'createdAt' | 'updatedAt'> & { id?: string }
   ): EduK12Service => {
     const before = captureStoreSlices(['eduK12Services']);
     const trace = getTraceContext();
@@ -21511,6 +22711,11 @@ function createAtriumActions() {
         freelanceInvoices: INITIAL_FREELANCE_INVOICES,
         freelanceProposals: INITIAL_FREELANCE_PROPOSALS,
         freelanceExpenses: INITIAL_FREELANCE_EXPENSES,
+        freelanceAeConfigs: INITIAL_FREELANCE_AE_CONFIGS,
+        freelanceContractTemplates: INITIAL_FREELANCE_CONTRACT_TEMPLATES,
+        freelanceClientContracts: INITIAL_FREELANCE_CLIENT_CONTRACTS,
+        freelanceTranslationEntries: INITIAL_FREELANCE_TRANSLATION_REGISTERS,
+        freelancePhotoShoots: INITIAL_FREELANCE_PHOTO_SHOOTS,
       };
     } else if (targetCategory === 'pos_inventory') {
       updates = {
@@ -30782,14 +31987,31 @@ function createAtriumActions() {
     deleteTimeLog,
     billUnbilledHours,
     createFreelanceInvoice,
+    updateFreelanceInvoice,
     updateInvoiceStatus,
     deleteFreelanceInvoice,
+    generateRecurringFreelanceInvoice,
+    sendFreelanceInvoiceReminder,
+    createFreelanceUnifiedInvoice,
+    recordFreelanceInvoicePayment,
     createFreelanceProposal,
     updateFreelanceProposal,
     deleteFreelanceProposal,
     convertProposalToProject,
     addFreelanceExpense,
     deleteFreelanceExpense,
+    attachExpenseReceipt,
+    upsertFreelanceAeConfig,
+    markFreelanceAeConfigVerified,
+    createFreelanceContract,
+    signFreelanceContract,
+    deleteFreelanceContract,
+    upsertTranslationEntry,
+    deleteTranslationEntry,
+    billTranslationEntry,
+    upsertPhotoShoot,
+    deletePhotoShoot,
+    billPhotoShoot,
     createRentalBooking,
     updateRentalBooking,
     deleteRentalBooking,
@@ -31137,6 +32359,11 @@ export function useAtriumStore() {
   const currentFreelanceInvoices = selectCurrentFreelanceInvoicesFromState(state);
   const currentFreelanceProposals = selectCurrentFreelanceProposalsFromState(state);
   const currentFreelanceExpenses = selectCurrentFreelanceExpensesFromState(state);
+  const currentFreelanceAeConfigs = selectCurrentFreelanceAeConfigsFromState(state);
+  const currentFreelanceContractTemplates = selectCurrentFreelanceContractTemplatesFromState(state);
+  const currentFreelanceClientContracts = selectCurrentFreelanceClientContractsFromState(state);
+  const currentFreelanceTranslationEntries = selectCurrentFreelanceTranslationEntriesFromState(state);
+  const currentFreelancePhotoShoots = selectCurrentFreelancePhotoShootsFromState(state);
   const currentRentableUnits = selectCurrentRentableUnitsFromState(state);
   const currentRentalBookings = selectCurrentRentalBookingsFromState(state);
   const currentRentalRenters = selectCurrentRentalRentersFromState(state);
@@ -31254,6 +32481,11 @@ export function useAtriumStore() {
     freelanceInvoices: currentFreelanceInvoices,
     freelanceProposals: currentFreelanceProposals,
     freelanceExpenses: currentFreelanceExpenses,
+    freelanceAeConfigs: currentFreelanceAeConfigs,
+    freelanceContractTemplates: currentFreelanceContractTemplates,
+    freelanceClientContracts: currentFreelanceClientContracts,
+    freelanceTranslationEntries: currentFreelanceTranslationEntries,
+    freelancePhotoShoots: currentFreelancePhotoShoots,
     activeTimer: state.activeTimer,
     // Auth State
     currentUser: state.currentUser,

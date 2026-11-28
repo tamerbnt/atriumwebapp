@@ -20,6 +20,11 @@ import {
   FreelanceProposal,
   FreelanceExpense,
   ActiveTimerState,
+  FreelanceAutoEntrepreneurConfig,
+  FreelanceContractTemplate,
+  FreelanceClientContract,
+  FreelanceTranslationEntry,
+  FreelancePhotoShoot,
   ParkedOrder,
   StockMovement,
   ReceiptConfig,
@@ -867,6 +872,11 @@ export const INITIAL_TIME_LOGS: TimeLogEntry[] = [];
 export const INITIAL_FREELANCE_INVOICES: FreelanceInvoice[] = [];
 export const INITIAL_FREELANCE_PROPOSALS: FreelanceProposal[] = [];
 export const INITIAL_FREELANCE_EXPENSES: FreelanceExpense[] = [];
+export const INITIAL_FREELANCE_AE_CONFIGS: FreelanceAutoEntrepreneurConfig[] = [];
+export const INITIAL_FREELANCE_CONTRACT_TEMPLATES: FreelanceContractTemplate[] = [];
+export const INITIAL_FREELANCE_CLIENT_CONTRACTS: FreelanceClientContract[] = [];
+export const INITIAL_FREELANCE_TRANSLATION_REGISTERS: FreelanceTranslationEntry[] = [];
+export const INITIAL_FREELANCE_PHOTO_SHOOTS: FreelancePhotoShoot[] = [];
 export const INITIAL_ACTIVE_TIMER: ActiveTimerState = {
   isRunning: false,
   isPaused: false,
@@ -878,11 +888,14 @@ export const INITIAL_ACTIVE_TIMER: ActiveTimerState = {
   deliverableTitle: undefined,
   taskDescription: '',
   elapsedSeconds: 0,
+  accumulatedSeconds: 0,
   isBillable: true,
   isPomodoro: false,
   pomodoroRemainingSeconds: 1500,
   pomodoroMode: 'work',
   startedAt: null,
+  lastHeartbeatAt: null,
+  sourceDeviceId: null,
 };
 
 export const getVenueDateStr = (dayOffset: number, timeStr = '10:00:00Z'): string => {

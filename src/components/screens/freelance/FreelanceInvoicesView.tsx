@@ -10,6 +10,14 @@ import {
   Trash2,
   AlertTriangle,
   Eye,
+  Edit2,
+  RefreshCw,
+  BellRing,
+  Link2,
+  CreditCard,
+  Share2,
+  Lock,
+  Repeat,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -25,8 +33,22 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import {
+  DEFAULT_FREELANCE_FX_RATES_TO_DZD,
+  computeInvoiceDzdEquivalent,
+  computeNextRecurrenceDate,
+  resolveFreelanceFxRate,
+  validateInvoiceCurrencyUpdate,
+} from '../../../utils/freelanceDepth';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
-import { FreelanceInvoice, CurrencyCode } from '../../../types/index';
+import { ShareArtifactModal } from '../../modals/ShareArtifactModal';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
+import {
+  FreelanceInvoice,
+  FreelanceRecurrenceInterval,
+  InvoiceStatus,
+  CurrencyCode,
+} from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LabelTextarea } from '../../ui/LabelTextarea';
@@ -93,9 +115,14 @@ export const FreelanceInvoicesView: React.FC = () => {
     useDashboardShellState();
   const {
     createFreelanceInvoice,
+    updateFreelanceInvoice,
     updateInvoiceStatus,
     deleteFreelanceInvoice,
     billUnbilledHours,
+    generateRecurringFreelanceInvoice,
+    sendFreelanceInvoiceReminder,
+    createFreelanceUnifiedInvoice,
+    recordFreelanceInvoicePayment,
   } = useAtriumActions();
 
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(() => new Set<string>());
@@ -117,10 +144,18 @@ export const FreelanceInvoicesView: React.FC = () => {
   const [inspectorTab, setInspectorTab] = useState<string>('summary');
   const [previewInvoice, setPreviewInvoice] = useState<FreelanceInvoice | null>(null);
   const [invoiceToDelete, setInvoiceToDelete] = useState<FreelanceInvoice | null>(null);
+  const [invoiceToEdit, setInvoiceToEdit] = useState<FreelanceInvoice | null>(null);
+  const [invoiceForPayment, setInvoiceForPayment] = useState<FreelanceInvoice | null>(null);
+  const [invoiceToShare, setInvoiceToShare] = useState<FreelanceInvoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [targetClientId, setTargetClientId] = useState(freelanceClients[0]?.id || '');
   const [currency, setCurrency] = useState<CurrencyCode>('EUR');
+  const [fxRateToDzd, setFxRateToDzd] = useState<number>(DEFAULT_FREELANCE_FX_RATES_TO_DZD.EUR);
+  const [initialStatus, setInitialStatus] = useState<'Draft' | 'Sent'>('Sent');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceInterval, setRecurrenceInterval] =
+    useState<FreelanceRecurrenceInterval>('monthly');
   const [dueDate, setDueDate] = useState(
     new Date(Date.now() + 1296000000).toISOString().split('T')[0]
   );
@@ -133,6 +168,24 @@ export const FreelanceInvoicesView: React.FC = () => {
       unitRate: 1500,
     },
   ]);
+
+  const [editDueDate, setEditDueDate] = useState('');
+  const [editCurrency, setEditCurrency] = useState<CurrencyCode>('EUR');
+  const [editFxRateToDzd, setEditFxRateToDzd] = useState<number>(DEFAULT_FREELANCE_FX_RATES_TO_DZD.EUR);
+  const [editTaxPercent, setEditTaxPercent] = useState(0);
+  const [editNotes, setEditNotes] = useState('');
+  const [editStatus, setEditStatus] = useState<InvoiceStatus>('Draft');
+  const [editIsRecurring, setEditIsRecurring] = useState(false);
+  const [editRecurrenceInterval, setEditRecurrenceInterval] =
+    useState<FreelanceRecurrenceInterval>('monthly');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const [payAmount, setPayAmount] = useState<number>(0);
+  const [payMethod, setPayMethod] = useState<'bank_transfer' | 'ccp' | 'cash' | 'baridimob'>(
+    'bank_transfer'
+  );
+  const [payDate, setPayDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [payNotes, setPayNotes] = useState<string>('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -244,6 +297,88 @@ export const FreelanceInvoicesView: React.FC = () => {
     setItems(updated);
   };
 
+  const openEditModal = useCallback((inv: FreelanceInvoice) => {
+    setInvoiceToEdit(inv);
+    setEditDueDate(inv.dueDate);
+    setEditCurrency(inv.currency);
+    setEditFxRateToDzd(resolveFreelanceFxRate(inv.currency, inv.fxRateToDzd));
+    setEditTaxPercent(inv.taxPercent);
+    setEditNotes(inv.notes || '');
+    setEditStatus(inv.status);
+    setEditIsRecurring(Boolean(inv.isRecurring));
+    setEditRecurrenceInterval(inv.recurrenceInterval || 'monthly');
+    setEditError(null);
+  }, []);
+
+  const openPaymentModal = useCallback((inv: FreelanceInvoice) => {
+    setInvoiceForPayment(inv);
+    setPayAmount(inv.totalAmount);
+    setPayMethod(inv.currency === 'DZD' ? 'ccp' : 'bank_transfer');
+    setPayDate(new Date().toISOString().split('T')[0]);
+    setPayNotes('');
+  }, []);
+
+  const handleEditInvoiceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invoiceToEdit) return;
+    const fxCheck = validateInvoiceCurrencyUpdate(
+      invoiceToEdit,
+      editCurrency,
+      editCurrency === 'DZD' ? 1 : Number(editFxRateToDzd)
+    );
+    if (!fxCheck.allowed) {
+      setEditError(
+        fxCheck.code === 'NON_DRAFT_INVOICE_CURRENCY_LOCKED'
+          ? t('free_depth_inv_fx_locked_msg', language)
+          : t('free_depth_inv_fx_rate', language)
+      );
+      return;
+    }
+    const taxAmt = (invoiceToEdit.subtotal * Number(editTaxPercent)) / 100;
+    const totalAmt = invoiceToEdit.subtotal + taxAmt;
+    updateFreelanceInvoice(invoiceToEdit.id, {
+      dueDate: editDueDate,
+      currency: editCurrency,
+      fxRateToDzd: editCurrency === 'DZD' ? 1 : Number(editFxRateToDzd),
+      taxPercent: Number(editTaxPercent),
+      taxAmount: taxAmt,
+      totalAmount: totalAmt,
+      notes: editNotes,
+      status: editStatus,
+      isRecurring: editIsRecurring,
+      recurrenceInterval: editIsRecurring ? editRecurrenceInterval : undefined,
+      nextRecurrenceDate: editIsRecurring
+        ? computeNextRecurrenceDate(invoiceToEdit.issueDate, editRecurrenceInterval)
+        : undefined,
+    });
+    setInvoiceToEdit(null);
+  };
+
+  const handleRecordPaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invoiceForPayment) return;
+    recordFreelanceInvoicePayment(invoiceForPayment.id, {
+      amount: Number(payAmount) || invoiceForPayment.totalAmount,
+      method: payMethod,
+      paymentDate: payDate,
+      notes: payNotes || undefined,
+    });
+    setInvoiceForPayment(null);
+  };
+
+  const createSubtotalPreview = useMemo(
+    () =>
+      items.reduce(
+        (acc, it) => acc + (Number(it.quantity) || 0) * (Number(it.unitRate) || 0),
+        0
+      ),
+    [items]
+  );
+  const createTotalPreview = useMemo(
+    () => createSubtotalPreview + (createSubtotalPreview * Number(taxPercent || 0)) / 100,
+    [createSubtotalPreview, taxPercent]
+  );
+
   const handleCreateInvoiceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const client = freelanceClients.find((c) => c.id === targetClientId);
@@ -258,6 +393,8 @@ export const FreelanceInvoicesView: React.FC = () => {
     const subtotal = formattedItems.reduce((acc, it) => acc + it.total, 0);
     const taxAmt = (subtotal * Number(taxPercent)) / 100;
     const totalAmt = subtotal + taxAmt;
+    const issueDate = new Date().toISOString().split('T')[0];
+    const resolvedFx = resolveFreelanceFxRate(currency, fxRateToDzd);
     const created = createFreelanceInvoice({
       clientId: client.id,
       clientName: client.name,
@@ -267,13 +404,19 @@ export const FreelanceInvoicesView: React.FC = () => {
         3,
         '0'
       )}`,
-      issueDate: new Date().toISOString().split('T')[0],
+      issueDate,
       dueDate,
-      status: 'Sent',
+      status: initialStatus,
       currency,
+      fxRateToDzd: resolvedFx,
+      isRecurring,
+      recurrenceInterval: isRecurring ? recurrenceInterval : undefined,
+      nextRecurrenceDate: isRecurring
+        ? computeNextRecurrenceDate(issueDate, recurrenceInterval)
+        : undefined,
       taxPercent: Number(taxPercent),
-      subtotal,
       taxAmount: taxAmt,
+      subtotal,
       totalAmount: totalAmt,
       notes,
       items: formattedItems,
@@ -417,6 +560,12 @@ export const FreelanceInvoicesView: React.FC = () => {
         },
       },
       {
+        id: 'edit',
+        label: t('free_depth_inv_edit_btn', language),
+        icon: <Edit2 className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(inv),
+      },
+      {
         id: 'print',
         label: t('free_inv_doc_print', language),
         icon: <Printer className="w-3.5 h-3.5" />,
@@ -425,6 +574,12 @@ export const FreelanceInvoicesView: React.FC = () => {
       ...(inv.status !== 'Paid'
         ? [
             {
+              id: 'record_payment',
+              label: t('free_depth_inv_record_payment', language),
+              icon: <CreditCard className="w-3.5 h-3.5" />,
+              onClick: () => openPaymentModal(inv),
+            },
+            {
               id: 'mark_paid',
               label: t('free_inv_doc_mark_paid_btn', language),
               icon: <CheckCircle className="w-3.5 h-3.5" />,
@@ -432,6 +587,32 @@ export const FreelanceInvoicesView: React.FC = () => {
             },
           ]
         : []),
+      ...(inv.isRecurring
+        ? [
+            {
+              id: 'gen_recurring',
+              label: t('free_depth_inv_gen_recurring', language),
+              icon: <RefreshCw className="w-3.5 h-3.5" />,
+              onClick: () => generateRecurringFreelanceInvoice(inv.id),
+            },
+          ]
+        : []),
+      ...(inv.status === 'Overdue' || inv.status === 'Sent'
+        ? [
+            {
+              id: 'remind',
+              label: t('free_depth_inv_send_reminder', language),
+              icon: <BellRing className="w-3.5 h-3.5" />,
+              onClick: () => sendFreelanceInvoiceReminder(inv.id),
+            },
+          ]
+        : []),
+      {
+        id: 'share',
+        label: t('free_depth_inv_share_btn', language),
+        icon: <Share2 className="w-3.5 h-3.5" />,
+        onClick: () => setInvoiceToShare(inv),
+      },
       {
         id: 'del',
         label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
@@ -439,7 +620,17 @@ export const FreelanceInvoicesView: React.FC = () => {
         onClick: () => setInvoiceToDelete(inv),
       },
     ],
-    [isAr, isFr, language, t, updateInvoiceStatus]
+    [
+      isAr,
+      isFr,
+      language,
+      t,
+      updateInvoiceStatus,
+      openEditModal,
+      openPaymentModal,
+      generateRecurringFreelanceInvoice,
+      sendFreelanceInvoiceReminder,
+    ]
   );
 
   const invoiceColumns: ColumnDefinition<FreelanceInvoice>[] = useMemo(
@@ -460,8 +651,25 @@ export const FreelanceInvoicesView: React.FC = () => {
               <FileText size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-black dark:text-white tabular-nums hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
-                {inv.invoiceNumber}
+              <div className="font-semibold text-black dark:text-white tabular-nums hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors flex items-center gap-1.5">
+                <span>{inv.invoiceNumber}</span>
+                {inv.isRecurring && (
+                  <span
+                    className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300"
+                    title={inv.recurrenceInterval}
+                  >
+                    <Repeat size={10} />
+                    <span>{inv.recurrenceInterval}</span>
+                  </span>
+                )}
+                {inv.unifiedDocumentId && (
+                  <span
+                    className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300"
+                    title="SCF 6.1"
+                  >
+                    <Link2 size={10} />
+                  </span>
+                )}
               </div>
               <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-2">
                 <span>{inv.clientName}</span>
@@ -522,9 +730,16 @@ export const FreelanceInvoicesView: React.FC = () => {
         minWidth: '130px',
         sortable: true,
         renderCell: (inv) => (
-          <span className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-            {formatCurrencyAmount(inv.totalAmount, inv.currency)}
-          </span>
+          <div className="tabular-nums">
+            <span className="font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+              {formatCurrencyAmount(inv.totalAmount, inv.currency)}
+            </span>
+            {inv.currency !== 'DZD' && (
+              <span className="t-small text-black/55 dark:text-white/55">
+                ≈ {computeInvoiceDzdEquivalent(inv.totalAmount, inv.currency, inv.fxRateToDzd).toLocaleString()} DZD
+              </span>
+            )}
+          </div>
         ),
       },
       {
@@ -1205,12 +1420,20 @@ export const FreelanceInvoicesView: React.FC = () => {
                 </InspectorSection>
                 {inv.status !== 'Paid' && (
                   <InspectorSection index={1}>
-                    <InspectorWideButton
-                      label={t('free_inv_doc_mark_paid_btn', language)}
-                      icon={<CheckCircle size={14} />}
-                      tone="accent"
-                      onClick={() => updateInvoiceStatus(inv.id, 'Paid')}
-                    />
+                    <div className="space-y-2">
+                      <InspectorWideButton
+                        label={t('free_depth_inv_record_payment', language)}
+                        icon={<CreditCard size={14} />}
+                        tone="accent"
+                        onClick={() => openPaymentModal(inv)}
+                      />
+                      <InspectorWideButton
+                        label={t('free_inv_doc_mark_paid_btn', language)}
+                        icon={<CheckCircle size={14} />}
+                        tone="neutral"
+                        onClick={() => updateInvoiceStatus(inv.id, 'Paid')}
+                      />
+                    </div>
                   </InspectorSection>
                 )}
               </>
@@ -1228,8 +1451,26 @@ export const FreelanceInvoicesView: React.FC = () => {
                       primary: true,
                       onClick: () => setPreviewInvoice(inv),
                     },
+                    {
+                      id: 'edit',
+                      label: t('free_depth_inv_edit_btn', language),
+                      icon: <Edit2 size={16} />,
+                      onClick: () => openEditModal(inv),
+                    },
+                    {
+                      id: 'share',
+                      label: t('free_depth_inv_share_btn', language),
+                      icon: <Share2 size={16} />,
+                      onClick: () => setInvoiceToShare(inv),
+                    },
                     ...(inv.status !== 'Paid'
                       ? [
+                          {
+                            id: 'record_pay',
+                            label: t('free_depth_inv_record_payment', language),
+                            icon: <CreditCard size={16} />,
+                            onClick: () => openPaymentModal(inv),
+                          },
                           {
                             id: 'paid',
                             label: t('free_inv_doc_mark_paid_btn', language),
@@ -1248,6 +1489,36 @@ export const FreelanceInvoicesView: React.FC = () => {
                           },
                         ]
                       : []),
+                    ...(inv.isRecurring
+                      ? [
+                          {
+                            id: 'gen_rec',
+                            label: t('free_depth_inv_gen_recurring', language),
+                            icon: <RefreshCw size={16} />,
+                            onClick: () => generateRecurringFreelanceInvoice(inv.id),
+                          },
+                        ]
+                      : []),
+                    ...(inv.status === 'Overdue' || inv.status === 'Sent'
+                      ? [
+                          {
+                            id: 'remind',
+                            label: t('free_depth_inv_send_reminder', language),
+                            icon: <BellRing size={16} />,
+                            onClick: () => sendFreelanceInvoiceReminder(inv.id),
+                          },
+                        ]
+                      : []),
+                    ...(!inv.unifiedDocumentId
+                      ? [
+                          {
+                            id: 'sync_61',
+                            label: t('free_depth_inv_sync_unified', language),
+                            icon: <Link2 size={16} />,
+                            onClick: () => createFreelanceUnifiedInvoice(inv.id),
+                          },
+                        ]
+                      : []),
                   ]}
                 />
               </InspectorSection>
@@ -1255,7 +1526,11 @@ export const FreelanceInvoicesView: React.FC = () => {
                 <InspectorBigStat
                   value={formatCurrencyAmount(inv.totalAmount, inv.currency)}
                   tone={inv.status === 'Paid' ? 'ok' : inv.status === 'Overdue' ? 'danger' : 'accent'}
-                  caption={`${t('free_inv_table_due', language)}: ${inv.dueDate}`}
+                  caption={
+                    inv.currency !== 'DZD'
+                      ? `≈ ${computeInvoiceDzdEquivalent(inv.totalAmount, inv.currency, inv.fxRateToDzd).toLocaleString()} DZD · ${t('free_inv_table_due', language)}: ${inv.dueDate}`
+                      : `${t('free_inv_table_due', language)}: ${inv.dueDate}`
+                  }
                 />
               </InspectorSection>
               <InspectorSection
@@ -1277,6 +1552,27 @@ export const FreelanceInvoicesView: React.FC = () => {
                     value={inv.dueDate}
                     mono
                   />
+                  {inv.currency !== 'DZD' && (
+                    <InspectorKeyValue
+                      label={t('free_depth_inv_fx_rate', language)}
+                      value={`1 ${inv.currency} = ${resolveFreelanceFxRate(inv.currency, inv.fxRateToDzd)} DZD`}
+                      mono
+                    />
+                  )}
+                  {inv.isRecurring && (
+                    <InspectorKeyValue
+                      label={t('free_depth_inv_recurring', language)}
+                      value={`${inv.recurrenceInterval || 'monthly'}${inv.nextRecurrenceDate ? ` (${inv.nextRecurrenceDate})` : ''}`}
+                      mono
+                    />
+                  )}
+                  {inv.lastRemindedAt && (
+                    <InspectorKeyValue
+                      label={t('free_depth_inv_last_reminded', language)}
+                      value={inv.lastRemindedAt.slice(0, 10)}
+                      mono
+                    />
+                  )}
                   <InspectorKeyValue
                     label={isAr ? 'الضريبة' : isFr ? 'TVA' : 'Tax'}
                     value={`${inv.taxPercent}% (${formatCurrencyAmount(inv.taxAmount, inv.currency)})`}
@@ -1335,7 +1631,10 @@ export const FreelanceInvoicesView: React.FC = () => {
                   onChange={(clientId) => {
                     setTargetClientId(clientId);
                     const cl = freelanceClients.find((c) => c.id === clientId);
-                    if (cl) setCurrency(cl.currency);
+                    if (cl) {
+                      setCurrency(cl.currency);
+                      setFxRateToDzd(DEFAULT_FREELANCE_FX_RATES_TO_DZD[cl.currency]);
+                    }
                   }}
                   options={freelanceClients.map((c) => ({
                     value: c.id,
@@ -1355,7 +1654,11 @@ export const FreelanceInvoicesView: React.FC = () => {
                   field="InvoiceCurrency"
                   label={t('free_clients_currency', language)}
                   value={currency}
-                  onChange={(val) => setCurrency(val as CurrencyCode)}
+                  onChange={(val) => {
+                    const nextCur = val as CurrencyCode;
+                    setCurrency(nextCur);
+                    setFxRateToDzd(DEFAULT_FREELANCE_FX_RATES_TO_DZD[nextCur]);
+                  }}
                   options={[
                     { value: 'DZD', label: 'DZD' },
                     { value: 'EUR', label: 'EUR' },
@@ -1367,7 +1670,20 @@ export const FreelanceInvoicesView: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelSelect
+                field="InitialStatus"
+                label={t('free_depth_inv_status_initial', language)}
+                value={initialStatus}
+                onChange={(val) => setInitialStatus(val as 'Draft' | 'Sent')}
+                options={[
+                  { value: 'Draft', label: t('free_invoice_status_draft', language) },
+                  { value: 'Sent', label: t('free_invoice_status_sent', language) },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
               <LabelInput
                 field="DueDate"
                 label={`${t('free_invoice_due', language)} *`}
@@ -1391,6 +1707,60 @@ export const FreelanceInvoicesView: React.FC = () => {
                 height={40}
                 corner={12}
               />
+            </div>
+            {currency !== 'DZD' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E]">
+                <LabelInput
+                  field="FxRateToDzd"
+                  label={`${t('free_depth_inv_fx_rate', language)} (1 ${currency})`}
+                  type="number"
+                  min={1}
+                  value={String(fxRateToDzd)}
+                  onChange={(val) => setFxRateToDzd(Number(val) || 1)}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <div className="flex flex-col justify-center">
+                  <span className="t-small text-black/55 dark:text-white/55">
+                    {t('free_depth_inv_dzd_equiv', language)}
+                  </span>
+                  <span className="t-card font-semibold tabular-nums text-black dark:text-white">
+                    {computeInvoiceDzdEquivalent(createTotalPreview, currency, fxRateToDzd).toLocaleString()} DZD
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E]">
+              <div className="flex items-center gap-3">
+                <LiveSwitch
+                  checked={isRecurring}
+                  onCheckedChange={setIsRecurring}
+                  aria-label={t('free_depth_inv_recurring', language)}
+                />
+                <span className="font-medium text-black/80 dark:text-white/85">
+                  {t('free_depth_inv_recurring', language)}
+                </span>
+              </div>
+              {isRecurring && (
+                <div className="w-44">
+                  <LabelSelect
+                    field="RecurrenceInterval"
+                    label={t('free_depth_inv_recurrence_interval', language)}
+                    value={recurrenceInterval}
+                    onChange={(val) => setRecurrenceInterval(val as FreelanceRecurrenceInterval)}
+                    options={[
+                      { value: 'weekly', label: t('free_depth_inv_int_weekly', language) },
+                      { value: 'monthly', label: t('free_depth_inv_int_monthly', language) },
+                      { value: 'quarterly', label: t('free_depth_inv_int_quarterly', language) },
+                      { value: 'yearly', label: t('free_depth_inv_int_annual', language) },
+                    ]}
+                    width="100%"
+                    height={36}
+                    corner={10}
+                  />
+                </div>
+              )}
             </div>
             <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
               <div className="flex items-center justify-between">
@@ -1551,6 +1921,326 @@ export const FreelanceInvoicesView: React.FC = () => {
             setPreviewInvoice({ ...previewInvoice, status: 'Paid' });
           }
         }}
+      />
+
+      {/* Edit Invoice Modal (Currency/FX locked once non-Draft) */}
+      <KineticModalShell
+        isOpen={Boolean(invoiceToEdit)}
+        onClose={() => setInvoiceToEdit(null)}
+        maxWidthClass="max-w-lg"
+        zIndexClass="z-[60]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_inv_edit_btn', language)}
+      >
+        {invoiceToEdit && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_depth_inv_edit_btn', language)} · {invoiceToEdit.invoiceNumber}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setInvoiceToEdit(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {invoiceToEdit.status !== 'Draft' && (
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 t-small">
+                <Lock size={15} className="shrink-0 mt-0.5" />
+                <span>{t('free_depth_inv_fx_locked_msg', language)}</span>
+              </div>
+            )}
+
+            {editError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 t-small font-medium">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleEditInvoiceSubmit} className="space-y-4 t-cap">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelSelect
+                  field="EditInvoiceCurrency"
+                  label={t('free_clients_currency', language)}
+                  value={editCurrency}
+                  disabled={invoiceToEdit.status !== 'Draft'}
+                  onChange={(val) => {
+                    const c = val as CurrencyCode;
+                    setEditCurrency(c);
+                    setEditFxRateToDzd(DEFAULT_FREELANCE_FX_RATES_TO_DZD[c]);
+                  }}
+                  options={[
+                    { value: 'DZD', label: 'DZD' },
+                    { value: 'EUR', label: 'EUR' },
+                    { value: 'USD', label: 'USD' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="EditFxRate"
+                  label={t('free_depth_inv_fx_rate', language)}
+                  type="number"
+                  min={1}
+                  disabled={invoiceToEdit.status !== 'Draft' || editCurrency === 'DZD'}
+                  value={String(editCurrency === 'DZD' ? 1 : editFxRateToDzd)}
+                  onChange={(v) => setEditFxRateToDzd(Number(v) || 1)}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <LabelSelect
+                  field="EditStatus"
+                  label={t('free_inv_table_status', language)}
+                  value={editStatus}
+                  onChange={(v) => setEditStatus(v as InvoiceStatus)}
+                  options={[
+                    { value: 'Draft', label: t('free_invoice_status_draft', language) },
+                    { value: 'Sent', label: t('free_invoice_status_sent', language) },
+                    { value: 'Overdue', label: t('free_invoice_status_overdue', language) },
+                    { value: 'Paid', label: t('free_invoice_status_paid', language) },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="EditDueDate"
+                  label={t('free_invoice_due', language)}
+                  type="date"
+                  value={editDueDate}
+                  onChange={setEditDueDate}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="EditTaxPercent"
+                  label={t('free_inv_doc_tax', language)}
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={String(editTaxPercent)}
+                  onChange={(v) => setEditTaxPercent(Number(v) || 0)}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E]">
+                <div className="flex items-center gap-3">
+                  <LiveSwitch
+                    checked={editIsRecurring}
+                    onCheckedChange={setEditIsRecurring}
+                    aria-label={t('free_depth_inv_recurring', language)}
+                  />
+                  <span className="font-medium text-black/80 dark:text-white/85">
+                    {t('free_depth_inv_recurring', language)}
+                  </span>
+                </div>
+                {editIsRecurring && (
+                  <div className="w-44">
+                    <LabelSelect
+                      field="EditRecurrenceInterval"
+                      label={t('free_depth_inv_recurrence_interval', language)}
+                      value={editRecurrenceInterval}
+                      onChange={(val) => setEditRecurrenceInterval(val as FreelanceRecurrenceInterval)}
+                      options={[
+                        { value: 'weekly', label: t('free_depth_inv_int_weekly', language) },
+                        { value: 'monthly', label: t('free_depth_inv_int_monthly', language) },
+                        { value: 'quarterly', label: t('free_depth_inv_int_quarterly', language) },
+                        { value: 'annual', label: t('free_depth_inv_int_annual', language) },
+                      ]}
+                      width="100%"
+                      height={36}
+                      corner={10}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <LabelTextarea
+                field="EditNotes"
+                label={t('free_inv_notes_terms', language)}
+                rows={2}
+                value={editNotes}
+                onChange={setEditNotes}
+                width="100%"
+                corner={12}
+              />
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button type="button" tone="soft" size={40} onClick={() => setInvoiceToEdit(null)}>
+                  {t('free_clients_cancel', language)}
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
+                  {t('common_save', language)}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
+      {/* Record Payment Modal (Unified 6.2) */}
+      <KineticModalShell
+        isOpen={Boolean(invoiceForPayment)}
+        onClose={() => setInvoiceForPayment(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-[65]"
+        scrimClassName="bg-black/60"
+        ariaLabel={t('free_depth_inv_record_payment', language)}
+      >
+        {invoiceForPayment && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {t('free_depth_inv_record_payment', language)} · {invoiceForPayment.invoiceNumber}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setInvoiceForPayment(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 t-cap">
+              <LabelInput
+                field="PayAmount"
+                label={`${t('free_depth_inv_payment_amount', language)} (${invoiceForPayment.currency})`}
+                type="number"
+                min={1}
+                required
+                value={String(payAmount)}
+                onChange={(v) => setPayAmount(Number(v) || 0)}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              {invoiceForPayment.currency !== 'DZD' && (
+                <div className="p-2.5 rounded-xl bg-[#F5F1EC] dark:bg-[#22201E] t-small text-black/70 dark:text-white/75 tabular-nums">
+                  {t('free_depth_inv_dzd_equiv', language)}:{' '}
+                  <strong>
+                    {computeInvoiceDzdEquivalent(
+                      payAmount,
+                      invoiceForPayment.currency,
+                      invoiceForPayment.fxRateToDzd
+                    ).toLocaleString()}{' '}
+                    DZD
+                  </strong>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelSelect
+                  field="PayMethod"
+                  label={t('free_depth_inv_payment_method', language)}
+                  value={payMethod}
+                  onChange={(v) =>
+                    setPayMethod(v as 'bank_transfer' | 'ccp' | 'cash' | 'baridimob')
+                  }
+                  options={[
+                    { value: 'bank_transfer', label: 'Wire / Bank Transfer' },
+                    { value: 'ccp', label: 'CCP' },
+                    { value: 'baridimob', label: 'BaridiMob' },
+                    { value: 'cash', label: 'Cash' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="PayDate"
+                  label={t('free_depth_inv_payment_date', language)}
+                  type="date"
+                  required
+                  value={payDate}
+                  onChange={setPayDate}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+              <LabelInput
+                field="PayNotes"
+                label={t('free_inv_notes_terms', language)}
+                value={payNotes}
+                onChange={setPayNotes}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
+                <Button
+                  type="button"
+                  tone="soft"
+                  size={40}
+                  onClick={() => setInvoiceForPayment(null)}
+                >
+                  {t('free_clients_cancel', language)}
+                </Button>
+                <Button type="submit" tone="accent" size={40}>
+                  {t('free_depth_inv_record_payment', language)}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
+      <ShareArtifactModal
+        isOpen={Boolean(invoiceToShare)}
+        onClose={() => setInvoiceToShare(null)}
+        language={language}
+        title={invoiceToShare ? `${invoiceToShare.invoiceNumber} — ${invoiceToShare.clientName}` : ''}
+        subtitle={invoiceToShare?.clientCompany || invoiceToShare?.dueDate}
+        shareText={
+          invoiceToShare
+            ? [
+                `Invoice: ${invoiceToShare.invoiceNumber}`,
+                `Client: ${invoiceToShare.clientName}${invoiceToShare.clientCompany ? ` (${invoiceToShare.clientCompany})` : ''}`,
+                `Amount: ${formatCurrencyAmount(invoiceToShare.totalAmount, invoiceToShare.currency)}${
+                  invoiceToShare.currency !== 'DZD'
+                    ? ` (≈ ${computeInvoiceDzdEquivalent(
+                        invoiceToShare.totalAmount,
+                        invoiceToShare.currency,
+                        invoiceToShare.fxRateToDzd
+                      ).toLocaleString()} DZD)`
+                    : ''
+                }`,
+                `Due Date: ${invoiceToShare.dueDate}`,
+                `Status: ${invoiceToShare.status}`,
+                invoiceToShare.shareToken ? `Ref: ${invoiceToShare.shareToken}` : '',
+              ]
+                .filter(Boolean)
+                .join('\n')
+            : ''
+        }
+        onOpenPrintPdf={
+          invoiceToShare
+            ? () => {
+                setPreviewInvoice(invoiceToShare);
+              }
+            : undefined
+        }
       />
     </div>
   );

@@ -12,6 +12,7 @@ import {
   Trash2,
   AlertTriangle,
   Eye,
+  Lock,
 } from 'lucide-react';
 import {
   selectCurrentBranchFromState,
@@ -633,9 +634,16 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         minWidth: '170px',
         renderCell: (entry) => (
           <div className="min-w-0 max-w-xs">
-            <span className="t-small font-medium text-black dark:text-white truncate block">
-              {entry.taskDescription}
-            </span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="t-small font-medium text-black dark:text-white truncate">
+                {entry.taskDescription}
+              </span>
+              {entry.splitGroupId && (
+                <span className="shrink-0 t-cap font-semibold text-amber-700 dark:text-amber-300">
+                  · {t('free_depth_timer_midnight_split', language)}
+                </span>
+              )}
+            </div>
             {entry.deliverableTitle && (
               <span className="t-cap text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate block mt-0.5">
                 {t('free_time_milestone_prefix', language)}: {entry.deliverableTitle}
@@ -677,9 +685,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         renderCell: (entry) => {
           if (entry.isInvoiced) {
             return (
-              <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {t('free_kanban_invoiced', language)}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                <Lock size={12} />
+                <span>{t('free_depth_log_locked_badge', language)}</span>
               </span>
             );
           }
@@ -897,10 +905,27 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               {formatDuration(activeTimer.elapsedSeconds)}
             </div>
             {activeTimer.isRunning && (
-              <div className="t-small text-white/80 font-medium">
-                {t('free_time_working_on_label', language)}{' '}
-                <strong className="text-white">{activeTimer.clientName}</strong> ·{' '}
-                <span className="text-white/75">{activeTimer.taskDescription}</span>
+              <div className="space-y-1">
+                <div className="t-small text-white/80 font-medium">
+                  {t('free_time_working_on_label', language)}{' '}
+                  <strong className="text-white">{activeTimer.clientName}</strong> ·{' '}
+                  <span className="text-white/75">{activeTimer.taskDescription}</span>
+                </div>
+                {(activeTimer.startedAt || activeTimer.sourceDeviceId) && (
+                  <div className="t-cap text-white/60 tabular-nums flex items-center justify-center lg:justify-start gap-2 flex-wrap">
+                    {activeTimer.startedAt && (
+                      <span>
+                        {t('free_depth_timer_started_at', language)}: {new Date(activeTimer.startedAt).toLocaleTimeString(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-DZ' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                    {activeTimer.startedAt && activeTimer.sourceDeviceId && <span aria-hidden="true">·</span>}
+                    {activeTimer.sourceDeviceId && (
+                      <span>
+                        {t('free_depth_timer_device', language)}: {activeTimer.sourceDeviceId}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1405,7 +1430,15 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 <InspectorCard>
                   <InspectorKeyValue label={t('free_invoice_client', language)} value={entry.clientName} />
                   <InspectorKeyValue label={t('free_time_project_label', language)} value={entry.projectTitle} />
-                  <InspectorKeyValue label={t('common_date', language)} value={entry.date} mono isLast={!entry.deliverableTitle} />
+                  <InspectorKeyValue label={t('common_date', language)} value={entry.date} mono isLast={!entry.deliverableTitle && !entry.splitGroupId} />
+                  {entry.splitGroupId && (
+                    <InspectorKeyValue
+                      label={t('free_depth_timer_midnight_split', language)}
+                      value={entry.splitGroupId}
+                      mono
+                      isLast={!entry.deliverableTitle}
+                    />
+                  )}
                   {entry.deliverableTitle && (
                     <InspectorKeyValue
                       label={t('free_time_milestone_prefix', language)}
@@ -1416,6 +1449,17 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   )}
                 </InspectorCard>
               </InspectorSection>
+              {entry.isInvoiced && (
+                <InspectorSection index={2}>
+                  <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/35 border border-emerald-200 dark:border-emerald-800/50 flex items-start gap-2.5 t-cap text-emerald-800 dark:text-emerald-200">
+                    <Lock size={15} className="shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold block">{t('free_depth_log_locked_badge', language)}</span>
+                      <span className="opacity-85">{t('free_depth_log_locked_desc', language)}</span>
+                    </div>
+                  </div>
+                </InspectorSection>
+              )}
             </>
           );
         }}

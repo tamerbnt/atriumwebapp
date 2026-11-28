@@ -582,4 +582,41 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS reissue_count');
     expect(downSql).toContain('DROP COLUMN IF EXISTS grade_scale');
   });
+
+  it('verifies Phase 3 Step 7 (7.7) freelance_solo depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280007_phase3_freelance_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280007_phase3_freelance_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS crm_party_id uuid');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS split_group_id text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS fx_rate_to_dzd numeric');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS total_amount_dzd_centimes bigint');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS source_device_id text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS receipt_storage_path text');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.freelance_auto_entrepreneur_configs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.freelance_contract_templates');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.freelance_client_contracts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.freelance_translation_registers');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.freelance_photo_shoots');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_protect_invoiced_freelance_time_logs(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_protect_issued_freelance_invoice_currency(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.upsert_freelance_active_timer(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.stop_freelance_active_timer(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.uninvoice_freelance_invoice_logs(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.uninvoice_freelance_invoice_logs(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.stop_freelance_active_timer(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.upsert_freelance_active_timer(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.freelance_photo_shoots');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.freelance_translation_registers');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.freelance_client_contracts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.freelance_contract_templates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.freelance_auto_entrepreneur_configs');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS fx_rate_to_dzd');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS split_group_id');
+  });
 });
+
