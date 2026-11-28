@@ -17,7 +17,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { B2bClient, B2bSupplier } from '../../../types';
+import { B2bClient, B2bSupplier, TradingPriceTier } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -100,6 +100,11 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
       ? (editingEntity as B2bClient).defaultPaymentMethod || 'Virement bancaire'
       : 'Virement bancaire'
   );
+  const [priceTier, setPriceTier] = useState<TradingPriceTier>(
+    editingEntity && 'priceTier' in editingEntity
+      ? (editingEntity as B2bClient).priceTier || 'standard'
+      : 'standard'
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,6 +184,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
         outstandingBalance: editingEntity && 'outstandingBalance' in editingEntity ? editingEntity.outstandingBalance : 0,
         paymentTermsDays,
         defaultPaymentMethod,
+        priceTier,
       };
 
       if (isEdit && editingEntity) {
@@ -463,6 +469,19 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                         { value: "Chèque certifié", label: "Chèque certifié" },
                         { value: "Espèces (Timbré)", label: "Espèces (Timbré)" },
                         { value: "Traite", label: "Traite / Effet" }
+                      ]}
+                    />
+                  </div>
+                  <div>
+                    <LabelSelect
+                      label={t('trading_entity_price_tier', 'Grille Tarifaire Client')}
+                      value={priceTier}
+                      onChange={(val) => setPriceTier(val as TradingPriceTier)}
+                      options={[
+                        { value: 'standard', label: t('trading_tier_standard', 'Standard') },
+                        { value: 'wholesale', label: t('trading_tier_wholesale', 'Gros / Revendeur') },
+                        { value: 'vip', label: t('trading_tier_vip', 'VIP / Grand Compte') },
+                        { value: 'distributor', label: t('trading_tier_distributor', 'Distributeur') },
                       ]}
                     />
                   </div>

@@ -1,6 +1,7 @@
 import { getSupabaseClient, toValidUuid } from '../client';
 import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
+import { centimesToDzd, dzdToCentimes } from '../../../utils/money';
 import type {
   B2bClient,
   B2bSupplier,
@@ -12,6 +13,9 @@ import type {
   PurchaseDocType,
   StockMovementVoucher,
   StockVoucherType,
+  TradingPriceList,
+  TradingDeliveryRound,
+  TradingRepCommission,
 } from '../../../types/index';
 
 type DbCommercialDocType = 'devis' | 'commande' | 'bl' | 'facture' | 'avoir';
@@ -106,6 +110,8 @@ export const mapB2bClientFromDb = (row: any): B2bClient => {
     contactRole: meta.contactRole || undefined,
     creditLimit: Number(row.credit_limit_dzd || 0),
     outstandingBalance: Number(row.current_balance_dzd || 0),
+    priceTier: row.price_tier || meta.priceTier || 'standard',
+    crmPartyId: row.crm_party_id || meta.crmPartyId || undefined,
     paymentTermsDays: meta.paymentTermsDays ?? (termsMatch ? Number(termsMatch[1]) : 0),
     defaultPaymentMethod: meta.defaultPaymentMethod || row.payment_terms || 'Virement',
     version: row.version != null ? Number(row.version) : undefined,
@@ -169,6 +175,8 @@ export const mapTradingProductFromDb = (row: any): Product => ({
   taxRate: Number(row.tva_rate ?? 19),
   stockQuantity: Number(row.stock_quantity || 0),
   reorderLevel: Number(row.min_stock_alert || 10),
+  depotStockMap:
+    row.depot_stock_map && typeof row.depot_stock_map === 'object' ? row.depot_stock_map : {},
   isActive: row.is_active ?? true,
   isPinned: false,
   version: row.version != null ? Number(row.version) : undefined,
@@ -178,6 +186,19 @@ export const mapCommercialDocFromDb = (row: any): CommercialDocument => {
   const { notes, meta } = unpackNotesMeta(row.notes);
   const totalHtFinal = Number(row.total_ht || 0);
   const totalTtc = Number(row.total_ttc || 0);
+  const guaranteeRetentionAmount =
+    row.guarantee_retention_centimes != null && Number(row.guarantee_retention_centimes) > 0
+      ? centimesToDzd(Number(row.guarantee_retention_centimes))
+      : meta.guaranteeRetentionAmount ?? 0;
+  const guaranteeReleasedAmount =
+    row.guarantee_released_centimes != null
+      ? centimesToDzd(Number(row.guarantee_released_centimes))
+      : meta.guaranteeReleasedAmount ?? 0;
+  const guaranteeRetentionStatus =
+    row.guarantee_retention_status ||
+    meta.guaranteeRetentionStatus ||
+    (guaranteeRetentionAmount > 0 ? 'held' : 'none');
+
   return {
     id: row.id,
     accountId: row.account_id,
@@ -208,8 +229,16 @@ export const mapCommercialDocFromDb = (row: any): CommercialDocument => {
     totalTva: Number(row.total_tva || 0),
     timbreFiscal: Number(row.timbre_fiscal || 0),
     totalTtc,
-    guaranteeRetentionPercent: meta.guaranteeRetentionPercent ?? 0,
-    guaranteeRetentionAmount: meta.guaranteeRetentionAmount ?? 0,
+    guaranteeRetentionPercent:
+      row.guarantee_retention_percent != null
+        ? Number(row.guarantee_retention_percent)
+        : meta.guaranteeRetentionPercent ?? 0,
+    guaranteeRetentionAmount,
+    guaranteeRetentionStatus,
+    guaranteeReleasedAmount,
+    guaranteeReleasedAt: row.guarantee_released_at || meta.guaranteeReleasedAt || undefined,
+    guaranteeReleasePaymentMethod: meta.guaranteeReleasePaymentMethod || undefined,
+    guaranteeReleaseRef: meta.guaranteeReleaseRef || undefined,
     netToPay: meta.netToPay ?? totalTtc,
     currency: meta.currency || 'DZD',
     notesTop: notes || undefined,
@@ -217,6 +246,12 @@ export const mapCommercialDocFromDb = (row: any): CommercialDocument => {
     includeStampSignature: meta.includeStampSignature ?? true,
     linkedDocId: row.linked_doc_id || undefined,
     linkedDocNumber: row.linked_doc_number || undefined,
+    creditOverrideByStaffId: row.credit_override_by_staff_id || meta.creditOverrideByStaffId || undefined,
+    creditOverrideByName: row.credit_override_by_name || meta.creditOverrideByName || undefined,
+    creditOverrideReason: row.credit_override_reason || meta.creditOverrideReason || undefined,
+    creditOverrideAt: row.credit_override_at || meta.creditOverrideAt || undefined,
+    repStaffId: row.rep_staff_id || meta.repStaffId || undefined,
+    repName: row.rep_name || meta.repName || undefined,
     version: row.version != null ? Number(row.version) : undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -281,6 +316,76 @@ export const mapStockVoucherFromDb = (row: any): StockMovementVoucher => ({
   notes: row.notes || undefined,
   version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
+});
+
+export const mapTradingPriceListFromDb = (row: any): TradingPriceList => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  tier: row.tier || 'standard',
+  effectiveFrom: row.effective_from || new Date().toISOString().slice(0, 10),
+  effectiveTo: row.effective_to || undefined,
+  isActive: row.is_active ?? true,
+  items: Array.isArray(row.items) ? row.items : [],
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapTradingDeliveryRoundFromDb = (row: any): TradingDeliveryRound => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  roundNumber: row.round_number,
+  roundDate: row.round_date || new Date().toISOString().slice(0, 10),
+  repStaffId: row.rep_staff_id || undefined,
+  repName: row.rep_name || '',
+  vehicleLabel: row.vehicle_label || undefined,
+  depotId: row.depot_id || undefined,
+  wilaya: row.wilaya || undefined,
+  status: row.status || 'planned',
+  stops: Array.isArray(row.stops) ? row.stops : [],
+  totalExpectedDzd: centimesToDzd(Number(row.total_expected_centimes || 0)),
+  totalCollectedDzd: centimesToDzd(Number(row.total_collected_centimes || 0)),
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapTradingRepCommissionFromDb = (row: any): TradingRepCommission => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  repStaffId: row.rep_staff_id || undefined,
+  repName: row.rep_name || '',
+  commercialDocId: row.commercial_doc_id || undefined,
+  docNumber: row.doc_number || undefined,
+  docDate: row.doc_date || new Date().toISOString().slice(0, 10),
+  deliveryRoundId: row.delivery_round_id || undefined,
+  basisAmountDzd: centimesToDzd(Number(row.basis_amount_centimes || 0)),
+  rateBps: Number(row.rate_bps || 0),
+  commissionAmountDzd: centimesToDzd(Number(row.commission_centimes || 0)),
+  status: row.status || 'pending',
+  payrollRunId: row.payroll_run_id || undefined,
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
 
 export const tradingService = {
@@ -351,7 +456,7 @@ export const tradingService = {
         let query = (client as any)
           .from('trading_b2b_clients')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, company_name, email, phone, address, wilaya, rc_number, nif, nis, article_imposition, contact_name, credit_limit_dzd, current_balance_dzd, payment_terms, notes, version, created_at, updated_at'
+            'id, account_id, business_id, branch_id, staff_id, company_name, email, phone, address, wilaya, rc_number, nif, nis, article_imposition, contact_name, price_tier, crm_party_id, credit_limit_dzd, current_balance_dzd, payment_terms, notes, version, created_at, updated_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -389,6 +494,8 @@ export const tradingService = {
       nif: clientItem.nif || null,
       nis: clientItem.nis || null,
       article_imposition: clientItem.ai || null,
+      price_tier: clientItem.priceTier || 'standard',
+      crm_party_id: clientItem.crmPartyId ? toValidUuid(clientItem.crmPartyId) : null,
       credit_limit_dzd: Number(clientItem.creditLimit || 0),
       current_balance_dzd: Number(clientItem.outstandingBalance || 0),
       payment_terms:
@@ -405,6 +512,8 @@ export const tradingService = {
         contactEmail: clientItem.contactEmail,
         contactPhone: clientItem.contactPhone,
         contactRole: clientItem.contactRole,
+        priceTier: clientItem.priceTier || 'standard',
+        crmPartyId: clientItem.crmPartyId,
         paymentTermsDays: clientItem.paymentTermsDays,
         defaultPaymentMethod: clientItem.defaultPaymentMethod,
       }),
@@ -507,7 +616,7 @@ export const tradingService = {
         let query = (client as any)
           .from('trading_products')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, sku, name, category, unit, selling_price_ht, purchase_price_ht, tva_rate, stock_quantity, min_stock_alert, is_active, version'
+            'id, account_id, business_id, branch_id, staff_id, sku, name, category, unit, selling_price_ht, purchase_price_ht, tva_rate, stock_quantity, min_stock_alert, depot_stock_map, is_active, version'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -545,6 +654,7 @@ export const tradingService = {
       stock_quantity: Number(product.stockQuantity ?? 0),
       min_stock_alert: Number(product.reorderLevel ?? 10),
       depot_id: depotId ? toValidUuid(depotId) : null,
+      depot_stock_map: product.depotStockMap || {},
       is_active: product.isActive ?? true,
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('trading_products', payload, {
@@ -570,7 +680,7 @@ export const tradingService = {
         let query = (client as any)
           .from('trading_commercial_docs')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, doc_type, doc_number, client_id, client_name, depot_id, doc_date, due_date, payment_method, status, items, total_ht, total_tva, timbre_fiscal, total_ttc, linked_doc_id, linked_doc_number, notes, version, created_at, updated_at'
+            'id, account_id, business_id, branch_id, staff_id, doc_type, doc_number, client_id, client_name, depot_id, doc_date, due_date, payment_method, status, items, total_ht, total_tva, timbre_fiscal, total_ttc, linked_doc_id, linked_doc_number, credit_override_by_staff_id, credit_override_by_name, credit_override_reason, credit_override_at, guarantee_retention_percent, guarantee_retention_centimes, guarantee_retention_status, guarantee_released_centimes, guarantee_released_at, rep_staff_id, rep_name, notes, version, created_at, updated_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -595,6 +705,8 @@ export const tradingService = {
       branchId: doc.branchId || doc.facilityId,
       staffId: doc.staffId,
     });
+    const retentionCentimes = dzdToCentimes(Math.max(0, Number(doc.guaranteeRetentionAmount || 0)));
+    const releasedCentimes = dzdToCentimes(Math.max(0, Number(doc.guaranteeReleasedAmount || 0)));
     const payload = {
       id: toValidUuid(doc.id),
       ...trace,
@@ -615,6 +727,20 @@ export const tradingService = {
       paid_amount: doc.status === 'Paid' ? Number(doc.netToPay || doc.totalTtc || 0) : 0,
       linked_doc_id: doc.linkedDocId ? toValidUuid(doc.linkedDocId) : null,
       linked_doc_number: doc.linkedDocNumber || null,
+      credit_override_by_staff_id: doc.creditOverrideByStaffId
+        ? toValidUuid(doc.creditOverrideByStaffId)
+        : null,
+      credit_override_by_name: doc.creditOverrideByName || null,
+      credit_override_reason: doc.creditOverrideReason || null,
+      credit_override_at: doc.creditOverrideAt || null,
+      guarantee_retention_percent: Number(doc.guaranteeRetentionPercent || 0),
+      guarantee_retention_centimes: retentionCentimes,
+      guarantee_retention_status:
+        doc.guaranteeRetentionStatus || (retentionCentimes > 0 ? 'held' : 'none'),
+      guarantee_released_centimes: releasedCentimes,
+      guarantee_released_at: doc.guaranteeReleasedAt || null,
+      rep_staff_id: doc.repStaffId ? toValidUuid(doc.repStaffId) : null,
+      rep_name: doc.repName || null,
       items: doc.items || [],
       notes: packNotesWithMeta(doc.notesTop, {
         origType: doc.type,
@@ -628,6 +754,17 @@ export const tradingService = {
         generalDiscountPercent: doc.generalDiscountPercent,
         guaranteeRetentionPercent: doc.guaranteeRetentionPercent,
         guaranteeRetentionAmount: doc.guaranteeRetentionAmount,
+        guaranteeRetentionStatus: doc.guaranteeRetentionStatus,
+        guaranteeReleasedAmount: doc.guaranteeReleasedAmount,
+        guaranteeReleasedAt: doc.guaranteeReleasedAt,
+        guaranteeReleasePaymentMethod: doc.guaranteeReleasePaymentMethod,
+        guaranteeReleaseRef: doc.guaranteeReleaseRef,
+        creditOverrideByStaffId: doc.creditOverrideByStaffId,
+        creditOverrideByName: doc.creditOverrideByName,
+        creditOverrideReason: doc.creditOverrideReason,
+        creditOverrideAt: doc.creditOverrideAt,
+        repStaffId: doc.repStaffId,
+        repName: doc.repName,
         netToPay: doc.netToPay,
         currency: doc.currency,
         notesBottom: doc.notesBottom,
@@ -802,5 +939,281 @@ export const tradingService = {
   async deleteStockVoucher(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('trading_stock_vouchers', id, deletedByStaffId);
     return res.success;
+  },
+
+  async fetchPriceLists(branchId: string, updatedAfter?: string | null): Promise<TradingPriceList[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_price_lists')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, tier, effective_from, effective_to, is_active, items, notes, version, created_at, updated_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('effective_from', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+      return data.map(mapTradingPriceListFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertPriceList(priceList: TradingPriceList): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: priceList.accountId || priceList.tenantId,
+      businessId: priceList.businessId,
+      branchId: priceList.branchId || priceList.facilityId,
+      staffId: priceList.staffId,
+    });
+    const payload = {
+      id: toValidUuid(priceList.id),
+      ...trace,
+      name: priceList.name,
+      tier: priceList.tier || 'standard',
+      effective_from: priceList.effectiveFrom || new Date().toISOString().split('T')[0],
+      effective_to: priceList.effectiveTo || null,
+      is_active: priceList.isActive ?? true,
+      items: priceList.items || [],
+      notes: priceList.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_price_lists', payload, {
+      expectedVersion: priceList.version,
+      entityType: 'TradingPriceList',
+      entityLabel: priceList.name,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deletePriceList(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('trading_price_lists', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchDeliveryRounds(
+    branchId: string,
+    updatedAfter?: string | null
+  ): Promise<TradingDeliveryRound[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_delivery_rounds')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, round_number, round_date, rep_staff_id, rep_name, vehicle_label, depot_id, wilaya, status, stops, total_expected_centimes, total_collected_centimes, notes, version, created_at, updated_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('round_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+      return data.map(mapTradingDeliveryRoundFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertDeliveryRound(round: TradingDeliveryRound): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: round.accountId || round.tenantId,
+      businessId: round.businessId,
+      branchId: round.branchId || round.facilityId,
+      staffId: round.staffId,
+    });
+    const payload = {
+      id: toValidUuid(round.id),
+      ...trace,
+      round_number: round.roundNumber,
+      round_date: round.roundDate || new Date().toISOString().split('T')[0],
+      rep_staff_id: round.repStaffId ? toValidUuid(round.repStaffId) : null,
+      rep_name: round.repName,
+      vehicle_label: round.vehicleLabel || null,
+      depot_id: round.depotId ? toValidUuid(round.depotId) : null,
+      wilaya: round.wilaya || null,
+      status: round.status || 'planned',
+      stops: round.stops || [],
+      total_expected_centimes: dzdToCentimes(Math.max(0, Number(round.totalExpectedDzd || 0))),
+      total_collected_centimes: dzdToCentimes(Math.max(0, Number(round.totalCollectedDzd || 0))),
+      notes: round.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_delivery_rounds', payload, {
+      expectedVersion: round.version,
+      entityType: 'TradingDeliveryRound',
+      entityLabel: round.roundNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteDeliveryRound(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('trading_delivery_rounds', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchRepCommissions(
+    branchId: string,
+    updatedAfter?: string | null
+  ): Promise<TradingRepCommission[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_rep_commissions')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, rep_staff_id, rep_name, commercial_doc_id, doc_number, doc_date, delivery_round_id, basis_amount_centimes, rate_bps, commission_centimes, status, payroll_run_id, notes, version, created_at, updated_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('doc_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+      return data.map(mapTradingRepCommissionFromDb);
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertRepCommission(comm: TradingRepCommission): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: comm.accountId || comm.tenantId,
+      businessId: comm.businessId,
+      branchId: comm.branchId || comm.facilityId,
+      staffId: comm.staffId,
+    });
+    const payload = {
+      id: toValidUuid(comm.id),
+      ...trace,
+      rep_staff_id: comm.repStaffId ? toValidUuid(comm.repStaffId) : null,
+      rep_name: comm.repName,
+      commercial_doc_id: comm.commercialDocId ? toValidUuid(comm.commercialDocId) : null,
+      doc_number: comm.docNumber || null,
+      doc_date: comm.docDate || new Date().toISOString().split('T')[0],
+      delivery_round_id: comm.deliveryRoundId ? toValidUuid(comm.deliveryRoundId) : null,
+      basis_amount_centimes: dzdToCentimes(Math.max(0, Number(comm.basisAmountDzd || 0))),
+      rate_bps: Math.max(0, Math.round(Number(comm.rateBps || 0))),
+      commission_centimes: dzdToCentimes(Math.max(0, Number(comm.commissionAmountDzd || 0))),
+      status: comm.status || 'pending',
+      payroll_run_id: comm.payrollRunId ? toValidUuid(comm.payrollRunId) : null,
+      notes: comm.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_rep_commissions', payload, {
+      expectedVersion: comm.version,
+      entityType: 'TradingRepCommission',
+      entityLabel: comm.repName,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteRepCommission(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('trading_rep_commissions', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async convertCommercialDocPartial(
+    sourceDocId: string,
+    targetType: CommercialDocType,
+    newDocNumber: string,
+    lineQuantities?: Record<string, number>
+  ): Promise<{ success: boolean; newDocId?: string; sourceStatus?: string; queued?: boolean }> {
+    const res = await syncCoordinator.rpcOrQueue<{
+      success: boolean;
+      newDocId?: string;
+      sourceStatus?: string;
+    }>('trading_convert_commercial_doc_partial', {
+      p_source_doc_id: toValidUuid(sourceDocId),
+      p_target_type: toDbCommercialType(targetType),
+      p_new_doc_number: newDocNumber,
+      p_line_quantities: lineQuantities || null,
+    });
+    return {
+      success: res.success,
+      newDocId: res.data?.newDocId,
+      sourceStatus: res.data?.sourceStatus,
+      queued: res.queued,
+    };
+  },
+
+  async executeStockVoucherAtomic(voucher: StockMovementVoucher): Promise<{
+    success: boolean;
+    voucherId?: string;
+    queued?: boolean;
+  }> {
+    const trace = buildTraceEnvelope({
+      accountId: voucher.accountId || voucher.tenantId,
+      businessId: voucher.businessId,
+      branchId: voucher.branchId || voucher.facilityId,
+      staffId: voucher.staffId,
+    });
+    const res = await syncCoordinator.rpcOrQueue<{ success: boolean; voucherId?: string }>(
+      'trading_execute_stock_voucher',
+      {
+        p_voucher: {
+          id: toValidUuid(voucher.id),
+          account_id: trace.account_id,
+          business_id: trace.business_id,
+          branch_id: trace.branch_id,
+          voucher_number: voucher.voucherNumber,
+          voucher_type: toDbVoucherType(voucher.type),
+          voucher_date: voucher.date || new Date().toISOString().split('T')[0],
+          depot_source_id: voucher.depotSourceId ? toValidUuid(voucher.depotSourceId) : null,
+          depot_source_name: voucher.depotSourceName || null,
+          depot_dest_id: voucher.depotTargetId ? toValidUuid(voucher.depotTargetId) : null,
+          depot_dest_name: voucher.depotTargetName || null,
+          reason: voucher.reason,
+          operator_name: voucher.operatorName || null,
+          total_valuation_dzd: Number(voucher.totalValuationDzd || 0),
+          items: (voucher.items || []).map((i) => ({
+            ...i,
+            productId: toValidUuid(i.productId),
+          })),
+          notes: voucher.notes || null,
+        },
+      }
+    );
+    return {
+      success: res.success,
+      voucherId: res.data?.voucherId,
+      queued: res.queued,
+    };
+  },
+
+  async releaseGuaranteeRetentionRpc(
+    docId: string,
+    releaseAmountDzd: number,
+    paymentMethod = 'Virement bancaire',
+    reference?: string,
+    releaseDate?: string
+  ): Promise<{ success: boolean; status?: string; queued?: boolean }> {
+    const res = await syncCoordinator.rpcOrQueue<{ success: boolean; status?: string }>(
+      'trading_release_guarantee_retention',
+      {
+        p_doc_id: toValidUuid(docId),
+        p_release_amount: Number(releaseAmountDzd || 0),
+        p_payment_method: paymentMethod,
+        p_reference: reference || null,
+        p_release_date: releaseDate || new Date().toISOString().split('T')[0],
+      }
+    );
+    return {
+      success: res.success,
+      status: res.data?.status,
+      queued: res.queued,
+    };
   },
 };

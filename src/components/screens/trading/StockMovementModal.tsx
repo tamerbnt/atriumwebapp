@@ -19,6 +19,7 @@ import {
   showToast,
 } from '../../../services/store';
 import { StockMovementVoucher, StockVoucherType } from '../../../types';
+import { getProductStockInDepot, validateDepotVoucherAvailability } from '../../../utils/tradingDepth';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -144,6 +145,26 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
     0
   );
 
+  const defaultDepotId = React.useMemo(
+    () => warehouses.find((w) => w.isMain)?.id || warehouses[0]?.id,
+    [warehouses]
+  );
+
+  const depotAvailability = React.useMemo(() => {
+    return validateDepotVoucherAvailability({
+      voucherType: type,
+      depotSourceId,
+      depotTargetId,
+      items: items.map((it) => ({
+        productId: it.productId,
+        productName: it.productName,
+        quantity: it.quantity,
+      })),
+      products,
+      defaultDepotId,
+    });
+  }, [type, depotSourceId, depotTargetId, items, products, defaultDepotId]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0 || items.some((it) => it.quantity <= 0)) {
@@ -191,6 +212,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
     };
 
     const saved = createStockVoucher(payload);
+    if (!saved) return;
     if (onSaved) onSaved(saved);
     onClose();
   };
@@ -370,10 +392,13 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                       label="Article"
                       value={it.productId}
                       onChange={(val) => handleProductSelect(idx, val)}
-                      options={products.map((p) => ({
-                        value: p.id,
-                        label: `${p.sku ? `[${p.sku}] ` : ''}${p.name} (Stock: ${p.stockQuantity})`,
-                      }))}
+                      options={products.map((p) => {
+                        const depotAvail = getProductStockInDepot(p, depotSourceId, defaultDepotId);
+                        return {
+                          value: p.id,
+                          label: `${p.sku ? `[${p.sku}] ` : ''}${p.name} (Dépôt: ${depotAvail})`,
+                        };
+                      })}
                     />
                   </div>
 
@@ -400,6 +425,19 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 </div>
               ))}
             </div>
+            {!depotAvailability.ok && depotAvailability.shortages.length > 0 && (
+              <div
+                data-sq="ctl-sm"
+                data-sq-border="solid"
+                className="mt-3 p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 t-cap tabular-nums"
+              >
+                {depotAvailability.shortages.map((sh) => (
+                  <div key={sh.productId}>
+                    {sh.productName}: demandé {sh.requested}, disponible dans ce dépôt {sh.available}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Notes */}

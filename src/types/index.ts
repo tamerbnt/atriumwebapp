@@ -415,6 +415,7 @@ export interface Product {
   isWeighted?: boolean;
   pluCode?: string;
   expiryDate?: string;
+  depotStockMap?: Record<string, number>;
   version?: number;
 }
 
@@ -2547,6 +2548,7 @@ export interface PMEquipmentStock {
 export type CommercialDocType = 'devis' | 'commande' | 'bl' | 'facture' | 'avoir' | 'retour';
 export type PurchaseDocType = 'po' | 'br' | 'facture_fournisseur' | 'avoir_fournisseur' | 'retour_fournisseur';
 export type StockVoucherType = 'entree' | 'sortie' | 'transfert';
+export type TradingPriceTier = 'standard' | 'wholesale' | 'vip' | 'distributor' | (string & {});
 
 export interface B2bClient {
   id: string;
@@ -2576,7 +2578,9 @@ export interface B2bClient {
   contactEmail?: string;
   contactPhone?: string;
   contactRole?: string;
-  // Financial terms
+  // Financial & Tier terms
+  priceTier?: TradingPriceTier;
+  crmPartyId?: string;
   creditLimit: number;
   outstandingBalance: number;
   paymentTermsDays: number;
@@ -2651,6 +2655,9 @@ export interface CommercialDocItem {
   discountPercent?: number;
   totalHt: number;
   totalTtc: number;
+  convertedQty?: number;
+  deliveredQty?: number;
+  invoicedQty?: number;
 }
 
 export interface CommercialDocument {
@@ -2675,7 +2682,7 @@ export interface CommercialDocument {
   dueDate?: string;
   paymentMethod: string;
   paymentTerms: string;
-  status: 'Draft' | 'Validated' | 'Delivered' | 'Paid' | 'Canceled';
+  status: 'Draft' | 'Validated' | 'Partial' | 'Delivered' | 'Paid' | 'Canceled';
   items: CommercialDocItem[];
   // Calculations
   totalHtRaw: number;
@@ -2686,6 +2693,11 @@ export interface CommercialDocument {
   totalTtc: number;
   guaranteeRetentionPercent: number; // Retenue de garantie (e.g. 5% or 10%)
   guaranteeRetentionAmount: number;
+  guaranteeRetentionStatus?: 'none' | 'held' | 'partial_released' | 'released';
+  guaranteeReleasedAmount?: number;
+  guaranteeReleasedAt?: string;
+  guaranteeReleasePaymentMethod?: string;
+  guaranteeReleaseRef?: string;
   netToPay: number;
   currency: string; // 'DZD', 'EUR', 'USD'
   notesTop?: string;
@@ -2693,6 +2705,12 @@ export interface CommercialDocument {
   includeStampSignature: boolean;
   linkedDocId?: string; // e.g. Devis that spawned this BL, or BL that spawned this Facture
   linkedDocNumber?: string;
+  creditOverrideByStaffId?: string;
+  creditOverrideByName?: string;
+  creditOverrideReason?: string;
+  creditOverrideAt?: string;
+  repStaffId?: string;
+  repName?: string;
   version?: number;
   createdAt: string;
   updatedAt: string;
@@ -2769,6 +2787,101 @@ export interface StockMovementVoucher {
   notes?: string;
   version?: number;
   createdAt: string;
+}
+
+export interface TradingPriceListItem {
+  id: string;
+  productId: string;
+  productName?: string;
+  sku?: string;
+  unitPriceHt: number;
+  minQty?: number;
+  discountPercent?: number;
+}
+
+export interface TradingPriceList {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  name: string;
+  tier: TradingPriceTier;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  isActive: boolean;
+  items: TradingPriceListItem[];
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TradingDeliveryStop {
+  id: string;
+  clientId: string;
+  clientName: string;
+  docId?: string;
+  docNumber?: string;
+  address?: string;
+  wilaya?: string;
+  expectedAmountDzd: number;
+  collectedAmountDzd: number;
+  status: 'pending' | 'delivered' | 'partial' | 'failed';
+  notes?: string;
+}
+
+export interface TradingDeliveryRound {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  roundNumber: string;
+  roundDate: string;
+  repStaffId?: string;
+  repName: string;
+  vehicleLabel?: string;
+  depotId?: string;
+  wilaya?: string;
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  stops: TradingDeliveryStop[];
+  totalExpectedDzd: number;
+  totalCollectedDzd: number;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TradingRepCommission {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  repStaffId?: string;
+  repName: string;
+  commercialDocId?: string;
+  docNumber?: string;
+  docDate: string;
+  deliveryRoundId?: string;
+  basisAmountDzd: number;
+  rateBps: number; // 100 = 1%
+  commissionAmountDzd: number;
+  status: 'pending' | 'approved' | 'posted_to_payroll';
+  payrollRunId?: string;
+  notes?: string;
+  deletedAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ==========================================

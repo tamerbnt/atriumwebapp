@@ -4,6 +4,7 @@ import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
 import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
 import { Briefcase, Building2, CheckCircle2 } from 'lucide-react';
+import { TradingRepCommissionsPanel } from './TradingRepCommissionsPanel';
 
 export const TradingStaffView: React.FC = () => {
   const foundation = useStaffFoundation({ category: 'trading_commercial' });
@@ -114,12 +115,19 @@ export const TradingStaffView: React.FC = () => {
   ];
 
   return (
-    <StandardStaffScreen
-      foundation={foundation}
-      category="trading_commercial"
-      columns={columns}
-      categoryTitle={isAr ? 'فريق التجارة والتوزيع B2B' : isEn ? 'Commercial & Warehouse Staff' : 'Commerciaux & Magasiniers B2B'}
-      newStaffButtonLabel={isAr ? 'إضافة مندوب تجاري' : isEn ? 'Add Commercial Rep' : 'Nouveau Commercial B2B'}
-    />
+    <div className="space-y-6">
+      <StandardStaffScreen
+        foundation={foundation}
+        category="trading_commercial"
+        columns={columns}
+        categoryTitle={isAr ? 'فريق التجارة والتوزيع B2B' : isEn ? 'Commercial & Warehouse Staff' : 'Commerciaux & Magasiniers B2B'}
+        newStaffButtonLabel={isAr ? 'إضافة مندوب تجاري' : isEn ? 'Add Commercial Rep' : 'Nouveau Commercial B2B'}
+      />
+      <TradingRepCommissionsPanel
+        staffList={foundation.facilityStaff}
+        payrollRuns={foundation.staffPayrollRuns}
+        language={language}
+      />
+    </div>
   );
 };

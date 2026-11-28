@@ -18,6 +18,7 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { validateGuaranteeRetentionRelease } from '../../../utils/tradingDepth';
 import { CommercialDocument } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
@@ -81,7 +82,7 @@ export const TradingFinanceView: React.FC = () => {
     }),
     shallowEqualObjects
   );
-  const { updateCommercialDoc, updateB2bClient, retryCloudSync } = useAtriumActions();
+  const { updateCommercialDoc, updateB2bClient, releaseGuaranteeRetention, retryCloudSync } = useAtriumActions();
   const [financeMode, setFinanceMode] = useState<'receivables' | 'scf'>('receivables');
   const pendingScfFailuresCount = useMemo(
     () => scfPostingFailures.filter((f) => f.status === 'pending').length,
@@ -89,6 +90,11 @@ export const TradingFinanceView: React.FC = () => {
   );
 
   const [settlementDoc, setSettlementDoc] = useState<CommercialDocument | null>(null);
+  const [guaranteeDoc, setGuaranteeDoc] = useState<CommercialDocument | null>(null);
+  const [guaranteeReleaseAmount, setGuaranteeReleaseAmount] = useState('');
+  const [guaranteeReleaseMethod, setGuaranteeReleaseMethod] = useState('Virement bancaire');
+  const [guaranteeReleaseRef, setGuaranteeReleaseRef] = useState('');
+  const [guaranteeReleaseDate, setGuaranteeReleaseDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [unifiedPaymentOpen, setUnifiedPaymentOpen] = useState(false);
   const [unifiedPaymentTarget, setUnifiedPaymentTarget] = useState<{
     partyId?: string;
@@ -136,6 +142,45 @@ export const TradingFinanceView: React.FC = () => {
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
   const invoices = useMemo(() => commercialDocs.filter((d) => d.type === 'facture'), [commercialDocs]);
+
+  const retentionDocs = useMemo(
+    () =>
+      invoices.filter(
+        (inv) =>
+          (inv.guaranteeRetentionAmount || 0) > 0 &&
+          inv.guaranteeRetentionStatus !== 'released' &&
+          (inv.guaranteeRetentionAmount || 0) > (inv.guaranteeReleasedAmount || 0)
+      ),
+    [invoices]
+  );
+
+  const openGuaranteeModal = useCallback((doc: CommercialDocument) => {
+    const check = validateGuaranteeRetentionRelease({
+      doc,
+      releaseAmountDzd: 1,
+    });
+    setGuaranteeDoc(doc);
+    setGuaranteeReleaseAmount(String(check.remainingHeldDzd));
+    setGuaranteeReleaseMethod('Virement bancaire');
+    setGuaranteeReleaseRef(`RG-${doc.docNumber}`);
+    setGuaranteeReleaseDate(new Date().toISOString().split('T')[0]);
+  }, []);
+
+  const handleConfirmGuaranteeRelease = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!guaranteeDoc) return;
+    const amt = parseFloat(guaranteeReleaseAmount) || 0;
+    const ok = releaseGuaranteeRetention({
+      docId: guaranteeDoc.id,
+      releaseAmountDzd: amt,
+      paymentMethod: guaranteeReleaseMethod,
+      reference: guaranteeReleaseRef.trim() || undefined,
+      releaseDate: guaranteeReleaseDate,
+    });
+    if (ok) {
+      setGuaranteeDoc(null);
+    }
+  };
 
   const agingAnalysis = useMemo(() => {
     const today = Date.now();
@@ -397,23 +442,43 @@ export const TradingFinanceView: React.FC = () => {
       {
         key: 'actions',
         header: '',
-        width: '135px',
+        width: '215px',
         renderCell: (doc) => (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1.5">
             {doc.status !== 'Paid' ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSettlementDoc(doc);
-                }}
-                data-sq="ctl-sm"
-                data-sq-border="none"
-                className="px-3 py-1 t-small font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <CheckCircle size={13} />
-                <span>{t('trading_finance_settle_invoice', 'Encaisser')}</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSettlementDoc(doc);
+                  }}
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
+                  className="px-2.5 py-1 t-small font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <CheckCircle size={13} />
+                  <span>{t('trading_finance_settle_invoice', 'Encaisser')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUnifiedPaymentTarget({
+                      partyId: doc.clientId,
+                      partyName: doc.clientName,
+                      amountDzd: doc.netToPay,
+                      commercialDocId: doc.id,
+                    });
+                    setUnifiedPaymentOpen(true);
+                  }}
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="px-2 py-1 t-small font-medium bg-[#F5F1EC] dark:bg-[#2B2825] text-black/80 dark:text-white/85 hover:bg-[#EAE1D8] dark:hover:bg-[#34302C] transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {isAr ? 'شيك / سفتجة' : isEn ? 'Cheque / Draft' : 'Chèque / Traite'}
+                </button>
+              </>
             ) : (
               <span className="t-small tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">Soldée ✓</span>
             )}
@@ -781,6 +846,67 @@ export const TradingFinanceView: React.FC = () => {
         />
       </ScreenPod>
 
+      {retentionDocs.length > 0 && (
+        <ScreenPod>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="t-small font-semibold text-black dark:text-white">
+                {isAr ? 'مبالغ الضمان المحتجزة' : isEn ? 'Guarantee Retentions Held' : 'Retenues de Garantie Détenues'}
+              </h3>
+              <p className="t-cap text-black/55 dark:text-white/60">
+                {isAr
+                  ? 'تحرير جزئي أو كلي مع قيد محاسبي آلي.'
+                  : isEn
+                  ? 'Partial or full retention release with automated SCF treasury posting.'
+                  : 'Libération partielle ou totale avec écriture de trésorerie SCF automatique.'}
+              </p>
+            </div>
+            <span className="t-cap tabular-nums font-semibold text-black/60 dark:text-white/65">
+              {retentionDocs.length}
+            </span>
+          </div>
+          <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+            <table className="w-full text-left rtl:text-right t-cap">
+              <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                <tr>
+                  <th className="py-2 px-3">{isAr ? 'الفاتورة' : isEn ? 'Invoice' : 'Facture'}</th>
+                  <th className="py-2 px-3">{isAr ? 'العميل' : isEn ? 'Client' : 'Client'}</th>
+                  <th className="py-2 px-3 text-right">{isAr ? 'المحتجز' : isEn ? 'Held' : 'Retenue Initiale'}</th>
+                  <th className="py-2 px-3 text-right">{isAr ? 'المحرر' : isEn ? 'Released' : 'Déjà Libérée'}</th>
+                  <th className="py-2 px-3 text-right">{isAr ? 'المتبقي' : isEn ? 'Remaining' : 'Solde à Libérer'}</th>
+                  <th className="py-2 px-3 text-right" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--atr-divider)] tabular-nums">
+                {retentionDocs.map((doc) => {
+                  const held = Number(doc.guaranteeRetentionAmount || 0);
+                  const released = Number(doc.guaranteeReleasedAmount || 0);
+                  const remaining = Math.max(0, held - released);
+                  return (
+                    <tr key={doc.id} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
+                      <td className="py-2 px-3 font-semibold text-black dark:text-white">{doc.docNumber}</td>
+                      <td className="py-2 px-3">{doc.clientName}</td>
+                      <td className="py-2 px-3 text-right">{formatMoney(held)}</td>
+                      <td className="py-2 px-3 text-right text-black/60 dark:text-white/65">{formatMoney(released)}</td>
+                      <td className="py-2 px-3 text-right font-semibold text-blue-600 dark:text-blue-400">{formatMoney(remaining)}</td>
+                      <td className="py-2 px-3 text-right">
+                        <AtriumButton
+                          variant="secondary"
+                          size="xs"
+                          onClick={() => openGuaranteeModal(doc)}
+                        >
+                          {isAr ? 'تحرير' : isEn ? 'Release' : 'Libérer'}
+                        </AtriumButton>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </ScreenPod>
+      )}
+
       {unifiedPayments.length > 0 && (
         <UnifiedPaymentsLedgerPanel payments={unifiedPayments} />
       )}
@@ -996,6 +1122,84 @@ export const TradingFinanceView: React.FC = () => {
         )}
       </KineticModalShell>
 
+      <KineticModalShell
+        isOpen={Boolean(guaranteeDoc)}
+        onClose={() => setGuaranteeDoc(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {guaranteeDoc && (
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                {isAr ? 'تحرير مبلغ الضمان' : isEn ? 'Release Guarantee Retention' : 'Libération Retenue de Garantie'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setGuaranteeDoc(null)}
+                aria-label="Fermer"
+                className="p-1 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1 tabular-nums">
+              <div className="flex justify-between">
+                <span className="text-black/60 dark:text-white/65">Facture :</span>
+                <span className="font-semibold">{guaranteeDoc.docNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/60 dark:text-white/65">Solde retenu :</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {formatMoney(Math.max(0, (guaranteeDoc.guaranteeRetentionAmount || 0) - (guaranteeDoc.guaranteeReleasedAmount || 0)))}
+                </span>
+              </div>
+            </div>
+            <form onSubmit={handleConfirmGuaranteeRelease} className="space-y-3 t-cap">
+              <LabelInput
+                type="number"
+                step="0.01"
+                label={isAr ? 'المبلغ المحرر (دج) *' : isEn ? 'Release Amount (DZD) *' : 'Montant à libérer (DA) *'}
+                value={guaranteeReleaseAmount}
+                onChange={setGuaranteeReleaseAmount}
+                required
+              />
+              <LabelSelect
+                label={isAr ? 'وسيلة الدفع' : isEn ? 'Payment Method' : 'Mode de règlement'}
+                value={guaranteeReleaseMethod}
+                onChange={setGuaranteeReleaseMethod}
+                options={[
+                  { value: 'Virement bancaire', label: 'Virement bancaire (512)' },
+                  { value: 'Chèque barré', label: 'Chèque barré (512)' },
+                  { value: 'Espèces', label: 'Espèces caisse (530)' },
+                ]}
+              />
+              <LabelInput
+                label={isAr ? 'المرجع' : isEn ? 'Reference' : 'Référence'}
+                value={guaranteeReleaseRef}
+                onChange={setGuaranteeReleaseRef}
+              />
+              <LabelInput
+                type="date"
+                label={isAr ? 'تاريخ التحرير' : isEn ? 'Release Date' : 'Date de libération'}
+                value={guaranteeReleaseDate}
+                onChange={setGuaranteeReleaseDate}
+                required
+              />
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setGuaranteeDoc(null)}>
+                  {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary" size="sm">
+                  {isAr ? 'تأكيد التحرير' : isEn ? 'Release Guarantee' : 'Valider Libération'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
       <UnifiedPaymentModal
         isOpen={unifiedPaymentOpen}
         onClose={() => setUnifiedPaymentOpen(false)}
@@ -1004,6 +1208,20 @@ export const TradingFinanceView: React.FC = () => {
         partyName={unifiedPaymentTarget?.partyName || 'Client B2B'}
         defaultAmountDzd={unifiedPaymentTarget?.amountDzd || 0}
         onRecorded={(payment) => {
+          if (unifiedPaymentTarget?.commercialDocId) {
+            const linkedInv = invoices.find((d) => d.id === unifiedPaymentTarget.commercialDocId);
+            if (linkedInv && linkedInv.status !== 'Paid') {
+              updateCommercialDoc(linkedInv.id, {
+                status: 'Paid',
+                paymentMethod: payment.method,
+              });
+              const client = b2bClients.find((c) => c.id === linkedInv.clientId);
+              if (client) {
+                const newBal = Math.max(0, (client.outstandingBalance || 0) - linkedInv.netToPay);
+                updateB2bClient(client.id, { outstandingBalance: newBal });
+              }
+            }
+          }
           showToast({
             type: 'success',
             title: isAr ? 'تم تسجيل الدفعة' : isEn ? 'Payment Recorded' : 'Règlement Enregistré',

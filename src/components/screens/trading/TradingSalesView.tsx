@@ -8,6 +8,9 @@ import {
   Truck,
   Download,
   ArrowRight,
+  X,
+  CheckCircle,
+  Layers,
 } from 'lucide-react';
 import {
   showToast,
@@ -16,12 +19,22 @@ import {
   selectCurrentCommercialDocsFromState,
   selectCurrentUnifiedDocumentsFromState,
   selectCurrentBranchFromState,
+  selectCurrentTradingDeliveryRoundsFromState,
+  selectCurrentB2bClientsFromState,
+  selectCurrentStaffFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { CommercialDocument, CommercialDocType, UnifiedDocument } from '../../../types';
+import {
+  CommercialDocument,
+  CommercialDocType,
+  UnifiedDocument,
+  TradingDeliveryRound,
+  TradingDeliveryStop,
+} from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { centimesToDzd } from '../../../utils/money';
+import { computeRemainingConvertibleItems, reconcileDeliveryRoundStops } from '../../../utils/tradingDepth';
 import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
@@ -29,6 +42,8 @@ import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { UnifiedInvoiceComposerModal, type UnifiedInvoiceComposerPrefill } from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UnifiedInvoicePrintModal } from '../../common/invoicing/UnifiedInvoicePrintModal';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -40,6 +55,7 @@ import {
   ActiveFilterChip,
   KineticFilterModal,
   KineticFilterSection,
+  KineticModalShell,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -62,17 +78,20 @@ const STATUS_PILL_INFO =
   'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type TabKey = 'all' | 'devis' | 'commande' | 'bl' | 'facture' | 'avoir';
-type StatusFilterKey = 'all' | 'Draft' | 'Validated' | 'Delivered' | 'Paid';
+type StatusFilterKey = 'all' | 'Draft' | 'Validated' | 'Partial' | 'Delivered' | 'Paid';
 type DrawerTab = 'overview' | 'items' | 'reglement';
 
 export const TradingSalesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { commercialDocs, unifiedDocuments, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { commercialDocs, unifiedDocuments, tradingDeliveryRounds, b2bClients, staffList, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       commercialDocs: selectCurrentCommercialDocsFromState(s),
       unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
+      tradingDeliveryRounds: selectCurrentTradingDeliveryRoundsFromState(s),
+      b2bClients: selectCurrentB2bClientsFromState(s),
+      staffList: selectCurrentStaffFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -85,11 +104,16 @@ export const TradingSalesView: React.FC = () => {
   const {
     deleteCommercialDoc,
     convertCommercialDoc,
+    convertCommercialDocPartial,
+    createTradingDeliveryRound,
+    updateTradingDeliveryRound,
+    completeTradingDeliveryRound,
     retryCloudSync,
     issueUnifiedDocument,
     createCreditNoteForDocument,
   } = useAtriumActions();
 
+  const [salesMode, setSalesMode] = useState<'documents' | 'rounds'>('documents');
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedDocIds, setPinnedDocIds] = useState<Set<string>>(() => new Set<string>());
   const [activeTab, setActiveTab] = useState<TabKey>('all');
@@ -104,11 +128,28 @@ export const TradingSalesView: React.FC = () => {
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<CommercialDocType>('devis');
   const [editingDoc, setEditingDoc] = useState<CommercialDocument | null>(null);
+  const [prefillLinkedDoc, setPrefillLinkedDoc] = useState<CommercialDocument | null>(null);
   const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
   const [unifiedComposerOpen, setUnifiedComposerOpen] = useState(false);
   const [unifiedEditingDraft, setUnifiedEditingDraft] = useState<UnifiedDocument | null>(null);
   const [unifiedPrefill, setUnifiedPrefill] = useState<UnifiedInvoiceComposerPrefill | null>(null);
   const [printUnifiedDoc, setPrintUnifiedDoc] = useState<UnifiedDocument | null>(null);
+
+  // Partial conversion modal
+  const [partialSourceDoc, setPartialSourceDoc] = useState<CommercialDocument | null>(null);
+  const [partialTargetType, setPartialTargetType] = useState<CommercialDocType>('bl');
+  const [partialQuantities, setPartialQuantities] = useState<Record<string, number>>({});
+
+  // Delivery rounds modals
+  const [newRoundOpen, setNewRoundOpen] = useState(false);
+  const [roundRepId, setRoundRepId] = useState('');
+  const [roundDate, setRoundDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [roundVehicle, setRoundVehicle] = useState('Fourgon Logistique 01');
+  const [roundNotes, setRoundNotes] = useState('');
+  const [roundDraftStops, setRoundDraftStops] = useState<TradingDeliveryStop[]>([]);
+  const [reconcilingRound, setReconcilingRound] = useState<TradingDeliveryRound | null>(null);
+  const [reconcileStops, setReconcileStops] = useState<TradingDeliveryStop[]>([]);
+  const [roundCommissionPercent, setRoundCommissionPercent] = useState('1.5');
 
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('overview');
@@ -202,14 +243,96 @@ export const TradingSalesView: React.FC = () => {
 
   const handleCreateNew = useCallback((type: CommercialDocType) => {
     setEditingDoc(null);
+    setPrefillLinkedDoc(null);
     setComposerType(type);
+    setComposerOpen(true);
+  }, []);
+
+  const handleOpenAvoirFromInvoice = useCallback((invoiceDoc: CommercialDocument) => {
+    setEditingDoc(null);
+    setPrefillLinkedDoc(invoiceDoc);
+    setComposerType('avoir');
     setComposerOpen(true);
   }, []);
 
   const handleEdit = useCallback((doc: CommercialDocument) => {
     setEditingDoc(doc);
+    setPrefillLinkedDoc(null);
     setComposerType(doc.type);
     setComposerOpen(true);
+  }, []);
+
+  const handleOpenPartialConvert = useCallback((doc: CommercialDocument) => {
+    const defaultTarget: CommercialDocType =
+      doc.type === 'bl' ? 'facture' : 'bl';
+    const lines = computeRemainingConvertibleItems({
+      sourceDoc: doc,
+      targetType: defaultTarget,
+    });
+    const initQty: Record<string, number> = {};
+    lines.forEach((l) => {
+      initQty[l.item.id] = l.remainingQty;
+    });
+    setPartialSourceDoc(doc);
+    setPartialTargetType(defaultTarget);
+    setPartialQuantities(initQty);
+  }, []);
+
+  const handleSubmitPartialConvert = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!partialSourceDoc) return;
+    const created = convertCommercialDocPartial(partialSourceDoc.id, partialTargetType, partialQuantities);
+    if (created) {
+      setPartialSourceDoc(null);
+    }
+  };
+
+  const handleOpenNewRound = useCallback(() => {
+    const activeRep = staffList.find((s) => !s.status || s.status === 'active') || staffList[0];
+    setRoundRepId(activeRep?.id || '');
+    setRoundDate(new Date().toISOString().slice(0, 10));
+    setRoundVehicle('Fourgon Logistique 01');
+    setRoundNotes('');
+    const firstClient = b2bClients[0];
+    setRoundDraftStops(
+      firstClient
+        ? [
+            {
+              id: `stop_${Date.now()}_1`,
+              clientId: firstClient.id,
+              clientName: firstClient.companyName,
+              expectedAmountDzd: 0,
+              collectedAmountDzd: 0,
+              status: 'pending',
+            },
+          ]
+        : []
+    );
+    setNewRoundOpen(true);
+  }, [staffList, b2bClients]);
+
+  const handleCreateRound = (e: React.FormEvent) => {
+    e.preventDefault();
+    const rep = staffList.find((s) => s.id === roundRepId) || staffList[0];
+    const year = new Date().getFullYear();
+    const num = `TRN-${year}-${(tradingDeliveryRounds.length + 1).toString().padStart(4, '0')}`;
+    createTradingDeliveryRound({
+      roundNumber: num,
+      repStaffId: rep?.id,
+      repName: rep ? (rep.fullName || 'Chauffeur / Rep') : 'Équipe Livraison',
+      roundDate,
+      vehicleLabel: roundVehicle.trim() || undefined,
+      status: 'in_progress',
+      stops: roundDraftStops.filter((s) => s.clientId || s.clientName),
+      notes: roundNotes.trim() || undefined,
+    });
+    setNewRoundOpen(false);
+  };
+
+  const handleOpenReconcileRound = useCallback((round: TradingDeliveryRound) => {
+    setReconcilingRound(round);
+    setReconcileStops((round.stops || []).map((s) => ({ ...s })));
+    setRoundCommissionPercent('1.5');
   }, []);
 
   const handleConvert = useCallback(
@@ -277,6 +400,7 @@ export const TradingSalesView: React.FC = () => {
           { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
           { value: 'Draft', label: isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon' },
           { value: 'Validated', label: isAr ? 'مصادق' : isEn ? 'Validated' : 'Validé' },
+          { value: 'Partial', label: isAr ? 'جزئي' : isEn ? 'Partial' : 'Partiel' },
           { value: 'Delivered', label: isAr ? 'مسلم' : isEn ? 'Delivered' : 'Livré' },
           { value: 'Paid', label: isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payé' },
         ],
@@ -412,6 +536,7 @@ export const TradingSalesView: React.FC = () => {
         renderCell: (doc) => {
           const isPaid = doc.status === 'Paid';
           const isDelivered = doc.status === 'Delivered';
+          const isPartial = doc.status === 'Partial';
           const isValidated = doc.status === 'Validated';
           return (
             <span
@@ -420,6 +545,8 @@ export const TradingSalesView: React.FC = () => {
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : isDelivered
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                  : isPartial
+                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300'
                   : isValidated
                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
                   : 'bg-[#EFE9E2] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
@@ -433,87 +560,96 @@ export const TradingSalesView: React.FC = () => {
       {
         key: 'actions',
         header: '',
-        width: '150px',
-        renderCell: (doc) => (
-          <div className="flex items-center justify-end gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPrintDoc(doc);
-              }}
-              aria-label={t('action_print', 'Imprimer')}
-              title={t('action_print', 'Imprimer')}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
-            >
-              <Printer size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit(doc);
-              }}
-              aria-label={t('action_edit', 'Modifier')}
-              title={t('action_edit', 'Modifier')}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
-            >
-              <Edit size={14} />
-            </button>
-            {doc.type === 'devis' && (
+        width: '220px',
+        renderCell: (doc) => {
+          const hasConvertibleRemainder =
+            (doc.type === 'devis' || doc.type === 'commande' || doc.type === 'bl') &&
+            doc.status !== 'Canceled' &&
+            computeRemainingConvertibleItems({
+              sourceDoc: doc,
+              targetType: doc.type === 'bl' ? 'facture' : 'bl',
+            }).some((r) => r.remainingQty > 0);
+          return (
+            <div className="flex items-center justify-end gap-1">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleConvert(doc);
+                  setPrintDoc(doc);
                 }}
-                title={t('trading_sales_convert_to_bl', 'Convertir en Bon de Livraison')}
-                data-sq="check"
+                aria-label={t('action_print', 'Imprimer')}
+                title={t('action_print', 'Imprimer')}
+                data-sq="ctl-sm"
                 data-sq-border="none"
-                className="px-2 py-1 t-small font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
+                className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
-                BL →
+                <Printer size={14} />
               </button>
-            )}
-            {doc.type === 'bl' && doc.status === 'Delivered' && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleConvert(doc);
+                  handleEdit(doc);
                 }}
-                title={t('trading_sales_convert_to_invoice', 'Facturer ce bon de livraison')}
-                data-sq="check"
+                aria-label={t('action_edit', 'Modifier')}
+                title={t('action_edit', 'Modifier')}
+                data-sq="ctl-sm"
                 data-sq-border="none"
-                className="px-2 py-1 t-small font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
+                className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
-                {isAr ? 'فوترة ←' : 'Facturer →'}
+                <Edit size={14} />
               </button>
-            )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteCommercialDoc(doc.id);
-                if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
-              }}
-              aria-label={t('action_delete', 'Supprimer')}
-              title={t('action_delete', 'Supprimer')}
-              data-sq="ctl-sm"
-              data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ),
+              {hasConvertibleRemainder && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenPartialConvert(doc);
+                  }}
+                  title={isAr ? 'تحويل جزئي' : isEn ? 'Partial Convert' : 'Conversion Partielle'}
+                  data-sq="check"
+                  data-sq-border="none"
+                  className="px-2 py-1 t-small font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {doc.type === 'bl' ? (isAr ? 'فوترة ←' : 'Facturer →') : 'BL / BC →'}
+                </button>
+              )}
+              {doc.type === 'facture' && doc.status !== 'Canceled' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenAvoirFromInvoice(doc);
+                  }}
+                  title={isAr ? 'إنشاء إشعار دائن' : isEn ? 'Issue Credit Note' : 'Créer Avoir'}
+                  data-sq="check"
+                  data-sq-border="none"
+                  className="px-2 py-1 t-small font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/50 dark:text-rose-300 transition-colors cursor-pointer"
+                >
+                  Avoir
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteCommercialDoc(doc.id);
+                  if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
+                }}
+                aria-label={t('action_delete', 'Supprimer')}
+                title={t('action_delete', 'Supprimer')}
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          );
+        },
       },
     ],
-    [t, isAr, isEn, branchesById, currentBranch, language, handleEdit, handleConvert, deleteCommercialDoc, inspectingDoc?.id]
+    [t, isAr, isEn, branchesById, currentBranch, language, handleEdit, handleOpenPartialConvert, handleOpenAvoirFromInvoice, deleteCommercialDoc, inspectingDoc?.id]
   );
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -549,11 +685,19 @@ export const TradingSalesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<FileText size={22} />}
         title={t('trading_sales_title', 'Ventes')}
-        primaryAction={{
-          label: t('trading_sales_new_invoice', 'Nouvelle Facture'),
-          icon: <Plus size={15} />,
-          onClick: () => handleCreateNew('facture'),
-        }}
+        primaryAction={
+          salesMode === 'rounds'
+            ? {
+                label: isAr ? 'جولة توصيل جديدة' : isEn ? 'New Delivery Round' : 'Nouvelle Tournée',
+                icon: <Truck size={15} />,
+                onClick: handleOpenNewRound,
+              }
+            : {
+                label: t('trading_sales_new_invoice', 'Nouvelle Facture'),
+                icon: <Plus size={15} />,
+                onClick: () => handleCreateNew('facture'),
+              }
+        }
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
             <AtriumButton
@@ -587,6 +731,128 @@ export const TradingSalesView: React.FC = () => {
           </div>
         }
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSalesMode('documents')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold transition-colors cursor-pointer ${
+            salesMode === 'documents'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          {isAr ? 'المستندات التجارية' : isEn ? 'Commercial Documents' : 'Documents Commerciaux'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setSalesMode('rounds')}
+          className={`px-3.5 py-2 rounded-xl t-small font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
+            salesMode === 'rounds'
+              ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900'
+              : 'bg-white dark:bg-[#262422] text-black/75 dark:text-white/75 border border-[var(--atr-divider)]'
+          }`}
+        >
+          <Truck size={14} />
+          <span>{isAr ? 'جولات التوصيل والتحصيل' : isEn ? 'Delivery Rounds & Cash' : 'Tournées & Encaissements'}</span>
+          <span className="px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/15 text-[11px] tabular-nums">
+            {tradingDeliveryRounds.length}
+          </span>
+        </button>
+      </div>
+
+      {salesMode === 'rounds' ? (
+        <ScreenPod>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 className="t-pod font-semibold text-black dark:text-white">
+                {isAr ? 'جولات التوزيع الميداني ومطابقة التحصيل' : isEn ? 'Field Delivery Rounds & Collection Reconciliation' : 'Tournées de Livraison & Rapprochement Cash'}
+              </h3>
+              <p className="t-cap text-black/55 dark:text-white/60">
+                {isAr
+                  ? 'تتبع المندوبين، المبالغ المحصلة في الميدان، وإصدار العمولات.'
+                  : isEn
+                  ? 'Track rep stops, expected vs collected cash variance, and auto-generate rep commissions on close.'
+                  : 'Suivi des arrêts clients, écart attendu vs encaissé, et génération de commission à la clôture.'}
+              </p>
+            </div>
+            <AtriumButton variant="primary" size="sm" icon={<Plus size={14} />} onClick={handleOpenNewRound}>
+              {isAr ? 'إنشاء جولة' : isEn ? 'New Round' : 'Créer une Tournée'}
+            </AtriumButton>
+          </div>
+          {tradingDeliveryRounds.length === 0 ? (
+            <div data-sq="card" data-sq-border="solid" className="p-8 text-center space-y-3 bg-[#FAF7F4] dark:bg-[#1E1C1A] [--sq-stroke:var(--sq-stroke-card)]">
+              <p className="t-body font-medium text-black dark:text-white">
+                {isAr ? 'لا توجد جولات توصيل مسجلة' : isEn ? 'No delivery rounds scheduled' : 'Aucune tournée enregistrée'}
+              </p>
+              <AtriumButton variant="primary" size="sm" icon={<Plus size={14} />} onClick={handleOpenNewRound}>
+                {isAr ? 'بدء أول جولة' : isEn ? 'Create First Round' : 'Créer la Première Tournée'}
+              </AtriumButton>
+            </div>
+          ) : (
+            <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+              <table className="w-full text-left rtl:text-right t-cap">
+                <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                  <tr>
+                    <th className="py-2.5 px-3">N° Tournée</th>
+                    <th className="py-2.5 px-3">Chauffeur / Rep</th>
+                    <th className="py-2.5 px-3">Date & Véhicule</th>
+                    <th className="py-2.5 px-3 text-right">Arrêts</th>
+                    <th className="py-2.5 px-3 text-right">Attendu</th>
+                    <th className="py-2.5 px-3 text-right">Encaissé</th>
+                    <th className="py-2.5 px-3">Statut</th>
+                    <th className="py-2.5 px-3 text-right" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--atr-divider)] tabular-nums">
+                  {tradingDeliveryRounds.map((round) => {
+                    const stats = reconcileDeliveryRoundStops(round.stops || []);
+                    return (
+                      <tr key={round.id} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
+                        <td className="py-2.5 px-3 font-semibold text-black dark:text-white">{round.roundNumber}</td>
+                        <td className="py-2.5 px-3">{round.repName}</td>
+                        <td className="py-2.5 px-3 text-black/70 dark:text-white/75">
+                          {round.roundDate}{round.vehicleLabel ? ` · ${round.vehicleLabel}` : ''}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          {stats.deliveredCount}/{stats.totalStops}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">{formatMoney(stats.totalExpectedDzd)}</td>
+                        <td className="py-2.5 px-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                          {formatMoney(stats.totalCollectedDzd)}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span
+                            className={`px-2 py-0.5 rounded-[var(--r-check,6px)] t-small font-semibold ${
+                              round.status === 'completed'
+                                ? STATUS_PILL_OK
+                                : round.status === 'in_progress'
+                                ? STATUS_PILL_INFO
+                                : STATUS_PILL_WARN
+                            }`}
+                          >
+                            {round.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <AtriumButton
+                            variant="secondary"
+                            size="xs"
+                            onClick={() => handleOpenReconcileRound(round)}
+                          >
+                            {round.status === 'completed' ? 'Détails' : 'Rapprocher & Clôturer'}
+                          </AtriumButton>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </ScreenPod>
+      ) : (
+        <>
 
       <ScreenKpiBanner
         heading={isAr ? 'مؤشرات دورة المبيعات' : isEn ? 'Sales Pipeline Metrics' : 'Indicateurs Cycle de Vente'}
@@ -768,7 +1034,7 @@ export const TradingSalesView: React.FC = () => {
               statusVariant:
                 doc.status === 'Paid'
                   ? 'active'
-                  : doc.status === 'Delivered'
+                  : doc.status === 'Delivered' || doc.status === 'Partial'
                   ? 'info'
                   : doc.status === 'Validated'
                   ? 'warning'
@@ -993,7 +1259,7 @@ export const TradingSalesView: React.FC = () => {
         }}
       />
 
-      {unifiedDocuments.length > 0 && (
+      {salesMode === 'documents' && unifiedDocuments.length > 0 && (
         <ScreenPod>
           <div className="flex items-center justify-between mb-3">
             <span className="t-label font-semibold text-black dark:text-white">
@@ -1053,12 +1319,350 @@ export const TradingSalesView: React.FC = () => {
           </div>
         </ScreenPod>
       )}
+        </>
+      )}
+
+      {/* Partial Conversion Modal */}
+      <KineticModalShell
+        isOpen={Boolean(partialSourceDoc)}
+        onClose={() => setPartialSourceDoc(null)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {partialSourceDoc && (
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+              <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
+                <Layers size={18} className="text-[#BF431F] dark:text-[#FF8F63]" />
+                <span>Conversion Partielle · {partialSourceDoc.docNumber}</span>
+              </h2>
+              <button type="button" onClick={() => setPartialSourceDoc(null)} className="p-1 text-black/55 dark:text-white/55 cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitPartialConvert} className="space-y-4 t-cap">
+              <LabelSelect
+                label="Document cible"
+                value={partialTargetType}
+                onChange={(val) => setPartialTargetType(val as CommercialDocType)}
+                options={
+                  partialSourceDoc.type === 'bl'
+                    ? [{ value: 'facture', label: 'Facture Fiscale (FAC)' }]
+                    : partialSourceDoc.type === 'commande'
+                    ? [
+                        { value: 'bl', label: 'Bon de Livraison (BL)' },
+                        { value: 'facture', label: 'Facture Fiscale (FAC)' },
+                      ]
+                    : [
+                        { value: 'commande', label: 'Bon de Commande (BC)' },
+                        { value: 'bl', label: 'Bon de Livraison (BL)' },
+                      ]
+                }
+              />
+              <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                <table className="w-full text-left t-cap">
+                  <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                    <tr>
+                      <th className="py-2 px-3">Article</th>
+                      <th className="py-2 px-2 text-right">Total</th>
+                      <th className="py-2 px-2 text-right">Déjà conv.</th>
+                      <th className="py-2 px-2 text-right">Reliquat</th>
+                      <th className="py-2 px-3 text-right w-28">Qté à convertir</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--atr-divider)] tabular-nums">
+                    {computeRemainingConvertibleItems({
+                      sourceDoc: partialSourceDoc,
+                      targetType: partialTargetType,
+                    }).map((row) => (
+                      <tr key={row.item.id}>
+                        <td className="py-2 px-3 font-medium text-black dark:text-white">{row.item.description}</td>
+                        <td className="py-2 px-2 text-right">{row.item.quantity}</td>
+                        <td className="py-2 px-2 text-right text-black/55 dark:text-white/60">{row.alreadyConvertedQty}</td>
+                        <td className="py-2 px-2 text-right font-semibold text-blue-600 dark:text-blue-400">{row.remainingQty}</td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            min={0}
+                            max={row.remainingQty}
+                            step="any"
+                            value={partialQuantities[row.item.id] ?? row.remainingQty}
+                            onChange={(e) =>
+                              setPartialQuantities((prev) => ({
+                                ...prev,
+                                [row.item.id]: Math.max(0, parseFloat(e.target.value) || 0),
+                              }))
+                            }
+                            className="w-full h-8 rounded-[var(--r-check,6px)] bg-[#F5F1EC] dark:bg-[#292624] px-2 text-right tabular-nums text-black dark:text-white"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setPartialSourceDoc(null)}>
+                  Annuler
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary" size="sm" icon={<CheckCircle size={14} />}>
+                  Convertir Quantités Sélectionnées
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
+      {/* New Delivery Round Modal */}
+      <KineticModalShell
+        isOpen={newRoundOpen}
+        onClose={() => setNewRoundOpen(false)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h2 className="t-card font-semibold text-black dark:text-white">Nouvelle Tournée de Livraison</h2>
+            <button type="button" onClick={() => setNewRoundOpen(false)} className="p-1 text-black/55 dark:text-white/55 cursor-pointer">
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateRound} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabelSelect
+                label="Chauffeur / Commercial"
+                value={roundRepId}
+                onChange={setRoundRepId}
+                options={staffList.map((s) => ({
+                  value: s.id,
+                  label: `${s.fullName} (${s.role})`,
+                }))}
+              />
+              <LabelInput type="date" label="Date tournée" value={roundDate} onChange={setRoundDate} required />
+              <LabelInput label="Véhicule / Matricule" value={roundVehicle} onChange={setRoundVehicle} />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="t-small font-semibold">Arrêts Clients ({roundDraftStops.length})</span>
+                <AtriumButton
+                  type="button"
+                  variant="secondary"
+                  size="xs"
+                  icon={<Plus size={13} />}
+                  onClick={() => {
+                    const c = b2bClients[0];
+                    setRoundDraftStops((prev) => [
+                      ...prev,
+                      {
+                        id: `stop_${Date.now()}_${prev.length + 1}`,
+                        clientId: c?.id || '',
+                        clientName: c?.companyName || 'Client',
+                        expectedAmountDzd: 0,
+                        collectedAmountDzd: 0,
+                        status: 'pending',
+                      },
+                    ]);
+                  }}
+                >
+                  Ajouter arrêt
+                </AtriumButton>
+              </div>
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {roundDraftStops.map((stop, idx) => (
+                  <div key={stop.id} className="grid grid-cols-12 gap-2 items-end p-2.5 bg-[#F5F1EC]/70 dark:bg-[#22201E] rounded-lg">
+                    <div className="col-span-6">
+                      <LabelSelect
+                        label="Client"
+                        value={stop.clientId || ''}
+                        onChange={(cid) => {
+                          const c = b2bClients.find((x) => x.id === cid);
+                          setRoundDraftStops((prev) =>
+                            prev.map((s, i) =>
+                              i === idx ? { ...s, clientId: cid, clientName: c?.companyName || s.clientName } : s
+                            )
+                          );
+                        }}
+                        options={b2bClients.map((c) => ({ value: c.id, label: c.companyName }))}
+                      />
+                    </div>
+                    <div className="col-span-5">
+                      <LabelInput
+                        type="number"
+                        min={0}
+                        label="Attendu à encaisser (DA)"
+                        value={stop.expectedAmountDzd}
+                        onChange={(val) =>
+                          setRoundDraftStops((prev) =>
+                            prev.map((s, i) => (i === idx ? { ...s, expectedAmountDzd: Math.max(0, parseFloat(val) || 0) } : s))
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-1 flex justify-center pb-1">
+                      <button
+                        type="button"
+                        onClick={() => setRoundDraftStops((prev) => prev.filter((_, i) => i !== idx))}
+                        className="p-1.5 text-black/55 hover:text-rose-600 cursor-pointer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <LabelInput label="Observations" value={roundNotes} onChange={setRoundNotes} />
+            <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setNewRoundOpen(false)}>
+                Annuler
+              </AtriumButton>
+              <AtriumButton type="submit" variant="primary" size="sm">
+                Lancer la Tournée
+              </AtriumButton>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
+
+      {/* Reconcile & Complete Delivery Round Modal */}
+      <KineticModalShell
+        isOpen={Boolean(reconcilingRound)}
+        onClose={() => setReconcilingRound(null)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {reconcilingRound && (
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+              <h2 className="t-card font-semibold text-black dark:text-white">
+                Rapprochement Tournée · {reconcilingRound.roundNumber}
+              </h2>
+              <button type="button" onClick={() => setReconcilingRound(null)} className="p-1 text-black/55 dark:text-white/55 cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {reconcileStops.map((stop, idx) => (
+                <div key={stop.id} className="grid grid-cols-12 gap-2 items-end p-2.5 bg-[#F5F1EC]/70 dark:bg-[#22201E] rounded-lg t-cap">
+                  <div className="col-span-4">
+                    <span className="block font-semibold text-black dark:text-white">{stop.clientName}</span>
+                    <span className="tabular-nums text-black/55 dark:text-white/60">
+                      Attendu: {formatMoney(stop.expectedAmountDzd)}
+                    </span>
+                  </div>
+                  <div className="col-span-4">
+                    <LabelInput
+                      type="number"
+                      min={0}
+                      label="Encaissé (DA)"
+                      value={stop.collectedAmountDzd}
+                      onChange={(val) =>
+                        setReconcileStops((prev) =>
+                          prev.map((s, i) => (i === idx ? { ...s, collectedAmountDzd: Math.max(0, parseFloat(val) || 0) } : s))
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <LabelSelect
+                      label="Statut arrêt"
+                      value={stop.status}
+                      onChange={(val) =>
+                        setReconcileStops((prev) =>
+                          prev.map((s, i) => (i === idx ? { ...s, status: val as TradingDeliveryStop['status'] } : s))
+                        )
+                      }
+                      options={[
+                        { value: 'pending', label: 'En attente' },
+                        { value: 'delivered', label: 'Livré & Encaissé' },
+                        { value: 'partial', label: 'Partiel' },
+                        { value: 'failed', label: 'Échec / Absent' },
+                      ]}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(() => {
+              const summary = reconcileDeliveryRoundStops(reconcileStops);
+              return (
+                <div data-sq="ctl-sm" data-sq-border="none" className="grid grid-cols-3 gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap tabular-nums">
+                  <div>
+                    <span className="text-black/55 dark:text-white/60 block">Total Attendu</span>
+                    <span className="font-semibold">{formatMoney(summary.totalExpectedDzd)}</span>
+                  </div>
+                  <div>
+                    <span className="text-black/55 dark:text-white/60 block">Total Encaissé</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatMoney(summary.totalCollectedDzd)}</span>
+                  </div>
+                  <div>
+                    <span className="text-black/55 dark:text-white/60 block">Écart</span>
+                    <span className={`font-semibold ${summary.varianceDzd < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {formatMoney(summary.varianceDzd)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+            {reconcilingRound.status !== 'completed' && (
+              <LabelInput
+                type="number"
+                step={0.1}
+                min={0}
+                label="Taux commission rep à la clôture (%) — 0 pour aucune"
+                value={roundCommissionPercent}
+                onChange={setRoundCommissionPercent}
+              />
+            )}
+            <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setReconcilingRound(null)}>
+                Fermer
+              </AtriumButton>
+              <AtriumButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  updateTradingDeliveryRound(reconcilingRound.id, { stops: reconcileStops });
+                  setReconcilingRound(null);
+                }}
+              >
+                Enregistrer Arrêts
+              </AtriumButton>
+              {reconcilingRound.status !== 'completed' && (
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<CheckCircle size={14} />}
+                  onClick={() => {
+                    updateTradingDeliveryRound(reconcilingRound.id, { stops: reconcileStops });
+                    const bps = Math.max(0, Math.round((parseFloat(roundCommissionPercent) || 0) * 100));
+                    completeTradingDeliveryRound(reconcilingRound.id, { commissionRateBps: bps });
+                    setReconcilingRound(null);
+                  }}
+                >
+                  Clôturer Tournée
+                </AtriumButton>
+              )}
+            </div>
+          </div>
+        )}
+      </KineticModalShell>
 
       <CommercialDocComposerModal
         isOpen={composerOpen}
-        onClose={() => setComposerOpen(false)}
+        onClose={() => {
+          setComposerOpen(false);
+          setPrefillLinkedDoc(null);
+        }}
         initialType={composerType}
         editingDoc={editingDoc}
+        prefillLinkedDoc={prefillLinkedDoc}
       />
       <CommercialDocPrintModal isOpen={!!printDoc} onClose={() => setPrintDoc(null)} document={printDoc} />
       <UnifiedInvoiceComposerModal

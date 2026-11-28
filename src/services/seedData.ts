@@ -54,6 +54,9 @@ import {
   CommercialDocument,
   PurchaseDocument,
   StockMovementVoucher,
+  TradingPriceList,
+  TradingDeliveryRound,
+  TradingRepCommission,
   StaffAttendanceLogRecord,
   StaffSalaryAdvance,
   StaffPayrollSlipRecord,
@@ -948,6 +951,9 @@ export const INITIAL_COMMERCIAL_DOCS: CommercialDocument[] = [];
 export const INITIAL_PURCHASE_DOCS: PurchaseDocument[] = [];
 export const INITIAL_STOCK_VOUCHERS: StockMovementVoucher[] = [];
 export const INITIAL_TRADING_PRODUCTS: Product[] = [];
+export const INITIAL_TRADING_PRICE_LISTS: TradingPriceList[] = [];
+export const INITIAL_TRADING_DELIVERY_ROUNDS: TradingDeliveryRound[] = [];
+export const INITIAL_TRADING_REP_COMMISSIONS: TradingRepCommission[] = [];
 
 export const INITIAL_STAFF_ATTENDANCE_LOGS: StaffAttendanceLogRecord[] = [
   {

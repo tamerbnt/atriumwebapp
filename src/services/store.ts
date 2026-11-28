@@ -128,6 +128,9 @@ import {
   CommercialDocType,
   PurchaseDocType,
   StockVoucherType,
+  TradingPriceList,
+  TradingDeliveryRound,
+  TradingRepCommission,
   StandardRole,
   MemberCheckInLog,
   WalkInTicket,
@@ -338,6 +341,9 @@ import {
   INITIAL_PURCHASE_DOCS,
   INITIAL_STOCK_VOUCHERS,
   INITIAL_TRADING_PRODUCTS,
+  INITIAL_TRADING_PRICE_LISTS,
+  INITIAL_TRADING_DELIVERY_ROUNDS,
+  INITIAL_TRADING_REP_COMMISSIONS,
 } from './seedData';
 
 import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
@@ -502,6 +508,9 @@ import {
   mapCommercialDocFromDb,
   mapPurchaseDocFromDb,
   mapStockVoucherFromDb,
+  mapTradingPriceListFromDb,
+  mapTradingDeliveryRoundFromDb,
+  mapTradingRepCommissionFromDb,
   runWithConcurrency,
   getActiveDeviceId,
   isUuid,
@@ -591,6 +600,17 @@ import {
   canTransitionGalleryStage,
   buildNextContractNumber,
 } from '../utils/freelanceDepth';
+import {
+  evaluateClientCreditExposure,
+  validateAvoirAgainstInvoice,
+  applyPartialDocConversion,
+  validateDepotVoucherAvailability,
+  applyDepotStockVoucherToProducts,
+  validateGuaranteeRetentionRelease,
+  buildPostingForGuaranteeRelease,
+  calculateTradingRepCommissionDzd,
+  reconcileDeliveryRoundStops,
+} from '../utils/tradingDepth';
 import {
   getDefaultScfChartOfAccounts,
   validateScfJournalLines,
@@ -956,6 +976,9 @@ interface AppState {
   commercialDocs: CommercialDocument[];
   purchaseDocs: PurchaseDocument[];
   stockVouchers: StockMovementVoucher[];
+  tradingPriceLists: TradingPriceList[];
+  tradingDeliveryRounds: TradingDeliveryRound[];
+  tradingRepCommissions: TradingRepCommission[];
   // Phase 2 Shared Horizontal Foundations (6.1, 6.2 & 6.3)
   unifiedDocuments: UnifiedDocument[];
   unifiedPayments: UnifiedPayment[];
@@ -1224,6 +1247,9 @@ const DEFAULT_STATE: AppState = {
   commercialDocs: INITIAL_COMMERCIAL_DOCS,
   purchaseDocs: INITIAL_PURCHASE_DOCS,
   stockVouchers: INITIAL_STOCK_VOUCHERS,
+  tradingPriceLists: INITIAL_TRADING_PRICE_LISTS,
+  tradingDeliveryRounds: INITIAL_TRADING_DELIVERY_ROUNDS,
+  tradingRepCommissions: INITIAL_TRADING_REP_COMMISSIONS,
   unifiedDocuments: [],
   unifiedPayments: [],
   scfAccounts: [],
@@ -1368,6 +1394,9 @@ function backfillTraceability(state: AppState): AppState {
     commercialDocs: (state.commercialDocs || []).map(patch),
     purchaseDocs: (state.purchaseDocs || []).map(patch),
     stockVouchers: (state.stockVouchers || []).map(patch),
+    tradingPriceLists: (state.tradingPriceLists || []).map(patch),
+    tradingDeliveryRounds: (state.tradingDeliveryRounds || []).map(patch),
+    tradingRepCommissions: (state.tradingRepCommissions || []).map(patch),
   };
 }
 
@@ -1574,6 +1603,9 @@ let globalState: AppState = backfillTraceability((() => {
           commercialDocs: Array.isArray(parsed.commercialDocs) ? parsed.commercialDocs : INITIAL_COMMERCIAL_DOCS,
           purchaseDocs: Array.isArray(parsed.purchaseDocs) ? parsed.purchaseDocs : INITIAL_PURCHASE_DOCS,
           stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
+          tradingPriceLists: Array.isArray(parsed.tradingPriceLists) ? parsed.tradingPriceLists : INITIAL_TRADING_PRICE_LISTS,
+          tradingDeliveryRounds: Array.isArray(parsed.tradingDeliveryRounds) ? parsed.tradingDeliveryRounds : INITIAL_TRADING_DELIVERY_ROUNDS,
+          tradingRepCommissions: Array.isArray(parsed.tradingRepCommissions) ? parsed.tradingRepCommissions : INITIAL_TRADING_REP_COMMISSIONS,
           unifiedDocuments: Array.isArray(parsed.unifiedDocuments) ? parsed.unifiedDocuments : [],
           unifiedPayments: Array.isArray(parsed.unifiedPayments) ? parsed.unifiedPayments : [],
           scfAccounts: Array.isArray(parsed.scfAccounts) ? parsed.scfAccounts : [],
@@ -2423,6 +2455,18 @@ export const selectCurrentPurchaseDocsFromState = createBranchSelector<PurchaseD
 export const selectCurrentStockVouchersFromState = createBranchSelector<StockMovementVoucher>(
   (s) => s.stockVouchers,
   (v, b) => v.facilityId === b || v.branchId === b
+);
+export const selectCurrentTradingPriceListsFromState = createBranchSelector<TradingPriceList>(
+  (s) => s.tradingPriceLists,
+  (p, b) => p.facilityId === b || p.branchId === b
+);
+export const selectCurrentTradingDeliveryRoundsFromState = createBranchSelector<TradingDeliveryRound>(
+  (s) => s.tradingDeliveryRounds,
+  (r, b) => r.facilityId === b || r.branchId === b
+);
+export const selectCurrentTradingRepCommissionsFromState = createBranchSelector<TradingRepCommission>(
+  (s) => s.tradingRepCommissions,
+  (c, b) => c.facilityId === b || c.branchId === b
 );
 export const selectCurrentUnifiedDocumentsFromState = createBranchSelector<UnifiedDocument>(
   (s) => s.unifiedDocuments,
@@ -4693,6 +4737,9 @@ function pruneDeletedRecords(
     trading_commercial_docs: 'commercialDocs',
     trading_purchase_docs: 'purchaseDocs',
     trading_stock_vouchers: 'stockVouchers',
+    trading_price_lists: 'tradingPriceLists',
+    trading_delivery_rounds: 'tradingDeliveryRounds',
+    trading_rep_commissions: 'tradingRepCommissions',
     unified_documents: 'unifiedDocuments',
     unified_payments: 'unifiedPayments',
     crm_parties: 'crmParties',
@@ -5998,6 +6045,24 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
           if (rows.length > 0) updates.stockVouchers = mergeById(globalState.stockVouchers || [], rows);
         });
       }
+      if (shouldSyncTable('trading_price_lists')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchPriceLists(branchId, updatedAfter);
+          if (rows.length > 0) updates.tradingPriceLists = mergeById(globalState.tradingPriceLists || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_delivery_rounds')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchDeliveryRounds(branchId, updatedAfter);
+          if (rows.length > 0) updates.tradingDeliveryRounds = mergeById(globalState.tradingDeliveryRounds || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_rep_commissions')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchRepCommissions(branchId, updatedAfter);
+          if (rows.length > 0) updates.tradingRepCommissions = mergeById(globalState.tradingRepCommissions || [], rows);
+        });
+      }
     }
 
     if (tableFilterSet && tasks.length === 0) {
@@ -6546,14 +6611,12 @@ export function applyResolvedRowToSlice(
       return { freelanceTranslationEntries: patchList(globalState.freelanceTranslationEntries || [], mapFreelanceTranslationFromDb) };
     case 'freelance_photo_shoots':
       return { freelancePhotoShoots: patchList(globalState.freelancePhotoShoots || [], mapFreelancePhotoShootFromDb) };
-    case 'freelance_active_timers':
-      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-        const remote = mapActiveTimerFromDb(payload.new);
-        const reconciled = reconcileRemoteActiveTimer(timerState, remote);
-        setTimerMicroState(reconciled, false);
-        return { activeTimer: reconciled };
-      }
-      return {};
+    case 'freelance_active_timers': {
+      const remote = mapActiveTimerFromDb(row);
+      const reconciled = reconcileRemoteActiveTimer(timerState, remote);
+      setTimerMicroState(reconciled, false);
+      return { activeTimer: reconciled };
+    }
     case 'rental_units':
       return { rentableUnits: patchList(globalState.rentableUnits, mapRentalUnitFromDb) };
     case 'rental_renters':
@@ -6645,6 +6708,12 @@ export function applyResolvedRowToSlice(
       return { purchaseDocs: patchList(globalState.purchaseDocs, mapPurchaseDocFromDb) };
     case 'trading_stock_vouchers':
       return { stockVouchers: patchList(globalState.stockVouchers, mapStockVoucherFromDb) };
+    case 'trading_price_lists':
+      return { tradingPriceLists: patchList(globalState.tradingPriceLists || [], mapTradingPriceListFromDb) };
+    case 'trading_delivery_rounds':
+      return { tradingDeliveryRounds: patchList(globalState.tradingDeliveryRounds || [], mapTradingDeliveryRoundFromDb) };
+    case 'trading_rep_commissions':
+      return { tradingRepCommissions: patchList(globalState.tradingRepCommissions || [], mapTradingRepCommissionFromDb) };
     case 'business_configs': {
       const mapped = mapBusinessConfigFromDb(row);
       return {
@@ -10061,6 +10130,16 @@ function createAtriumActions() {
         (sum, v) => sum + centimesToDzd(v.grossAmountCentimes),
         0
       );
+      const postedTradingRepCommissions = (globalState.tradingRepCommissions || []).filter(
+        (c) =>
+          (c.repStaffId === member.id || c.staffId === member.id) &&
+          c.status === 'posted_to_payroll' &&
+          (!c.payrollRunId || c.payrollRunId === runId)
+      );
+      const postedTradingCommDzd = postedTradingRepCommissions.reduce(
+        (sum, c) => sum + Number(c.commissionAmountDzd || 0),
+        0
+      );
       const baseServiceComm = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
       const coachingCommission = baseServiceComm + postedCommissionDzd;
       const primesCotisables = [
@@ -10069,6 +10148,9 @@ function createAtriumActions() {
           : []),
         ...(postedVacataireDzd > 0
           ? [{ label: 'Vacations Enseignement', amount: Math.round(postedVacataireDzd) }]
+          : []),
+        ...(postedTradingCommDzd > 0
+          ? [{ label: 'Commissions Ventes B2B', amount: Math.round(postedTradingCommDzd) }]
           : []),
       ];
 
@@ -10170,6 +10252,12 @@ function createAtriumActions() {
         ? { ...v, payrollRunId: runId }
         : v
     );
+    const boundTradingRepCommissions = (globalState.tradingRepCommissions || []).map((c) => {
+      const targetId = c.repStaffId || c.staffId || '';
+      return c.status === 'posted_to_payroll' && !c.payrollRunId && staffPoolIds.has(targetId)
+        ? { ...c, payrollRunId: runId }
+        : c;
+    });
 
     globalState = {
       ...globalState,
@@ -10177,6 +10265,7 @@ function createAtriumActions() {
       staffPayrollSlips: [...slips, ...existingSlips],
       trainerCommissions: boundTrainerCommissions,
       eduVacataireLogs: boundVacataireLogs,
+      tradingRepCommissions: boundTradingRepCommissions,
     };
     notify();
 
@@ -15678,7 +15767,7 @@ function createAtriumActions() {
       businessId: ctx.businessId,
       branchId: ctx.branchId,
       partyId: partyLink.party.id,
-      channel: inv.clientEmail ? 'email' : 'in_app',
+      channel: inv.clientEmail ? 'email' : (partyLink.party.phoneE164 ? 'sms' : 'email'),
       recipientAddress: inv.clientEmail || partyLink.party.phoneE164 || '',
       language: globalState.language || 'fr',
       subject: title,
@@ -22770,6 +22859,9 @@ function createAtriumActions() {
         commercialDocs: INITIAL_COMMERCIAL_DOCS,
         purchaseDocs: INITIAL_PURCHASE_DOCS,
         stockVouchers: INITIAL_STOCK_VOUCHERS,
+        tradingPriceLists: INITIAL_TRADING_PRICE_LISTS,
+        tradingDeliveryRounds: INITIAL_TRADING_DELIVERY_ROUNDS,
+        tradingRepCommissions: INITIAL_TRADING_REP_COMMISSIONS,
       };
     }
 
@@ -22801,18 +22893,88 @@ function createAtriumActions() {
   // Category 8: B2B Commercial Trading & Wholesale Actions
   // ============================================================
 
-  const createCommercialDoc = (doc: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createCommercialDoc = (
+    doc: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'>,
+    overrideAuth?: { managerPin?: string; overrideReason?: string }
+  ) => {
     const resolvedAccountId = requireTenantAccountId(doc.accountId, doc.tenantId, globalState.account?.id);
+    const branchId = doc.branchId || doc.facilityId || globalState.currentBranchId;
+    const targetClient = (globalState.b2bClients || []).find((c) => c.id === doc.clientId);
+
+    // 1. Validate Avoir <= linked Facture
+    if ((doc.type === 'avoir' || doc.type === 'retour') && doc.linkedDocId) {
+      const parentInv = (globalState.commercialDocs || []).find((d) => d.id === doc.linkedDocId);
+      const avoirCheck = validateAvoirAgainstInvoice({
+        parentInvoice: parentInv,
+        existingDocs: globalState.commercialDocs || [],
+        newAvoirAmountTtcDzd: Number(doc.totalTtc || 0),
+      });
+      if (!avoirCheck.valid) {
+        showToast({
+          type: 'error',
+          title: ul('Credit note rejected', 'Avoir bloqué', 'تم رفض الإشعار الدائن'),
+          message: ul(
+            `Credit note (${avoirCheck.requestedAvoirDzd.toLocaleString()} DZD) exceeds remaining creditable invoice balance (${avoirCheck.remainingCreditableDzd.toLocaleString()} DZD).`,
+            `L'avoir (${avoirCheck.requestedAvoirDzd.toLocaleString()} DA) dépasse le reste facturé (${avoirCheck.remainingCreditableDzd.toLocaleString()} DA).`,
+            `يتجاوز الإشعار الدائن (${avoirCheck.requestedAvoirDzd.toLocaleString()} دج) الرصيد المتبقي من الفاتورة (${avoirCheck.remainingCreditableDzd.toLocaleString()} دج).`
+          ),
+        });
+        return null;
+      }
+    }
+
+    // 2. Enforce Credit Limit with Manager PIN Override
+    const creditEval = evaluateClientCreditExposure({
+      client: targetClient,
+      docType: doc.type,
+      newDocTotalDzd: Number(doc.netToPay || doc.totalTtc || 0),
+      newStatus: doc.status,
+      existingDocs: globalState.commercialDocs || [],
+      staffList: (globalState.staff || []).filter((s) => !s.branchId || s.branchId === branchId || s.businessId === (doc.businessId || globalState.currentBusinessId)),
+      managerPin: overrideAuth?.managerPin,
+      overrideReason: overrideAuth?.overrideReason,
+    });
+    if (creditEval.blocked) {
+      const msg =
+        creditEval.errorCode === 'MISSING_REASON'
+          ? ul('An override reason is required.', 'Un motif de dérogation est obligatoire.', 'سبب التجاوز مطلوب.')
+          : creditEval.errorCode === 'INVALID_PIN' || creditEval.errorCode === 'NOT_AUTHORIZED_ROLE'
+            ? ul('Invalid manager PIN for credit override.', 'Code PIN gérant invalide pour dérogation crédit.', 'رمز PIN المدير غير صالح.')
+            : ul(
+                `Credit limit exceeded by ${creditEval.excessDzd.toLocaleString()} DZD. Manager PIN + reason required.`,
+                `Plafond crédit dépassé de ${creditEval.excessDzd.toLocaleString()} DA. Code PIN gérant + motif requis.`,
+                `تم تجاوز سقف الائتمان بمقدار ${creditEval.excessDzd.toLocaleString()} دج. يتطلب رمز PIN المدير والسبب.`
+              );
+      showToast({
+        type: 'error',
+        title: ul('Credit limit blocked', 'Plafond crédit bloqué', 'تم حظر سقف الائتمان'),
+        message: msg,
+      });
+      return null;
+    }
+
     const before = captureStoreSlices(['commercialDocs']);
     const id = `cdoc_${Date.now()}`;
+    const retentionAmt = Number(doc.guaranteeRetentionAmount || 0);
     const newDoc: CommercialDocument = {
       ...doc,
       id,
       accountId: resolvedAccountId,
       businessId: doc.businessId || globalState.currentBusinessId,
-      branchId: doc.branchId || globalState.currentBranchId,
-      facilityId: doc.facilityId || globalState.currentBranchId,
+      branchId,
+      facilityId: doc.facilityId || branchId,
       tenantId: resolvedAccountId,
+      guaranteeRetentionStatus:
+        retentionAmt > 0 ? (doc.guaranteeRetentionStatus || 'held') : 'none',
+      guaranteeReleasedAmount: Number(doc.guaranteeReleasedAmount || 0),
+      ...(creditEval.overrideApplied
+        ? {
+            creditOverrideByStaffId: creditEval.overrideStaffId,
+            creditOverrideByName: creditEval.overrideStaffName,
+            creditOverrideReason: creditEval.overrideReason,
+            creditOverrideAt: new Date().toISOString(),
+          }
+        : {}),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -22854,12 +23016,99 @@ function createAtriumActions() {
     return newDoc;
   };
 
-  const updateCommercialDoc = (id: string, updates: Partial<CommercialDocument>) => {
+  const updateCommercialDoc = (
+    id: string,
+    updates: Partial<CommercialDocument>,
+    overrideAuth?: { managerPin?: string; overrideReason?: string }
+  ): boolean => {
     const prev = (globalState.commercialDocs || []).find((d) => d.id === id);
-    if (!prev) return;
+    if (!prev) return false;
+
+    const mergedDoc: CommercialDocument = { ...prev, ...updates };
+    if ((mergedDoc.type === 'avoir' || mergedDoc.type === 'retour') && mergedDoc.linkedDocId) {
+      const parentInv = (globalState.commercialDocs || []).find((d) => d.id === mergedDoc.linkedDocId);
+      const avoirCheck = validateAvoirAgainstInvoice({
+        parentInvoice: parentInv,
+        existingDocs: globalState.commercialDocs || [],
+        newAvoirDocId: id,
+        newAvoirAmountTtcDzd: Number(mergedDoc.totalTtc || 0),
+      });
+      if (!avoirCheck.valid) {
+        showToast({
+          type: 'error',
+          title: ul('Credit note rejected', 'Avoir bloqué', 'تم رفض الإشعار الدائن'),
+          message: ul(
+            `Credit note exceeds remaining invoice balance (${avoirCheck.remainingCreditableDzd.toLocaleString()} DZD).`,
+            `L'avoir dépasse le reste facturé (${avoirCheck.remainingCreditableDzd.toLocaleString()} DA).`,
+            `يتجاوز الإشعار الدائن الرصيد المتبقي من الفاتورة.`
+          ),
+        });
+        return false;
+      }
+    }
+
+    const targetClient = (globalState.b2bClients || []).find((c) => c.id === mergedDoc.clientId);
+    const creditEval = evaluateClientCreditExposure({
+      client: targetClient,
+      docType: mergedDoc.type,
+      newDocTotalDzd: Number(mergedDoc.netToPay || mergedDoc.totalTtc || 0),
+      newStatus: mergedDoc.status,
+      existingDocs: globalState.commercialDocs || [],
+      excludeDocId: id,
+      staffList: globalState.staff || [],
+      managerPin: overrideAuth?.managerPin,
+      overrideReason: overrideAuth?.overrideReason,
+      existingOverride: prev.creditOverrideByStaffId
+        ? {
+            staffId: prev.creditOverrideByStaffId,
+            staffName: prev.creditOverrideByName,
+            reason: prev.creditOverrideReason,
+            previousTotalDzd: Number(prev.netToPay || prev.totalTtc || 0),
+          }
+        : undefined,
+    });
+
+    if (creditEval.blocked) {
+      showToast({
+        type: 'error',
+        title: ul('Credit limit blocked', 'Plafond crédit bloqué', 'تم حظر سقف الائتمان'),
+        message: ul(
+          `Credit limit exceeded by ${creditEval.excessDzd.toLocaleString()} DZD. Manager PIN + reason required.`,
+          `Plafond crédit dépassé de ${creditEval.excessDzd.toLocaleString()} DA. Code PIN gérant + motif requis.`,
+          `تم تجاوز سقف الائتمان بمقدار ${creditEval.excessDzd.toLocaleString()} دج.`
+        ),
+      });
+      return false;
+    }
+
     const before = captureStoreSlices(['commercialDocs']);
+    const retentionAmt = Number(mergedDoc.guaranteeRetentionAmount || 0);
+    const nextRetentionStatus: CommercialDocument['guaranteeRetentionStatus'] =
+      retentionAmt > 0
+        ? mergedDoc.guaranteeRetentionStatus && mergedDoc.guaranteeRetentionStatus !== 'none'
+          ? mergedDoc.guaranteeRetentionStatus
+          : 'held'
+        : 'none';
+    const nextOverrideFields =
+      creditEval.overrideApplied && creditEval.overrideStaffId
+        ? {
+            creditOverrideByStaffId: creditEval.overrideStaffId,
+            creditOverrideByName: creditEval.overrideStaffName,
+            creditOverrideReason: creditEval.overrideReason,
+            creditOverrideAt: new Date().toISOString(),
+          }
+        : {};
+
     const updatedDocs = (globalState.commercialDocs || []).map((d) =>
-      d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
+      d.id === id
+        ? {
+            ...d,
+            ...updates,
+            ...nextOverrideFields,
+            guaranteeRetentionStatus: nextRetentionStatus,
+            updatedAt: new Date().toISOString(),
+          }
+        : d
     );
     globalState = {
       ...globalState,
@@ -22895,6 +23144,7 @@ function createAtriumActions() {
         }
       },
     });
+    return true;
   };
 
   const deleteCommercialDoc = (id: string) => {
@@ -23008,6 +23258,136 @@ function createAtriumActions() {
           runWithConcurrency(
             [
               () => syncCoordinator.restoreRow('trading_commercial_docs', newDoc.id, globalState.currentUser?.id).then(() => tradingService.upsertCommercialDoc(newDoc)),
+              () => tradingService.upsertCommercialDoc(updatedSource),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+    });
+
+    return newDoc;
+  };
+
+  const convertCommercialDocPartial = (
+    sourceDocId: string,
+    targetType: CommercialDocType,
+    lineQuantities?: Record<string, number>
+  ) => {
+    const sourceDoc = (globalState.commercialDocs || []).find((d) => d.id === sourceDocId);
+    if (!sourceDoc) return null;
+
+    const conv = applyPartialDocConversion({
+      sourceDoc,
+      targetType,
+      lineQuantities,
+    });
+    if (!conv.ok) {
+      showToast({
+        type: 'error',
+        title: ul('Conversion rejected', 'Conversion impossible', 'تعذر التحويل'),
+        message:
+          conv.errorCode === 'EXCEEDS_REMAINING_QTY'
+            ? ul(
+                'Selected quantities exceed remaining unbilled/undelivered balance.',
+                'Les quantités dépassent le reliquat disponible sur le document source.',
+                'الكميات المحددة تتجاوز الرصيد المتبقي في المستند المصدر.'
+              )
+            : ul(
+                'No remaining lines selected for conversion.',
+                'Aucune ligne restante sélectionnée pour la conversion.',
+                'لم يتم تحديد أي أسطر متبقية للتحويل.'
+              ),
+      });
+      return null;
+    }
+
+    const before = captureStoreSlices(['commercialDocs']);
+    const currentYear = new Date().getFullYear();
+    const count = (globalState.commercialDocs || []).filter((d) => d.type === targetType).length + 1;
+    const prefix =
+      targetType === 'bl' ? 'BL' : targetType === 'facture' ? 'FAC' : targetType === 'commande' ? 'BC' : 'AV';
+    const docNumber = `${prefix}-${currentYear}-${count.toString().padStart(4, '0')}`;
+
+    const newDoc: CommercialDocument = {
+      ...sourceDoc,
+      id: `cdoc_${Date.now()}`,
+      type: targetType,
+      docNumber,
+      date: new Date().toISOString().split('T')[0],
+      status: targetType === 'facture' ? 'Validated' : targetType === 'bl' ? 'Delivered' : 'Draft',
+      items: conv.childItems,
+      totalHtRaw: conv.totals.totalHtRaw,
+      totalHtFinal: conv.totals.totalHtFinal,
+      totalTva: conv.totals.totalTva,
+      timbreFiscal: conv.totals.timbreFiscal,
+      totalTtc: conv.totals.totalTtc,
+      guaranteeRetentionAmount: conv.totals.guaranteeRetentionAmount,
+      guaranteeRetentionStatus: conv.totals.guaranteeRetentionAmount > 0 ? 'held' : 'none',
+      guaranteeReleasedAmount: 0,
+      netToPay: conv.totals.netToPay,
+      linkedDocId: sourceDoc.id,
+      linkedDocNumber: sourceDoc.docNumber,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedSource: CommercialDocument = {
+      ...sourceDoc,
+      items: conv.updatedSourceItems,
+      status: conv.updatedSourceStatus,
+      updatedAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      commercialDocs: [
+        newDoc,
+        ...(globalState.commercialDocs || []).map((d) => (d.id === sourceDocId ? updatedSource : d)),
+      ],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      tradingService
+        .convertCommercialDocPartial(sourceDocId, targetType, docNumber, lineQuantities)
+        .catch(() => {});
+      tradingService.upsertCommercialDoc(newDoc).catch(() => {});
+      tradingService.upsertCommercialDoc(updatedSource).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['commercialDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Partial conversion ${sourceDoc.docNumber} → ${newDoc.docNumber}`,
+        `Conversion partielle : ${sourceDoc.docNumber} → ${newDoc.docNumber}`,
+        `تحويل جزئي: ${sourceDoc.docNumber} ← ${newDoc.docNumber}`
+      ),
+      entityLabel: newDoc.docNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => tradingService.deleteCommercialDoc(newDoc.id, globalState.currentUser?.id),
+              () => tradingService.upsertCommercialDoc(sourceDoc),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () =>
+                syncCoordinator
+                  .restoreRow('trading_commercial_docs', newDoc.id, globalState.currentUser?.id)
+                  .then(() => tradingService.upsertCommercialDoc(newDoc)),
               () => tradingService.upsertCommercialDoc(updatedSource),
             ],
             4
@@ -23177,9 +23557,18 @@ function createAtriumActions() {
     const updatedProducts = (globalState.products || []).map((prod) => {
       const match = po.items.find((it) => it.productId === prod.id || it.description === prod.name);
       if (match) {
+        const nextMap = { ...(prod.depotStockMap || {}) };
+        if (po.depotId) {
+          const base =
+            Object.keys(nextMap).length === 0
+              ? Number(prod.stockQuantity || 0)
+              : Number(nextMap[po.depotId] || 0);
+          nextMap[po.depotId] = base + match.orderedQty;
+        }
         return {
           ...prod,
           stockQuantity: (prod.stockQuantity || 0) + match.orderedQty,
+          depotStockMap: nextMap,
         };
       }
       return prod;
@@ -23283,6 +23672,50 @@ function createAtriumActions() {
   };
 
   const createStockVoucher = (voucher: Omit<StockMovementVoucher, 'id' | 'createdAt'>) => {
+    const branchId = voucher.branchId || voucher.facilityId || globalState.currentBranchId;
+    const branchWarehouses = (globalState.warehouses || []).filter(
+      (w) => (w.branchId || w.facilityId) === branchId
+    );
+    const defaultDepotId =
+      branchWarehouses.find((w) => w.isMain)?.id || branchWarehouses[0]?.id;
+
+    // Validate per-depot stock availability for catalog items on sortie / transfert
+    const trackedItems = (voucher.items || []).filter((it) =>
+      (globalState.products || []).some((p) => p.id === it.productId)
+    );
+    if (voucher.type === 'transfert' || trackedItems.length > 0) {
+      const availCheck = validateDepotVoucherAvailability({
+        voucherType: voucher.type,
+        depotSourceId: voucher.depotSourceId,
+        depotTargetId: voucher.depotTargetId,
+        items: trackedItems.length > 0 ? trackedItems : voucher.items,
+        products: globalState.products || [],
+        defaultDepotId,
+      });
+      if (!availCheck.ok) {
+        const first = availCheck.shortages[0];
+        showToast({
+          type: 'error',
+          title: ul('Insufficient depot stock', 'Stock dépôt insuffisant', 'المخزون غير كافٍ في المستودع'),
+          message:
+            availCheck.errorCode === 'INVALID_TRANSFER_DEPOTS'
+              ? ul(
+                  'Source and destination depots must differ for a transfer.',
+                  'Les dépôts source et destination doivent être distincts pour un transfert.',
+                  'يجب أن يختلف مستودع المصدر عن مستودع الوجهة عند التحويل.'
+                )
+              : first
+                ? ul(
+                    `${first.productName}: requested ${first.requested}, available in depot ${first.available}.`,
+                    `${first.productName} : demandé ${first.requested}, disponible dans ce dépôt : ${first.available}.`,
+                    `${first.productName}: المطلوب ${first.requested}، المتاح في المستودع ${first.available}.`
+                  )
+                : ul('Depot stock check failed.', 'Contrôle stock dépôt échoué.', 'فشل فحص مخزون المستودع.'),
+        });
+        return null;
+      }
+    }
+
     const before = captureStoreSlices(['stockVouchers', 'products']);
     const prevTouchedProducts = (globalState.products || []).filter((prod) =>
       voucher.items.some((it) => it.productId === prod.id)
@@ -23295,16 +23728,10 @@ function createAtriumActions() {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedProducts = (globalState.products || []).map((prod) => {
-      const match = voucher.items.find((it) => it.productId === prod.id);
-      if (match) {
-        const delta = voucher.type === 'entree' ? match.quantity : voucher.type === 'sortie' ? -match.quantity : 0;
-        return {
-          ...prod,
-          stockQuantity: Math.max(0, (prod.stockQuantity || 0) + delta),
-        };
-      }
-      return prod;
+    const updatedProducts = applyDepotStockVoucherToProducts({
+      voucher: newVoucher,
+      products: globalState.products || [],
+      defaultDepotId,
     });
 
     globalState = {
@@ -23320,6 +23747,7 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       runWithConcurrency(
         [
+          () => tradingService.executeStockVoucherAtomic(newVoucher).then(() => true),
           () => tradingService.upsertStockVoucher(newVoucher),
           ...touchedProds.map((p) => () => tradingService.upsertProduct(p, voucher.depotSourceId)),
         ],
@@ -23695,6 +24123,457 @@ function createAtriumActions() {
     return newDepot;
   };
 
+  const releaseGuaranteeRetention = (params: {
+    docId: string;
+    releaseAmountDzd: number;
+    paymentMethod?: string;
+    reference?: string;
+    releaseDate?: string;
+  }) => {
+    const doc = (globalState.commercialDocs || []).find((d) => d.id === params.docId);
+    if (!doc) return false;
+    const validation = validateGuaranteeRetentionRelease({
+      doc,
+      releaseAmountDzd: params.releaseAmountDzd,
+    });
+    if (!validation.ok) {
+      showToast({
+        type: 'error',
+        title: ul('Guarantee release blocked', 'Libération retenue refusée', 'تم رفض تحرير الضمان'),
+        message: ul(
+          `Release exceeds remaining held guarantee (${validation.remainingHeldDzd.toLocaleString()} DZD).`,
+          `Le montant dépasse la retenue restante (${validation.remainingHeldDzd.toLocaleString()} DA).`,
+          `المبلغ يتجاوز الضمان المحتجز المتبقي (${validation.remainingHeldDzd.toLocaleString()} دج).`
+        ),
+      });
+      return false;
+    }
+
+    const before = captureStoreSlices(['commercialDocs']);
+    const releaseDate = params.releaseDate || new Date().toISOString().split('T')[0];
+    const updatedDoc: CommercialDocument = {
+      ...doc,
+      guaranteeReleasedAmount: validation.nextReleasedDzd,
+      guaranteeRetentionStatus: validation.nextStatus,
+      guaranteeReleasedAt: releaseDate,
+      guaranteeReleasePaymentMethod: params.paymentMethod || 'Virement bancaire',
+      guaranteeReleaseRef: params.reference || `RG-${doc.docNumber}`,
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      commercialDocs: (globalState.commercialDocs || []).map((d) =>
+        d.id === doc.id ? updatedDoc : d
+      ),
+    };
+    notify();
+
+    try {
+      const scfDraft = buildPostingForGuaranteeRelease({
+        doc,
+        releaseAmountDzd: params.releaseAmountDzd,
+        paymentMethod: params.paymentMethod,
+        reference: params.reference,
+        releaseDate,
+      });
+      postScfDraftOrQueueFailure(scfDraft, {
+        accountId: doc.accountId || globalState.account.id,
+        businessId: doc.businessId || globalState.currentBusinessId,
+        branchId: doc.branchId || globalState.currentBranchId,
+        silentSuccessToast: true,
+      });
+    } catch {
+      // keep release atomic even if SCF period closed warning occurs
+    }
+
+    if (isSupabaseConfigured()) {
+      tradingService
+        .releaseGuaranteeRetentionRpc(
+          doc.id,
+          params.releaseAmountDzd,
+          params.paymentMethod,
+          params.reference,
+          releaseDate
+        )
+        .catch(() => {});
+      tradingService.upsertCommercialDoc(updatedDoc).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['commercialDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Guarantee released (${params.releaseAmountDzd.toLocaleString()} DZD) on ${doc.docNumber}`,
+        `Retenue libérée (${params.releaseAmountDzd.toLocaleString()} DA) sur ${doc.docNumber}`,
+        `تحرير الضمان (${params.releaseAmountDzd.toLocaleString()} دج) على ${doc.docNumber}`
+      ),
+      entityLabel: doc.docNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) tradingService.upsertCommercialDoc(doc).catch(() => {});
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) tradingService.upsertCommercialDoc(updatedDoc).catch(() => {});
+      },
+    });
+    return true;
+  };
+
+  const upsertTradingPriceList = (
+    input: Omit<TradingPriceList, 'id' | 'createdAt' | 'updatedAt' | 'tenantId' | 'facilityId'> & {
+      id?: string;
+      tenantId?: string;
+      facilityId?: string;
+    }
+  ) => {
+    const resolvedAccountId = requireTenantAccountId(input.accountId, input.tenantId, globalState.account?.id);
+    const branchId = input.branchId || input.facilityId || globalState.currentBranchId;
+    const nowIso = new Date().toISOString();
+    const id = input.id || `tpl_${Date.now()}`;
+    const existing = (globalState.tradingPriceLists || []).find((p) => p.id === id);
+    const before = captureStoreSlices(['tradingPriceLists']);
+
+    const record: TradingPriceList = {
+      ...getTraceContext(),
+      ...existing,
+      ...input,
+      id,
+      accountId: resolvedAccountId,
+      tenantId: resolvedAccountId,
+      businessId: input.businessId || globalState.currentBusinessId,
+      branchId,
+      facilityId: branchId,
+      createdAt: existing?.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+
+    globalState = {
+      ...globalState,
+      tradingPriceLists: existing
+        ? (globalState.tradingPriceLists || []).map((p) => (p.id === id ? record : p))
+        : [record, ...(globalState.tradingPriceLists || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      tradingService.upsertPriceList(record).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['tradingPriceLists']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: existing ? 'edit' : 'create',
+      summary: ul(
+        `Price list saved: ${record.name}`,
+        `Tarif client enregistré : ${record.name}`,
+        `تم حفظ قائمة الأسعار: ${record.name}`
+      ),
+      entityLabel: record.name,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return record;
+  };
+
+  const deleteTradingPriceList = (id: string) => {
+    const existing = (globalState.tradingPriceLists || []).find((p) => p.id === id);
+    if (!existing) return;
+    const before = captureStoreSlices(['tradingPriceLists']);
+    globalState = {
+      ...globalState,
+      tradingPriceLists: (globalState.tradingPriceLists || []).filter((p) => p.id !== id),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      tradingService.deletePriceList(id, globalState.currentUser?.id).catch(() => {});
+    }
+    const after = captureStoreSlices(['tradingPriceLists']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted price list: ${existing.name}`,
+        `Tarif supprimé : ${existing.name}`,
+        `تم حذف قائمة الأسعار: ${existing.name}`
+      ),
+      entityLabel: existing.name,
+      toastType: 'warning',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+  };
+
+  const createTradingDeliveryRound = (
+    input: Omit<TradingDeliveryRound, 'id' | 'createdAt' | 'updatedAt' | 'totalExpectedDzd' | 'totalCollectedDzd' | 'tenantId' | 'facilityId'> & {
+      tenantId?: string;
+      facilityId?: string;
+    }
+  ) => {
+    const resolvedAccountId = requireTenantAccountId(input.accountId, input.tenantId, globalState.account?.id);
+    const branchId = input.branchId || input.facilityId || globalState.currentBranchId;
+    const metrics = reconcileDeliveryRoundStops(input.stops || []);
+    const nowIso = new Date().toISOString();
+    const id = `tdr_${Date.now()}`;
+    const round: TradingDeliveryRound = {
+      ...getTraceContext(),
+      ...input,
+      id,
+      accountId: resolvedAccountId,
+      tenantId: resolvedAccountId,
+      businessId: input.businessId || globalState.currentBusinessId,
+      branchId,
+      facilityId: branchId,
+      totalExpectedDzd: metrics.totalExpectedDzd,
+      totalCollectedDzd: metrics.totalCollectedDzd,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    const before = captureStoreSlices(['tradingDeliveryRounds']);
+    globalState = {
+      ...globalState,
+      tradingDeliveryRounds: [round, ...(globalState.tradingDeliveryRounds || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertDeliveryRound(round).catch(() => {});
+    }
+    const after = captureStoreSlices(['tradingDeliveryRounds']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Delivery round created: ${round.roundNumber}`,
+        `Tournée créée : ${round.roundNumber}`,
+        `تم إنشاء جولة التوصيل: ${round.roundNumber}`
+      ),
+      entityLabel: round.roundNumber,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return round;
+  };
+
+  const updateTradingDeliveryRound = (id: string, updates: Partial<TradingDeliveryRound>) => {
+    const existing = (globalState.tradingDeliveryRounds || []).find((r) => r.id === id);
+    if (!existing) return;
+    const stops = updates.stops ?? existing.stops;
+    const metrics = reconcileDeliveryRoundStops(stops);
+    const updated: TradingDeliveryRound = {
+      ...existing,
+      ...updates,
+      stops,
+      totalExpectedDzd: metrics.totalExpectedDzd,
+      totalCollectedDzd: metrics.totalCollectedDzd,
+      updatedAt: new Date().toISOString(),
+    };
+    const before = captureStoreSlices(['tradingDeliveryRounds']);
+    globalState = {
+      ...globalState,
+      tradingDeliveryRounds: (globalState.tradingDeliveryRounds || []).map((r) =>
+        r.id === id ? updated : r
+      ),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertDeliveryRound(updated).catch(() => {});
+    }
+    const after = captureStoreSlices(['tradingDeliveryRounds']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'edit',
+      summary: ul(
+        `Updated delivery round ${existing.roundNumber}`,
+        `Tournée mise à jour : ${existing.roundNumber}`,
+        `تم تحديث الجولة: ${existing.roundNumber}`
+      ),
+      entityLabel: existing.roundNumber,
+      toastType: 'info',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+  };
+
+  const completeTradingDeliveryRound = (id: string, options?: { commissionRateBps?: number }) => {
+    const existing = (globalState.tradingDeliveryRounds || []).find((r) => r.id === id);
+    if (!existing) return null;
+    const metrics = reconcileDeliveryRoundStops(existing.stops || []);
+    const completed: TradingDeliveryRound = {
+      ...existing,
+      status: 'completed',
+      totalExpectedDzd: metrics.totalExpectedDzd,
+      totalCollectedDzd: metrics.totalCollectedDzd,
+      updatedAt: new Date().toISOString(),
+    };
+    const rateBps = options?.commissionRateBps ?? 0;
+    let createdComm: TradingRepCommission | null = null;
+    if (rateBps > 0 && metrics.totalCollectedDzd > 0) {
+      const commissionAmountDzd = calculateTradingRepCommissionDzd(metrics.totalCollectedDzd, rateBps);
+      createdComm = {
+        id: `tcomm_${Date.now()}`,
+        accountId: existing.accountId || globalState.account.id,
+        tenantId: existing.tenantId || globalState.account.id,
+        businessId: existing.businessId || globalState.currentBusinessId,
+        branchId: existing.branchId || existing.facilityId,
+        facilityId: existing.facilityId,
+        staffId: existing.repStaffId || existing.staffId,
+        repStaffId: existing.repStaffId,
+        repName: existing.repName,
+        deliveryRoundId: existing.id,
+        docNumber: existing.roundNumber,
+        docDate: existing.roundDate,
+        basisAmountDzd: metrics.totalCollectedDzd,
+        rateBps,
+        commissionAmountDzd,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    const before = captureStoreSlices(['tradingDeliveryRounds', 'tradingRepCommissions']);
+    globalState = {
+      ...globalState,
+      tradingDeliveryRounds: (globalState.tradingDeliveryRounds || []).map((r) =>
+        r.id === id ? completed : r
+      ),
+      tradingRepCommissions: createdComm
+        ? [createdComm, ...(globalState.tradingRepCommissions || [])]
+        : globalState.tradingRepCommissions || [],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      tradingService.upsertDeliveryRound(completed).catch(() => {});
+      if (createdComm) tradingService.upsertRepCommission(createdComm).catch(() => {});
+    }
+
+    const after = captureStoreSlices(['tradingDeliveryRounds', 'tradingRepCommissions']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Completed round ${existing.roundNumber} (${metrics.totalCollectedDzd.toLocaleString()} DZD)`,
+        `Tournée clôturée : ${existing.roundNumber} (${metrics.totalCollectedDzd.toLocaleString()} DA)`,
+        `إغلاق جولة التوصيل: ${existing.roundNumber}`
+      ),
+      entityLabel: existing.roundNumber,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return completed;
+  };
+
+  const recordTradingRepCommission = (input: {
+    repStaffId?: string;
+    repName: string;
+    commercialDocId?: string;
+    docNumber?: string;
+    docDate?: string;
+    deliveryRoundId?: string;
+    basisAmountDzd: number;
+    rateBps: number;
+    notes?: string;
+  }) => {
+    const trace = getTraceContext();
+    const resolvedAccountId = requireTenantAccountId(trace.accountId, globalState.account?.id);
+    const commissionAmountDzd = calculateTradingRepCommissionDzd(input.basisAmountDzd, input.rateBps);
+    const nowIso = new Date().toISOString();
+    const record: TradingRepCommission = {
+      id: `tcomm_${Date.now()}`,
+      accountId: resolvedAccountId,
+      tenantId: resolvedAccountId,
+      businessId: trace.businessId,
+      branchId: trace.branchId,
+      facilityId: trace.branchId,
+      staffId: input.repStaffId || trace.staffId,
+      repStaffId: input.repStaffId,
+      repName: input.repName,
+      commercialDocId: input.commercialDocId,
+      docNumber: input.docNumber,
+      docDate: input.docDate || nowIso.slice(0, 10),
+      deliveryRoundId: input.deliveryRoundId,
+      basisAmountDzd: input.basisAmountDzd,
+      rateBps: input.rateBps,
+      commissionAmountDzd,
+      status: 'pending',
+      notes: input.notes,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    const before = captureStoreSlices(['tradingRepCommissions']);
+    globalState = {
+      ...globalState,
+      tradingRepCommissions: [record, ...(globalState.tradingRepCommissions || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertRepCommission(record).catch(() => {});
+    }
+    const after = captureStoreSlices(['tradingRepCommissions']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Commission recorded for ${record.repName}`,
+        `Commission enregistrée pour ${record.repName}`,
+        `تسجيل عمولة المندوب ${record.repName}`
+      ),
+      entityLabel: record.repName,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return record;
+  };
+
+  const postTradingRepCommissionsToPayroll = (commissionIds: string[], payrollRunId?: string) => {
+    const idSet = new Set(commissionIds);
+    const updatedList: TradingRepCommission[] = [];
+    const nextAll = (globalState.tradingRepCommissions || []).map((c) => {
+      if (!idSet.has(c.id) || c.status === 'posted_to_payroll') return c;
+      const next: TradingRepCommission = {
+        ...c,
+        status: 'posted_to_payroll',
+        payrollRunId: payrollRunId || c.payrollRunId,
+        updatedAt: new Date().toISOString(),
+      };
+      updatedList.push(next);
+      return next;
+    });
+    if (updatedList.length === 0) return [];
+    const before = captureStoreSlices(['tradingRepCommissions']);
+    globalState = {
+      ...globalState,
+      tradingRepCommissions: nextAll,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      for (const item of updatedList) {
+        tradingService.upsertRepCommission(item).catch(() => {});
+      }
+    }
+    const after = captureStoreSlices(['tradingRepCommissions']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Posted ${updatedList.length} rep commission(s) to payroll`,
+        `${updatedList.length} commission(s) commerciale(s) envoyée(s) en paie`,
+        `ترحيل ${updatedList.length} عمولات مبيعات للرواتب`
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return updatedList;
+  };
+
   const resetTradingMockData = () => {
     const keys: (keyof AppState)[] = [
       'b2bClients',
@@ -23703,6 +24582,9 @@ function createAtriumActions() {
       'commercialDocs',
       'purchaseDocs',
       'stockVouchers',
+      'tradingPriceLists',
+      'tradingDeliveryRounds',
+      'tradingRepCommissions',
     ];
     const before = captureStoreSlices(keys);
     globalState = {
@@ -23713,6 +24595,9 @@ function createAtriumActions() {
       commercialDocs: INITIAL_COMMERCIAL_DOCS,
       purchaseDocs: INITIAL_PURCHASE_DOCS,
       stockVouchers: INITIAL_STOCK_VOUCHERS,
+      tradingPriceLists: INITIAL_TRADING_PRICE_LISTS,
+      tradingDeliveryRounds: INITIAL_TRADING_DELIVERY_ROUNDS,
+      tradingRepCommissions: INITIAL_TRADING_REP_COMMISSIONS,
     };
     notify();
     const after = captureStoreSlices(keys);
@@ -32136,10 +33021,19 @@ function createAtriumActions() {
     updateCommercialDoc,
     deleteCommercialDoc,
     convertCommercialDoc,
+    convertCommercialDocPartial,
     createPurchaseDoc,
     updatePurchaseDoc,
     receivePurchaseDoc,
     createStockVoucher,
+    releaseGuaranteeRetention,
+    upsertTradingPriceList,
+    deleteTradingPriceList,
+    createTradingDeliveryRound,
+    updateTradingDeliveryRound,
+    completeTradingDeliveryRound,
+    recordTradingRepCommission,
+    postTradingRepCommissionsToPayroll,
     createB2bClient,
     updateB2bClient,
     deleteB2bClient,
@@ -32405,6 +33299,9 @@ export function useAtriumStore() {
   const currentCommercialDocs = selectCurrentCommercialDocsFromState(state);
   const currentPurchaseDocs = selectCurrentPurchaseDocsFromState(state);
   const currentStockVouchers = selectCurrentStockVouchersFromState(state);
+  const currentTradingPriceLists = selectCurrentTradingPriceListsFromState(state);
+  const currentTradingDeliveryRounds = selectCurrentTradingDeliveryRoundsFromState(state);
+  const currentTradingRepCommissions = selectCurrentTradingRepCommissionsFromState(state);
   const currentUnifiedDocuments = selectCurrentUnifiedDocumentsFromState(state);
   const currentUnifiedPayments = selectCurrentUnifiedPaymentsFromState(state);
   const currentScfAccounts = selectCurrentScfAccountsFromState(state);
@@ -32579,6 +33476,9 @@ export function useAtriumStore() {
     allPurchaseDocs: state.purchaseDocs || [],
     stockVouchers: currentStockVouchers,
     allStockVouchers: state.stockVouchers || [],
+    tradingPriceLists: currentTradingPriceLists,
+    tradingDeliveryRounds: currentTradingDeliveryRounds,
+    tradingRepCommissions: currentTradingRepCommissions,
     unifiedDocuments: currentUnifiedDocuments,
     allUnifiedDocuments: state.unifiedDocuments || [],
     unifiedPayments: currentUnifiedPayments,

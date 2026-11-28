@@ -618,5 +618,76 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS fx_rate_to_dzd');
     expect(downSql).toContain('DROP COLUMN IF EXISTS split_group_id');
   });
+
+  it('verifies Phase 3 Step 8 (7.8) trading_commercial depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280008_phase3_trading_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280008_phase3_trading_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS price_tier text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS depot_stock_map jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS credit_override_reason text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS guarantee_retention_status text');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.trading_price_lists');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.trading_delivery_rounds');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.trading_rep_commissions');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_trading_avoir_not_exceed_invoice(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.trading_convert_commercial_doc_partial(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.trading_execute_stock_voucher(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.trading_release_guarantee_retention(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.trading_release_guarantee_retention(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.trading_execute_stock_voucher(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.trading_convert_commercial_doc_partial(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_trading_avoir_not_exceed_invoice(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.trading_rep_commissions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.trading_delivery_rounds');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.trading_price_lists');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS guarantee_retention_status');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS depot_stock_map');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS price_tier');
+  });
+
+  it('verifies Phase 3 Step 9 (7.9) medical_clinic depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280009_phase3_medical_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280009_phase3_medical_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS has_chifa_100_percent_ald boolean');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS is_emergency_bypass boolean');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS allergy_override_reason text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS lots jsonb');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.medical_ngap_acts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.medical_chifa_bordereaux');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.medical_doctor_payouts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.medical_cash_closures');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_medical_appointment_no_overlap(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_upsert_appointment_atomic(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_consume_supply_fefo(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_transmit_chifa_bordereau(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_settle_chifa_bordereau(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_issue_practitioner_payout(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.medical_close_daily_cash(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_close_daily_cash(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_issue_practitioner_payout(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_settle_chifa_bordereau(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_transmit_chifa_bordereau(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_consume_supply_fefo(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.medical_upsert_appointment_atomic(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_medical_appointment_no_overlap(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.medical_cash_closures');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.medical_doctor_payouts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.medical_chifa_bordereaux');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.medical_ngap_acts');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS lots');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS has_chifa_100_percent_ald');
+  });
 });
+
+
 

@@ -770,7 +770,7 @@ export const freelanceService = {
     timer: ActiveTimerState,
     ctx: { accountId: string; businessId: string; branchId: string; staffId?: string | null }
   ): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueRpc('upsert_freelance_active_timer', {
+    const res = await syncCoordinator.rpcOrQueue('upsert_freelance_active_timer', {
       p_account_id: toValidUuid(ctx.accountId),
       p_business_id: toValidUuid(ctx.businessId),
       p_branch_id: toValidUuid(ctx.branchId),
@@ -796,7 +796,7 @@ export const freelanceService = {
   },
 
   async stopActiveTimer(timerId: string, stopAtIso = new Date().toISOString()): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueRpc('stop_freelance_active_timer', {
+    const res = await syncCoordinator.rpcOrQueue('stop_freelance_active_timer', {
       p_timer_id: toValidUuid(timerId),
       p_stop_at: stopAtIso,
     });
@@ -805,7 +805,7 @@ export const freelanceService = {
 
   async uninvoiceTimeLogs(invoiceId: string, timeLogIds: string[]): Promise<boolean> {
     if (timeLogIds.length === 0) return true;
-    const res = await syncCoordinator.mutateOrQueueRpc('uninvoice_freelance_invoice_logs', {
+    const res = await syncCoordinator.rpcOrQueue('uninvoice_freelance_invoice_logs', {
       p_invoice_id: toValidUuid(invoiceId),
       p_time_log_ids: timeLogIds.map((id) => toValidUuid(id)),
     });

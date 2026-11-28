@@ -18,6 +18,7 @@ import {
 } from '../../../services/store';
 import { StockMovementVoucher, Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
+import { getProductStockInDepot } from '../../../utils/tradingDepth';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StockMovementModal } from './StockMovementModal';
 import { LabelInput } from '../../ui/LabelInput';
@@ -113,29 +114,55 @@ export const TradingInventoryView: React.FC = () => {
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
+  const defaultDepotId = useMemo(
+    () => warehouses.find((w) => w.isMain)?.id || warehouses[0]?.id,
+    [warehouses]
+  );
+
+  const getScopedQty = useCallback(
+    (p: Product) => {
+      if (selectedDepotId === 'all') return Number(p.stockQuantity || 0);
+      return getProductStockInDepot(p, selectedDepotId, defaultDepotId);
+    },
+    [selectedDepotId, defaultDepotId]
+  );
+
   const metrics = useMemo(() => {
     const branchCounts = new Map<string, number>();
     products.forEach((p) => {
       const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
       branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
     });
+    const depotValuations = new Map<string, number>();
+    warehouses.forEach((w) => {
+      const val = products.reduce(
+        (sum, p) => sum + getProductStockInDepot(p, w.id, defaultDepotId) * (p.cost?.amount || p.costPrice || 0),
+        0
+      );
+      depotValuations.set(w.id, val);
+    });
     return {
       totalValuation: products.reduce(
+        (sum, p) => sum + getScopedQty(p) * (p.cost?.amount || p.costPrice || 0),
+        0
+      ),
+      globalValuation: products.reduce(
         (sum, p) => sum + (p.stockQuantity || 0) * (p.cost?.amount || p.costPrice || 0),
         0
       ),
-      lowStockCount: products.filter((p) => (p.stockQuantity || 0) <= (p.reorderLevel || 10)).length,
-      totalUnits: products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0),
+      lowStockCount: products.filter((p) => getScopedQty(p) <= (p.reorderLevel || 10)).length,
+      totalUnits: products.reduce((sum, p) => sum + getScopedQty(p), 0),
       depotsCount: warehouses.length,
       vouchersCount: stockVouchers.length,
       branchCounts,
+      depotValuations,
     };
-  }, [products, warehouses, stockVouchers, branchesById, currentBranch, language]);
+  }, [products, warehouses, stockVouchers, branchesById, currentBranch, language, defaultDepotId, getScopedQty]);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return products.filter((p) => {
-      if (stockAlertOnly && (p.stockQuantity || 0) > (p.reorderLevel || 10)) return false;
+      if (stockAlertOnly && getScopedQty(p) > (p.reorderLevel || 10)) return false;
       if (branchFilter !== 'All') {
         const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
         if (bName !== branchFilter) return false;
@@ -153,7 +180,7 @@ export const TradingInventoryView: React.FC = () => {
       }
       return true;
     });
-  }, [products, stockAlertOnly, branchFilter, searchQuery, branchesById, currentBranch, language]);
+  }, [products, stockAlertOnly, branchFilter, searchQuery, branchesById, currentBranch, language, getScopedQty]);
 
   const sortedProducts = useMemo(() => {
     return [...filteredProducts].sort((a, b) => {
@@ -163,7 +190,7 @@ export const TradingInventoryView: React.FC = () => {
       if (!ap && bp) return 1;
       let cmp = 0;
       if (sortBy === 'sku') cmp = (a.sku || '').localeCompare(b.sku || '');
-      else if (sortBy === 'stock') cmp = (a.stockQuantity || 0) - (b.stockQuantity || 0);
+      else if (sortBy === 'stock') cmp = getScopedQty(a) - getScopedQty(b);
       else if (sortBy === 'price') cmp = (a.price?.amount || 0) - (b.price?.amount || 0);
       else if (sortBy === 'branch') {
         cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
@@ -174,7 +201,7 @@ export const TradingInventoryView: React.FC = () => {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [filteredProducts, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [filteredProducts, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language, getScopedQty]);
 
   const filteredVouchers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -241,7 +268,7 @@ export const TradingInventoryView: React.FC = () => {
         p.name,
         p.category || '',
         resolveRecordBranch(p, branchesById, currentBranch, language).name,
-        p.stockQuantity || 0,
+        getScopedQty(p),
         p.cost?.amount || p.costPrice || 0,
         p.price?.amount || 0,
       ]);
@@ -385,7 +412,8 @@ export const TradingInventoryView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (prod) => {
-          const isLow = (prod.stockQuantity || 0) <= (prod.reorderLevel || 10);
+          const qty = getScopedQty(prod);
+          const isLow = qty <= (prod.reorderLevel || 10);
           return (
             <div className="t-cap tabular-nums">
               <span
@@ -393,7 +421,7 @@ export const TradingInventoryView: React.FC = () => {
                   isLow ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'
                 }`}
               >
-                {prod.stockQuantity || 0} {prod.unit || 'u'}
+                {qty} {prod.unit || 'u'}
               </span>
               {isLow && (
                 <span className="block t-small text-rose-500 font-semibold">
@@ -430,7 +458,7 @@ export const TradingInventoryView: React.FC = () => {
         header: t('trading_inventory_col_total_val', 'Valorisation Stock'),
         width: '145px',
         renderCell: (prod) => {
-          const val = (prod.stockQuantity || 0) * (prod.cost?.amount || prod.costPrice || 0);
+          const val = getScopedQty(prod) * (prod.cost?.amount || prod.costPrice || 0);
           return (
             <span className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(val)}
@@ -439,7 +467,7 @@ export const TradingInventoryView: React.FC = () => {
         },
       },
     ],
-    [t, isAr, isEn, branchesById, currentBranch, language]
+    [t, isAr, isEn, branchesById, currentBranch, language, getScopedQty]
   );
 
   const voucherColumns: ColumnDefinition<StockMovementVoucher>[] = useMemo(
@@ -657,7 +685,7 @@ export const TradingInventoryView: React.FC = () => {
                 GLOBAL
               </span>
             </div>
-            <div className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(metrics.totalValuation)}</div>
+            <div className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(metrics.globalValuation)}</div>
           </button>
           </div>
           {warehouses.map((w) => (
@@ -682,7 +710,7 @@ export const TradingInventoryView: React.FC = () => {
               </div>
               <div className="t-cap text-black/55 dark:text-white/55 mb-0.5">{w.city}</div>
               <div className="t-small tabular-nums font-semibold text-black dark:text-white">
-                {formatMoney(w.totalValuationDzd || 0)}
+                {formatMoney(metrics.depotValuations.get(w.id) ?? w.totalValuationDzd ?? 0)}
               </div>
             </button>
             </div>
@@ -779,9 +807,10 @@ export const TradingInventoryView: React.FC = () => {
               setInspectingProduct(p);
             }}
             getRowMeta={(p) => {
-              const isLow = (p.stockQuantity || 0) <= (p.reorderLevel || 10);
+              const qty = getScopedQty(p);
+              const isLow = qty <= (p.reorderLevel || 10);
               const cost = p.cost?.amount || p.costPrice || 0;
-              const val = (p.stockQuantity || 0) * cost;
+              const val = qty * cost;
               const branchInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
               return {
                 title: p.name,
@@ -789,13 +818,13 @@ export const TradingInventoryView: React.FC = () => {
                 avatarText: p.name.slice(0, 2).toUpperCase(),
                 avatarColor: '#d4522f',
                 categoryLabel: p.category || 'Article',
-                statusLabel: isLow ? 'Alerte Réappro' : `${p.stockQuantity || 0} ${p.unit || 'u'}`,
+                statusLabel: isLow ? 'Alerte Réappro' : `${qty} ${p.unit || 'u'}`,
                 statusVariant: isLow ? 'warning' : 'active',
                 metricPrimary: formatMoney(val),
                 metricSecondary: `PMP ${formatMoney(cost)}`,
                 branchName: branchInfo.name,
                 isPinned: pinnedIds.has(p.id),
-                detailCol1: { heading: 'Stock Réel', primaryText: `${p.stockQuantity || 0} ${p.unit || 'u'}` },
+                detailCol1: { heading: 'Stock Réel', primaryText: `${qty} ${p.unit || 'u'}` },
                 detailCol2: { heading: 'Seuil Alerte', primaryText: `${p.reorderLevel || 10}` },
                 detailCol3: { heading: 'Prix Vente HT', primaryText: formatMoney(p.price?.amount || 0) },
               };
@@ -926,9 +955,9 @@ export const TradingInventoryView: React.FC = () => {
         branchName={
           inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={`${inspectingProduct?.stockQuantity || 0} ${inspectingProduct?.unit || 'u'}`}
+        statusLabel={`${inspectingProduct ? getScopedQty(inspectingProduct) : 0} ${inspectingProduct?.unit || 'u'}`}
         statusClassName={
-          (inspectingProduct?.stockQuantity || 0) <= (inspectingProduct?.reorderLevel || 10)
+          (inspectingProduct ? getScopedQty(inspectingProduct) : 0) <= (inspectingProduct?.reorderLevel || 10)
             ? STATUS_PILL_WARN
             : STATUS_PILL_OK
         }
@@ -942,7 +971,7 @@ export const TradingInventoryView: React.FC = () => {
         onClose={() => setInspectingProduct(null)}
         onSelectItem={(p) => setInspectingProduct(p)}
         renderBody={(p, tab) => {
-          const qty = p.stockQuantity || 0;
+          const qty = getScopedQty(p);
           const reorder = p.reorderLevel || 10;
           const cost = p.cost?.amount || p.costPrice || 0;
           const val = qty * cost;

@@ -716,4 +716,21 @@ Static import, dynamic `React.lazy`, test reference, and barrel `export *` scan 
   - `VenueTimelineView.tsx`: Multi-day `←`/`→` timeline spans, `Vehicle`/`Gear` filtering, Blob `.ics` export, and iCal import modal.
   - `VenueBookingsView.tsx`, `VenueInventoryView.tsx`, `VenueFinanceView.tsx`, `VenueRentersView.tsx`: Return inspection & late fee checkout modal, contract e-sign modal, `6.1`/`6.2` invoice & payment modal, Vehicle Fleet/Gear Serial/Coworking Plans/Pricing & Contracts tabs, bounded deposit deduction inline validation (`role="alert"`), driver license capture, and `6.4` CRM party sync, with full EN/FR/AR `venue_depth_*` locale parity.
 
+---
 
+## Phase 3 Step 8 — Wholesale & B2B Distribution Depth (`7.8 trading_commercial`)
+
+- **Database Schema, Migration & Rollback**: `supabase/migrations/202611280008_phase3_trading_depth.sql` + `supabase/rollbacks/202611280008_phase3_trading_depth.down.sql` (`migrationsAndRollbacks.test.ts` 25/25 passing; `scripts/db/test_rls_rpc_triggers.sql` Section 26 CI PostgreSQL 16 harness parity).
+  - Normalized `trading_partners` (`price_tier`, `crm_party_id`), `products` (`depot_stock_map`, `min_wholesale_qty`), and `commercial_docs` (`sales_rep_staff_id`, `credit_override_by`, `credit_override_reason`, `converted_line_quantities`, `guarantee_retention_status`, `guarantee_released_centimes`, `unified_document_id`, `journal_entry_id`).
+  - Added tenant/branch RLS-isolated tables `trading_price_lists`, `trading_delivery_rounds`, and `trading_rep_commissions`, plus PostgreSQL trigger `fn_guard_trading_avoir_not_exceed_invoice` and `SECURITY DEFINER` RPCs (`trading_convert_commercial_doc_partial`, `trading_execute_stock_voucher`, `trading_release_guarantee_retention`).
+- **Pure Engine, Services & Store Wiring**:
+  - `src/utils/tradingDepth.ts` + `src/utils/tradingDepth.test.ts` (`npm test` 9/9): Effective-dated client tier price resolution (`grossiste` / `semi_grossiste` / `detaillant` / `vip`), open-document credit limit exposure evaluator + authorized manager PIN override verification, partial document conversion (`Devis → BC → BL → Facture`) with over-conversion guards, cumulative Avoir ceiling validation (`fn_guard_trading_avoir_not_exceed_invoice` parity), per-depot stock availability & total-stock-preserving transfer application, bounded `retenue de garantie` release + SCF `512000`/`411000` balancing journal lines, delivery round cash reconciliation, and rep commission DZD calculation + Workforce `staff_payroll_slips` injection.
+  - `src/lib/supabase/services/tradingService.ts`, `src/lib/supabase/offlineQueue.ts`, and `src/services/store.ts`: Wired `trading_price_lists`, `trading_delivery_rounds`, `trading_rep_commissions`, credit override checks on add & edit, partial conversion, cumulative Avoir check, per-depot voucher validation/transfer, guarantee release + `6.3` SCF posting, delivery round reconciliation, and commission payroll slip generation.
+- **UI & i18n (`src/components/screens/trading/` & `src/utils/locales/{en,fr,ar}.json`)**:
+  - Updated `CommercialDocComposerModal.tsx`, `TradingSalesView.tsx`, `TradingCatalogView.tsx`, `TradingDirectoryView.tsx`, `TradingInventoryView.tsx`, and `TradingRepCommissionsPanel.tsx` with price-tier resolution, manager PIN override UI, partial conversion, cumulative Avoir selector, depot transfers, guarantee retention release, delivery rounds, and rep commissions + payroll slip trigger, with symmetric EN/FR/AR i18n parity (`0` asymmetry findings).
+- **Verified Checks**:
+  - `vite build` (`compile_applet`) & `npx tsc --noEmit` (`lint_applet`): **0 errors**.
+  - `npm test` (`tsx --test`): **226 / 226 passed** (9 suites).
+  - `npm run test:atrium` (`vitest run --maxWorkers=2`): **52 / 52 files, 393 / 393 tests passed** (incl. `phase3TradingDepth.test.tsx` 8/8 and `migrationsAndRollbacks.test.ts` 25/25).
+  - `npm run ci:guards` (strict): **0 findings (`[STRICT PASS]`)**.
+- **Next Queued Phase 3 Vertical**: `7.9 medical_clinic`.

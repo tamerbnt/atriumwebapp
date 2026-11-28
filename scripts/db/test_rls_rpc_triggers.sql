@@ -2147,5 +2147,348 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 26. Phase 3 Step 8 (7.8): trading_commercial Depth — RLS, Avoir Guard,
+--     Partial BL->Facture Conversion, Depot Stock BT/BS Guard & Retenue RPC
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid;
+  v_biz_a uuid;
+  v_br_a uuid;
+  v_user_a uuid;
+  v_user_b uuid;
+  v_cli_id uuid := gen_random_uuid();
+  v_dep_a uuid := gen_random_uuid();
+  v_dep_b uuid := gen_random_uuid();
+  v_prod_id uuid := gen_random_uuid();
+  v_inv_id uuid := gen_random_uuid();
+  v_bl_id uuid := gen_random_uuid();
+  v_pl_id uuid := gen_random_uuid();
+  v_round_id uuid := gen_random_uuid();
+  v_comm_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean := false;
+  v_conv_res jsonb;
+  v_rel_res jsonb;
+BEGIN
+  SELECT account_id, business_id, id INTO v_acc_a, v_biz_a, v_br_a FROM public.branches LIMIT 1;
+  SELECT user_id INTO v_user_a FROM public.account_members WHERE account_id = v_acc_a LIMIT 1;
+  SELECT user_id INTO v_user_b FROM public.account_members WHERE account_id <> v_acc_a LIMIT 1;
+  IF v_acc_a IS NULL OR v_user_a IS NULL OR v_user_b IS NULL THEN
+    RETURN;
+  END IF;
+
+  INSERT INTO public.trading_warehouses (id, account_id, business_id, branch_id, code, name, is_default)
+  VALUES
+    (v_dep_a, v_acc_a, v_biz_a, v_br_a, 'DEP-A', 'Dépôt Principal', true),
+    (v_dep_b, v_acc_a, v_biz_a, v_br_a, 'DEP-B', 'Dépôt Annexe', false);
+
+  INSERT INTO public.trading_b2b_clients (id, account_id, business_id, branch_id, company_name, price_tier, credit_limit_dzd)
+  VALUES (v_cli_id, v_acc_a, v_biz_a, v_br_a, 'SARL Atlas Négoce', 'wholesale', 500000);
+
+  INSERT INTO public.trading_products (id, account_id, business_id, branch_id, sku, name, selling_price_ht, stock_quantity, depot_id, depot_stock_map)
+  VALUES (
+    v_prod_id, v_acc_a, v_biz_a, v_br_a, 'SKU-TR-1', 'Acier Torsadé 12mm', 1200, 10, v_dep_a,
+    jsonb_build_object(v_dep_a::text, 10, v_dep_b::text, 0)
+  );
+
+  INSERT INTO public.trading_price_lists (id, account_id, business_id, branch_id, name, tier, effective_from, is_active, items)
+  VALUES (
+    v_pl_id, v_acc_a, v_biz_a, v_br_a, 'Tarif Grossiste 2026', 'wholesale', CURRENT_DATE - 5, true,
+    jsonb_build_array(jsonb_build_object('productId', v_prod_id::text, 'unitPriceHt', 1050, 'minQty', 1))
+  );
+
+  INSERT INTO public.trading_commercial_docs (
+    id, account_id, business_id, branch_id, doc_type, doc_number, doc_date, client_id, client_name,
+    depot_id, status, total_ht, total_tva, total_ttc,
+    guarantee_retention_percent, guarantee_retention_centimes, guarantee_retention_status, guarantee_released_centimes,
+    items
+  ) VALUES (
+    v_inv_id, v_acc_a, v_biz_a, v_br_a, 'facture', 'FAC-T-001', CURRENT_DATE, v_cli_id, 'SARL Atlas Négoce',
+    v_dep_a, 'Validated', 100000, 19000, 119000,
+    10, 1190000, 'held', 0,
+    jsonb_build_array(jsonb_build_object('id', 'line_1', 'productId', v_prod_id::text, 'description', 'Acier', 'quantity', 10, 'unitPriceHt', 10000, 'tvaPercent', 19))
+  );
+
+  INSERT INTO public.trading_commercial_docs (
+    id, account_id, business_id, branch_id, doc_type, doc_number, doc_date, client_id, client_name,
+    depot_id, status, total_ht, total_tva, total_ttc, items
+  ) VALUES (
+    v_bl_id, v_acc_a, v_biz_a, v_br_a, 'bl', 'BL-T-001', CURRENT_DATE, v_cli_id, 'SARL Atlas Négoce',
+    v_dep_a, 'Delivered', 12000, 2280, 14280,
+    jsonb_build_array(jsonb_build_object('id', 'bl_line_1', 'productId', v_prod_id::text, 'description', 'Acier Torsadé 12mm', 'quantity', 10, 'unitPriceHt', 1200, 'tvaPercent', 19))
+  );
+
+  INSERT INTO public.trading_delivery_rounds (
+    id, account_id, business_id, branch_id, round_number, round_date, rep_name, status, total_expected_centimes, total_collected_centimes
+  ) VALUES (
+    v_round_id, v_acc_a, v_biz_a, v_br_a, 'TRN-2026-01', CURRENT_DATE, 'Karim Représentant', 'planned', 1428000, 0
+  );
+
+  INSERT INTO public.trading_rep_commissions (
+    id, account_id, business_id, branch_id, rep_name, commercial_doc_id, doc_number, basis_amount_centimes, rate_bps, commission_centimes, status
+  ) VALUES (
+    v_comm_id, v_acc_a, v_biz_a, v_br_a, 'Karim Représentant', v_inv_id, 'FAC-T-001', 10000000, 250, 250000, 'pending'
+  );
+
+  -- Tenant B must NOT read 7.8 tables
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.trading_price_lists WHERE id = v_pl_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read trading_price_lists'; END IF;
+  SELECT count(*) INTO v_count FROM public.trading_delivery_rounds WHERE id = v_round_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read trading_delivery_rounds'; END IF;
+  SELECT count(*) INTO v_count FROM public.trading_rep_commissions WHERE id = v_comm_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read trading_rep_commissions'; END IF;
+  RESET ROLE;
+
+  -- Tenant A exercises guards & RPCs
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 1. Avoir exceeding invoice MUST fail trigger
+  v_blocked := false;
+  BEGIN
+    INSERT INTO public.trading_commercial_docs (
+      account_id, business_id, branch_id, doc_type, doc_number, doc_date, client_id, client_name,
+      status, total_ht, total_tva, total_ttc, linked_doc_id, linked_doc_number, items
+    ) VALUES (
+      v_acc_a, v_biz_a, v_br_a, 'avoir', 'AV-OVER-1', CURRENT_DATE, v_cli_id, 'SARL Atlas Négoce',
+      'Validated', 110000, 20900, 130900, v_inv_id, 'FAC-T-001', '[]'::jsonb
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected avoir > parent invoice TTC to be blocked by trigger';
+  END IF;
+
+  -- 2. Partial BL -> Facture (4 of 10), then reject over-conversion (7 > 6 remaining)
+  v_conv_res := public.trading_convert_commercial_doc_partial(
+    v_bl_id, 'facture', 'FAC-PART-1', jsonb_build_object('bl_line_1', 4)
+  );
+  IF (v_conv_res ->> 'sourceStatus') <> 'Partial' THEN
+    RAISE EXCEPTION 'Expected Partial status on source BL, got %', v_conv_res;
+  END IF;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.trading_convert_commercial_doc_partial(
+      v_bl_id, 'facture', 'FAC-PART-OVER', jsonb_build_object('bl_line_1', 7)
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected over-conversion of BL remaining quantity to fail';
+  END IF;
+
+  -- 3. Insufficient depot stock on BT MUST fail, valid BT preserves global stock
+  v_blocked := false;
+  BEGIN
+    PERFORM public.trading_execute_stock_voucher(jsonb_build_object(
+      'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+      'voucher_number', 'BT-OVER-1', 'voucher_type', 'transfert',
+      'depot_source_id', v_dep_a, 'depot_source_name', 'Dépôt Principal',
+      'depot_dest_id', v_dep_b, 'depot_dest_name', 'Dépôt Annexe',
+      'items', jsonb_build_array(jsonb_build_object('productId', v_prod_id, 'quantity', 25, 'unitCostDzd', 900, 'unit', 'u'))
+    ));
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected BT exceeding source depot qty to be blocked';
+  END IF;
+
+  PERFORM public.trading_execute_stock_voucher(jsonb_build_object(
+    'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+    'voucher_number', 'BT-OK-1', 'voucher_type', 'transfert',
+    'depot_source_id', v_dep_a, 'depot_source_name', 'Dépôt Principal',
+    'depot_dest_id', v_dep_b, 'depot_dest_name', 'Dépôt Annexe',
+    'items', jsonb_build_array(jsonb_build_object('productId', v_prod_id, 'quantity', 4, 'unitCostDzd', 900, 'unit', 'u'))
+  ));
+
+  -- 4. Retenue de garantie release respects held cap
+  v_blocked := false;
+  BEGIN
+    PERFORM public.trading_release_guarantee_retention(v_inv_id, 15000, 'Virement bancaire', 'VIR-OVER', CURRENT_DATE);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected guarantee retention release exceeding held amount to fail';
+  END IF;
+
+  v_rel_res := public.trading_release_guarantee_retention(v_inv_id, 11900, 'Virement bancaire', 'VIR-OK', CURRENT_DATE);
+  IF (v_rel_res ->> 'status') <> 'released' THEN
+    RAISE EXCEPTION 'Expected guarantee retention status to transition to released, got %', v_rel_res;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
+-- ============================================================================
+-- Section 27: Phase 3 Step 9 (7.9 medical_clinic) — Overlap Trigger, FEFO,
+-- Chifa Bordereaux, Doctor Rétrocession Payouts & Cash Closure Isolation
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid;
+  v_acc_b uuid;
+  v_biz_a uuid;
+  v_biz_b uuid;
+  v_br_a uuid;
+  v_br_b uuid;
+  v_user_a uuid := '00000000-0000-0000-0000-000000000901'::uuid;
+  v_user_b uuid := '00000000-0000-0000-0000-000000000902'::uuid;
+  v_doc_id uuid := gen_random_uuid();
+  v_pat_id uuid := gen_random_uuid();
+  v_con_id uuid := gen_random_uuid();
+  v_cons_id uuid := gen_random_uuid();
+  v_bor_id uuid := gen_random_uuid();
+  v_ngap_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean;
+  v_fefo_res jsonb;
+  v_cash_res jsonb;
+BEGIN
+  SELECT id INTO v_acc_a FROM public.accounts ORDER BY created_at ASC LIMIT 1;
+  SELECT id INTO v_acc_b FROM public.accounts WHERE id <> v_acc_a ORDER BY created_at ASC LIMIT 1;
+  IF v_acc_a IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Med Test A', 'med-a@atrium.test') RETURNING id INTO v_acc_a;
+  END IF;
+  IF v_acc_b IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Med Test B', 'med-b@atrium.test') RETURNING id INTO v_acc_b;
+  END IF;
+
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_a, 'Polyclinique El-Chifa Test', 'medical_clinic') RETURNING id INTO v_biz_a;
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_b, 'Clinique Confrère Test', 'medical_clinic') RETURNING id INTO v_biz_b;
+
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_a, v_biz_a, 'Siège Alger', true) RETURNING id INTO v_br_a;
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_b, v_biz_b, 'Siège Oran', true) RETURNING id INTO v_br_b;
+
+  INSERT INTO public.staff (account_id, business_id, branch_id, auth_user_id, full_name, role, status)
+  VALUES
+    (v_acc_a, v_biz_a, v_br_a, v_user_a, 'Médecin Chef A', 'admin', 'active'),
+    (v_acc_b, v_biz_b, v_br_b, v_user_b, 'Médecin Chef B', 'admin', 'active');
+
+  INSERT INTO public.medical_staff (id, account_id, business_id, branch_id, full_name, specialty, consultation_fee_dzd)
+  VALUES (v_doc_id, v_acc_a, v_biz_a, v_br_a, 'Dr. Amine Benali', 'Cardiologie', 3500);
+
+  INSERT INTO public.medical_patients (id, account_id, business_id, branch_id, file_number, full_name, has_chifa_100_percent_ald)
+  VALUES (v_pat_id, v_acc_a, v_biz_a, v_br_a, 'DOS-MED-01', 'Nadia Khelifi', true);
+
+  INSERT INTO public.medical_ngap_acts (
+    id, account_id, business_id, branch_id, code, label, category,
+    convention_fee_centimes, cnas_reimbursement_centimes, ticket_moderateur_centimes
+  ) VALUES (
+    v_ngap_id, v_acc_a, v_biz_a, v_br_a, 'CS', 'Consultation Spécialiste', 'Consultation', 350000, 280000, 70000
+  );
+
+  INSERT INTO public.medical_consumables (
+    id, account_id, business_id, branch_id, sku, name, category, unit, stock_quantity, min_stock_alert, lots
+  ) VALUES (
+    v_cons_id, v_acc_a, v_biz_a, v_br_a, 'CON_01', 'Gants stériles', 'Hygiène & Protection', 'Boîtes', 7, 2,
+    jsonb_build_array(
+      jsonb_build_object('lotNumber', 'LOT-EXP', 'expiryDate', (CURRENT_DATE - 5)::text, 'quantity', 3),
+      jsonb_build_object('lotNumber', 'LOT-FEFO-1', 'expiryDate', (CURRENT_DATE + 15)::text, 'quantity', 2),
+      jsonb_build_object('lotNumber', 'LOT-FEFO-2', 'expiryDate', (CURRENT_DATE + 90)::text, 'quantity', 2)
+    )
+  );
+
+  -- Tenant B must NOT read medical_ngap_acts
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.medical_ngap_acts WHERE id = v_ngap_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read medical_ngap_acts'; END IF;
+  RESET ROLE;
+
+  -- Tenant A tests
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 1. Appointment overlap guard & emergency bypass
+  PERFORM public.medical_upsert_appointment_atomic(jsonb_build_object(
+    'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+    'doctor_id', v_doc_id, 'doctor_name', 'Dr. Amine Benali',
+    'patient_id', v_pat_id, 'patient_name', 'Nadia Khelifi',
+    'appointment_date', CURRENT_DATE::text, 'start_time', '09:00', 'duration_minutes', 30
+  ));
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.medical_upsert_appointment_atomic(jsonb_build_object(
+      'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+      'doctor_id', v_doc_id, 'doctor_name', 'Dr. Amine Benali',
+      'patient_name', 'Patient Conflit',
+      'appointment_date', CURRENT_DATE::text, 'start_time', '09:15', 'duration_minutes', 30
+    ));
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected overlapping medical appointment to be blocked';
+  END IF;
+
+  -- Emergency bypass with reason MUST succeed
+  PERFORM public.medical_upsert_appointment_atomic(jsonb_build_object(
+    'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+    'doctor_id', v_doc_id, 'doctor_name', 'Dr. Amine Benali',
+    'patient_name', 'Urgence Douleur Thoracique',
+    'appointment_date', CURRENT_DATE::text, 'start_time', '09:15', 'duration_minutes', 15,
+    'is_emergency_bypass', true, 'emergency_bypass_reason', 'Douleur thoracique aiguë'
+  ));
+
+  -- 2. FEFO consumable: requesting 5 (> 4 unexpired) MUST fail; requesting 3 consumes LOT-FEFO-1 then LOT-FEFO-2
+  v_blocked := false;
+  BEGIN
+    PERFORM public.medical_consume_supply_fefo(v_cons_id, 5, CURRENT_DATE);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected FEFO depletion exceeding unexpired stock to fail';
+  END IF;
+
+  v_fefo_res := public.medical_consume_supply_fefo(v_cons_id, 3, CURRENT_DATE);
+  IF (v_fefo_res -> 'deductedLots' -> 0 ->> 'lotNumber') <> 'LOT-FEFO-1' THEN
+    RAISE EXCEPTION 'Expected LOT-FEFO-1 to be consumed first, got %', v_fefo_res;
+  END IF;
+
+  -- 3. Chifa Bordereau transmission & settlement
+  PERFORM public.medical_transmit_chifa_bordereau(
+    v_bor_id, v_acc_a, v_biz_a, v_br_a, 'BOR-2026-05-TEST', '2026-05', '1601',
+    jsonb_build_array(gen_random_uuid()), 1, 350000, 350000, 0
+  );
+  PERFORM public.medical_settle_chifa_bordereau(v_bor_id, 'VIR-CNAS-8821', NULL, NULL);
+
+  -- 4. Practitioner payout & daily cash closure
+  PERFORM public.medical_issue_practitioner_payout(jsonb_build_object(
+    'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+    'practitioner_id', v_doc_id, 'practitioner_name', 'Dr. Amine Benali',
+    'period_month', '2026-05', 'consultations_count', 4,
+    'gross_turnover_centimes', 1400000, 'commission_rate_bps', 7500,
+    'doctor_payout_centimes', 1050000, 'polyclinic_share_centimes', 350000
+  ));
+
+  v_cash_res := public.medical_close_daily_cash(jsonb_build_object(
+    'account_id', v_acc_a, 'business_id', v_biz_a, 'branch_id', v_br_a,
+    'closure_date', CURRENT_DATE::text, 'closed_by_name', 'Nassima',
+    'expected_cash_centimes', 250000, 'counted_cash_centimes', 250000, 'consultations_count', 3
+  ));
+  IF (v_cash_res ->> 'status') <> 'balanced' THEN
+    RAISE EXCEPTION 'Expected balanced cash closure, got %', v_cash_res;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
+
 

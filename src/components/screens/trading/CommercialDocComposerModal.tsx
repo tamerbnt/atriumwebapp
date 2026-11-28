@@ -22,6 +22,8 @@ import {
   selectCurrentProductsFromState,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  selectCurrentTradingPriceListsFromState,
+  selectCurrentStaffFromState,
   useAtriumActions,
   showToast,
 } from '../../../services/store';
@@ -31,7 +33,13 @@ import {
   CommercialDocItem,
   B2bClient,
   WarehouseDepot,
+  TradingPriceTier,
 } from '../../../types';
+import {
+  resolveClientTierPrice,
+  validateAvoirAgainstInvoice,
+  evaluateClientCreditExposure,
+} from '../../../utils/tradingDepth';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSelect } from '../../ui/live/LiveSelect';
@@ -46,20 +54,23 @@ interface CommercialDocComposerModalProps {
   onClose: () => void;
   initialType?: CommercialDocType;
   editingDoc?: CommercialDocument | null;
+  prefillLinkedDoc?: CommercialDocument | null;
   onSaved?: (doc: CommercialDocument) => void;
 }
 
 
 
-export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProps> = ({ isOpen, onClose, initialType = "devis", editingDoc, onSaved }) => {
+export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProps> = ({ isOpen, onClose, initialType = "devis", editingDoc, prefillLinkedDoc, onSaved }) => {
 	const { t, isRtl, language } = useTranslation();
-	const { account, b2bClients, warehouses, products, allCommercialDocs, currentBusiness, currentBranchId, currentBranch } = useAtriumSelector(
+	const { account, b2bClients, warehouses, products, allCommercialDocs, tradingPriceLists, staffList, currentBusiness, currentBranchId, currentBranch } = useAtriumSelector(
 	  (s) => ({
 	    account: s.account,
 	    b2bClients: selectCurrentB2bClientsFromState(s),
 	    warehouses: selectCurrentWarehousesFromState(s),
 	    products: selectCurrentProductsFromState(s),
 	    allCommercialDocs: s.commercialDocs || [],
+	    tradingPriceLists: selectCurrentTradingPriceListsFromState(s),
+	    staffList: selectCurrentStaffFromState(s),
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranchId: s.currentBranchId,
 	    currentBranch: selectCurrentBranchFromState(s),
@@ -69,8 +80,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	const { createCommercialDoc, updateCommercialDoc } = useAtriumActions();
 	const isEdit = !!editingDoc;
 	const [docType, setDocType] = React.useState(editingDoc?.type || initialType);
-	const [clientId, setClientId] = React.useState(editingDoc?.clientId || b2bClients[0]?.id || "");
-	const [depotId, setDepotId] = React.useState(editingDoc?.depotId || warehouses[0]?.id || "depot_01");
+	const [clientId, setClientId] = React.useState(editingDoc?.clientId || prefillLinkedDoc?.clientId || b2bClients[0]?.id || "");
+	const [depotId, setDepotId] = React.useState(editingDoc?.depotId || prefillLinkedDoc?.depotId || warehouses[0]?.id || "depot_01");
 	const [date, setDate] = React.useState(editingDoc?.date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0]);
 	const [validityDays, setValidityDays] = React.useState(editingDoc?.validityDays || 30);
 	const [dueDate, setDueDate] = React.useState(editingDoc?.dueDate || "");
@@ -83,8 +94,14 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	const [notesTop, setNotesTop] = React.useState(editingDoc?.notesTop || "");
 	const [notesBottom, setNotesBottom] = React.useState(editingDoc?.notesBottom || "");
 	const [includeStampSignature, setIncludeStampSignature] = React.useState(editingDoc?.includeStampSignature ?? true);
+	const [linkedDocId, setLinkedDocId] = React.useState(editingDoc?.linkedDocId || prefillLinkedDoc?.id || "");
+	const [repStaffId, setRepStaffId] = React.useState(editingDoc?.repStaffId || "");
+	const [managerPin, setManagerPin] = React.useState("");
+	const [overrideReason, setOverrideReason] = React.useState(editingDoc?.creditOverrideReason || "");
+	const [tierMetaByRow, setTierMetaByRow] = React.useState<Record<number, { listName?: string; tier?: TradingPriceTier }>>({});
 	const [items, setItems] = React.useState(() => {
 		if (editingDoc?.items && editingDoc.items.length > 0) return editingDoc.items;
+		if (prefillLinkedDoc?.items && prefillLinkedDoc.items.length > 0) return prefillLinkedDoc.items;
 		return [{
 			id: `item_${Date.now()}_1`,
 			productId: products[0]?.id || "",
@@ -104,13 +121,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	React.useEffect(() => {
 		if (!isOpen) return;
 		setDocType(editingDoc?.type || initialType);
-		setClientId(editingDoc?.clientId || b2bClients[0]?.id || "");
-		setDepotId(editingDoc?.depotId || warehouses[0]?.id || "depot_01");
+		setClientId(editingDoc?.clientId || prefillLinkedDoc?.clientId || b2bClients[0]?.id || "");
+		setDepotId(editingDoc?.depotId || prefillLinkedDoc?.depotId || warehouses[0]?.id || "depot_01");
 		setDate(editingDoc?.date || (new Date()).toISOString().split("T")[0]);
 		setValidityDays(editingDoc?.validityDays || 30);
 		setDueDate(editingDoc?.dueDate || "");
-		setPaymentMethod(editingDoc?.paymentMethod || "Virement bancaire");
-		setPaymentTerms(editingDoc?.paymentTerms || "30 jours");
+		setPaymentMethod(editingDoc?.paymentMethod || prefillLinkedDoc?.paymentMethod || "Virement bancaire");
+		setPaymentTerms(editingDoc?.paymentTerms || prefillLinkedDoc?.paymentTerms || "30 jours");
 		setShowAdvancedOptions((editingDoc?.generalDiscountPercent || 0) > 0 || (editingDoc?.guaranteeRetentionPercent || 0) > 0 || !!editingDoc?.notesTop || !!editingDoc?.notesBottom);
 		setGeneralDiscountPercent(editingDoc?.generalDiscountPercent || 0);
 		setGuaranteeRetentionPercent(editingDoc?.guaranteeRetentionPercent || 0);
@@ -118,8 +135,15 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 		setNotesTop(editingDoc?.notesTop || "");
 		setNotesBottom(editingDoc?.notesBottom || "");
 		setIncludeStampSignature(editingDoc?.includeStampSignature ?? true);
+		setLinkedDocId(editingDoc?.linkedDocId || prefillLinkedDoc?.id || "");
+		setRepStaffId(editingDoc?.repStaffId || "");
+		setManagerPin("");
+		setOverrideReason(editingDoc?.creditOverrideReason || "");
+		setTierMetaByRow({});
 		if (editingDoc?.items && editingDoc.items.length > 0) {
 			setItems(editingDoc.items);
+		} else if (prefillLinkedDoc?.items && prefillLinkedDoc.items.length > 0) {
+			setItems(prefillLinkedDoc.items.map((it, idx) => ({ ...it, id: `item_${Date.now()}_${idx}` })));
 		} else {
 			setItems([{
 				id: `item_${Date.now()}_1`,
@@ -135,7 +159,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 				totalTtc: Math.round((products[0]?.price?.amount || 1e3) * 1.19)
 			}]);
 		}
-	}, [isOpen, editingDoc, initialType]);
+	}, [isOpen, editingDoc, prefillLinkedDoc, initialType]);
 	const selectedClient = React.useMemo(() => {
 		return b2bClients.find((c) => c.id === clientId) || b2bClients[0];
 	}, [b2bClients, clientId]);
@@ -152,6 +176,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 		editingDoc,
 		allCommercialDocs
 	]);
+	const clientInvoices = React.useMemo(() => {
+		return allCommercialDocs.filter((d) => d.type === "facture" && d.status !== "Canceled" && (!clientId || d.clientId === clientId));
+	}, [allCommercialDocs, clientId]);
+	const selectedParentInvoice = React.useMemo(() => {
+		if (docType !== "avoir" || !linkedDocId) return null;
+		return allCommercialDocs.find((d) => d.id === linkedDocId) || null;
+	}, [docType, linkedDocId, allCommercialDocs]);
 	const handleItemChange = (index: any, field: any, value: any) => {
 		setItems((prev: any) => {
 			const next = [...prev];
@@ -159,6 +190,28 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 				...next[index],
 				[field]: value
 			};
+			if (field === "quantity" && target.productId) {
+				const prod = products.find((p) => p.id === target.productId);
+				if (prod) {
+					const resolved = resolveClientTierPrice({
+						priceLists: tradingPriceLists,
+						clientTier: selectedClient?.priceTier,
+						productId: prod.id,
+						docDate: date,
+						qty: Number(value) || 1,
+						fallbackUnitPriceHt: prod.price?.amount || 0,
+						fallbackDiscountPercent: Number(target.discountPercent || 0),
+					});
+					target.unitPriceHt = resolved.unitPriceHt;
+					target.discountPercent = resolved.discountPercent;
+					setTierMetaByRow((m) => ({
+						...m,
+						[index]: resolved.isTierApplied
+							? { listName: resolved.matchedPriceListName, tier: resolved.matchedTier }
+							: {},
+					}));
+				}
+			}
 			const qty = Number(target.quantity) || 0;
 			const puHt = Number(target.unitPriceHt) || 0;
 			const disc = Number(target.discountPercent) || 0;
@@ -174,11 +227,28 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	const handleProductSelect = (index: any, prodId: any) => {
 		const prod = products.find((p) => p.id === prodId);
 		if (!prod) return;
+		const rowQty = Number(items[index]?.quantity) || 1;
+		const resolved = resolveClientTierPrice({
+			priceLists: tradingPriceLists,
+			clientTier: selectedClient?.priceTier,
+			productId: prod.id,
+			docDate: date,
+			qty: rowQty,
+			fallbackUnitPriceHt: prod.price?.amount || 0,
+		});
+		setTierMetaByRow((m) => ({
+			...m,
+			[index]: resolved.isTierApplied
+				? { listName: resolved.matchedPriceListName, tier: resolved.matchedTier }
+				: {},
+		}));
 		setItems((prev: any) => {
 			const next = [...prev];
-			const unitPrice = prod.price?.amount || 0;
+			const unitPrice = resolved.unitPriceHt;
+			const disc = resolved.discountPercent;
 			const tva = prod.taxRate ?? 19;
 			const isSrv = prod.category?.toLowerCase().includes("service") || false;
+			const netHt = rowQty * unitPrice * (1 - disc / 100);
 			next[index] = {
 				...next[index],
 				productId: prod.id,
@@ -187,12 +257,46 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 				unit: prod.unit || "u",
 				unitPriceHt: unitPrice,
 				tvaPercent: tva,
-				discountPercent: 0,
-				totalHt: unitPrice * (next[index].quantity || 1),
-				totalTtc: Math.round(unitPrice * (next[index].quantity || 1) * (1 + tva / 100))
+				discountPercent: disc,
+				totalHt: Math.round(netHt * 100) / 100,
+				totalTtc: Math.round(netHt * (1 + tva / 100) * 100) / 100
 			};
 			return next;
 		});
+	};
+	const handleClientChange = (nextClientId: string) => {
+		setClientId(nextClientId);
+		const nextClient = b2bClients.find((c) => c.id === nextClientId);
+		if (!nextClient) return;
+		const nextTierMeta: Record<number, { listName?: string; tier?: TradingPriceTier }> = {};
+		setItems((prev: any) =>
+			prev.map((row: any, idx: number) => {
+				if (!row.productId) return row;
+				const prod = products.find((p) => p.id === row.productId);
+				if (!prod) return row;
+				const resolved = resolveClientTierPrice({
+					priceLists: tradingPriceLists,
+					clientTier: nextClient.priceTier,
+					productId: prod.id,
+					docDate: date,
+					qty: Number(row.quantity) || 1,
+					fallbackUnitPriceHt: prod.price?.amount || 0,
+				});
+				if (resolved.isTierApplied) {
+					nextTierMeta[idx] = { listName: resolved.matchedPriceListName, tier: resolved.matchedTier };
+				}
+				const qty = Number(row.quantity) || 1;
+				const netHt = qty * resolved.unitPriceHt * (1 - resolved.discountPercent / 100);
+				return {
+					...row,
+					unitPriceHt: resolved.unitPriceHt,
+					discountPercent: resolved.discountPercent,
+					totalHt: Math.round(netHt * 100) / 100,
+					totalTtc: Math.round(netHt * (1 + (Number(row.tvaPercent) || 0) / 100) * 100) / 100,
+				};
+			})
+		);
+		setTierMetaByRow(nextTierMeta);
 	};
 	const addItemRow = () => {
 		const newId = `item_${Date.now()}_${items.length + 1}`;
@@ -229,6 +333,38 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 		paymentMethod,
 		isCashFiscalStampEnabled
 	]);
+	const avoirCheck = React.useMemo(() => {
+		if (docType !== "avoir" || !selectedParentInvoice) return null;
+		return validateAvoirAgainstInvoice({
+			parentInvoice: selectedParentInvoice,
+			existingDocs: allCommercialDocs,
+			newAvoirDocId: editingDoc?.id,
+			newAvoirAmountTtcDzd: calculations.totalTtc,
+		});
+	}, [docType, selectedParentInvoice, allCommercialDocs, editingDoc?.id, calculations.totalTtc]);
+
+	const creditEvaluation = React.useMemo(() => {
+		return evaluateClientCreditExposure({
+			client: selectedClient,
+			docType,
+			newDocTotalDzd: calculations.netToPay,
+			newStatus: "Validated",
+			existingDocs: allCommercialDocs,
+			excludeDocId: editingDoc?.id,
+			staffList,
+			managerPin: managerPin.trim() || undefined,
+			overrideReason: overrideReason.trim() || undefined,
+			existingOverride: editingDoc?.creditOverrideByStaffId
+				? {
+					staffId: editingDoc.creditOverrideByStaffId,
+					staffName: editingDoc.creditOverrideByName,
+					reason: editingDoc.creditOverrideReason,
+					previousTotalDzd: Number(editingDoc.netToPay || editingDoc.totalTtc || 0),
+				}
+				: undefined,
+		});
+	}, [selectedClient, docType, calculations.netToPay, allCommercialDocs, editingDoc, staffList, managerPin, overrideReason]);
+
 	const handleSubmit = (targetStatus: CommercialDocument["status"] = "Validated") => {
 		if (!clientId) {
 			showToast({ type: "warning", title: t("trading_composer_alert_select_client"), message: t("trading_composer_alert_select_client") });
@@ -248,6 +384,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 			});
 			return;
 		}
+		const repMember = staffList.find((s) => s.id === repStaffId);
 		const docPayload = {
 			tenantId: activeAccountId,
 			facilityId: activeBranchId,
@@ -277,19 +414,28 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 			guaranteeRetentionAmount: calculations.guaranteeRetentionAmount,
 			netToPay: calculations.netToPay,
 			currency: "DZD",
+			linkedDocId: docType === "avoir" ? (linkedDocId || void 0) : editingDoc?.linkedDocId,
+			linkedDocNumber: docType === "avoir" ? (selectedParentInvoice?.docNumber || void 0) : editingDoc?.linkedDocNumber,
+			repStaffId: repMember?.id || void 0,
+			repName: repMember ? repMember.fullName : void 0,
 			notesTop: notesTop.trim() || void 0,
 			notesBottom: notesBottom.trim() || void 0,
 			includeStampSignature
 		};
+		const overrideAuth = (managerPin.trim() || overrideReason.trim())
+			? { managerPin: managerPin.trim() || undefined, overrideReason: overrideReason.trim() || undefined }
+			: undefined;
 		if (isEdit && editingDoc) {
-			updateCommercialDoc(editingDoc.id, docPayload as any);
+			const ok = updateCommercialDoc(editingDoc.id, docPayload as any, overrideAuth);
+			if (!ok) return;
 			if (onSaved) onSaved({
 				...editingDoc,
 				...docPayload,
 				updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 			});
 		} else {
-			const created = createCommercialDoc(docPayload as any);
+			const created = createCommercialDoc(docPayload as any, overrideAuth);
+			if (!created) return;
 			if (onSaved) onSaved(created);
 		}
 		onClose();
@@ -316,7 +462,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <button onClick={onClose} data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors"><X size={20} /></button>
 </div>
 <div className="p-6 overflow-y-auto space-y-6 flex-1 t-body">
-<div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 <LabelSelect
 label={t("trading_composer_doc_type")}
 value={docType}
@@ -329,10 +475,47 @@ options={[
 								{ value: "avoir", label: t("trading_doc_avoir"), sublabel: "AV" },
 							]}
 />
+<LabelSelect
+label={t("trading_composer_rep_label", "Commercial / Représentant")}
+value={repStaffId}
+onChange={setRepStaffId}
+placeholder={t("trading_composer_rep_none", "-- Aucun commercial affecté --")}
+options={[
+								{ value: "", label: t("trading_composer_rep_none", "-- Aucun commercial affecté --") },
+								...staffList.filter((s) => !s.status || s.status === "active").map((s) => ({
+									value: s.id,
+									label: `${s.fullName} (${s.role})`,
+								})),
+							]}
+/>
 </div>
+{docType === "avoir" && (
+<div data-sq="ctl" data-sq-border="solid" className="p-3 bg-[#F5F1EC]/70 dark:bg-[#22201E] space-y-2">
+<LabelSelect
+label={t("trading_composer_parent_invoice", "Facture d'origine rattachée (Avoir)")}
+value={linkedDocId}
+onChange={setLinkedDocId}
+placeholder={t("trading_composer_select_parent_invoice", "-- Choisir une facture client --")}
+options={[
+	{ value: "", label: t("trading_composer_select_parent_invoice", "-- Choisir une facture client --") },
+	...clientInvoices.map((inv) => ({
+		value: inv.id,
+		label: `${inv.docNumber} · ${inv.date} · ${formatMoney(inv.totalTtc)}`,
+	})),
+]}
+/>
+{avoirCheck && (
+<div className={`t-cap tabular-nums font-medium ${avoirCheck.valid ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+{avoirCheck.valid
+	? `${t("trading_composer_avoir_remaining", "Créditable restant")}: ${formatMoney(avoirCheck.remainingCreditableDzd)}`
+	: `${t("trading_composer_avoir_exceeds", "L'avoir dépasse le solde facturé restant")} (${formatMoney(avoirCheck.remainingCreditableDzd)})`}
+</div>
+)}
+</div>
+)}
 <div data-sq="card" data-sq-border="none" className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F5F1EC]/70 dark:bg-[#22201E]">
 <div className="md:col-span-1">
-<LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={setClientId} options={b2bClients.map((c) => ({
+<LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={handleClientChange} options={b2bClients.map((c) => ({
 											value: c.id,
 											label: `${c.companyName} ${c.city ? `(${c.city})` : ""}`
 										}))} />
@@ -344,6 +527,10 @@ options={[
 <div className="flex justify-between">
 <span>Registre Comm. (RC):</span>
 <span className="tabular-nums text-black/70 dark:text-white/75">{selectedClient.rc || "Non renseigné"}</span>
+</div>
+<div className="flex justify-between">
+<span>Grille Tarifaire:</span>
+<span className="font-medium text-black/75 dark:text-white/80 uppercase">{selectedClient.priceTier || "standard"}</span>
 </div>
 <div className="flex justify-between">
 <span>Encours / Crédit:</span>
@@ -478,6 +665,11 @@ value={item.description}
 onChange={(val) => handleItemChange(idx, "description", val)}
 height={40}
 />
+{tierMetaByRow[idx]?.listName && (
+<div className="t-cap text-[#BF431F] dark:text-[#FF8F63] font-medium">
+Tarif {tierMetaByRow[idx].tier} · {tierMetaByRow[idx].listName}
+</div>
+)}
 </td>
 <td className="p-2 align-top">
 <LiveSelect
@@ -621,6 +813,41 @@ options={[
 </div>
 </div>
 </div>
+{creditEvaluation.exceedsLimit && (
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 space-y-3">
+<div className="flex items-start gap-2.5 text-rose-700 dark:text-rose-300">
+<AlertCircle size={18} className="shrink-0 mt-0.5" />
+<div className="t-cap space-y-1 tabular-nums">
+<div className="t-small font-semibold">
+{t("trading_composer_credit_limit_title", "Plafond de crédit client dépassé")} (+{formatMoney(creditEvaluation.excessDzd)})
+</div>
+<div>
+{t("trading_composer_credit_exposure_summary", "Exposition projetée")}: {formatMoney(creditEvaluation.projectedExposureDzd)} / {t("trading_entity_credit_limit", "Plafond")}: {formatMoney(creditEvaluation.creditLimitDzd)}
+</div>
+</div>
+</div>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<LabelInput
+type="password"
+label={t("trading_composer_manager_pin", "Code PIN Gérant (Dérogation)")}
+placeholder="PIN (4-6 chiffres)"
+value={managerPin}
+onChange={setManagerPin}
+/>
+<LabelInput
+label={t("trading_composer_override_reason", "Motif de dérogation *")}
+placeholder="Ex: Chèque de garantie déposé en caisse"
+value={overrideReason}
+onChange={setOverrideReason}
+/>
+</div>
+{creditEvaluation.overrideApplied && (
+<div className="t-cap font-medium text-emerald-700 dark:text-emerald-400">
+{t("trading_composer_override_valid", "Dérogation autorisée par")} {creditEvaluation.overrideStaffName}
+</div>
+)}
+</div>
+)}
 </div>
 <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
 <AtriumButton type="button" variant="ghost" onClick={onClose}>{t("trading_composer_btn_cancel")}</AtriumButton>

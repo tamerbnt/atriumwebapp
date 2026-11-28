@@ -225,6 +225,9 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   pm_expenses: 36,
   pm_timesheets: 38,
   pm_client_portal_reviews: 41,
+  trading_price_lists: 20,
+  trading_delivery_rounds: 32,
+  trading_rep_commissions: 42,
   immutable_audit_logs: 50,
 };
 

@@ -59,7 +59,7 @@ function seedFreelanceTestEntities(actions: ReturnType<typeof useAtriumActions>)
     country: 'Algeria',
     currency: 'EUR',
     hourlyRate: 85,
-    status: 'Active',
+    status: 'ActiveRetainer',
   });
 
   const project = actions.addFreelanceProject({

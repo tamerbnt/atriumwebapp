@@ -12,15 +12,17 @@ import {
   selectCurrentProductsFromState,
   selectCurrentBranchFromState,
   selectCurrentBusinessConfigFromState,
+  selectCurrentTradingPriceListsFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
-import { Product } from '../../../types';
+import { Product, TradingPriceList, TradingPriceListItem, TradingPriceTier } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -54,16 +56,17 @@ const STATUS_PILL_WARN =
 const STATUS_PILL_INFO =
   'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
-type CatalogTab = 'products' | 'services';
+type CatalogTab = 'products' | 'services' | 'pricelists';
 type DrawerTab = 'fiche' | 'stock' | 'marge';
 
 export const TradingCatalogView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { products, currentBranch, currentBusinessConfig, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { products, tradingPriceLists, currentBranch, currentBusinessConfig, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
       products: selectCurrentProductsFromState(s),
+      tradingPriceLists: selectCurrentTradingPriceListsFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       branches: s.branches,
@@ -78,11 +81,21 @@ export const TradingCatalogView: React.FC = () => {
     addProduct,
     updateProduct,
     deleteProduct,
+    upsertTradingPriceList,
+    deleteTradingPriceList,
     retryCloudSync,
   } = useAtriumActions();
   const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
 
   const [activeTab, setActiveTab] = useState<CatalogTab>('products');
+  const [priceListModalOpen, setPriceListModalOpen] = useState(false);
+  const [editingPriceList, setEditingPriceList] = useState<TradingPriceList | null>(null);
+  const [plName, setPlName] = useState('');
+  const [plTier, setPlTier] = useState<TradingPriceTier>('wholesale');
+  const [plEffectiveFrom, setPlEffectiveFrom] = useState(() => new Date().toISOString().slice(0, 10));
+  const [plEffectiveTo, setPlEffectiveTo] = useState('');
+  const [plIsActive, setPlIsActive] = useState(true);
+  const [plItems, setPlItems] = useState<TradingPriceListItem[]>([]);
   const [branchFilter, setBranchFilter] = useState<string>('All');
   const [tvaFilter, setTvaFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -257,7 +270,62 @@ export const TradingCatalogView: React.FC = () => {
     downloadCsvSafe(`atrium-trading-catalog-${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
   }, [sortedItems, branchesById, currentBranch, language]);
 
+  const handleOpenAddPriceList = useCallback(() => {
+    setEditingPriceList(null);
+    setPlName('');
+    setPlTier('wholesale');
+    setPlEffectiveFrom(new Date().toISOString().slice(0, 10));
+    setPlEffectiveTo('');
+    setPlIsActive(true);
+    setPlItems(
+      products[0]
+        ? [
+            {
+              id: `tpli_${Date.now()}_0`,
+              productId: products[0].id,
+              sku: products[0].sku,
+              productName: products[0].name,
+              unitPriceHt: Math.round((products[0].price?.amount || 0) * 0.9),
+              minQty: 1,
+              discountPercent: 0,
+            },
+          ]
+        : []
+    );
+    setPriceListModalOpen(true);
+  }, [products]);
+
+  const handleEditPriceList = useCallback((pl: TradingPriceList) => {
+    setEditingPriceList(pl);
+    setPlName(pl.name);
+    setPlTier(pl.tier);
+    setPlEffectiveFrom((pl.effectiveFrom || '').slice(0, 10) || new Date().toISOString().slice(0, 10));
+    setPlEffectiveTo((pl.effectiveTo || '').slice(0, 10));
+    setPlIsActive(pl.isActive);
+    setPlItems(pl.items || []);
+    setPriceListModalOpen(true);
+  }, []);
+
+  const handleSubmitPriceList = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!plName.trim()) return;
+    upsertTradingPriceList({
+      id: editingPriceList?.id,
+      name: plName.trim(),
+      tier: plTier,
+      effectiveFrom: plEffectiveFrom,
+      effectiveTo: plEffectiveTo.trim() || undefined,
+      isActive: plIsActive,
+      items: plItems.filter((it) => it.productId),
+    });
+    setPriceListModalOpen(false);
+  };
+
   const handleOpenAdd = useCallback(() => {
+    if (activeTab === 'pricelists') {
+      handleOpenAddPriceList();
+      return;
+    }
     setEditingProduct(null);
     setName('');
     setDescription('');
@@ -270,7 +338,7 @@ export const TradingCatalogView: React.FC = () => {
     setReorderLevel(10);
     setStockQuantity(0);
     setModalOpen(true);
-  }, [activeTab, configuredDefaultTva]);
+  }, [activeTab, configuredDefaultTva, handleOpenAddPriceList]);
 
   const handleEdit = useCallback((p: Product) => {
     setEditingProduct(p);
@@ -538,7 +606,13 @@ export const TradingCatalogView: React.FC = () => {
         title={t('trading_catalog_title', 'Catalogue')}
         primaryAction={{
           label:
-            activeTab === 'products'
+            activeTab === 'pricelists'
+              ? isAr
+                ? 'قائمة أسعار جديدة'
+                : isEn
+                ? 'New Price List'
+                : 'Nouveau Tarif'
+              : activeTab === 'products'
               ? isAr
                 ? 'مادة جديدة'
                 : 'Nouvel Article'
@@ -587,11 +661,17 @@ export const TradingCatalogView: React.FC = () => {
       <ScreenPod>
         <ScreenCollectionToolbar
           title={
-            activeTab === 'products'
+            activeTab === 'pricelists'
+              ? t('trading_catalog_pricelists_title', isAr ? 'قوائم الأسعار والخصومات' : isEn ? 'Tier Price Lists' : 'Grilles Tarifaires & Paliers')
+              : activeTab === 'products'
               ? t('trading_catalog_articles_title', 'Articles de Négoce')
               : t('trading_catalog_services_title', 'Prestations & Forfaits')
           }
-          liveRegionText={`${sortedItems.length} ${isAr ? 'مرجع' : 'références'}`}
+          liveRegionText={
+            activeTab === 'pricelists'
+              ? `${tradingPriceLists.length} ${isAr ? 'قوائم' : isEn ? 'lists' : 'grilles'}`
+              : `${sortedItems.length} ${isAr ? 'مرجع' : 'références'}`
+          }
           language={language}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -599,6 +679,7 @@ export const TradingCatalogView: React.FC = () => {
           statusOptions={[
             { value: 'products', label: isAr ? 'منتجات' : isEn ? 'Products' : 'Produits', count: stats.productsCount },
             { value: 'services', label: isAr ? 'خدمات' : 'Services', count: stats.servicesCount },
+            { value: 'pricelists', label: isAr ? 'الأسعار' : isEn ? 'Price Lists' : 'Tarifs', count: tradingPriceLists.length },
           ]}
           statusValue={activeTab}
           onStatusChange={(val) => setActiveTab(val as CatalogTab)}
@@ -618,6 +699,81 @@ export const TradingCatalogView: React.FC = () => {
           }}
         />
 
+        {activeTab === 'pricelists' ? (
+          <div className="pt-4">
+            {tradingPriceLists.length === 0 ? (
+              <div data-sq="card" data-sq-border="solid" className="p-8 text-center space-y-3 bg-[#FAF7F4] dark:bg-[#1E1C1A] [--sq-stroke:var(--sq-stroke-card)]">
+                <p className="t-body font-medium text-black dark:text-white">
+                  {t('trading_pricelists_empty', isAr ? 'لا توجد قوائم أسعار مخصصة بعد' : isEn ? 'No tier price lists configured yet' : 'Aucune grille tarifaire configurée')}
+                </p>
+                <p className="t-cap text-black/55 dark:text-white/60">
+                  {isAr ? 'أنشئ تعريفة حسب الفئة (جملة، VIP، موزع) وتواريخ الصلاحية.' : isEn ? 'Create effective-dated price lists by client tier (Wholesale, VIP, Distributor).' : 'Définissez vos tarifs par catégorie client (Gros, VIP, Distributeur) avec dates de validité.'}
+                </p>
+                <AtriumButton variant="primary" size="sm" icon={<Plus size={14} />} onClick={handleOpenAddPriceList}>
+                  {isAr ? 'إنشاء قائمة أسعار' : isEn ? 'Create Price List' : 'Créer une Grille Tarifaire'}
+                </AtriumButton>
+              </div>
+            ) : (
+              <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                <table className="w-full text-left rtl:text-right t-cap">
+                  <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                    <tr>
+                      <th className="py-2.5 px-3">{isAr ? 'الاسم' : isEn ? 'Name' : 'Nom de la Grille'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'الفئة' : isEn ? 'Tier' : 'Catégorie'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'الفترة' : isEn ? 'Effective Window' : 'Validité'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'المواد' : isEn ? 'Items' : 'Articles'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'الحالة' : isEn ? 'Status' : 'Statut'}</th>
+                      <th className="py-2.5 px-3 text-right" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--atr-divider)]">
+                    {tradingPriceLists
+                      .filter((pl) => !searchQuery.trim() || pl.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) || pl.tier.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+                      .map((pl) => (
+                        <tr key={pl.id} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
+                          <td className="py-2.5 px-3 font-semibold text-black dark:text-white">{pl.name}</td>
+                          <td className="py-2.5 px-3 uppercase font-medium text-black/75 dark:text-white/80">{pl.tier}</td>
+                          <td className="py-2.5 px-3 tabular-nums text-black/70 dark:text-white/75">
+                            {pl.effectiveFrom?.slice(0, 10)}{pl.effectiveTo ? ` → ${pl.effectiveTo.slice(0, 10)}` : ' → ∞'}
+                          </td>
+                          <td className="py-2.5 px-3 text-right tabular-nums font-semibold">{pl.items?.length || 0}</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] t-small font-semibold ${pl.isActive ? STATUS_PILL_OK : STATUS_PILL_WARN}`}>
+                              {pl.isActive ? (isAr ? 'نشط' : isEn ? 'Active' : 'Active') : (isAr ? 'معطل' : isEn ? 'Inactive' : 'Inactive')}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleEditPriceList(pl)}
+                                aria-label={t('action_edit', 'Modifier')}
+                                data-sq="ctl-sm"
+                                data-sq-border="none"
+                                className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                              >
+                                <Edit size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteTradingPriceList(pl.id)}
+                                aria-label={t('action_delete', 'Supprimer')}
+                                data-sq="ctl-sm"
+                                data-sq-border="none"
+                                className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
         <UniversalDataCollection<Product>
           hideToolbar
           items={sortedItems}
@@ -762,6 +918,7 @@ export const TradingCatalogView: React.FC = () => {
           }}
           emptyTitle="Aucun article trouvé"
         />
+        )}
       </ScreenPod>
 
       <KineticFilterModal
@@ -1031,6 +1188,183 @@ export const TradingCatalogView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+        </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={priceListModalOpen}
+        onClose={() => setPriceListModalOpen(false)}
+        maxWidthClass="max-w-2xl"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+        >
+          <h2 className="t-card font-semibold text-black dark:text-white">
+            {editingPriceList ? 'Modifier Grille Tarifaire' : 'Nouvelle Grille Tarifaire'}
+          </h2>
+          <form onSubmit={handleSubmitPriceList} className="space-y-4 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                label="Libellé de la Grille *"
+                placeholder="Ex: Tarif Gros Q4 2026"
+                value={plName}
+                onChange={setPlName}
+                required
+              />
+              <LabelSelect
+                label="Catégorie Client *"
+                value={plTier}
+                onChange={(v) => setPlTier(v as TradingPriceTier)}
+                options={[
+                  { value: 'standard', label: 'Standard' },
+                  { value: 'wholesale', label: 'Gros / Revendeur' },
+                  { value: 'vip', label: 'VIP / Grand Compte' },
+                  { value: 'distributor', label: 'Distributeur' },
+                ]}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+              <LabelInput
+                type="date"
+                label="Date d'effet *"
+                value={plEffectiveFrom}
+                onChange={setPlEffectiveFrom}
+                required
+              />
+              <LabelInput
+                type="date"
+                label="Fin validité (optionnel)"
+                value={plEffectiveTo}
+                onChange={setPlEffectiveTo}
+              />
+              <div data-sq="ctl-sm" data-sq-border="none" className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[var(--lbi-bg,#F5F1EC)] dark:bg-[var(--lbi-bg,#292624)]">
+                <span className="t-small font-medium text-black/75 dark:text-white/80">Grille active</span>
+                <LiveSwitch checked={plIsActive} onCheckedChange={setPlIsActive} aria-label="Grille active" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="t-small font-semibold text-black/75 dark:text-white/80">Articles & Paliers ({plItems.length})</span>
+                <AtriumButton
+                  type="button"
+                  variant="secondary"
+                  size="xs"
+                  icon={<Plus size={13} />}
+                  onClick={() =>
+                    setPlItems((prev) => [
+                      ...prev,
+                      {
+                        id: `tpli_${Date.now()}_${prev.length}`,
+                        productId: products[0]?.id || '',
+                        sku: products[0]?.sku,
+                        productName: products[0]?.name,
+                        unitPriceHt: products[0]?.price?.amount || 0,
+                        minQty: 1,
+                        discountPercent: 0,
+                      },
+                    ])
+                  }
+                >
+                  Ajouter ligne
+                </AtriumButton>
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {plItems.map((row, idx) => (
+                  <div key={`${row.productId}-${idx}`} className="grid grid-cols-12 gap-2 items-end p-2.5 bg-[#F5F1EC]/70 dark:bg-[#22201E] rounded-lg">
+                    <div className="col-span-5">
+                      <LabelSelect
+                        label="Article"
+                        value={row.productId}
+                        onChange={(pid) => {
+                          const prod = products.find((p) => p.id === pid);
+                          setPlItems((prev) =>
+                            prev.map((it, i) =>
+                              i === idx
+                                ? {
+                                    ...it,
+                                    productId: pid,
+                                    sku: prod?.sku,
+                                    productName: prod?.name,
+                                    unitPriceHt: prod?.price?.amount || it.unitPriceHt,
+                                  }
+                                : it
+                            )
+                          );
+                        }}
+                        options={products.map((p) => ({
+                          value: p.id,
+                          label: `${p.sku ? `[${p.sku}] ` : ''}${p.name}`,
+                        }))}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <LabelInput
+                        type="number"
+                        min={1}
+                        label="Qté min"
+                        value={row.minQty ?? 1}
+                        onChange={(val) =>
+                          setPlItems((prev) =>
+                            prev.map((it, i) => (i === idx ? { ...it, minQty: Math.max(1, parseFloat(val) || 1) } : it))
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <LabelInput
+                        type="number"
+                        min={0}
+                        label="P.U. HT"
+                        value={row.unitPriceHt}
+                        onChange={(val) =>
+                          setPlItems((prev) =>
+                            prev.map((it, i) => (i === idx ? { ...it, unitPriceHt: Math.max(0, parseFloat(val) || 0) } : it))
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <LabelInput
+                        type="number"
+                        min={0}
+                        max={100}
+                        label="Rem %"
+                        value={row.discountPercent ?? 0}
+                        onChange={(val) =>
+                          setPlItems((prev) =>
+                            prev.map((it, i) => (i === idx ? { ...it, discountPercent: Math.max(0, parseFloat(val) || 0) } : it))
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-1 flex justify-center pb-1">
+                      <button
+                        type="button"
+                        onClick={() => setPlItems((prev) => prev.filter((_, i) => i !== idx))}
+                        className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setPriceListModalOpen(false)}>
+                Annuler
+              </AtriumButton>
+              <AtriumButton type="submit" variant="primary" size="sm">
+                Enregistrer Grille
+              </AtriumButton>
+            </div>
+          </form>
         </div>
       </KineticModalShell>
     </div>

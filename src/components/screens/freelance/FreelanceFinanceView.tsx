@@ -338,7 +338,7 @@ export const FreelanceFinanceView: React.FC = () => {
     }
     const check = validateFileForBucket('expense-receipts', file);
     if (!check.valid) {
-      setReceiptValidationError(check.error || 'Invalid receipt file');
+      setReceiptValidationError(check.reason || 'Invalid receipt file');
       setPendingReceiptFile(null);
       return;
     }
@@ -353,7 +353,7 @@ export const FreelanceFinanceView: React.FC = () => {
       showToast({
         type: 'error',
         title: t('free_depth_exp_receipt', language),
-        message: check.error || 'Invalid file',
+        message: check.reason || 'Invalid file',
       });
       return;
     }
