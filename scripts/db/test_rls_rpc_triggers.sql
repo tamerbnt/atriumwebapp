@@ -3130,6 +3130,189 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ---------------------------------------------------------------------------
+-- 32. Phase 3 Step 14 (7.14 logistics_delivery): RLS & Guarded Logistics RPCs
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1';
+  v_acc_b uuid := 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2';
+  v_user_a uuid := 'aaaaaaaa-0000-0000-0000-000000000001';
+  v_user_b uuid := 'bbbbbbbb-0000-0000-0000-000000000002';
+  v_biz_a uuid;
+  v_br_a uuid;
+  v_driver_id uuid := gen_random_uuid();
+  v_merchant_id uuid := gen_random_uuid();
+  v_parcel_id uuid := gen_random_uuid();
+  v_rem_id uuid := gen_random_uuid();
+  v_pod_id uuid := gen_random_uuid();
+  v_pay_id uuid := gen_random_uuid();
+  v_vlog_id uuid := gen_random_uuid();
+  v_mfi_id uuid := gen_random_uuid();
+  v_int_id uuid := gen_random_uuid();
+  v_frt_id uuid := gen_random_uuid();
+  v_mov_id uuid := gen_random_uuid();
+  v_cold_id uuid := gen_random_uuid();
+  v_cust_id uuid := gen_random_uuid();
+  v_tow_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean;
+  v_res jsonb;
+BEGIN
+  SELECT id INTO v_biz_a FROM public.businesses WHERE account_id = v_acc_a LIMIT 1;
+  SELECT id INTO v_br_a FROM public.branches WHERE business_id = v_biz_a LIMIT 1;
+
+  INSERT INTO public.logistics_drivers (id, account_id, business_id, branch_id, full_name, phone)
+  VALUES (v_driver_id, v_acc_a, v_biz_a, v_br_a, 'Farid Belhadj', '0550112233');
+
+  INSERT INTO public.logistics_merchants (id, account_id, business_id, branch_id, store_name, phone, rib_ccp)
+  VALUES (v_merchant_id, v_acc_a, v_biz_a, v_br_a, 'Boutique Electro SARL', '0550998877', '002310485920');
+
+  INSERT INTO public.logistics_parcels (
+    id, account_id, business_id, branch_id, tracking_code, merchant_id, merchant_name,
+    recipient_name, recipient_phone, wilaya_code, wilaya_name, delivery_mode, status
+  ) VALUES (
+    v_parcel_id, v_acc_a, v_biz_a, v_br_a, 'ATR-EXP-99001', v_merchant_id, 'Boutique Electro SARL',
+    'Karim Ziani', '0770123456', '16', '16 - Alger', 'StopDesk', 'InHub'
+  );
+
+  INSERT INTO public.logistics_remittances (
+    id, account_id, business_id, branch_id, remittance_number, merchant_id, merchant_name,
+    gross_cod_dzd, fees_deducted_dzd, net_paid_dzd, ccp_validated, status
+  ) VALUES (
+    v_rem_id, v_acc_a, v_biz_a, v_br_a, 'REM-2026-99001', v_merchant_id, 'Boutique Electro SARL',
+    25000, 1500, 23500, false, 'Draft'
+  );
+
+  INSERT INTO public.logistics_delivery_pods (id, account_id, business_id, branch_id, parcel_id, tracking_code, driver_name, outcome)
+  VALUES (v_pod_id, v_acc_a, v_biz_a, v_br_a, v_parcel_id, 'ATR-EXP-99001', 'Farid Belhadj', 'Delivered');
+
+  INSERT INTO public.logistics_driver_payouts (id, account_id, business_id, branch_id, payout_number, driver_name, period_label, net_payable_centimes)
+  VALUES (v_pay_id, v_acc_a, v_biz_a, v_br_a, 'LPAY-2026-00001', 'Farid Belhadj', '2026-06', 4800000);
+
+  INSERT INTO public.logistics_vehicle_logs (id, account_id, business_id, branch_id, vehicle_plate, log_kind, cost_centimes)
+  VALUES (v_vlog_id, v_acc_a, v_biz_a, v_br_a, '01452-120-16', 'Fuel', 420000);
+
+  INSERT INTO public.logistics_merchant_fee_invoices (id, account_id, business_id, branch_id, invoice_number, merchant_name, period_label, total_fees_ttc_centimes)
+  VALUES (v_mfi_id, v_acc_a, v_biz_a, v_br_a, 'FAC-2026-99001', 'Boutique Electro SARL', '2026-06', 150000);
+
+  INSERT INTO public.logistics_carrier_integrations (id, account_id, business_id, branch_id, store_name, platform, webhook_url)
+  VALUES (v_int_id, v_acc_a, v_biz_a, v_br_a, 'Electro DZ', 'WooCommerce', 'https://electro.dz/wc-api/atrium');
+
+  INSERT INTO public.logistics_freight_waybills (id, account_id, business_id, branch_id, waybill_number, shipper_name, consignee_name, origin_wilaya, destination_wilaya, cargo_description, total_ttc_centimes)
+  VALUES (v_frt_id, v_acc_a, v_biz_a, v_br_a, 'FRT-2026-00001', 'Cevital', 'Distribution Oran', '06 - Bejaia', '31 - Oran', 'Palettes sucre', 12000000);
+
+  INSERT INTO public.logistics_moving_quotes (id, account_id, business_id, branch_id, quote_number, client_name, origin_address, destination_address, total_ttc_centimes)
+  VALUES (v_mov_id, v_acc_a, v_biz_a, v_br_a, 'DEV-2026-99001', 'Famille Haddad', 'Hydra', 'Cheraga', 6500000);
+
+  INSERT INTO public.logistics_cold_chain_logs (id, account_id, business_id, branch_id, vehicle_plate, cargo_type, recorded_temp_c, min_allowed_temp_c, max_allowed_temp_c, excursion_minutes, compliance_status, requires_quarantine)
+  VALUES (v_cold_id, v_acc_a, v_biz_a, v_br_a, '08821-121-16', 'Vaccins Pharma', 11.4, 2, 8, 45, 'Breach', true);
+
+  INSERT INTO public.logistics_customs_dossiers (id, account_id, business_id, branch_id, dossier_number, importer_name, bl_awb_reference, port_name, hs_code, total_payable_centimes)
+  VALUES (v_cust_id, v_acc_a, v_biz_a, v_br_a, 'D10-2026-00001', 'Import Tech SARL', 'MSCU991283', 'Port Alger', '8471.30', 84500000);
+
+  INSERT INTO public.logistics_towing_dispatches (id, account_id, business_id, branch_id, dispatch_number, caller_name, caller_phone, pickup_location, dropoff_location, total_centimes)
+  VALUES (v_tow_id, v_acc_a, v_biz_a, v_br_a, 'TOW-2026-00001', 'Amine Mansouri', '0550778899', 'Autoroute Est-Ouest Bouira', 'Garage Central Alger', 1800000);
+
+  -- Tenant B isolation across all 10 new 7.14 tables
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.logistics_delivery_pods WHERE id = v_pod_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_delivery_pods'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_driver_payouts WHERE id = v_pay_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_driver_payouts'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_vehicle_logs WHERE id = v_vlog_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_vehicle_logs'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_merchant_fee_invoices WHERE id = v_mfi_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_merchant_fee_invoices'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_carrier_integrations WHERE id = v_int_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_carrier_integrations'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_freight_waybills WHERE id = v_frt_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_freight_waybills'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_moving_quotes WHERE id = v_mov_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_moving_quotes'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_cold_chain_logs WHERE id = v_cold_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_cold_chain_logs'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_customs_dossiers WHERE id = v_cust_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_customs_dossiers'; END IF;
+  SELECT count(*) INTO v_count FROM public.logistics_towing_dispatches WHERE id = v_tow_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read logistics_towing_dispatches'; END IF;
+  RESET ROLE;
+
+  -- Tenant A RPC tests
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 1. Duplicate parcel scan blocked unless p_allow_override=true
+  v_blocked := false;
+  BEGIN
+    PERFORM public.logistics_scan_parcel_guarded(v_parcel_id, 'Unbagging', NULL, 'Hub Alger', false);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected duplicate InHub scan without override to fail';
+  END IF;
+
+  v_res := public.logistics_scan_parcel_guarded(v_parcel_id, 'Intake', NULL, 'Hub Alger', true);
+  IF (v_res->>'overridden')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected override parcel scan to succeed';
+  END IF;
+
+  -- 2. StopDesk OTP 3-attempt lockout and manager unlock
+  v_res := public.logistics_verify_stopdesk_otp(v_parcel_id, '0000', '7492', NULL, false);
+  v_res := public.logistics_verify_stopdesk_otp(v_parcel_id, '0000', '7492', NULL, false);
+  v_res := public.logistics_verify_stopdesk_otp(v_parcel_id, '0000', '7492', NULL, false);
+  IF (v_res->>'locked_out')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected 3rd wrong OTP to trigger locked_out=true';
+  END IF;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.logistics_verify_stopdesk_otp(v_parcel_id, '7492', '7492', NULL, false);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected locked-out OTP verification to fail before manager unlock';
+  END IF;
+
+  PERFORM public.logistics_verify_stopdesk_otp(v_parcel_id, '', '', NULL, true);
+  v_res := public.logistics_verify_stopdesk_otp(v_parcel_id, '7492', '7492', 'CNI123456', false);
+  IF (v_res->>'verified')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected OTP verification to succeed after manager unlock';
+  END IF;
+
+  -- 3. Discharge variance sets requires_supervisor_review=true on counterfeit deduction
+  v_res := public.logistics_record_discharge_with_variance(
+    v_biz_a, v_br_a, v_driver_id, 'Farid Belhadj', 20000, 3, 1, 5, 200000, 0, 20000
+  );
+  IF NOT (v_res->>'discharge_number') LIKE 'DECH-%' THEN
+    RAISE EXCEPTION 'Expected DECH prefix on discharge';
+  END IF;
+  IF (v_res->>'requires_supervisor_review')::boolean IS NOT TRUE THEN
+    RAISE EXCEPTION 'Expected discharge variance to require supervisor review';
+  END IF;
+
+  -- 4. Remittance execution blocked without CCP validation, succeeds when validated
+  v_blocked := false;
+  BEGIN
+    PERFORM public.logistics_execute_remittance_validated(v_rem_id, false);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected unvalidated CCP remittance execution to fail';
+  END IF;
+
+  v_res := public.logistics_execute_remittance_validated(v_rem_id, true);
+  IF (v_res->>'status') <> 'Executed' THEN
+    RAISE EXCEPTION 'Expected remittance execution to transition status to Executed';
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 
 

@@ -4,7 +4,9 @@ import { showToast, useAtriumSelector } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
-import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
+import { isSupabaseConfigured, logisticsService, referenceDataService, syncCoordinator } from '../../../lib/supabase';
+import type { WilayaReferenceRow } from '../../../lib/supabase/services/referenceDataService';
+import { buildZoneExamplesFromCatalog } from '../../../utils/logisticsDepth';
 import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { KineticModalShell } from '../../ui/kinetic';
 
@@ -44,6 +46,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       return DEFAULT_TARIFF_RULES;
     }
   });
+  const [wilayasRef, setWilayasRef] = useState<WilayaReferenceRow[] | null>(null);
   const savedRulesRef = useRef<Record<WilayaZone, TariffRule>>(cloneSnapshot(tariffRules));
 
   useEffect(() => {
@@ -56,6 +59,13 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
     } catch {
       savedRulesRef.current = cloneSnapshot(DEFAULT_TARIFF_RULES);
     }
+    let cancelled = false;
+    void referenceDataService.fetchWilayasRef().then(({ wilayas }) => {
+      if (!cancelled) setWilayasRef(wilayas);
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -183,42 +193,43 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
     });
   };
 
+  const zoneExamples = buildZoneExamplesFromCatalog(wilayasRef);
   const zones: Array<{ id: WilayaZone; nameFr: string; nameAr: string; wilayasExample: string }> = [
     {
       id: 'Zone1_Local',
       nameFr: 'Zone 1 — Alger & Grand Alger',
       nameAr: 'المنطقة 1 — الجزائر العاصمة وضواحيها',
-      wilayasExample: '16 Alger',
+      wilayasExample: zoneExamples.Zone1_Local,
     },
     {
       id: 'Zone2_Proche',
       nameFr: 'Zone 2 — Proche Mitidja',
       nameAr: 'المنطقة 2 — متيجة والمناطق المجاورة',
-      wilayasExample: '09 Blida, 35 Boumerdès, 42 Tipaza',
+      wilayasExample: zoneExamples.Zone2_Proche,
     },
     {
       id: 'Zone3_Nord',
       nameFr: 'Zone 3 — Nord & Métropoles Côtières',
       nameAr: 'المنطقة 3 — الشمال والحواضر الكبرى',
-      wilayasExample: '31 Oran, 25 Constantine, 19 Sétif, 06 Béjaïa, 23 Annaba, 13 Tlemcen',
+      wilayasExample: zoneExamples.Zone3_Nord,
     },
     {
       id: 'Zone4_Plateaux',
       nameFr: 'Zone 4 — Hauts-Plateaux & Intérieur',
       nameAr: 'المنطقة 4 — الهضاب العليا والداخل',
-      wilayasExample: '05 Batna, 17 Djelfa, 14 Tiaret, 34 BBA, 43 Mila',
+      wilayasExample: zoneExamples.Zone4_Plateaux,
     },
     {
       id: 'Zone5_Sud',
       nameFr: 'Zone 5 — Oasis & Portes du Sud',
       nameAr: 'المنطقة 5 — الواحات وبوابات الصحراء',
-      wilayasExample: '30 Ouargla, 07 Biskra, 47 Ghardaïa, 08 Béchar, 39 El Oued',
+      wilayasExample: zoneExamples.Zone5_Sud,
     },
     {
       id: 'Zone6_GrandSud',
       nameFr: 'Zone 6 — Grand Sud & Frontaliers',
       nameAr: 'المنطقة 6 — أقصى الجنوب والحدود',
-      wilayasExample: '11 Tamanrasset, 01 Adrar, 54 In Salah, 57 In Guezzam, 58 Djanet, 33 Illizi, 37 Tindouf',
+      wilayasExample: zoneExamples.Zone6_GrandSud,
     },
   ];
 

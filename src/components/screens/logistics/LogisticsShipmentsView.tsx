@@ -9,6 +9,8 @@ import {
   MapPin,
   Eye,
   Trash2,
+  PenTool,
+  Share2,
 } from 'lucide-react';
 import {
   showToast,
@@ -22,6 +24,8 @@ import { formatMoney } from '../../../utils/rules';
 import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
+import { LogisticsDriverPodModal } from './LogisticsDriverPodModal';
+import { LogisticsTrackingDrawer } from './LogisticsTrackingDrawer';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StopDeskHandoverModal } from './StopDeskHandoverModal';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -69,8 +73,16 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { shipments, addShipment, updateShipment, deleteShipment, updateShipmentStatus } =
-    useLogisticsData();
+  const {
+    shipments,
+    parcelEvents,
+    addShipment,
+    updateShipment,
+    deleteShipment,
+    updateShipmentStatus,
+    addParcelEvent,
+    addDeliveryPod,
+  } = useLogisticsData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -82,7 +94,7 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['ship_01']));
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('tracking');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -90,6 +102,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
   const [shipmentToEdit, setShipmentToEdit] = useState<LogisticsShipment | null>(null);
   const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
   const [shipmentForHandover, setShipmentForHandover] = useState<LogisticsShipment | null>(null);
+  const [podShipment, setPodShipment] = useState<LogisticsShipment | null>(null);
+  const [trackingShipment, setTrackingShipment] = useState<LogisticsShipment | null>(null);
 
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -315,6 +329,18 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         onClick: () => handleToggleDeliveryStatus(s),
       },
       {
+        id: 'pod',
+        label: isAr ? 'توقيع' : 'POD',
+        icon: <PenTool className="w-[15px] h-[15px]" />,
+        onClick: () => setPodShipment(s),
+      },
+      {
+        id: 'track',
+        label: isAr ? 'تتبع' : 'Suivi',
+        icon: <Share2 className="w-[15px] h-[15px]" />,
+        onClick: () => setTrackingShipment(s),
+      },
+      {
         id: 'del',
         label: isAr ? 'حذف' : 'Supprimer',
         icon: <Trash2 className="w-[15px] h-[15px]" />,
@@ -334,16 +360,22 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         onClick: () => handleSelectShipment(s),
       },
       {
+        id: 'pod',
+        label: isAr ? 'توثيق التسليم POD' : 'Preuve POD / Signature',
+        icon: <PenTool className="w-3.5 h-3.5" />,
+        onClick: () => setPodShipment(s),
+      },
+      {
+        id: 'track',
+        label: isAr ? 'تتبع وإشعار SMS' : 'Suivi & Avis SMS',
+        icon: <Share2 className="w-3.5 h-3.5" />,
+        onClick: () => setTrackingShipment(s),
+      },
+      {
         id: 'edit',
         label: isAr ? 'تعديل' : 'Modifier',
         icon: <Edit className="w-3.5 h-3.5" />,
         onClick: () => handleOpenEdit(s),
-      },
-      {
-        id: 'deliver',
-        label: isAr ? 'تغيير الحالة' : 'Statut Suivant',
-        icon: <Send className="w-3.5 h-3.5" />,
-        onClick: () => handleToggleDeliveryStatus(s),
       },
       {
         id: 'delete',
@@ -352,7 +384,7 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         onClick: () => handleDelete(s),
       },
     ],
-    [isAr, handleSelectShipment, handleOpenEdit, handleToggleDeliveryStatus, handleDelete]
+    [isAr, handleSelectShipment, handleOpenEdit, handleDelete]
   );
 
   const handleExportCSV = useCallback(() => {
@@ -791,6 +823,20 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
                 ]
               : []),
             {
+              id: 'pod',
+              label: isAr ? 'إثبات POD' : 'Preuve POD / Signature',
+              tooltip: isAr ? 'توقيع السائق أو رمز التأجيل' : 'Capture signature POD ou motif report/retour',
+              icon: <PenTool size={13} />,
+              onClick: () => setPodShipment(s),
+            },
+            {
+              id: 'tracking',
+              label: isAr ? 'تتبع وإشعار' : 'Suivi & Avis SMS',
+              tooltip: isAr ? 'رابط التتبع العام وإشعار المستلم' : 'Lien tracking public et avis SMS/WhatsApp',
+              icon: <Share2 size={13} />,
+              onClick: () => setTrackingShipment(s),
+            },
+            {
               id: 'deliver',
               label: isAr ? 'توصيل / تحصيل' : 'Livrer / Encaissement',
               tooltip: isAr ? 'تحديث حالة التسليم' : 'Valider la livraison',
@@ -969,6 +1015,18 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
                         ]
                       : []),
                     {
+                      id: 'pod',
+                      label: isAr ? 'توقيع POD' : 'Preuve POD',
+                      icon: <PenTool size={16} />,
+                      onClick: () => setPodShipment(s),
+                    },
+                    {
+                      id: 'tracking',
+                      label: isAr ? 'تتبع وإشعار' : 'Suivi & SMS',
+                      icon: <Share2 size={16} />,
+                      onClick: () => setTrackingShipment(s),
+                    },
+                    {
                       id: 'edit',
                       label: isAr ? 'تعديل' : 'Modifier',
                       icon: <Edit size={16} />,
@@ -1117,6 +1175,42 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           );
         })()}
       </KineticModalShell>
+
+      <LogisticsDriverPodModal
+        isOpen={Boolean(podShipment)}
+        onClose={() => setPodShipment(null)}
+        shipment={podShipment}
+        language={language}
+        onSubmitPod={(payload) => {
+          addDeliveryPod(payload);
+          showToast(
+            isAr
+              ? `تم تسجيل إثبات التسليم (${payload.outcome}) للطرد ${payload.trackingCode}`
+              : `POD enregistré (${payload.outcome}) pour ${payload.trackingCode}`,
+            'success'
+          );
+        }}
+      />
+
+      <LogisticsTrackingDrawer
+        isOpen={Boolean(trackingShipment)}
+        onClose={() => setTrackingShipment(null)}
+        shipment={trackingShipment}
+        events={parcelEvents}
+        language={language}
+        onLogNotification={({ parcelId, trackingCode, channel, recipientPhone, notes }) => {
+          addParcelEvent({
+            parcelId,
+            trackingCode,
+            status: 'NotificationSent',
+            location: trackingShipment?.destinationWilaya || 'Hub',
+            notes,
+            notificationChannel: channel,
+            notificationRecipient: recipientPhone,
+            notificationStatus: 'Sent',
+          });
+        }}
+      />
     </div>
   );
 };

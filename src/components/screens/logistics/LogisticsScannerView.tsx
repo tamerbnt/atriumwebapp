@@ -22,14 +22,16 @@ import {
 } from '../../../services/store';
 import { LogisticsShipment } from '../../../types';
 import { localizeStatus } from '../../../utils/rules';
+import { detectDuplicateParcelScan } from '../../../utils/logisticsDepth';
+import { logisticsService } from '../../../lib/supabase';
 import { useLogisticsData } from './logisticsData';
+import { LogisticsTrackingDrawer } from './LogisticsTrackingDrawer';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSelect } from '../../ui/live/LiveSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { PrintSheetModal } from '../../modals/PrintSheetModal';
-import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -101,11 +103,13 @@ export const LogisticsScannerView: React.FC = () => {
   const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { shipments, bags, updateShipmentStatus, sealBag } = useLogisticsData();
+  const { shipments, bags, parcelEvents, updateShipmentStatus, sealBag, addParcelEvent } =
+    useLogisticsData();
 
   const [scanMode, setScanMode] = useState<'Intake' | 'Bagging' | 'Unbagging'>('Bagging');
   const [selectedBagId, setSelectedBagId] = useState<string>(bags[0]?.id || 'bag_01');
   const [scannedCode, setScannedCode] = useState('');
+  const [allowDuplicateOverride, setAllowDuplicateOverride] = useState(false);
   const [securitySealInput, setSecuritySealInput] = useState('');
   const [isSealModalOpen, setIsSealModalOpen] = useState(false);
 
@@ -142,10 +146,11 @@ export const LogisticsScannerView: React.FC = () => {
 
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
   const [labelShipment, setLabelShipment] = useState<LogisticsShipment | null>(null);
+  const [trackingShipment, setTrackingShipment] = useState<LogisticsShipment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('colis');
   const [scanHistory, setScanHistory] = useState<
-    Array<{ code: string; status: 'success' | 'error'; message: string; timestamp: string }>
+    Array<{ code: string; stage?: 'Intake' | 'Bagging' | 'Unbagging'; status: 'success' | 'error' | 'duplicate'; message: string; timestamp: string }>
   >([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -171,16 +176,64 @@ export const LogisticsScannerView: React.FC = () => {
       const now = new Date().toLocaleTimeString();
 
       if (found) {
+        const dup = detectDuplicateParcelScan({
+          trackingCode: clean,
+          stage: scanMode,
+          shipmentStatus: found.status,
+          targetBagId: scanMode === 'Bagging' ? activeBag?.id : undefined,
+          recentSessionScans: scanHistory,
+        });
+
+        if (dup.isDuplicate && !allowDuplicateOverride) {
+          playSound('error');
+          const dupMsg = isAr
+            ? `تم مسح الطرد ${clean} مسبقاً في هذه المرحلة — فعّل "السماح بالإعادة" للتجاوز`
+            : `Doublon détecté (${dup.reason}) pour ${clean} — activez « Autoriser re-scan » si volontaire`;
+          setScanHistory((prev) => [
+            {
+              code: clean,
+              stage: scanMode,
+              status: 'duplicate',
+              message: dupMsg,
+              timestamp: now,
+            },
+            ...prev.slice(0, 14),
+          ]);
+          showToast(dupMsg, 'warning');
+          setScannedCode('');
+          inputRef.current?.focus();
+          return;
+        }
+
         playSound('success');
-        updateShipmentStatus(found.id, scanMode === 'Bagging' ? 'Sorted' : 'ReceivedAtHub');
+        updateShipmentStatus(found.id, dup.targetStatus);
+        void logisticsService
+          .scanParcelGuarded({
+            parcelId: found.id,
+            stage: scanMode,
+            bagId: scanMode === 'Bagging' ? activeBag?.id : undefined,
+            location: currentBranch?.name || found.destinationWilaya,
+            allowOverride: allowDuplicateOverride,
+          })
+          .catch(() => {});
+        addParcelEvent({
+          parcelId: found.id,
+          trackingCode: found.trackingCode,
+          status: dup.targetStatus,
+          location: currentBranch?.name || found.destinationWilaya,
+          notes: `Scan ${scanMode}${activeBag && scanMode === 'Bagging' ? ` (${activeBag.bagCode})` : ''}`,
+          notificationChannel: 'system',
+          notificationStatus: 'Sent',
+        });
         setScanHistory((prev) => [
           {
             code: clean,
+            stage: scanMode,
             status: 'success',
             message: `Colis orienté vers: ${found.destinationWilaya} (${found.recipientName})`,
             timestamp: now,
           },
-          ...prev.slice(0, 11),
+          ...prev.slice(0, 14),
         ]);
         setSelectedShipment(found);
       } else {
@@ -188,11 +241,12 @@ export const LogisticsScannerView: React.FC = () => {
         setScanHistory((prev) => [
           {
             code: clean,
+            stage: scanMode,
             status: 'error',
             message: isAr ? 'الرمز غير مسجل في النظام' : 'Code AWB non répertorié au Hub',
             timestamp: now,
           },
-          ...prev.slice(0, 11),
+          ...prev.slice(0, 14),
         ]);
         showToast(isAr ? 'كود الطرد غير موجود' : 'Code AWB inconnu au système', 'error');
       }
@@ -200,7 +254,7 @@ export const LogisticsScannerView: React.FC = () => {
       setScannedCode('');
       inputRef.current?.focus();
     },
-    [shipments, updateShipmentStatus, scanMode, isAr]
+    [shipments, updateShipmentStatus, scanMode, isAr, activeBag, scanHistory, allowDuplicateOverride, currentBranch?.name, addParcelEvent]
   );
 
   const handleScanSubmit = (e: React.FormEvent) => {
@@ -459,11 +513,7 @@ export const LogisticsScannerView: React.FC = () => {
         id: 'barcode',
         label: 'Barcode',
         icon: <Printer className="w-[15px] h-[15px]" />,
-        onClick: () =>
-          showToast(
-            isAr ? `طباعة ملصق الباركود للطرد ${s.trackingCode}` : `Étiquette AWB générée pour ${s.trackingCode}`,
-            'info'
-          ),
+        onClick: () => setLabelShipment(s),
       },
     ],
     [isAr, handleScanCode, pinnedIds, handleTogglePin]
@@ -494,13 +544,9 @@ export const LogisticsScannerView: React.FC = () => {
       },
       {
         id: 'share',
-        label: isAr ? 'مشاركة' : 'Partager',
+        label: isAr ? 'مشاركة وتتبع' : 'Suivi & Avis',
         icon: <Share2 className="w-3.5 h-3.5" />,
-        onClick: () =>
-          showToast(
-            isAr ? 'تم نسخ رابط تتبع الشحنة' : `Lien de tracking ${s.trackingCode} copié`,
-            'success'
-          ),
+        onClick: () => setTrackingShipment(s),
       },
     ],
     [isAr, handleScanCode, pinnedIds, handleTogglePin]
@@ -749,33 +795,48 @@ export const LogisticsScannerView: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleScanSubmit} className="relative sq-elev-card">
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="w-full bg-white dark:bg-[#22201E] focus-within:ring-2 focus-within:ring-[#d4522f]/50 transition-shadow"
-            >
+          <form onSubmit={handleScanSubmit} className="space-y-2">
+            <div className="relative sq-elev-card">
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full bg-white dark:bg-[#22201E] focus-within:ring-2 focus-within:ring-[#d4522f]/50 transition-shadow"
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={scannedCode}
+                  onChange={(e) => setScannedCode(e.target.value)}
+                  placeholder={
+                    isAr
+                      ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
+                      : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
+                  }
+                  className="lbi-field w-full bg-transparent border-0 pl-12 pr-28 py-4 t-label tabular-nums font-semibold text-black dark:text-white outline-hidden"
+                />
+              </div>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55 pointer-events-none">
+                <Barcode size={22} />
+              </div>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {isAr ? 'تأكيد المسح' : 'Valider'}
+                </AtriumButton>
+              </div>
+            </div>
+            <label className="inline-flex items-center gap-2 t-cap text-black/65 dark:text-white/65 cursor-pointer px-1">
               <input
-                ref={inputRef}
-                type="text"
-                value={scannedCode}
-                onChange={(e) => setScannedCode(e.target.value)}
-                placeholder={
-                  isAr
-                    ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
-                    : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
-                }
-                className="lbi-field w-full bg-transparent border-0 pl-12 pr-28 py-4 t-label tabular-nums font-semibold text-black dark:text-white outline-hidden"
+                type="checkbox"
+                checked={allowDuplicateOverride}
+                onChange={(e) => setAllowDuplicateOverride(e.target.checked)}
+                className="w-3.5 h-3.5 accent-[#d4522f] cursor-pointer"
               />
-            </div>
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55 pointer-events-none">
-              <Barcode size={22} />
-            </div>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <AtriumButton variant="primary" size="sm" type="submit">
-                {isAr ? 'تأكيد المسح' : 'Valider'}
-              </AtriumButton>
-            </div>
+              <span>
+                {isAr
+                  ? 'السماح بإعادة المسح المتعمدة (تجاوز حماية التكرار)'
+                  : 'Autoriser re-scan volontaire (contournement garde doublon)'}
+              </span>
+            </label>
           </form>
         </div>
       </ScreenPod>
@@ -818,6 +879,8 @@ export const LogisticsScannerView: React.FC = () => {
                     className={`p-3 t-cap flex items-center justify-between gap-2 ${
                       h.status === 'success'
                         ? 'bg-emerald-50 dark:bg-emerald-950/20'
+                        : h.status === 'duplicate'
+                        ? 'bg-amber-50 dark:bg-amber-950/25'
                         : 'bg-red-50 dark:bg-red-950/20'
                     }`}
                   >
@@ -910,11 +973,9 @@ export const LogisticsScannerView: React.FC = () => {
                 },
                 {
                   id: 'share',
-                  label: isAr ? 'مشاركة الوصل' : 'Partager Bordereau',
+                  label: isAr ? 'تتبع وإشعار' : 'Suivi & Avis',
                   icon: <Share2 size={14} />,
-                  disabled: true,
-                  tooltip: t('feature_not_available_phase2', language),
-                  onClick: () => {},
+                  onClick: () => setTrackingShipment(s),
                 },
               ]}
               emptyTitle={isAr ? 'لا توجد طرود' : isEn ? 'No dock parcels' : 'Aucun colis au quai'}
@@ -1034,11 +1095,9 @@ export const LogisticsScannerView: React.FC = () => {
                       },
                       {
                         id: 'share',
-                        label: isAr ? 'مشاركة' : 'Partager',
+                        label: isAr ? 'تتبع وإشعار' : 'Suivi & Avis',
                         icon: <Share2 size={16} />,
-                        disabled: true,
-                        tooltip: t('feature_not_available_phase2', language),
-                        onClick: () => {},
+                        onClick: () => setTrackingShipment(s),
                       },
                     ]}
                   />
@@ -1179,6 +1238,26 @@ export const LogisticsScannerView: React.FC = () => {
               ]
             : []
         }
+      />
+
+      <LogisticsTrackingDrawer
+        isOpen={Boolean(trackingShipment)}
+        onClose={() => setTrackingShipment(null)}
+        shipment={trackingShipment}
+        events={parcelEvents}
+        language={language}
+        onLogNotification={({ parcelId, trackingCode, channel, recipientPhone, notes }) => {
+          addParcelEvent({
+            parcelId,
+            trackingCode,
+            status: 'NotificationSent',
+            location: trackingShipment?.destinationWilaya || 'Hub',
+            notes,
+            notificationChannel: channel,
+            notificationRecipient: recipientPhone,
+            notificationStatus: 'Sent',
+          });
+        }}
       />
     </div>
   );

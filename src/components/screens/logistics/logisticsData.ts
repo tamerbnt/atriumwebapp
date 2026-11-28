@@ -6,8 +6,20 @@ import {
   CourierCashDischarge,
   StopDeskInventoryItem,
   MerchantRemittanceBatch,
+  LogisticsParcelEvent,
+  LogisticsDeliveryPod,
+  LogisticsDriverPayout,
+  LogisticsVehicleLog,
+  LogisticsMerchantFeeInvoice,
+  LogisticsCarrierIntegration,
+  LogisticsFreightWaybill,
+  LogisticsMovingQuote,
+  LogisticsColdChainLog,
+  LogisticsCustomsDossier,
+  LogisticsTowingDispatch,
 } from '../../../types';
 import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logisticsRules';
+import { validateRemittanceCcpBatch, buildMerchantFeeInvoiceSummary } from '../../../utils/logisticsDepth';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
@@ -19,6 +31,25 @@ import {
 import { isSupabaseConfigured, logisticsService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
+export function nextLogisticsSequentialCode(docKey: string, prefix: string, pad = 5): string {
+  const year = new Date().getFullYear();
+  let map: Record<string, number> = {};
+  try {
+    const raw = localStorage.getItem('atrium_logistics_local_seq_v1');
+    map = raw ? JSON.parse(raw) : {};
+  } catch {
+    map = {};
+  }
+  const current = Number(map[docKey] || 0) + 1;
+  map[docKey] = current;
+  try {
+    localStorage.setItem('atrium_logistics_local_seq_v1', JSON.stringify(map));
+  } catch {
+    // ignore storage quota errors
+  }
+  return `${prefix}-${year}-${String(current).padStart(pad, '0')}`;
+}
+
 function mergeLogById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
   const map = new Map<string, T>();
@@ -26,6 +57,15 @@ function mergeLogById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   for (const item of remote) map.set(item.id, item);
   return Array.from(map.values());
 }
+
+const daysAgoDate = (daysAgo: number): string => {
+  const d = new Date(Date.now() - daysAgo * 86_400_000);
+  return d.toISOString().slice(0, 10);
+};
+
+const daysAgoIso = (daysAgo: number, timeUtc = '09:00:00Z'): string => {
+  return `${daysAgoDate(daysAgo)}T${timeUtc}`;
+};
 
 const INITIAL_SHIPMENTS: LogisticsShipment[] = [
   {
@@ -49,7 +89,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     bagId: 'bag_01',
     status: 'OutForDelivery',
     assignedDriverName: 'Farid Belhadj (Van 04)',
-    createdAt: '2026-05-25T08:00:00Z',
+    createdAt: daysAgoIso(0, '08:00:00Z'),
   },
   {
     id: 'ship_02',
@@ -72,7 +112,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     bagId: 'bag_01',
     status: 'Delivered',
     assignedDriverName: 'Hamid Benali (Oran Sud)',
-    createdAt: '2026-05-24T09:00:00Z',
+    createdAt: daysAgoIso(1, '09:00:00Z'),
   },
   {
     id: 'ship_03',
@@ -95,7 +135,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     pickupOtpCode: '7492',
     bagId: 'bag_02',
     status: 'ReceivedAtHub',
-    createdAt: '2026-05-25T07:30:00Z',
+    createdAt: daysAgoIso(0, '07:30:00Z'),
   },
   {
     id: 'ship_04',
@@ -118,7 +158,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     bagId: 'bag_03',
     status: 'Sorted',
     assignedDriverName: 'Sofiane (Ligne Est)',
-    createdAt: '2026-05-25T08:15:00Z',
+    createdAt: daysAgoIso(0, '08:15:00Z'),
   },
   {
     id: 'ship_05',
@@ -139,7 +179,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     deliveryMode: 'HomeDelivery',
     status: 'OutForDelivery',
     assignedDriverName: 'Farid Belhadj (Van 04)',
-    createdAt: '2026-05-25T09:20:00Z',
+    createdAt: daysAgoIso(0, '09:20:00Z'),
   },
   {
     id: 'ship_06',
@@ -161,7 +201,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     stopDeskShelfCode: 'RACK-A-01',
     pickupOtpCode: '3189',
     status: 'ReceivedAtHub',
-    createdAt: '2026-05-25T06:50:00Z',
+    createdAt: daysAgoIso(1, '06:50:00Z'),
   },
   {
     id: 'ship_07',
@@ -184,7 +224,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     returnReasonCode: 'REC_POSTPONED',
     attemptCount: 1,
     assignedDriverName: 'Tariq (Van Béjaïa)',
-    createdAt: '2026-05-24T14:10:00Z',
+    createdAt: daysAgoIso(2, '14:10:00Z'),
   },
   {
     id: 'ship_08',
@@ -207,7 +247,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     pickupOtpCode: '5821',
     bagId: 'bag_04',
     status: 'HubIntake',
-    createdAt: '2026-05-25T10:00:00Z',
+    createdAt: daysAgoIso(0, '10:00:00Z'),
   },
   {
     id: 'ship_09',
@@ -229,7 +269,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     status: 'Returned',
     returnReasonCode: 'REC_REFUSED_DEFECT',
     attemptCount: 3,
-    createdAt: '2026-05-23T11:00:00Z',
+    createdAt: daysAgoIso(3, '11:00:00Z'),
   },
   {
     id: 'ship_10',
@@ -250,7 +290,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     deliveryMode: 'HomeDelivery',
     status: 'Delivered',
     assignedDriverName: 'Farid Belhadj (Van 04)',
-    createdAt: '2026-05-25T08:45:00Z',
+    createdAt: daysAgoIso(0, '08:45:00Z'),
   },
   {
     id: 'ship_11',
@@ -272,7 +312,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     dimensionsCm: { length: 45, width: 35, height: 20 },
     bagId: 'bag_02',
     status: 'Sorted',
-    createdAt: '2026-05-25T09:50:00Z',
+    createdAt: daysAgoIso(1, '09:50:00Z'),
   },
   {
     id: 'ship_12',
@@ -295,7 +335,7 @@ const INITIAL_SHIPMENTS: LogisticsShipment[] = [
     pickupOtpCode: '9012',
     bagId: 'bag_04',
     status: 'HubIntake',
-    createdAt: '2026-05-25T11:10:00Z',
+    createdAt: daysAgoIso(2, '11:10:00Z'),
   },
 ];
 
@@ -314,7 +354,7 @@ const INITIAL_BAGS: TransportBag[] = [
     totalItemCount: 2,
     totalWeightKg: 2.7,
     status: 'Sealed',
-    sealedAt: '2026-05-25T08:15:00Z',
+    sealedAt: daysAgoIso(0, '08:15:00Z'),
   },
   {
     id: 'bag_02',
@@ -330,7 +370,7 @@ const INITIAL_BAGS: TransportBag[] = [
     totalItemCount: 2,
     totalWeightKg: 10.2,
     status: 'InTransit',
-    sealedAt: '2026-05-25T07:45:00Z',
+    sealedAt: daysAgoIso(0, '07:45:00Z'),
   },
   {
     id: 'bag_03',
@@ -387,9 +427,9 @@ const INITIAL_MANIFESTS: LogisticsManifest[] = [
     totalCodExpectedDzd: 145000,
     totalCodCollectedDzd: 110000,
     totalGrossWeightKg: 28.5,
-    dispatchDate: '2026-05-25',
+    dispatchDate: daysAgoDate(0),
     status: 'Dispatched',
-    createdAt: '2026-05-25T08:30:00Z',
+    createdAt: daysAgoIso(0, '08:30:00Z'),
   },
   {
     id: 'man_02',
@@ -413,9 +453,9 @@ const INITIAL_MANIFESTS: LogisticsManifest[] = [
     totalCodExpectedDzd: 380000,
     totalCodCollectedDzd: 380000,
     totalGrossWeightKg: 85.0,
-    dispatchDate: '2026-05-24',
+    dispatchDate: daysAgoDate(1),
     status: 'Completed',
-    createdAt: '2026-05-24T06:00:00Z',
+    createdAt: daysAgoIso(1, '06:00:00Z'),
   },
   {
     id: 'man_03',
@@ -439,9 +479,9 @@ const INITIAL_MANIFESTS: LogisticsManifest[] = [
     totalCodExpectedDzd: 265000,
     totalCodCollectedDzd: 0,
     totalGrossWeightKg: 64.0,
-    dispatchDate: '2026-05-25',
+    dispatchDate: daysAgoDate(0),
     status: 'Dispatched',
-    createdAt: '2026-05-25T07:15:00Z',
+    createdAt: daysAgoIso(0, '07:15:00Z'),
   },
 ];
 
@@ -469,7 +509,7 @@ const INITIAL_DISCHARGES: CourierCashDischarge[] = [
     },
     courierSignatureConfirmed: true,
     status: 'Clean',
-    timestamp: '2026-05-24T18:30:00Z',
+    timestamp: daysAgoIso(1, '18:30:00Z'),
   },
   {
     id: 'dech_02',
@@ -494,7 +534,7 @@ const INITIAL_DISCHARGES: CourierCashDischarge[] = [
     },
     courierSignatureConfirmed: true,
     status: 'Shortage',
-    timestamp: '2026-05-25T17:00:00Z',
+    timestamp: daysAgoIso(0, '17:00:00Z'),
   },
 ];
 
@@ -515,7 +555,7 @@ const INITIAL_REMITTANCES: MerchantRemittanceBatch[] = [
     netPayoutDzd: 132800,
     paymentChannel: 'AlgeriePoste_SFP01',
     status: 'Executed',
-    executedAt: '2026-05-24T16:00:00Z',
+    executedAt: daysAgoIso(1, '16:00:00Z'),
   },
   {
     id: 'rem_02',
@@ -535,6 +575,206 @@ const INITIAL_REMITTANCES: MerchantRemittanceBatch[] = [
     status: 'Approved',
   },
 ];
+
+const INITIAL_VEHICLE_LOGS: LogisticsVehicleLog[] = [
+  {
+    id: 'vlog_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    vehiclePlate: '01452-120-16',
+    logKind: 'Fuel',
+    odometerKm: 142810,
+    liters: 68,
+    costDzd: 4420,
+    providerName: 'Station Naftal Baraki',
+    notes: 'Plein Gasoil utilitaire Iveco',
+    loggedAt: daysAgoDate(0),
+  },
+  {
+    id: 'vlog_02',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    vehiclePlate: '12490-120-25',
+    logKind: 'Maintenance',
+    odometerKm: 204500,
+    liters: 0,
+    costDzd: 28500,
+    providerName: 'Garage Poids Lourds Zouaghi',
+    notes: 'Vidange complète + plaquettes freins avant',
+    loggedAt: daysAgoDate(2),
+  },
+];
+
+const INITIAL_CARRIER_INTEGRATIONS: LogisticsCarrierIntegration[] = [
+  {
+    id: 'int_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    storeName: 'Boutique E-commerce Électro SARL',
+    platform: 'WooCommerce',
+    webhookUrl: 'https://electro-dz.example/wp-json/wc/v3/webhooks/atrium',
+    signingSecretHint: 'whsec_***4f19',
+    isActive: true,
+    lastSyncedAt: daysAgoIso(0, '09:15:00Z'),
+    ordersImportedCount: 142,
+  },
+  {
+    id: 'int_02',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    storeName: 'Cosmétique Bio Alger',
+    platform: 'YouCan',
+    webhookUrl: 'https://cosmetique-bio.youcan.shop/api/hooks/shipping',
+    signingSecretHint: 'whsec_***8b22',
+    isActive: true,
+    lastSyncedAt: daysAgoIso(0, '08:40:00Z'),
+    ordersImportedCount: 89,
+  },
+];
+
+const INITIAL_FREIGHT_WAYBILLS: LogisticsFreightWaybill[] = [
+  {
+    id: 'frt_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    waybillNumber: 'FRT-2026-00001',
+    shipperName: 'Complexe Agro-Industriel Béjaïa',
+    consigneeName: 'Grossiste Ouest Oran',
+    originWilaya: '06 - Béjaïa',
+    destinationWilaya: '31 - Oran',
+    cargoDescription: '18 Palettes huile raffinée',
+    weightTons: 18.5,
+    distanceKm: 640,
+    ratePerKmDzd: 165,
+    fuelSurchargePercent: 8,
+    loadingFeeDzd: 6500,
+    totalTtcDzd: 143462,
+    vehiclePlate: '12490-120-25',
+    status: 'InTransit',
+    createdAt: daysAgoIso(0, '06:00:00Z'),
+  },
+];
+
+const INITIAL_MOVING_QUOTES: LogisticsMovingQuote[] = [
+  {
+    id: 'mov_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    quoteNumber: 'DEV-2026-00001',
+    clientName: 'Cabinet Architecture Hydra',
+    originAddress: 'Rue Paradou, Hydra, Alger',
+    destinationAddress: 'Pépinière El Achour, Alger',
+    volumeM3: 24,
+    distanceKm: 18,
+    originFloor: 3,
+    destinationFloor: 1,
+    hasElevatorOrigin: false,
+    hasElevatorDest: true,
+    packingIncluded: true,
+    crewSize: 4,
+    totalTtcDzd: 120937,
+    moveDate: daysAgoDate(-3),
+    status: 'Confirmed',
+    createdAt: daysAgoIso(1, '11:20:00Z'),
+  },
+];
+
+const INITIAL_COLD_CHAIN_LOGS: LogisticsColdChainLog[] = [
+  {
+    id: 'cold_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    vehiclePlate: '08821-121-16',
+    cargoType: 'Réactifs Labo & Chaîne Froid',
+    recordedTempC: 4.2,
+    minAllowedTempC: 2,
+    maxAllowedTempC: 8,
+    excursionMinutes: 0,
+    complianceStatus: 'Compliant',
+    requiresQuarantine: false,
+    recordedAt: daysAgoIso(0, '09:30:00Z'),
+  },
+];
+
+const INITIAL_CUSTOMS_DOSSIERS: LogisticsCustomsDossier[] = [
+  {
+    id: 'cust_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    dossierNumber: 'D10-2026-00001',
+    importerName: 'Import Tech Equipment SARL',
+    blAwbReference: 'MSCU4918273',
+    portName: 'Port d\'Alger (Djenan El Mabrouk)',
+    hsCode: '8471.49.00',
+    fobValueDzd: 4200000,
+    freightDzd: 380000,
+    insuranceDzd: 45000,
+    customsDutyRatePercent: 15,
+    totalPayableDzd: 1697663,
+    status: 'Inspecting',
+    createdAt: daysAgoIso(1, '14:00:00Z'),
+  },
+];
+
+const INITIAL_TOWING_DISPATCHES: LogisticsTowingDispatch[] = [
+  {
+    id: 'tow_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    dispatchNumber: 'TOW-2026-00001',
+    callerName: 'Mourad Tlemcani',
+    callerPhone: '0551 22 33 44',
+    vehicleClass: 'Utilitaire',
+    pickupLocation: 'Autoroute Est-Ouest PK 42 (Lakhdaria)',
+    dropoffLocation: 'Atelier Renault Rouiba',
+    distanceKm: 36,
+    isNightOrWeekend: false,
+    needsWinchExtraction: true,
+    totalDzd: 17400,
+    status: 'OnScene',
+    createdAt: daysAgoIso(0, '10:10:00Z'),
+  },
+];
+
+const INITIAL_PARCEL_EVENTS: LogisticsParcelEvent[] = [
+  {
+    id: 'evt_01',
+    accountId: 'acc_01',
+    businessId: 'biz_logistics',
+    branchId: 'branch_logistics_main',
+    parcelId: 'ship_01',
+    trackingCode: 'ATR-EXP-88912',
+    status: 'OutForDelivery',
+    location: '16 - Alger (Kouba)',
+    notes: 'Remis au livreur Farid Belhadj (Tournée matin)',
+    notificationChannel: 'sms',
+    notificationRecipient: '0555 41 22 33',
+    notificationStatus: 'Sent',
+    occurredAt: daysAgoIso(0, '08:45:00Z'),
+  },
+];
+
+const readLocalList = <T,>(key: string, fallback: T[]): T[] => {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // ignore
+  }
+  return isDemoModeEnabled() ? fallback : [];
+};
 
 export const useLogisticsData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
@@ -561,56 +801,53 @@ export const useLogisticsData = () => {
       staffId: (item as { staffId?: string }).staffId || currentStaffId || '',
     }) as T;
 
-  const [shipments, setShipments] = useState<LogisticsShipment[]>(() => {
-    try {
-      const saved = localStorage.getItem('atrium_logistics_shipments_v2');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [shipments, setShipments] = useState<LogisticsShipment[]>(() => readLocalList('atrium_logistics_shipments_v2', INITIAL_SHIPMENTS));
+  const [bags, setBags] = useState<TransportBag[]>(() => readLocalList('atrium_logistics_bags_v2', INITIAL_BAGS));
+  const [manifests, setManifests] = useState<LogisticsManifest[]>(() => readLocalList('atrium_logistics_manifests_v2', INITIAL_MANIFESTS));
+  const [discharges, setDischarges] = useState<CourierCashDischarge[]>(() => readLocalList('atrium_logistics_discharges_v2', INITIAL_DISCHARGES));
+  const [remittances, setRemittances] = useState<MerchantRemittanceBatch[]>(() => readLocalList('atrium_logistics_remittances_v2', INITIAL_REMITTANCES));
 
-  const [bags, setBags] = useState<TransportBag[]>(() => {
+  const [settledIds, setSettledIds] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('atrium_logistics_bags_v2');
-      return saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem('atrium_logistics_settled_ids_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
     } catch {
-      return [];
+      // ignore
     }
+    return isDemoModeEnabled() ? ['ship_02'] : [];
   });
-
-  const [manifests, setManifests] = useState<LogisticsManifest[]>(() => {
-    try {
-      const saved = localStorage.getItem('atrium_logistics_manifests_v2');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [discharges, setDischarges] = useState<CourierCashDischarge[]>(() => {
-    try {
-      const saved = localStorage.getItem('atrium_logistics_discharges_v2');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [remittances, setRemittances] = useState<MerchantRemittanceBatch[]>(() => {
-    try {
-      const saved = localStorage.getItem('atrium_logistics_remittances_v2');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [parcelEvents, setParcelEvents] = useState<LogisticsParcelEvent[]>(() => readLocalList('atrium_logistics_events_v2', INITIAL_PARCEL_EVENTS));
+  const [pods, setPods] = useState<LogisticsDeliveryPod[]>(() => readLocalList('atrium_logistics_pods_v2', []));
+  const [driverPayouts, setDriverPayouts] = useState<LogisticsDriverPayout[]>(() => readLocalList('atrium_logistics_driver_payouts_v2', []));
+  const [vehicleLogs, setVehicleLogs] = useState<LogisticsVehicleLog[]>(() => readLocalList('atrium_logistics_vehicle_logs_v2', INITIAL_VEHICLE_LOGS));
+  const [merchantFeeInvoices, setMerchantFeeInvoices] = useState<LogisticsMerchantFeeInvoice[]>(() => readLocalList('atrium_logistics_merchant_invoices_v2', []));
+  const [carrierIntegrations, setCarrierIntegrations] = useState<LogisticsCarrierIntegration[]>(() => readLocalList('atrium_logistics_integrations_v2', INITIAL_CARRIER_INTEGRATIONS));
+  const [freightWaybills, setFreightWaybills] = useState<LogisticsFreightWaybill[]>(() => readLocalList('atrium_logistics_freight_waybills_v2', INITIAL_FREIGHT_WAYBILLS));
+  const [movingQuotes, setMovingQuotes] = useState<LogisticsMovingQuote[]>(() => readLocalList('atrium_logistics_moving_quotes_v2', INITIAL_MOVING_QUOTES));
+  const [coldChainLogs, setColdChainLogs] = useState<LogisticsColdChainLog[]>(() => readLocalList('atrium_logistics_cold_chain_v2', INITIAL_COLD_CHAIN_LOGS));
+  const [customsDossiers, setCustomsDossiers] = useState<LogisticsCustomsDossier[]>(() => readLocalList('atrium_logistics_customs_v2', INITIAL_CUSTOMS_DOSSIERS));
+  const [towingDispatches, setTowingDispatches] = useState<LogisticsTowingDispatch[]>(() => readLocalList('atrium_logistics_towing_v2', INITIAL_TOWING_DISPATCHES));
 
   useIdlePersist('atrium_logistics_shipments_v2', shipments);
   useIdlePersist('atrium_logistics_bags_v2', bags);
   useIdlePersist('atrium_logistics_manifests_v2', manifests);
   useIdlePersist('atrium_logistics_discharges_v2', discharges);
   useIdlePersist('atrium_logistics_remittances_v2', remittances);
+  useIdlePersist('atrium_logistics_settled_ids_v2', settledIds);
+  useIdlePersist('atrium_logistics_events_v2', parcelEvents);
+  useIdlePersist('atrium_logistics_pods_v2', pods);
+  useIdlePersist('atrium_logistics_driver_payouts_v2', driverPayouts);
+  useIdlePersist('atrium_logistics_vehicle_logs_v2', vehicleLogs);
+  useIdlePersist('atrium_logistics_merchant_invoices_v2', merchantFeeInvoices);
+  useIdlePersist('atrium_logistics_integrations_v2', carrierIntegrations);
+  useIdlePersist('atrium_logistics_freight_waybills_v2', freightWaybills);
+  useIdlePersist('atrium_logistics_moving_quotes_v2', movingQuotes);
+  useIdlePersist('atrium_logistics_cold_chain_v2', coldChainLogs);
+  useIdlePersist('atrium_logistics_customs_v2', customsDossiers);
+  useIdlePersist('atrium_logistics_towing_v2', towingDispatches);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -1153,18 +1390,27 @@ export const useLogisticsData = () => {
     });
   };
 
-  const executeRemittance = (batchId: string) => {
+  const executeRemittance = (batchId: string): { ok: boolean; error?: string } => {
     const existing = latestRef.current.remittances.find((r) => r.id === batchId);
-    if (!existing) return;
+    if (!existing) return { ok: false, error: 'Remittance batch not found' };
+    const validation = validateRemittanceCcpBatch([existing]);
+    if (!validation.isValid) {
+      return {
+        ok: false,
+        error: validation.invalidIssues[0]?.error || 'Invalid CCP checksum',
+      };
+    }
     const prevSnap = cloneSnapshot(existing);
     const executed: MerchantRemittanceBatch = withBranch({
       ...existing,
+      ccpValidated: true,
       status: 'Executed',
       executedAt: new Date().toISOString(),
     });
     const nextSnap = cloneSnapshot(executed);
     setRemittances((prev) => prev.map((r) => (r.id === batchId ? executed : r)));
     void logisticsService.upsertRemittance(executed).catch(() => {});
+    void logisticsService.executeRemittanceValidated(batchId, true).catch(() => {});
 
     registerUndoEntry({
       vertical: 'logistics_delivery',
@@ -1188,6 +1434,208 @@ export const useLogisticsData = () => {
         void logisticsService.upsertRemittance(nextCopy).catch(() => {});
       },
     });
+    return { ok: true };
+  };
+
+  const depthCtx = useMemo(
+    () => ({
+      accountId: currentAccountId || (isDemoModeEnabled() ? 'acc_01' : ''),
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId,
+    }),
+    [currentAccountId, activeBusinessId, activeBranchId, currentStaffId]
+  );
+
+  const toggleSettledId = (shipmentId: string) => {
+    const isAlready = settledIds.includes(shipmentId);
+    const next = isAlready
+      ? settledIds.filter((id) => id !== shipmentId)
+      : [...settledIds, shipmentId];
+    setSettledIds(next);
+    const target = latestRef.current.shipments.find((s) => s.id === shipmentId);
+    if (target) {
+      updateShipment({
+        ...target,
+        isSettled: !isAlready,
+        settledAt: !isAlready ? new Date().toISOString() : undefined,
+      });
+    }
+  };
+
+  const addParcelEvent = (ev: Omit<LogisticsParcelEvent, 'id' | 'occurredAt'>) => {
+    const record: LogisticsParcelEvent = withBranch({
+      ...ev,
+      id: `evt_${Date.now()}_${parcelEvents.length}`,
+      occurredAt: new Date().toISOString(),
+    });
+    setParcelEvents((prev) => [record, ...prev]);
+    void logisticsService.upsertParcelEvent(record, depthCtx).catch(() => {});
+    return record;
+  };
+
+  const addDeliveryPod = (podInput: Omit<LogisticsDeliveryPod, 'id' | 'capturedAt'>) => {
+    const pod: LogisticsDeliveryPod = withBranch({
+      ...podInput,
+      id: `pod_${Date.now()}_${pods.length}`,
+      capturedAt: new Date().toISOString(),
+    });
+    setPods((prev) => [pod, ...prev]);
+    void logisticsService.upsertDeliveryPod(pod, depthCtx).catch(() => {});
+
+    const existing = latestRef.current.shipments.find((s) => s.id === pod.parcelId);
+    if (existing) {
+      updateShipment({
+        ...existing,
+        status: pod.outcome,
+        returnReasonCode: pod.reasonCode || existing.returnReasonCode,
+        attemptCount: (existing.attemptCount || 0) + 1,
+        podSignatureUrl: pod.signatureSvg || existing.podSignatureUrl,
+        podGpsLat: pod.gpsLat,
+        podGpsLng: pod.gpsLng,
+        podSignedAt: pod.capturedAt,
+        podSignedBy: pod.recipientSignedName || existing.recipientName,
+        assignedDriverName: pod.driverName || existing.assignedDriverName,
+      });
+    }
+    addParcelEvent({
+      parcelId: pod.parcelId,
+      trackingCode: pod.trackingCode,
+      status: pod.outcome,
+      location: existing?.destinationWilaya || 'Terrain',
+      notes: pod.notes || pod.reasonCode || `POD ${pod.outcome} par ${pod.driverName}`,
+      notificationChannel: 'system',
+      notificationStatus: 'Sent',
+    });
+    return pod;
+  };
+
+  const addDriverPayout = (p: Omit<LogisticsDriverPayout, 'id' | 'payoutNumber' | 'createdAt'>) => {
+    const payout: LogisticsDriverPayout = withBranch({
+      ...p,
+      id: `lpay_${Date.now()}_${driverPayouts.length}`,
+      payoutNumber: nextLogisticsSequentialCode('log_driver_pay', 'LPAY'),
+      createdAt: new Date().toISOString(),
+    });
+    setDriverPayouts((prev) => [payout, ...prev]);
+    void logisticsService.upsertDriverPayout(payout, depthCtx).catch(() => {});
+    return payout;
+  };
+
+  const addVehicleLog = (logInput: Omit<LogisticsVehicleLog, 'id'>) => {
+    const log: LogisticsVehicleLog = withBranch({
+      ...logInput,
+      id: `vlog_${Date.now()}_${vehicleLogs.length}`,
+    });
+    setVehicleLogs((prev) => [log, ...prev]);
+    void logisticsService.upsertVehicleLog(log, depthCtx).catch(() => {});
+    return log;
+  };
+
+  const issueMerchantFeeInvoice = (params: { merchantName: string; periodLabel: string }) => {
+    const summary = buildMerchantFeeInvoiceSummary({
+      merchantName: params.merchantName,
+      shipments: scopedShipments,
+      periodLabel: params.periodLabel,
+    });
+    const inv: LogisticsMerchantFeeInvoice = withBranch({
+      id: `mfi_${Date.now()}_${merchantFeeInvoices.length}`,
+      invoiceNumber: nextLogisticsSequentialCode('invoice', 'FAC'),
+      merchantName: summary.merchantName,
+      periodLabel: summary.periodLabel,
+      deliveredCount: summary.deliveredCount,
+      returnedCount: summary.returnedCount,
+      grossCodDzd: summary.grossCodDzd,
+      totalFeesTtcDzd: summary.totalFeesTtcDzd,
+      netMerchantPayableDzd: summary.netMerchantPayableDzd,
+      scfLines: summary.scfLines,
+      status: 'Issued',
+      issuedAt: new Date().toISOString().slice(0, 10),
+    });
+    setMerchantFeeInvoices((prev) => [inv, ...prev]);
+    void logisticsService.upsertMerchantFeeInvoice(inv, depthCtx).catch(() => {});
+    return inv;
+  };
+
+  const addCarrierIntegration = (input: Omit<LogisticsCarrierIntegration, 'id' | 'ordersImportedCount'>) => {
+    const item: LogisticsCarrierIntegration = withBranch({
+      ...input,
+      id: `int_${Date.now()}_${carrierIntegrations.length}`,
+      ordersImportedCount: 0,
+    });
+    setCarrierIntegrations((prev) => [item, ...prev]);
+    void logisticsService.upsertCarrierIntegration(item, depthCtx).catch(() => {});
+    return item;
+  };
+
+  const toggleCarrierIntegration = (id: string) => {
+    setCarrierIntegrations((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const updated = { ...c, isActive: !c.isActive };
+        void logisticsService.upsertCarrierIntegration(updated, depthCtx).catch(() => {});
+        return updated;
+      })
+    );
+  };
+
+  const addFreightWaybill = (input: Omit<LogisticsFreightWaybill, 'id' | 'waybillNumber' | 'createdAt'>) => {
+    const item: LogisticsFreightWaybill = withBranch({
+      ...input,
+      id: `frt_${Date.now()}_${freightWaybills.length}`,
+      waybillNumber: nextLogisticsSequentialCode('log_waybill', 'FRT'),
+      createdAt: new Date().toISOString(),
+    });
+    setFreightWaybills((prev) => [item, ...prev]);
+    void logisticsService.upsertFreightWaybill(item, depthCtx).catch(() => {});
+    return item;
+  };
+
+  const addMovingQuote = (input: Omit<LogisticsMovingQuote, 'id' | 'quoteNumber' | 'createdAt'>) => {
+    const item: LogisticsMovingQuote = withBranch({
+      ...input,
+      id: `mov_${Date.now()}_${movingQuotes.length}`,
+      quoteNumber: nextLogisticsSequentialCode('quote', 'DEV'),
+      createdAt: new Date().toISOString(),
+    });
+    setMovingQuotes((prev) => [item, ...prev]);
+    void logisticsService.upsertMovingQuote(item, depthCtx).catch(() => {});
+    return item;
+  };
+
+  const addColdChainLog = (input: Omit<LogisticsColdChainLog, 'id' | 'recordedAt'>) => {
+    const item: LogisticsColdChainLog = withBranch({
+      ...input,
+      id: `cold_${Date.now()}_${coldChainLogs.length}`,
+      recordedAt: new Date().toISOString(),
+    });
+    setColdChainLogs((prev) => [item, ...prev]);
+    void logisticsService.upsertColdChainLog(item, depthCtx).catch(() => {});
+    return item;
+  };
+
+  const addCustomsDossier = (input: Omit<LogisticsCustomsDossier, 'id' | 'dossierNumber' | 'createdAt'>) => {
+    const item: LogisticsCustomsDossier = withBranch({
+      ...input,
+      id: `cust_${Date.now()}_${customsDossiers.length}`,
+      dossierNumber: nextLogisticsSequentialCode('log_customs', 'D10'),
+      createdAt: new Date().toISOString(),
+    });
+    setCustomsDossiers((prev) => [item, ...prev]);
+    void logisticsService.upsertCustomsDossier(item, depthCtx).catch(() => {});
+    return item;
+  };
+
+  const addTowingDispatch = (input: Omit<LogisticsTowingDispatch, 'id' | 'dispatchNumber' | 'createdAt'>) => {
+    const item: LogisticsTowingDispatch = withBranch({
+      ...input,
+      id: `tow_${Date.now()}_${towingDispatches.length}`,
+      dispatchNumber: nextLogisticsSequentialCode('log_towing', 'TOW'),
+      createdAt: new Date().toISOString(),
+    });
+    setTowingDispatches((prev) => [item, ...prev]);
+    void logisticsService.upsertTowingDispatch(item, depthCtx).catch(() => {});
+    return item;
   };
 
   const resetLogisticsDemoData = () => {
@@ -1224,6 +1672,17 @@ export const useLogisticsData = () => {
   const scopedManifests = useMemo(() => manifests.filter(belongsToActiveBranch), [manifests, belongsToActiveBranch]);
   const scopedDischarges = useMemo(() => discharges.filter(belongsToActiveBranch), [discharges, belongsToActiveBranch]);
   const scopedRemittances = useMemo(() => remittances.filter(belongsToActiveBranch), [remittances, belongsToActiveBranch]);
+  const scopedParcelEvents = useMemo(() => parcelEvents.filter(belongsToActiveBranch), [parcelEvents, belongsToActiveBranch]);
+  const scopedPods = useMemo(() => pods.filter(belongsToActiveBranch), [pods, belongsToActiveBranch]);
+  const scopedDriverPayouts = useMemo(() => driverPayouts.filter(belongsToActiveBranch), [driverPayouts, belongsToActiveBranch]);
+  const scopedVehicleLogs = useMemo(() => vehicleLogs.filter(belongsToActiveBranch), [vehicleLogs, belongsToActiveBranch]);
+  const scopedMerchantFeeInvoices = useMemo(() => merchantFeeInvoices.filter(belongsToActiveBranch), [merchantFeeInvoices, belongsToActiveBranch]);
+  const scopedCarrierIntegrations = useMemo(() => carrierIntegrations.filter(belongsToActiveBranch), [carrierIntegrations, belongsToActiveBranch]);
+  const scopedFreightWaybills = useMemo(() => freightWaybills.filter(belongsToActiveBranch), [freightWaybills, belongsToActiveBranch]);
+  const scopedMovingQuotes = useMemo(() => movingQuotes.filter(belongsToActiveBranch), [movingQuotes, belongsToActiveBranch]);
+  const scopedColdChainLogs = useMemo(() => coldChainLogs.filter(belongsToActiveBranch), [coldChainLogs, belongsToActiveBranch]);
+  const scopedCustomsDossiers = useMemo(() => customsDossiers.filter(belongsToActiveBranch), [customsDossiers, belongsToActiveBranch]);
+  const scopedTowingDispatches = useMemo(() => towingDispatches.filter(belongsToActiveBranch), [towingDispatches, belongsToActiveBranch]);
 
   return {
     shipments: scopedShipments,
@@ -1231,6 +1690,18 @@ export const useLogisticsData = () => {
     manifests: scopedManifests,
     discharges: scopedDischarges,
     remittances: scopedRemittances,
+    settledIds,
+    parcelEvents: scopedParcelEvents,
+    pods: scopedPods,
+    driverPayouts: scopedDriverPayouts,
+    vehicleLogs: scopedVehicleLogs,
+    merchantFeeInvoices: scopedMerchantFeeInvoices,
+    carrierIntegrations: scopedCarrierIntegrations,
+    freightWaybills: scopedFreightWaybills,
+    movingQuotes: scopedMovingQuotes,
+    coldChainLogs: scopedColdChainLogs,
+    customsDossiers: scopedCustomsDossiers,
+    towingDispatches: scopedTowingDispatches,
     addShipment,
     updateShipment,
     deleteShipment,
@@ -1243,6 +1714,20 @@ export const useLogisticsData = () => {
     addDischarge,
     addRemittance,
     executeRemittance,
+    toggleSettledId,
+    setSettledIds,
+    addParcelEvent,
+    addDeliveryPod,
+    addDriverPayout,
+    addVehicleLog,
+    issueMerchantFeeInvoice,
+    addCarrierIntegration,
+    toggleCarrierIntegration,
+    addFreightWaybill,
+    addMovingQuote,
+    addColdChainLog,
+    addCustomsDossier,
+    addTowingDispatch,
     resetLogisticsDemoData,
   };
 };

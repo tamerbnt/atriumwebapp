@@ -12,6 +12,7 @@ import {
   setTopBarCollapsedAction,
   loginWithPinAction,
   logoutAction,
+  setScreenAction,
   atriumActions,
   shallowEqualObjects,
 } from './services/store';
@@ -1266,9 +1267,54 @@ export default function App() {
     }
 
     if (canonicalCategory === 'logistics_delivery') {
+      const renderRoleScannerDashboardHeader = (roleLabel: string, roleScope: string) => (
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="mb-4 p-4 bg-white dark:bg-[#22201E] flex flex-wrap items-center justify-between gap-3"
+        >
+          <div>
+            <div className="t-small font-semibold text-black dark:text-white">{roleLabel}</div>
+            <div className="t-cap text-black/60 dark:text-white/60">{roleScope}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setScreenAction('members')}
+              className="px-3 py-1.5 rounded-[var(--rad-ctl)] border border-[var(--atr-divider)] t-cap font-semibold hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+            >
+              {language === 'ar' ? 'الطرود' : 'Colis'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setScreenAction('scheduler')}
+              className="px-3 py-1.5 rounded-[var(--rad-ctl)] border border-[var(--atr-divider)] t-cap font-semibold hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+            >
+              {language === 'ar' ? 'أوراق الطريق' : 'Tournées'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setScreenAction('registrations')}
+              className="px-3 py-1.5 rounded-[var(--rad-ctl)] bg-[#d4522f] text-white t-cap font-semibold hover:opacity-90 cursor-pointer"
+            >
+              {language === 'ar' ? 'وضع الماسح الكامل' : 'Station Scan'}
+            </button>
+          </div>
+        </div>
+      );
+
       if (activeLogisticsRole === 'hub_sorter') {
         switch (resolvedScreen) {
           case 'dashboard':
+            return (
+              <>
+                {renderRoleScannerDashboardHeader(
+                  language === 'ar' ? 'لوحة تحكم فارز المحور (Hub Sorter)' : 'Poste Tri Quai & Sacs-Navette',
+                  language === 'ar' ? 'استقبال، فرز الأكياس، والختم الأمني' : 'Synthèse réception quai, tri par wilaya et scellés de sécurité'
+                )}
+                <LogisticsScannerView />
+              </>
+            );
           case 'registrations':
             return <LogisticsScannerView />;
           case 'members':
@@ -1282,6 +1328,15 @@ export default function App() {
       if (activeLogisticsRole === 'stop_desk_agent') {
         switch (resolvedScreen) {
           case 'dashboard':
+            return (
+              <>
+                {renderRoleScannerDashboardHeader(
+                  language === 'ar' ? 'لوحة شباك الاستلام (Stop-Desk Agent)' : 'Comptoir Stop-Desk & Retraits OTP',
+                  language === 'ar' ? 'استلام الطرود وتسليمها برمز التحقق OTP' : 'Remise guichet OTP, encaissement comptoir et suivi colis'
+                )}
+                <LogisticsScannerView />
+              </>
+            );
           case 'registrations':
             return <LogisticsScannerView />;
           case 'members':

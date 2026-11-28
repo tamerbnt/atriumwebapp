@@ -7,8 +7,20 @@ import type {
   LogisticsManifest,
   CourierCashDischarge,
   MerchantRemittanceBatch,
+  LogisticsParcelEvent,
+  LogisticsDeliveryPod,
+  LogisticsDriverPayout,
+  LogisticsVehicleLog,
+  LogisticsMerchantFeeInvoice,
+  LogisticsCarrierIntegration,
+  LogisticsFreightWaybill,
+  LogisticsMovingQuote,
+  LogisticsColdChainLog,
+  LogisticsCustomsDossier,
+  LogisticsTowingDispatch,
 } from '../../../types/index';
 import type { TariffRule, WilayaZone } from '../../../utils/logisticsRules';
+import { dzdToCentimes } from '../../../utils/money';
 
 export interface LogisticsBranchContext {
   accountId?: string;
@@ -88,7 +100,7 @@ export const logisticsService = {
         let query = (client as any)
           .from('logistics_parcels')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, tracking_code, merchant_name, recipient_name, recipient_phone, wilaya_name, commune, cod_amount_dzd, delivery_fee_dzd, weight_kg, status, delivery_mode, bag_id, version, created_at'
+            'id, account_id, business_id, branch_id, staff_id, tracking_code, merchant_name, recipient_name, recipient_phone, wilaya_name, commune, cod_amount_dzd, delivery_fee_dzd, weight_kg, volumetric_weight_kg, status, delivery_mode, bag_id, pod_signature_url, pod_photo_path, pod_gps_lat, pod_gps_lng, pod_signed_at, pod_signed_by, otp_attempts, otp_locked_until, return_reason_code, attempt_count, assigned_driver_name, public_share_code, settled_at, version, created_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -117,18 +129,29 @@ export const logisticsService = {
           codAmountDzd: Number(row.cod_amount_dzd || 0),
           shippingFeeDzd: Number(row.delivery_fee_dzd || 0),
           weightKg: Number(row.weight_kg || 1),
+          volumetricWeightKg: row.volumetric_weight_kg != null ? Number(row.volumetric_weight_kg) : meta.volumetricWeightKg,
           status: (meta.uiStatus || row.status || 'Created') as LogisticsShipment['status'],
           deliveryMode: row.delivery_mode === 'StopDesk' ? 'StopDesk' : 'HomeDelivery',
           dimensionsCm: meta.dimensionsCm,
           bagId: row.bag_id || meta.bagId || undefined,
           stopDeskShelfCode: meta.stopDeskShelfCode,
           pickupOtpCode: meta.pickupOtpCode,
-          recipientIdNumber: meta.recipientIdNumber,
-          returnReasonCode: meta.returnReasonCode,
-          attemptCount: meta.attemptCount,
+          recipientIdNumber: row.pod_signed_by || meta.recipientIdNumber,
+          returnReasonCode: row.return_reason_code || meta.returnReasonCode,
+          attemptCount: row.attempt_count != null ? Number(row.attempt_count) : meta.attemptCount,
           stampDutyDzd: meta.stampDutyDzd,
-          assignedDriverName: meta.assignedDriverName,
-          podSignatureUrl: meta.podSignatureUrl,
+          assignedDriverName: row.assigned_driver_name || meta.assignedDriverName,
+          podSignatureUrl: row.pod_signature_url || meta.podSignatureUrl,
+          podPhotoPath: row.pod_photo_path || undefined,
+          podGpsLat: row.pod_gps_lat != null ? Number(row.pod_gps_lat) : undefined,
+          podGpsLng: row.pod_gps_lng != null ? Number(row.pod_gps_lng) : undefined,
+          podSignedAt: row.pod_signed_at || undefined,
+          podSignedBy: row.pod_signed_by || undefined,
+          otpAttempts: row.otp_attempts != null ? Number(row.otp_attempts) : undefined,
+          otpLockedUntil: row.otp_locked_until || undefined,
+          publicShareCode: row.public_share_code || undefined,
+          isSettled: Boolean(row.settled_at || meta.isSettled),
+          settledAt: row.settled_at || undefined,
           version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
@@ -168,14 +191,30 @@ export const logisticsService = {
         stampDutyDzd: ship.stampDutyDzd,
         assignedDriverName: ship.assignedDriverName,
         podSignatureUrl: ship.podSignatureUrl,
+        volumetricWeightKg: ship.volumetricWeightKg,
+        isSettled: ship.isSettled,
       }),
       delivery_mode: ship.deliveryMode === 'StopDesk' ? 'StopDesk' : 'Domicile',
       weight_kg: Number(ship.weightKg || 1),
+      volumetric_weight_kg: ship.volumetricWeightKg != null ? Number(ship.volumetricWeightKg) : null,
       is_fragile: false,
       cod_amount_dzd: Number(ship.codAmountDzd || 0),
       delivery_fee_dzd: Number(ship.shippingFeeDzd || 0),
       bag_id: ship.bagId ? toValidUuid(ship.bagId) : null,
       driver_id: null,
+      assigned_driver_name: ship.assignedDriverName || null,
+      return_reason_code: ship.returnReasonCode || null,
+      attempt_count: Number(ship.attemptCount || 0),
+      pod_signature_url: ship.podSignatureUrl || null,
+      pod_photo_path: ship.podPhotoPath || null,
+      pod_gps_lat: ship.podGpsLat != null ? Number(ship.podGpsLat) : null,
+      pod_gps_lng: ship.podGpsLng != null ? Number(ship.podGpsLng) : null,
+      pod_signed_at: ship.podSignedAt || null,
+      pod_signed_by: ship.podSignedBy || ship.recipientIdNumber || null,
+      otp_attempts: Number(ship.otpAttempts || 0),
+      otp_locked_until: ship.otpLockedUntil || null,
+      public_share_code: ship.publicShareCode || null,
+      settled_at: ship.settledAt || (ship.isSettled ? new Date().toISOString() : null),
       status: toDbParcelStatus(ship.status),
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('logistics_parcels', payload, {
@@ -395,6 +434,10 @@ export const logisticsService = {
       collected_cash_dzd: Number(discharge.actualCashTurnedInDzd || 0),
       delivered_count: Number(discharge.deliveredCount || 0),
       returned_count: Number(discharge.returnedCount || 0),
+      expected_parcel_count: Number(discharge.expectedParcelCount || 0),
+      counterfeit_amount_centimes: dzdToCentimes(discharge.counterfeitAmountDzd || 0),
+      damaged_amount_centimes: dzdToCentimes(discharge.damagedAmountDzd || 0),
+      requires_supervisor_review: Boolean(discharge.requiresSupervisorReview),
       discharged_at: discharge.timestamp || new Date().toISOString(),
     };
     const res = await syncCoordinator.mutateOrQueueUpsert('logistics_discharges', payload, {
@@ -484,6 +527,8 @@ export const logisticsService = {
       gross_cod_dzd: Number(batch.grossCodDzd || 0),
       fees_deducted_dzd: Number((batch.shippingFeesDzd || 0) + (batch.returnFeesDzd || 0)),
       net_paid_dzd: Number(batch.netPayoutDzd || 0),
+      net_paid_centimes: dzdToCentimes(batch.netPayoutDzd || 0),
+      ccp_validated: Boolean(batch.ccpValidated),
       parcel_ids: [],
       payment_method: batch.paymentChannel,
       status: batch.status,
@@ -594,6 +639,404 @@ export const logisticsService = {
 
   async deleteRemittance(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('logistics_remittances', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async scanParcelGuarded(params: {
+    parcelId: string;
+    stage: string;
+    bagId?: string;
+    location?: string;
+    allowOverride?: boolean;
+  }): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('logistics_scan_parcel_guarded', {
+      p_parcel_id: toValidUuid(params.parcelId),
+      p_stage: params.stage,
+      p_bag_id: params.bagId ? toValidUuid(params.bagId) : null,
+      p_location: params.location || 'Hub National Alger',
+      p_allow_override: Boolean(params.allowOverride),
+    });
+    return res.success;
+  },
+
+  async verifyStopDeskOtp(params: {
+    parcelId: string;
+    enteredOtp: string;
+    expectedOtp: string;
+    recipientIdNumber?: string;
+    managerUnlock?: boolean;
+  }): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('logistics_verify_stopdesk_otp', {
+      p_parcel_id: toValidUuid(params.parcelId),
+      p_entered_otp: params.enteredOtp,
+      p_expected_otp: params.expectedOtp,
+      p_recipient_id_number: params.recipientIdNumber || null,
+      p_manager_unlock: Boolean(params.managerUnlock),
+    });
+    return res.success;
+  },
+
+  async recordDischargeWithVariance(params: {
+    businessId: string;
+    branchId: string;
+    driverId: string;
+    driverName: string;
+    collectedCashDzd: number;
+    deliveredCount: number;
+    returnedCount: number;
+    expectedParcelCount: number;
+    counterfeitCentimes?: number;
+    damagedCentimes?: number;
+    expectedCashDzd?: number;
+  }): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('logistics_record_discharge_with_variance', {
+      p_business_id: toValidUuid(params.businessId),
+      p_branch_id: toValidUuid(params.branchId),
+      p_driver_id: toValidUuid(params.driverId),
+      p_driver_name: params.driverName,
+      p_collected_cash_dzd: params.collectedCashDzd,
+      p_delivered_count: params.deliveredCount,
+      p_returned_count: params.returnedCount,
+      p_expected_parcel_count: params.expectedParcelCount,
+      p_counterfeit_centimes: params.counterfeitCentimes ?? 0,
+      p_damaged_centimes: params.damagedCentimes ?? 0,
+      p_expected_cash_dzd: params.expectedCashDzd ?? 0,
+    });
+    return res.success;
+  },
+
+  async executeRemittanceValidated(remittanceId: string, ccpValidated: boolean): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('logistics_execute_remittance_validated', {
+      p_remittance_id: toValidUuid(remittanceId),
+      p_ccp_validated: ccpValidated,
+    });
+    return res.success;
+  },
+
+  async upsertParcelEvent(ev: LogisticsParcelEvent, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: ev.accountId || ctx.accountId,
+      businessId: ev.businessId || ctx.businessId,
+      branchId: ev.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(ev.id),
+      ...trace,
+      parcel_id: toValidUuid(ev.parcelId),
+      status: ev.status,
+      location: ev.location || 'Hub',
+      notes: ev.notes || null,
+      notification_channel: ev.notificationChannel || null,
+      notification_recipient: ev.notificationRecipient || null,
+      notification_status: ev.notificationStatus || null,
+      occurred_at: ev.occurredAt || new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_parcel_events', payload, {
+      entityType: 'LogisticsParcelEvent',
+      entityLabel: ev.trackingCode,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertDeliveryPod(pod: LogisticsDeliveryPod, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: pod.accountId || ctx.accountId,
+      businessId: pod.businessId || ctx.businessId,
+      branchId: pod.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(pod.id),
+      ...trace,
+      parcel_id: toValidUuid(pod.parcelId),
+      tracking_code: pod.trackingCode,
+      driver_name: pod.driverName,
+      outcome: pod.outcome,
+      reason_code: pod.reasonCode || null,
+      signature_svg: pod.signatureSvg || null,
+      photo_storage_path: pod.photoStoragePath || null,
+      gps_lat: pod.gpsLat != null ? Number(pod.gpsLat) : null,
+      gps_lng: pod.gpsLng != null ? Number(pod.gpsLng) : null,
+      recipient_signed_name: pod.recipientSignedName || null,
+      notes: pod.notes || null,
+      captured_at: pod.capturedAt || new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_delivery_pods', payload, {
+      entityType: 'LogisticsDeliveryPod',
+      entityLabel: pod.trackingCode,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertDriverPayout(payout: LogisticsDriverPayout, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: payout.accountId || ctx.accountId,
+      businessId: payout.businessId || ctx.businessId,
+      branchId: payout.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(payout.id),
+      ...trace,
+      payout_number: payout.payoutNumber,
+      driver_name: payout.driverName,
+      employment_type: payout.employmentType,
+      period_label: payout.periodLabel,
+      delivered_count: payout.deliveredCount,
+      returned_count: payout.returnedCount,
+      shortage_deduction_centimes: dzdToCentimes(payout.shortageDeductionDzd),
+      gross_compensation_centimes: dzdToCentimes(payout.grossCompensationDzd),
+      tax_withheld_centimes: dzdToCentimes(payout.taxWithheldDzd),
+      net_payable_centimes: dzdToCentimes(payout.netPayableDzd),
+      status: payout.status,
+      paid_at: payout.paidAt || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_driver_payouts', payload, {
+      entityType: 'LogisticsDriverPayout',
+      entityLabel: payout.payoutNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertVehicleLog(log: LogisticsVehicleLog, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: log.accountId || ctx.accountId,
+      businessId: log.businessId || ctx.businessId,
+      branchId: log.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(log.id),
+      ...trace,
+      vehicle_plate: log.vehiclePlate,
+      log_kind: log.logKind,
+      odometer_km: Number(log.odometerKm || 0),
+      liters: Number(log.liters || 0),
+      cost_centimes: dzdToCentimes(log.costDzd),
+      provider_name: log.providerName || null,
+      notes: log.notes || null,
+      logged_at: log.loggedAt || new Date().toISOString().slice(0, 10),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_vehicle_logs', payload, {
+      entityType: 'LogisticsVehicleLog',
+      entityLabel: log.vehiclePlate,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertMerchantFeeInvoice(inv: LogisticsMerchantFeeInvoice, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: inv.accountId || ctx.accountId,
+      businessId: inv.businessId || ctx.businessId,
+      branchId: inv.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(inv.id),
+      ...trace,
+      invoice_number: inv.invoiceNumber,
+      merchant_name: inv.merchantName,
+      period_label: inv.periodLabel,
+      delivered_count: inv.deliveredCount,
+      returned_count: inv.returnedCount,
+      gross_cod_centimes: dzdToCentimes(inv.grossCodDzd),
+      total_fees_ttc_centimes: dzdToCentimes(inv.totalFeesTtcDzd),
+      net_merchant_payable_centimes: dzdToCentimes(inv.netMerchantPayableDzd),
+      scf_lines: inv.scfLines,
+      status: inv.status,
+      issued_at: inv.issuedAt || new Date().toISOString().slice(0, 10),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_merchant_fee_invoices', payload, {
+      entityType: 'LogisticsMerchantFeeInvoice',
+      entityLabel: inv.invoiceNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertCarrierIntegration(integ: LogisticsCarrierIntegration, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: integ.accountId || ctx.accountId,
+      businessId: integ.businessId || ctx.businessId,
+      branchId: integ.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(integ.id),
+      ...trace,
+      store_name: integ.storeName,
+      platform: integ.platform,
+      webhook_url: integ.webhookUrl,
+      signing_secret_hint: integ.signingSecretHint || null,
+      is_active: integ.isActive,
+      last_synced_at: integ.lastSyncedAt || null,
+      orders_imported_count: integ.ordersImportedCount || 0,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_carrier_integrations', payload, {
+      entityType: 'LogisticsCarrierIntegration',
+      entityLabel: integ.storeName,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertFreightWaybill(wb: LogisticsFreightWaybill, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: wb.accountId || ctx.accountId,
+      businessId: wb.businessId || ctx.businessId,
+      branchId: wb.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(wb.id),
+      ...trace,
+      waybill_number: wb.waybillNumber,
+      shipper_name: wb.shipperName,
+      consignee_name: wb.consigneeName,
+      origin_wilaya: wb.originWilaya,
+      destination_wilaya: wb.destinationWilaya,
+      cargo_description: wb.cargoDescription,
+      weight_tons: wb.weightTons,
+      distance_km: wb.distanceKm,
+      rate_per_km_dzd: wb.ratePerKmDzd,
+      fuel_surcharge_percent: wb.fuelSurchargePercent,
+      loading_fee_dzd: wb.loadingFeeDzd,
+      total_ttc_centimes: dzdToCentimes(wb.totalTtcDzd),
+      vehicle_plate: wb.vehiclePlate || null,
+      status: wb.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_freight_waybills', payload, {
+      entityType: 'LogisticsFreightWaybill',
+      entityLabel: wb.waybillNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertMovingQuote(q: LogisticsMovingQuote, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: q.accountId || ctx.accountId,
+      businessId: q.businessId || ctx.businessId,
+      branchId: q.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(q.id),
+      ...trace,
+      quote_number: q.quoteNumber,
+      client_name: q.clientName,
+      origin_address: q.originAddress,
+      destination_address: q.destinationAddress,
+      volume_m3: q.volumeM3,
+      distance_km: q.distanceKm,
+      origin_floor: q.originFloor,
+      destination_floor: q.destinationFloor,
+      has_elevator_origin: q.hasElevatorOrigin,
+      has_elevator_dest: q.hasElevatorDest,
+      packing_included: q.packingIncluded,
+      crew_size: q.crewSize,
+      total_ttc_centimes: dzdToCentimes(q.totalTtcDzd),
+      move_date: q.moveDate || null,
+      status: q.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_moving_quotes', payload, {
+      entityType: 'LogisticsMovingQuote',
+      entityLabel: q.quoteNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertColdChainLog(log: LogisticsColdChainLog, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: log.accountId || ctx.accountId,
+      businessId: log.businessId || ctx.businessId,
+      branchId: log.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(log.id),
+      ...trace,
+      vehicle_plate: log.vehiclePlate,
+      cargo_type: log.cargoType,
+      recorded_temp_c: log.recordedTempC,
+      min_allowed_temp_c: log.minAllowedTempC,
+      max_allowed_temp_c: log.maxAllowedTempC,
+      excursion_minutes: log.excursionMinutes,
+      compliance_status: log.complianceStatus,
+      requires_quarantine: log.requiresQuarantine,
+      recorded_at: log.recordedAt || new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_cold_chain_logs', payload, {
+      entityType: 'LogisticsColdChainLog',
+      entityLabel: log.vehiclePlate,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertCustomsDossier(dos: LogisticsCustomsDossier, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: dos.accountId || ctx.accountId,
+      businessId: dos.businessId || ctx.businessId,
+      branchId: dos.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(dos.id),
+      ...trace,
+      dossier_number: dos.dossierNumber,
+      importer_name: dos.importerName,
+      bl_awb_reference: dos.blAwbReference,
+      port_name: dos.portName,
+      hs_code: dos.hsCode,
+      fob_value_dzd: dos.fobValueDzd,
+      freight_dzd: dos.freightDzd,
+      insurance_dzd: dos.insuranceDzd,
+      customs_duty_rate_percent: dos.customsDutyRatePercent,
+      total_payable_centimes: dzdToCentimes(dos.totalPayableDzd),
+      status: dos.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_customs_dossiers', payload, {
+      entityType: 'LogisticsCustomsDossier',
+      entityLabel: dos.dossierNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async upsertTowingDispatch(tow: LogisticsTowingDispatch, ctx: LogisticsBranchContext): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: tow.accountId || ctx.accountId,
+      businessId: tow.businessId || ctx.businessId,
+      branchId: tow.branchId || ctx.branchId,
+      staffId: ctx.staffId,
+    });
+    const payload = {
+      id: toValidUuid(tow.id),
+      ...trace,
+      dispatch_number: tow.dispatchNumber,
+      caller_name: tow.callerName,
+      caller_phone: tow.callerPhone,
+      vehicle_class: tow.vehicleClass,
+      pickup_location: tow.pickupLocation,
+      dropoff_location: tow.dropoffLocation,
+      distance_km: tow.distanceKm,
+      is_night_or_weekend: tow.isNightOrWeekend,
+      needs_winch_extraction: tow.needsWinchExtraction,
+      total_centimes: dzdToCentimes(tow.totalDzd),
+      status: tow.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_towing_dispatches', payload, {
+      entityType: 'LogisticsTowingDispatch',
+      entityLabel: tow.dispatchNumber,
+      localData: payload,
+    });
     return res.success;
   },
 };

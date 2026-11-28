@@ -242,6 +242,19 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
   { key: 'atrium_legal_bailiff_acts_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal bailiff acts cache synced to legal_bailiff_acts' },
   { key: 'atrium_legal_arbitration_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal arbitration timelines cache synced to legal_arbitration_timelines' },
   { key: 'atrium_legal_client_ledgers_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal multi-client accounting G50/Liasse ledgers cache' },
+  { key: 'atrium_logistics_settled_ids_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics settled parcel IDs persisted across sessions' },
+  { key: 'atrium_logistics_events_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics parcel tracking events and recipient notifications cache' },
+  { key: 'atrium_logistics_pods_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics delivery proof-of-delivery signatures and GPS logs cache' },
+  { key: 'atrium_logistics_driver_payouts_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics driver payout sheets cache synced to logistics_driver_payouts' },
+  { key: 'atrium_logistics_vehicle_logs_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics fleet fuel and maintenance logs cache synced to logistics_vehicle_logs' },
+  { key: 'atrium_logistics_merchant_invoices_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics merchant fee invoices cache synced to logistics_merchant_fee_invoices' },
+  { key: 'atrium_logistics_integrations_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 logistics e-commerce webhook integrations cache synced to logistics_carrier_integrations' },
+  { key: 'atrium_logistics_freight_waybills_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 freight waybill cache synced to logistics_freight_waybills' },
+  { key: 'atrium_logistics_moving_quotes_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 moving & relocation quotes cache synced to logistics_moving_quotes' },
+  { key: 'atrium_logistics_cold_chain_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 cold chain temperature logs cache synced to logistics_cold_chain_logs' },
+  { key: 'atrium_logistics_customs_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 customs brokerage D10 dossiers cache synced to logistics_customs_dossiers' },
+  { key: 'atrium_logistics_towing_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 14 roadside towing dispatches cache synced to logistics_towing_dispatches' },
+  { key: 'atrium_logistics_local_seq_v1', scope: 'vertical_cache', preserveOnCacheReset: true, notes: 'Step 14 deterministic sequential counter fallback for offline logistics numbering' },
 ];
 
 export const REGISTERED_LOCAL_STORAGE_KEYS = new Set(LOCAL_STORAGE_REGISTRY.map((e) => e.key));

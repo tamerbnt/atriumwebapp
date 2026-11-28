@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Package, X, Phone, MapPin, Calculator, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Package, X, AlertCircle } from 'lucide-react';
 import {
   showToast,
   useAtriumSelector,
@@ -12,10 +12,18 @@ import { LogisticsShipment } from '../../../types';
 import {
   computeShipmentTariff,
   validateAlgerianPhone,
-  calculateVolumetricWeight,
-  computeAlgerianFiscalStamp,
+  DEFAULT_TARIFF_RULES,
+  TariffRule,
   WilayaZone,
 } from '../../../utils/logisticsRules';
+import {
+  resolveWilayaCatalog,
+  resolveWilayaZone,
+  computeVolumetricBillingDetails,
+} from '../../../utils/logisticsDepth';
+import { isSupabaseConfigured, logisticsService, referenceDataService } from '../../../lib/supabase';
+import type { WilayaReferenceRow } from '../../../lib/supabase/services/referenceDataService';
+import { nextLogisticsSequentialCode } from './logisticsData';
 import { formatMoney } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -29,6 +37,16 @@ const extractStr = (v: unknown): string =>
     : typeof v === 'number'
     ? String(v)
     : (v as { target?: { value?: string } })?.target?.value ?? '';
+
+function deriveDeterministicOtp(seedStr: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash ^= seedStr.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const num = (Math.abs(hash) % 9000) + 1000;
+  return String(num);
+}
 
 interface LogisticsShipmentModalProps {
   isOpen: boolean;
@@ -68,6 +86,40 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   const [heightCm, setHeightCm] = useState('10');
   const [isFragile, setIsFragile] = useState(false);
 
+  const [wilayasRef, setWilayasRef] = useState<WilayaReferenceRow[] | null>(null);
+  const [savedTariffs, setSavedTariffs] = useState<Record<WilayaZone, TariffRule>>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_logistics_tariffs_v1');
+      return saved ? { ...DEFAULT_TARIFF_RULES, ...JSON.parse(saved) } : DEFAULT_TARIFF_RULES;
+    } catch {
+      return DEFAULT_TARIFF_RULES;
+    }
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    void referenceDataService.fetchWilayasRef().then(({ wilayas }) => {
+      if (!cancelled) setWilayasRef(wilayas);
+    }).catch(() => {});
+    try {
+      const saved = localStorage.getItem('atrium_logistics_tariffs_v1');
+      if (saved) {
+        setSavedTariffs({ ...DEFAULT_TARIFF_RULES, ...JSON.parse(saved) });
+      }
+    } catch {}
+    if (isSupabaseConfigured() && currentBranch?.id) {
+      void logisticsService.fetchWilayaTariffs(currentBranch.id).then((remote) => {
+        if (!cancelled && Object.keys(remote).length > 0) {
+          setSavedTariffs((prev) => ({ ...prev, ...remote }));
+        }
+      }).catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, currentBranch?.id]);
+
   useEffect(() => {
     if (shipmentToEdit) {
       setMerchantName(shipmentToEdit.merchantName);
@@ -102,50 +154,37 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   // Phone Validation & Operator Detection
   const phoneValidation = validateAlgerianPhone(recipientPhone);
 
-  // Determine Wilaya Zone
-  const getZoneFromWilaya = (wilayaStr: string): WilayaZone => {
-    if (wilayaStr.startsWith('16')) return 'Zone1_Local';
-    if (wilayaStr.startsWith('09') || wilayaStr.startsWith('35') || wilayaStr.startsWith('42')) return 'Zone2_Proche';
-    if (
-      wilayaStr.startsWith('31') ||
-      wilayaStr.startsWith('25') ||
-      wilayaStr.startsWith('06') ||
-      wilayaStr.startsWith('19') ||
-      wilayaStr.startsWith('23') ||
-      wilayaStr.startsWith('13')
-    )
-      return 'Zone3_Nord';
-    if (
-      wilayaStr.startsWith('05') ||
-      wilayaStr.startsWith('17') ||
-      wilayaStr.startsWith('14') ||
-      wilayaStr.startsWith('34')
-    )
-      return 'Zone4_Plateaux';
-    if (
-      wilayaStr.startsWith('30') ||
-      wilayaStr.startsWith('07') ||
-      wilayaStr.startsWith('47') ||
-      wilayaStr.startsWith('08')
-    )
-      return 'Zone5_Sud';
-    return 'Zone6_GrandSud';
+  // Runtime wilaya catalog & zone resolution from wilayas_ref
+  const wilayaCatalog = useMemo(() => resolveWilayaCatalog(wilayasRef), [wilayasRef]);
+  const zoneResolution = useMemo(
+    () => resolveWilayaZone(destinationWilaya, wilayasRef),
+    [destinationWilaya, wilayasRef]
+  );
+  const currentZone = zoneResolution.zone;
+  const activeRule = savedTariffs[currentZone] || DEFAULT_TARIFF_RULES[currentZone];
+
+  const parsedDims = {
+    length: parseFloat(lengthCm) || 0,
+    width: parseFloat(widthCm) || 0,
+    height: parseFloat(heightCm) || 0,
   };
+  const parsedWeight = parseFloat(weightKg) || 1.0;
 
-  const currentZone = getZoneFromWilaya(destinationWilaya);
+  const volumetricDetails = computeVolumetricBillingDetails({
+    actualWeightKg: parsedWeight,
+    dimensionsCm: parsedDims,
+    rule: activeRule,
+  });
 
-  // Dynamic Tariff Calculation
+  // Dynamic Tariff Calculation using tenant saved tariff rules
   const tariffCalc = computeShipmentTariff({
-    actualWeightKg: parseFloat(weightKg) || 1.0,
-    dimensionsCm: {
-      length: parseFloat(lengthCm) || 0,
-      width: parseFloat(widthCm) || 0,
-      height: parseFloat(heightCm) || 0,
-    },
+    actualWeightKg: parsedWeight,
+    dimensionsCm: parsedDims,
     zone: currentZone,
     deliveryType: deliveryMode,
     codAmountDzd: parseFloat(codAmount) || 0,
     isFragile,
+    customRules: activeRule,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -169,8 +208,14 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       return;
     }
 
-    const randomOtp = String(Math.floor(1000 + Math.random() * 9000));
-    const randomShelf = `RACK-${String.fromCharCode(65 + Math.floor(Math.random() * 4))}-${String(Math.floor(1 + Math.random() * 20)).padStart(2, '0')}`;
+    const trackingCode = shipmentToEdit
+      ? shipmentToEdit.trackingCode
+      : nextLogisticsSequentialCode('log_parcel', 'ATR-EXP', 5);
+    const seqDigits = parseInt(trackingCode.replace(/\D/g, '').slice(-4) || '1', 10) || 1;
+    const rackLetter = String.fromCharCode(65 + (seqDigits % 4));
+    const rackSlot = String((seqDigits % 20) + 1).padStart(2, '0');
+    const deterministicShelf = `RACK-${rackLetter}-${rackSlot}`;
+    const deterministicOtp = deriveDeterministicOtp(`${trackingCode}:${recipientPhone.trim()}:${activeBranchId}`);
 
     const saved: LogisticsShipment = {
       id: shipmentToEdit ? shipmentToEdit.id : `ship_${Date.now()}`,
@@ -178,7 +223,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       businessId: currentBusiness?.id || currentBranch?.businessId || '',
       branchId: activeBranchId,
       staffId: currentUser?.id || '',
-      trackingCode: shipmentToEdit ? shipmentToEdit.trackingCode : `ATR-EXP-${Math.floor(10000 + Math.random() * 90000)}`,
+      trackingCode,
       merchantName: merchantName.trim() || 'Client Expéditeur Comptoir',
       recipientName: recipientName.trim(),
       recipientPhone: recipientPhone.trim(),
@@ -194,8 +239,10 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       shippingFeeDzd: tariffCalc.totalDeliveryFeeDzd,
       stampDutyDzd: tariffCalc.stampDutyDzd,
       weightKg: tariffCalc.billableWeightKg,
-      stopDeskShelfCode: deliveryMode === 'StopDesk' ? (shipmentToEdit?.stopDeskShelfCode || randomShelf) : undefined,
-      pickupOtpCode: deliveryMode === 'StopDesk' ? (shipmentToEdit?.pickupOtpCode || randomOtp) : undefined,
+      volumetricWeightKg: volumetricDetails.volumetricWeightKg,
+      isFragile,
+      stopDeskShelfCode: deliveryMode === 'StopDesk' ? (shipmentToEdit?.stopDeskShelfCode || deterministicShelf) : undefined,
+      pickupOtpCode: deliveryMode === 'StopDesk' ? (shipmentToEdit?.pickupOtpCode || deterministicOtp) : undefined,
       status: shipmentToEdit?.status || 'ReceivedAtHub',
       assignedDriverName: shipmentToEdit?.assignedDriverName,
       createdAt: shipmentToEdit?.createdAt || new Date().toISOString(),
@@ -205,24 +252,19 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
     onClose();
   };
 
-  const wilayaOptions = [
-    { value: '16 - Alger', label: '16 - Alger (Zone 1 - Centre)' },
-    { value: '09 - Blida', label: '09 - Blida (Zone 2 - Mitidja)' },
-    { value: '35 - Boumerdès', label: '35 - Boumerdès (Zone 2 - Mitidja)' },
-    { value: '42 - Tipaza', label: '42 - Tipaza (Zone 2 - Mitidja)' },
-    { value: '31 - Oran', label: '31 - Oran (Zone 3 - Métropole Ouest)' },
-    { value: '25 - Constantine', label: '25 - Constantine (Zone 3 - Métropole Est)' },
-    { value: '19 - Sétif', label: '19 - Sétif (Zone 3 - Hauts-Plateaux)' },
-    { value: '06 - Béjaïa', label: '06 - Béjaïa (Zone 3 - Côtier)' },
-    { value: '23 - Annaba', label: '23 - Annaba (Zone 3 - Côtier Est)' },
-    { value: '13 - Tlemcen', label: '13 - Tlemcen (Zone 3 - Ouest)' },
-    { value: '05 - Batna', label: '05 - Batna (Zone 4 - Aurès)' },
-    { value: '17 - Djelfa', label: '17 - Djelfa (Zone 4 - Steppes)' },
-    { value: '30 - Ouargla', label: '30 - Ouargla (Zone 5 - Oasis/Pétrole)' },
-    { value: '07 - Biskra', label: '07 - Biskra (Zone 5 - Zibans)' },
-    { value: '11 - Tamanrasset', label: '11 - Tamanrasset (Zone 6 - Grand Sud)' },
-    { value: '01 - Adrar', label: '01 - Adrar (Zone 6 - Grand Sud)' },
-  ];
+  const wilayaOptions = useMemo(() => {
+    const base = wilayaCatalog.options.map((w) => ({
+      value: w.value,
+      label: `${w.codeStr} - ${isAr ? w.nameAr : w.nameFr} (${w.zone.replace('Zone', 'Z').replace('_', ' ')})`,
+    }));
+    if (destinationWilaya && !base.some((o) => o.value === destinationWilaya)) {
+      base.unshift({
+        value: destinationWilaya,
+        label: `${destinationWilaya} (${currentZone})`,
+      });
+    }
+    return base;
+  }, [wilayaCatalog.options, isAr, destinationWilaya, currentZone]);
 
   return (
     <KineticModalShell
@@ -349,19 +391,43 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             />
           </div>
 
+          {zoneResolution.isUnknownWilaya && (
+            <div
+              data-sq="ctl"
+              className="flex items-start gap-2.5 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 t-cap"
+            >
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>
+                {isAr
+                  ? `رمز الولاية "${destinationWilaya}" غير مدرج في المرجع — تم تطبيق تعريفة المنطقة الاحتياطية (${currentZone}).`
+                  : `Code wilaya "${destinationWilaya}" absent du référentiel — tarif de repli appliqué (${currentZone}).`}
+              </span>
+            </div>
+          )}
+
           {/* Weight & Volumetric Dimensions */}
           <div
             data-sq="card"
             data-sq-border="none"
             className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="t-small font-semibold text-black dark:text-white">
                 {isAr ? 'الوزن والقياسات الحجمية (Diviseur 5000)' : 'Poids & Encombrement Volumétrique'}
               </span>
-              <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-                Facturé: {tariffCalc.billableWeightKg} kg
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="t-cap text-black/60 dark:text-white/60 tabular-nums">
+                  Vol: {volumetricDetails.volumetricWeightKg} kg vs Réel: {volumetricDetails.actualWeightKg} kg
+                  {volumetricDetails.usedVolumetric
+                    ? isAr
+                      ? ' (حجمي)'
+                      : ' (Volumétrique retenu)'
+                    : ''}
+                </span>
+                <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
+                  Facturé: {tariffCalc.billableWeightKg} kg
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 t-cap">
@@ -392,6 +458,20 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 onChange={setHeightCm}
               />
             </div>
+
+            <label className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--atr-divider)] cursor-pointer select-none">
+              <span className="t-cap font-medium text-black/80 dark:text-white/80">
+                {isAr
+                  ? `معاملة خاصة (طرد قابل للكسر / هش +${activeRule.fragileHandlingSurchargeDzd} دج)`
+                  : `Manutention Fragile (+${activeRule.fragileHandlingSurchargeDzd} DZD)`}
+              </span>
+              <input
+                type="checkbox"
+                checked={isFragile}
+                onChange={(e) => setIsFragile(e.target.checked)}
+                className="w-4 h-4 accent-[#d4522f] cursor-pointer"
+              />
+            </label>
           </div>
 
           {/* Pricing & Fiscal Stamp Breakdown Card */}

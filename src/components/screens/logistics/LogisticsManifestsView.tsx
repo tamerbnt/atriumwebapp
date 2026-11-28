@@ -23,7 +23,8 @@ import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsManifest } from '../../../types';
-import { useLogisticsData } from './logisticsData';
+import { useLogisticsData, nextLogisticsSequentialCode } from './logisticsData';
+import { optimizeManifestRouteStops } from '../../../utils/logisticsDepth';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -94,7 +95,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['man_01']));
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('manifestNumber');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -106,9 +107,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
   const [manifestToDischarge, setManifestToDischarge] = useState<LogisticsManifest | null>(null);
 
   const [driverName, setDriverName] = useState('');
-  const [driverPhone, setDriverPhone] = useState('0550 12 34 56');
-  const [vehiclePlate, setVehiclePlate] = useState('01452-120-16');
-  const [zoneWilaya, setZoneWilaya] = useState('Alger Est & Centre');
+  const [driverPhone, setDriverPhone] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
+  const [zoneWilaya, setZoneWilaya] = useState('');
   const [status, setStatus] = useState<LogisticsManifest['status']>('Dispatched');
 
   const [selectedManifest, setSelectedManifest] = useState<LogisticsManifest | null>(null);
@@ -157,9 +158,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
   const openCreateModal = useCallback(() => {
     setManifestToEdit(null);
     setDriverName('');
-    setDriverPhone('0550 12 34 56');
-    setVehiclePlate('01452-120-16');
-    setZoneWilaya('Alger Est & Centre');
+    setDriverPhone('');
+    setVehiclePlate('');
+    setZoneWilaya('');
     setStatus('Dispatched');
     setIsModalOpen(true);
   }, []);
@@ -169,7 +170,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     setDriverName(m.driverName);
     setDriverPhone(m.driverPhone);
     setVehiclePlate(m.vehiclePlate);
-    setZoneWilaya(m.zoneWilaya || 'Alger');
+    setZoneWilaya(m.zoneWilaya || '');
     setStatus(m.status);
     setIsModalOpen(true);
   }, []);
@@ -183,10 +184,10 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     const unassignedShipments = shipments.filter(
       (s) => s.status === 'ReceivedAtHub' || s.status === 'Sorted'
     );
-    const count = manifestToEdit ? manifestToEdit.totalShipmentsCount : unassignedShipments.length || 5;
+    const count = manifestToEdit ? manifestToEdit.totalShipmentsCount : unassignedShipments.length;
     const codTotal = manifestToEdit
       ? manifestToEdit.totalCodExpectedDzd
-      : unassignedShipments.reduce((acc, s) => acc + s.codAmountDzd, 0) || 45000;
+      : unassignedShipments.reduce((acc, s) => acc + s.codAmountDzd, 0);
 
     const activeAccountId = (manifestToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
     const activeBranchId = (manifestToEdit?.branchId || currentBranch?.id || '').trim();
@@ -207,7 +208,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
       staffId: currentUser?.id || '',
       manifestNumber:
         manifestToEdit?.manifestNumber ||
-        `MAN-${new Date().getFullYear()}-${String(manifests.length + 42).padStart(3, '0')}`,
+        nextLogisticsSequentialCode('log_manifest', 'LVR', 4),
       driverName: driverName.trim(),
       driverPhone: driverPhone.trim(),
       vehiclePlate: vehiclePlate.trim(),
@@ -933,16 +934,65 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         holdToDelete
         renderBody={(m, tab) => {
           if (tab === 'colis') {
+            const manifestShipments = shipments.filter(
+              (s) =>
+                m.shipmentIds.includes(s.id) ||
+                (m.driverName && s.assignedDriverName?.toLowerCase() === m.driverName.toLowerCase())
+            );
+            const routePlan = optimizeManifestRouteStops(manifestShipments);
             return (
               <>
                 <InspectorSection index={0}>
                   <InspectorBigStat
                     value={`${m.totalShipmentsCount} colis`}
                     tone="accent"
-                    caption={isAr ? 'Bordereau de chargement scellé' : 'Bordereau de chargement scellé au départ du hub'}
+                    caption={
+                      routePlan.stops.length > 0
+                        ? `${routePlan.distinctWilayas} wilaya(s) · ${routePlan.stopDeskStops} Stop-Desk · ${routePlan.homeStops} Domicile`
+                        : isAr
+                        ? 'بيان شحن مختوم عند الانطلاق'
+                        : 'Bordereau de chargement scellé au départ du hub'
+                    }
                   />
                 </InspectorSection>
-                <InspectorSection index={1}>
+                {routePlan.stops.length > 0 && (
+                  <InspectorSection
+                    index={1}
+                    title={isAr ? 'تسلسل نقاط التوزيع المحسّن' : 'Itinéraire Optimisé des Arrêts'}
+                  >
+                    <div className="space-y-2">
+                      {routePlan.stops.map((stop) => (
+                        <div
+                          key={stop.shipmentId}
+                          className="p-2.5 rounded-[var(--rad-ctl)] border border-[var(--atr-divider)] bg-[#F7F3EE] dark:bg-[#191716] flex items-center justify-between gap-2 t-cap"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#d4522f] text-white text-[11px] font-semibold shrink-0">
+                                {stop.stopIndex}
+                              </span>
+                              <span className="font-semibold text-black dark:text-white truncate">
+                                {stop.trackingCode}
+                              </span>
+                              {stop.deliveryMode === 'StopDesk' && (
+                                <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-semibold">
+                                  Stop-Desk
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-black/60 dark:text-white/60 truncate mt-0.5">
+                              {stop.wilayaLabel} · {stop.commune}
+                            </div>
+                          </div>
+                          <span className="tabular-nums font-semibold text-black dark:text-white shrink-0">
+                            {formatMoney(stop.codAmountDzd, language)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </InspectorSection>
+                )}
+                <InspectorSection index={routePlan.stops.length > 0 ? 2 : 1}>
                   <InspectorWideButton
                     label={isAr ? 'طباعة بيان الشحن (05-468)' : 'Imprimer Lettre de Voiture 05-468'}
                     icon={<Printer size={14} />}

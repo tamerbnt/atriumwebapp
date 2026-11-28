@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, DollarSign, CheckCircle2, AlertTriangle, Printer, X, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Printer, X, ShieldCheck } from 'lucide-react';
 import {
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
 } from '../../../services/store';
 import { CourierCashDischarge, LogisticsManifest } from '../../../types';
-import { computeCourierDischargeBalance } from '../../../utils/logisticsRules';
+import { computeCourierDischargeWithVariance } from '../../../utils/logisticsDepth';
+import { dzdToCentimes } from '../../../utils/money';
+import { logisticsService } from '../../../lib/supabase';
+import { nextLogisticsSequentialCode } from './logisticsData';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -41,6 +44,10 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
   const [n500, setN500] = useState(0);
   const [n200, setN200] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [deliveredCount, setDeliveredCount] = useState(0);
+  const [returnedCount, setReturnedCount] = useState(0);
+  const [counterfeitDzd, setCounterfeitDzd] = useState(0);
+  const [damagedDzd, setDamagedDzd] = useState(0);
   const [courierSigned, setCourierSigned] = useState(false);
 
   useEffect(() => {
@@ -50,22 +57,31 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
     setN500(0);
     setN200(0);
     setCoins(0);
+    setDeliveredCount(rawManifest?.totalShipmentsCount || 0);
+    setReturnedCount(0);
+    setCounterfeitDzd(0);
+    setDamagedDzd(0);
     setCourierSigned(false);
-  }, [isOpen, rawManifest?.id]);
+  }, [isOpen, rawManifest?.id, rawManifest?.totalShipmentsCount]);
 
   const expectedAmount = manifest?.totalCodExpectedDzd || 0;
+  const expectedParcelCount = manifest?.totalShipmentsCount || 0;
 
-  const balance = computeCourierDischargeBalance({
+  const balance = computeCourierDischargeWithVariance({
     expectedAmountDzd: expectedAmount,
+    expectedParcelCount,
+    deliveredCount,
+    returnedCount,
     note2000Count: n2000,
     note1000Count: n1000,
     note500Count: n500,
     note200Count: n200,
     coinsDzd: coins,
+    counterfeitAmountDzd: counterfeitDzd,
+    damagedAmountDzd: damagedDzd,
   });
 
   const handleQuickFillClean = () => {
-    // Fill banknote distribution matching exactly the expected total
     let rem = expectedAmount;
     const count2000 = Math.floor(rem / 2000);
     rem %= 2000;
@@ -81,6 +97,9 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
     setN500(count500);
     setN200(count200);
     setCoins(rem);
+    setCounterfeitDzd(0);
+    setDamagedDzd(0);
+    setDeliveredCount(Math.max(0, expectedParcelCount - returnedCount));
     setCourierSigned(true);
   };
 
@@ -96,6 +115,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
     }
 
     if (!manifest) return;
+    const dischargeNumber = nextLogisticsSequentialCode('log_discharge', 'DECH', 4);
     const discharge: CourierCashDischarge = {
       id: `dech_${Date.now()}`,
       accountId: manifest.accountId,
@@ -104,12 +124,15 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
       cashierStaffId: currentUser?.id || 'staff_cashier',
       courierStaffId: manifest.driverName,
       manifestId: manifest.id,
-      dischargeNumber: `DECH-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      deliveredCount: manifest.totalShipmentsCount,
-      returnedCount: 0,
+      dischargeNumber,
+      deliveredCount,
+      returnedCount,
       expectedCodDzd: expectedAmount,
-      actualCashTurnedInDzd: balance.actualTotalDzd,
-      discrepancyDzd: balance.discrepancyDzd,
+      actualCashTurnedInDzd: balance.usableCashDzd,
+      discrepancyDzd: balance.cashDiscrepancyDzd,
+      counterfeitAmountDzd: balance.counterfeitDeductionDzd,
+      damagedAmountDzd: balance.damagedDeductionDzd,
+      requiresSupervisorReview: balance.requiresSupervisorReview,
       banknotesCount: {
         note2000: n2000,
         note1000: n1000,
@@ -118,9 +141,23 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
         coins,
       },
       courierSignatureConfirmed: courierSigned,
-      status: balance.status === 'Balanced' ? 'Clean' : balance.status === 'Shortage' ? 'Shortage' : 'Surplus',
+      status: balance.status,
       timestamp: new Date().toISOString(),
     };
+
+    void logisticsService.recordDischargeWithVariance({
+      businessId: manifest.businessId,
+      branchId: manifest.branchId,
+      driverId: manifest.staffId || manifest.driverName,
+      driverName: manifest.driverName,
+      collectedCashDzd: balance.usableCashDzd,
+      deliveredCount,
+      returnedCount,
+      expectedParcelCount,
+      counterfeitCentimes: dzdToCentimes(balance.counterfeitDeductionDzd),
+      damagedCentimes: dzdToCentimes(balance.damagedDeductionDzd),
+      expectedCashDzd: expectedAmount,
+    }).catch(() => {});
 
     onSaveDischarge(discharge);
     onClose();
@@ -173,11 +210,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
           {/* Summary Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div
-              data-sq="card"
-              data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
-            >
+            <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]">
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
               </span>
@@ -186,16 +219,12 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               </span>
             </div>
 
-            <div
-              data-sq="card"
-              data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
-            >
+            <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]">
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
-                {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
+                {isAr ? 'الصافي الصالح للصندوق' : 'Net Utilisable Compté'}
               </span>
               <span className="t-pod font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                {formatMoney(balance.actualTotalDzd, language)}
+                {formatMoney(balance.usableCashDzd, language)}
               </span>
             </div>
 
@@ -203,7 +232,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               data-sq="card"
               data-sq-border="none"
               className={`p-4 ${
-                balance.status === 'Balanced'
+                balance.status === 'Clean'
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
                   : balance.status === 'Shortage'
                   ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300'
@@ -214,20 +243,27 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 {isAr ? 'الفارق / الفائض' : 'Écart de Caisse'}
               </span>
               <span className="t-pod font-semibold tabular-nums">
-                {balance.discrepancyDzd > 0 ? `+${balance.discrepancyDzd}` : balance.discrepancyDzd} DZD
+                {balance.cashDiscrepancyDzd > 0 ? `+${balance.cashDiscrepancyDzd}` : balance.cashDiscrepancyDzd} DZD
               </span>
             </div>
           </div>
 
-          {/* Banknote Denominations Counter */}
-          <div
-            data-sq="card"
-            data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
-          >
+          {balance.requiresSupervisorReview && (
+            <div className="p-3 rounded-[var(--rad-ctl)] bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-start gap-2 text-amber-800 dark:text-amber-200 t-cap">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <span>
+                {isAr
+                  ? 'تنبيه: يوجد فارق نقدي، أوراق مزورة/تالفة، أو عدم تطابق في عدد الطرود. يتطلب مراجعة المشرف.'
+                  : 'Revue superviseur requise : écart de caisse, coupures invalides/déchirées, ou écart de comptage colis.'}
+              </span>
+            </div>
+          )}
+
+          {/* Banknote & Parcel Variance Inputs */}
+          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-semibold t-small text-black dark:text-white">
-                {isAr ? 'تعداد الأوراق النقدية والقطع (الدينار الجزائري)' : 'Comptage des Billets & Pièces (DZD)'}
+                {isAr ? 'تعداد الأوراق النقدية، الأوراق التالفة، والطرود' : 'Comptage Billets, Anomalies & Colis'}
               </h4>
               <button
                 type="button"
@@ -239,45 +275,15 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 t-cap">
-              <LabelInput
-                label="Billets 2 000 DZD"
-                type="number"
-                min="0"
-                value={n2000}
-                onChange={(v) => setN2000(parseInt(v, 10) || 0)}
-                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n2000 * 2000, language)}</span>}
-              />
-              <LabelInput
-                label="Billets 1 000 DZD"
-                type="number"
-                min="0"
-                value={n1000}
-                onChange={(v) => setN1000(parseInt(v, 10) || 0)}
-                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n1000 * 1000, language)}</span>}
-              />
-              <LabelInput
-                label="Billets 500 DZD"
-                type="number"
-                min="0"
-                value={n500}
-                onChange={(v) => setN500(parseInt(v, 10) || 0)}
-                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n500 * 500, language)}</span>}
-              />
-              <LabelInput
-                label="Billets 200 DZD"
-                type="number"
-                min="0"
-                value={n200}
-                onChange={(v) => setN200(parseInt(v, 10) || 0)}
-                suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n200 * 200, language)}</span>}
-              />
-              <LabelInput
-                label="Pièces de monnaie (Total)"
-                type="number"
-                min="0"
-                value={coins}
-                onChange={(v) => setCoins(parseFloat(v) || 0)}
-              />
+              <LabelInput label="Billets 2 000 DZD" type="number" min="0" value={n2000} onChange={(v) => setN2000(parseInt(v, 10) || 0)} suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n2000 * 2000, language)}</span>} />
+              <LabelInput label="Billets 1 000 DZD" type="number" min="0" value={n1000} onChange={(v) => setN1000(parseInt(v, 10) || 0)} suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n1000 * 1000, language)}</span>} />
+              <LabelInput label="Billets 500 DZD" type="number" min="0" value={n500} onChange={(v) => setN500(parseInt(v, 10) || 0)} suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n500 * 500, language)}</span>} />
+              <LabelInput label="Billets 200 DZD" type="number" min="0" value={n200} onChange={(v) => setN200(parseInt(v, 10) || 0)} suffix={<span className="t-cap text-black/55 dark:text-white/55 tabular-nums whitespace-nowrap">= {formatMoney(n200 * 200, language)}</span>} />
+              <LabelInput label="Pièces de monnaie (DZD)" type="number" min="0" value={coins} onChange={(v) => setCoins(parseFloat(v) || 0)} />
+              <LabelInput label={isAr ? 'أوراق مزورة مرفوضة (DZD)' : 'Faux Billets (DZD)'} type="number" min="0" value={counterfeitDzd} onChange={(v) => setCounterfeitDzd(parseFloat(v) || 0)} />
+              <LabelInput label={isAr ? 'أوراق تالفة (DZD)' : 'Billets Déchirés (DZD)'} type="number" min="0" value={damagedDzd} onChange={(v) => setDamagedDzd(parseFloat(v) || 0)} />
+              <LabelInput label={isAr ? 'الطرود المُسلّمة' : 'Colis Livrés'} type="number" min="0" value={deliveredCount} onChange={(v) => setDeliveredCount(parseInt(v, 10) || 0)} />
+              <LabelInput label={isAr ? 'الطرود المرتجعة' : 'Colis Retournés'} type="number" min="0" value={returnedCount} onChange={(v) => setReturnedCount(parseInt(v, 10) || 0)} />
             </div>
           </div>
 

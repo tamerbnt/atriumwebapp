@@ -864,6 +864,61 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS conflict_status');
     expect(downSql).toContain('DROP COLUMN IF EXISTS confidentiality_level');
   });
+
+  it('verifies Phase 3 Step 14 (7.14) logistics_delivery depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280014_phase3_logistics_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280014_phase3_logistics_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain("'log_parcel'");
+    expect(sql).toContain("'log_manifest'");
+    expect(sql).toContain("'log_discharge'");
+    expect(sql).toContain("'log_remittance'");
+    expect(sql).toContain("'log_waybill'");
+    expect(sql).toContain("'log_towing'");
+    expect(sql).toContain("'log_customs'");
+    expect(sql).toContain("'log_driver_pay'");
+    expect(sql).toContain("'logistics-pod'");
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS pod_signature_url');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS otp_attempts');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS counterfeit_amount_centimes');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS ccp_validated');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_delivery_pods');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_driver_payouts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_vehicle_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_merchant_fee_invoices');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_carrier_integrations');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_freight_waybills');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_moving_quotes');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_cold_chain_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_customs_dossiers');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.logistics_towing_dispatches');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.logistics_scan_parcel_guarded(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.logistics_verify_stopdesk_otp(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.logistics_record_discharge_with_variance(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.logistics_execute_remittance_validated(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.logistics_execute_remittance_validated(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.logistics_record_discharge_with_variance(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.logistics_verify_stopdesk_otp(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.logistics_scan_parcel_guarded(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_towing_dispatches');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_customs_dossiers');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_cold_chain_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_moving_quotes');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_freight_waybills');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_carrier_integrations');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_merchant_fee_invoices');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_vehicle_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_driver_payouts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.logistics_delivery_pods');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS ccp_validated');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS counterfeit_amount_centimes');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS otp_attempts');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS pod_signature_url');
+  });
 });
 
 

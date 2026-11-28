@@ -11,7 +11,24 @@ export type ServerSequenceDocType =
   | 'quittance'
   | 're_mandate'
   | 're_lease'
-  | 're_fund_call';
+  | 're_fund_call'
+  | 'mfg_alert'
+  | 'mfg_maint'
+  | 'mfg_fg_lot'
+  | 'mfg_cut'
+  | 'legal_inv'
+  | 'legal_bailiff'
+  | 'legal_arb'
+  | 'legal_tpl'
+  | 'legal_ledger'
+  | 'log_parcel'
+  | 'log_manifest'
+  | 'log_discharge'
+  | 'log_remittance'
+  | 'log_waybill'
+  | 'log_towing'
+  | 'log_customs'
+  | 'log_driver_pay';
 
 export type DeviceBlockDocType = 'walk_in_ticket' | 'deposit_receipt';
 
@@ -57,6 +74,23 @@ const DOC_PREFIX: Record<string, string> = {
   re_mandate: 'MND',
   re_lease: 'BAIL',
   re_fund_call: 'APP',
+  mfg_alert: 'ANDN',
+  mfg_maint: 'MNT',
+  mfg_fg_lot: 'PFG',
+  mfg_cut: 'CUT',
+  legal_inv: 'HNR',
+  legal_bailiff: 'HUI',
+  legal_arb: 'ARB',
+  legal_tpl: 'TPL',
+  legal_ledger: 'EXP',
+  log_parcel: 'AWB',
+  log_manifest: 'LVR',
+  log_discharge: 'DECH',
+  log_remittance: 'REM',
+  log_waybill: 'FRT',
+  log_towing: 'TOW',
+  log_customs: 'D10',
+  log_driver_pay: 'LPAY',
 };
 
 export function formatSequenceNumber(docType: ServerSequenceDocType, fiscalYear: number, seqNumber: number): string {

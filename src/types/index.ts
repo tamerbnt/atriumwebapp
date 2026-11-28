@@ -4883,6 +4883,18 @@ export interface LogisticsShipment {
   stampDutyDzd?: number;
   assignedDriverName?: string;
   podSignatureUrl?: string;
+  podPhotoPath?: string;
+  podGpsLat?: number;
+  podGpsLng?: number;
+  podSignedAt?: string;
+  podSignedBy?: string;
+  otpAttempts?: number;
+  otpLockedUntil?: string;
+  publicShareCode?: string;
+  volumetricWeightKg?: number;
+  isFragile?: boolean;
+  isSettled?: boolean;
+  settledAt?: string;
   version?: number;
   createdAt: string;
 }
@@ -4945,9 +4957,13 @@ export interface CourierCashDischarge {
   dischargeNumber: string; // "DECH-2026-0891"
   deliveredCount: number;
   returnedCount: number;
+  expectedParcelCount?: number;
   expectedCodDzd: number;
   actualCashTurnedInDzd: number;
   discrepancyDzd: number;
+  counterfeitAmountDzd?: number;
+  damagedAmountDzd?: number;
+  requiresSupervisorReview?: boolean;
   banknotesCount: {
     note2000: number;
     note1000: number;
@@ -4991,9 +5007,211 @@ export interface MerchantRemittanceBatch {
   returnFeesDzd: number;
   netPayoutDzd: number;
   paymentChannel: 'AlgeriePoste_SFP01' | 'BaridiMob' | 'Virement_Bancaire' | 'Especes';
+  ccpValidated?: boolean;
   status: 'Draft' | 'Approved' | 'Executed';
   executedAt?: string;
   version?: number;
+}
+
+export interface LogisticsParcelEvent {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  parcelId: string;
+  trackingCode: string;
+  status: string;
+  location: string;
+  notes?: string;
+  notificationChannel?: 'sms' | 'whatsapp' | 'email' | 'system';
+  notificationRecipient?: string;
+  notificationStatus?: 'Queued' | 'Sent' | 'Failed';
+  occurredAt: string;
+}
+
+export interface LogisticsDeliveryPod {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  parcelId: string;
+  trackingCode: string;
+  driverName: string;
+  outcome: 'Delivered' | 'Postponed' | 'Returned';
+  reasonCode?: string;
+  signatureSvg?: string;
+  photoStoragePath?: string;
+  gpsLat?: number;
+  gpsLng?: number;
+  recipientSignedName?: string;
+  notes?: string;
+  capturedAt: string;
+}
+
+export interface LogisticsDriverPayout {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  payoutNumber: string;
+  driverName: string;
+  employmentType: 'salaried' | 'freelance_commission';
+  periodLabel: string;
+  deliveredCount: number;
+  returnedCount: number;
+  shortageDeductionDzd: number;
+  grossCompensationDzd: number;
+  taxWithheldDzd: number;
+  netPayableDzd: number;
+  status: 'Draft' | 'Approved' | 'Paid';
+  paidAt?: string;
+  createdAt: string;
+}
+
+export interface LogisticsVehicleLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  vehiclePlate: string;
+  logKind: 'Fuel' | 'Maintenance' | 'Insurance' | 'Toll';
+  odometerKm: number;
+  liters: number;
+  costDzd: number;
+  providerName?: string;
+  notes?: string;
+  loggedAt: string;
+}
+
+export interface LogisticsMerchantFeeInvoice {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  invoiceNumber: string;
+  merchantName: string;
+  periodLabel: string;
+  deliveredCount: number;
+  returnedCount: number;
+  grossCodDzd: number;
+  totalFeesTtcDzd: number;
+  netMerchantPayableDzd: number;
+  scfLines: Array<{ accountCode: string; label: string; debitDzd: number; creditDzd: number }>;
+  status: 'Draft' | 'Issued' | 'Settled';
+  issuedAt: string;
+}
+
+export interface LogisticsCarrierIntegration {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  storeName: string;
+  platform: 'Shopify' | 'WooCommerce' | 'YouCan' | 'CustomAPI';
+  webhookUrl: string;
+  signingSecretHint?: string;
+  isActive: boolean;
+  lastSyncedAt?: string;
+  ordersImportedCount: number;
+}
+
+export interface LogisticsFreightWaybill {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  waybillNumber: string;
+  shipperName: string;
+  consigneeName: string;
+  originWilaya: string;
+  destinationWilaya: string;
+  cargoDescription: string;
+  weightTons: number;
+  distanceKm: number;
+  ratePerKmDzd: number;
+  fuelSurchargePercent: number;
+  loadingFeeDzd: number;
+  totalTtcDzd: number;
+  vehiclePlate?: string;
+  status: 'Scheduled' | 'Loading' | 'InTransit' | 'Delivered';
+  createdAt: string;
+}
+
+export interface LogisticsMovingQuote {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  quoteNumber: string;
+  clientName: string;
+  originAddress: string;
+  destinationAddress: string;
+  volumeM3: number;
+  distanceKm: number;
+  originFloor: number;
+  destinationFloor: number;
+  hasElevatorOrigin: boolean;
+  hasElevatorDest: boolean;
+  packingIncluded: boolean;
+  crewSize: number;
+  totalTtcDzd: number;
+  moveDate?: string;
+  status: 'Quoted' | 'Confirmed' | 'Completed';
+  createdAt: string;
+}
+
+export interface LogisticsColdChainLog {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  vehiclePlate: string;
+  cargoType: string;
+  recordedTempC: number;
+  minAllowedTempC: number;
+  maxAllowedTempC: number;
+  excursionMinutes: number;
+  complianceStatus: 'Compliant' | 'Warning' | 'Breach';
+  requiresQuarantine: boolean;
+  recordedAt: string;
+}
+
+export interface LogisticsCustomsDossier {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  dossierNumber: string;
+  importerName: string;
+  blAwbReference: string;
+  portName: string;
+  hsCode: string;
+  fobValueDzd: number;
+  freightDzd: number;
+  insuranceDzd: number;
+  customsDutyRatePercent: number;
+  totalPayableDzd: number;
+  status: 'Lodged' | 'Inspecting' | 'Cleared' | 'Released';
+  createdAt: string;
+}
+
+export interface LogisticsTowingDispatch {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  dispatchNumber: string;
+  callerName: string;
+  callerPhone: string;
+  vehicleClass: 'VL' | 'Utilitaire' | 'PoidsLourd';
+  pickupLocation: string;
+  dropoffLocation: string;
+  distanceKm: number;
+  isNightOrWeekend: boolean;
+  needsWinchExtraction: boolean;
+  totalDzd: number;
+  status: 'Dispatched' | 'OnScene' | 'Completed';
+  createdAt: string;
 }
 
 // ==========================================

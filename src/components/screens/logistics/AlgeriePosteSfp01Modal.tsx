@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { FileText, Copy, Download, Check, X, Building2, ShieldCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Copy, Download, Check, X, Building2, AlertTriangle } from 'lucide-react';
 import { showToast, useAtriumSelector } from '../../../services/store';
 import { MerchantRemittanceBatch } from '../../../types';
 import { formatCcpSfp01Line } from '../../../utils/logisticsRules';
+import { validateRemittanceCcpBatch } from '../../../utils/logisticsDepth';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { KineticModalShell } from '../../ui/kinetic';
@@ -22,8 +23,10 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   const isAr = language === 'ar';
   const [copied, setCopied] = useState(false);
 
-  // Generate ASCII lines for each batch
-  const lines = batches.map((b) =>
+  const validation = useMemo(() => validateRemittanceCcpBatch(batches), [batches]);
+
+  // Generate ASCII lines for valid batches
+  const lines = validation.validBatches.map((b) =>
     formatCcpSfp01Line({
       centerCode: '20000',
       ccpAccount: b.ccpAccount,
@@ -37,6 +40,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   const totalNet = batches.reduce((acc, b) => acc + b.netPayoutDzd, 0);
 
   const handleCopy = () => {
+    if (!validation.isValid) return;
     navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -47,6 +51,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   };
 
   const handleDownload = () => {
+    if (!validation.isValid) return;
     const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -123,11 +128,34 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
           </div>
         </div>
 
+        {validation.invalidIssues.length > 0 && (
+          <div
+            data-sq="card"
+            className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-[var(--rad-ctl)] space-y-1.5 text-red-700 dark:text-red-300 t-cap"
+          >
+            <div className="font-semibold flex items-center gap-1.5">
+              <AlertTriangle size={15} />
+              <span>
+                {isAr
+                  ? 'التصدير محظور: حسابات CCP غير صالحة (مفتاح Clé 97 خاطئ)'
+                  : 'Export SFP 01 bloqué : erreur de contrôle Clé CCP 97'}
+              </span>
+            </div>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
+              {validation.invalidIssues.map((iss) => (
+                <li key={iss.batchId}>
+                  <strong>{iss.batchNumber}</strong> ({iss.merchantName}) — {iss.error}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* ASCII Code Area */}
         <div className="flex-1 overflow-y-auto space-y-2">
           <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 px-1">
             <span>Structure: Centre(5) + Compte(10) + Clé(2) + Centimes(12) + Nom(30)</span>
-            <span className="tabular-nums">{lines.length} lignes</span>
+            <span className="tabular-nums">{lines.length} lignes valides</span>
           </div>
           <pre
             data-sq="card"
@@ -135,7 +163,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             data-surface="dark"
             className="p-4 bg-[#191716] text-emerald-400 tabular-nums t-cap overflow-x-auto whitespace-pre selection:bg-emerald-900 leading-relaxed"
           >
-            {fullText}
+            {fullText || (isAr ? 'لا توجد أسطر صالحة للتصدير' : 'Aucune ligne valide pour export')}
           </pre>
         </div>
 
@@ -144,6 +172,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
           <AtriumButton
             variant="outline"
             size="sm"
+            disabled={!validation.isValid}
             onClick={handleCopy}
             icon={copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
           >
@@ -157,6 +186,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             <AtriumButton
               variant="primary"
               size="sm"
+              disabled={!validation.isValid}
               onClick={handleDownload}
               icon={<Download size={14} />}
             >

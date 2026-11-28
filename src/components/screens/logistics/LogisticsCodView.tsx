@@ -27,9 +27,10 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
+import { LogisticsTrackingDrawer } from './LogisticsTrackingDrawer';
+import { LogisticsOperationsPanel } from './LogisticsOperationsPanel';
 import { PrintSheetModal } from '../../modals/PrintSheetModal';
-import { calculateDriverPayout } from '../../../utils/logisticsRules';
-import { t } from '../../../utils/i18n';
+import { aggregateDriverPayrollSummaries } from '../../../utils/logisticsDepth';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -71,15 +72,45 @@ export const LogisticsCodView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { shipments, discharges, remittances, executeRemittance } = useLogisticsData();
+  const {
+    shipments,
+    manifests,
+    discharges,
+    remittances,
+    settledIds,
+    parcelEvents,
+    driverPayouts,
+    vehicleLogs,
+    merchantFeeInvoices,
+    carrierIntegrations,
+    freightWaybills,
+    movingQuotes,
+    coldChainLogs,
+    customsDossiers,
+    towingDispatches,
+    toggleSettledId,
+    setSettledIds,
+    addParcelEvent,
+    addDriverPayout,
+    addVehicleLog,
+    issueMerchantFeeInvoice,
+    addCarrierIntegration,
+    toggleCarrierIntegration,
+    addFreightWaybill,
+    addMovingQuote,
+    addColdChainLog,
+    addCustomsDossier,
+    addTowingDispatch,
+    executeRemittance,
+  } = useLogisticsData();
 
-  const [settledIds, setSettledIds] = useState<string[]>(['ship_02']);
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('summary');
 
   const [isSfp01ModalOpen, setIsSfp01ModalOpen] = useState(false);
   const [receiptShipment, setReceiptShipment] = useState<LogisticsShipment | null>(null);
+  const [trackingShipment, setTrackingShipment] = useState<LogisticsShipment | null>(null);
   const [activeTab, setActiveTab] = useState<string>('shipments');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -229,7 +260,7 @@ export const LogisticsCodView: React.FC<any> = () => {
       if (!settledIds.includes(id)) {
         const prevSettled = cloneSnapshot(settledIds);
         const nextSettled = [...prevSettled, id];
-        setSettledIds(nextSettled);
+        toggleSettledId(id);
         registerUndoEntry({
           vertical: 'logistics_delivery',
           operationType: 'status',
@@ -245,7 +276,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         });
       }
     },
-    [settledIds, language]
+    [settledIds, language, toggleSettledId, setSettledIds]
   );
 
   const handleSelectShipment = useCallback(
@@ -283,6 +314,16 @@ export const LogisticsCodView: React.FC<any> = () => {
       return next;
     });
   }, []);
+
+  const handleExecuteRemittance = useCallback(
+    (id: string) => {
+      const res = executeRemittance(id);
+      if (!res.ok) {
+        showToast(res.error || (isAr ? 'مفتاح CCP غير صالح' : 'Clé CCP 97 invalide'), 'error');
+      }
+    },
+    [executeRemittance, isAr]
+  );
 
   const sortedDischarges = useMemo(() => {
     const q = dischargeSearchQuery.trim().toLowerCase();
@@ -424,9 +465,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           id: 'sms',
           label: isAr ? 'إشعار التاجر' : 'Avis SMS',
           icon: <Share2 className="w-3.5 h-3.5" />,
-          disabled: true,
-          tooltip: t('feature_not_available_phase2', language),
-          onClick: () => {},
+          onClick: () => setTrackingShipment(s),
         },
         {
           id: 'pin',
@@ -436,7 +475,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         },
       ];
     },
-    [settledIds, pinnedIds, isAr, language, handleSelectShipment, handleSettle, handleTogglePin]
+    [settledIds, pinnedIds, isAr, handleSelectShipment, handleSettle, handleTogglePin]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -531,29 +570,14 @@ export const LogisticsCodView: React.FC<any> = () => {
     [isAr, isEn, settlementFilter, branchFilter, deliveredShipments.length, pendingCount, settledCount, branchOptions]
   );
 
-  const salariedDriverPay = useMemo(
+  const driverPayrollSummaries = useMemo(
     () =>
-      calculateDriverPayout({
-        employmentType: 'salaried',
-        completedDeliveries: 18,
-        returnedDeliveries: 2,
-        baseSalaryMonthlyDzd: 48000,
-        fuelAllowanceDzd: 1500,
+      aggregateDriverPayrollSummaries({
+        shipments,
+        discharges,
+        manifests,
       }),
-    []
-  );
-  const freelanceDriverPay = useMemo(
-    () =>
-      calculateDriverPayout({
-        employmentType: 'freelance_commission',
-        completedDeliveries: 26,
-        returnedDeliveries: 3,
-        commissionPerDeliveredDzd: 220,
-        commissionPerReturnDzd: 50,
-        fuelAllowanceDzd: 1000,
-        withholdingTaxRatePercent: 5,
-      }),
-    []
+    [shipments, discharges, manifests]
   );
 
   const columns: ColumnDefinition<LogisticsShipment>[] = useMemo(
@@ -769,6 +793,12 @@ export const LogisticsCodView: React.FC<any> = () => {
             value: 'driver_payroll',
             label: isAr ? 'أجور' : isEn ? 'Payroll' : 'Paie',
             tooltip: isAr ? 'أجور وعمولات السائقين' : 'Paie Livreurs',
+            count: driverPayrollSummaries.length,
+          },
+          {
+            value: 'operations',
+            label: isAr ? 'عمليات' : isEn ? 'Operations' : 'Opérations',
+            tooltip: isAr ? 'الأسطول، الفوترة والتخصصات اللوجستية' : 'Flotte, Facturation SCF & Spécialités',
           },
         ]}
       />
@@ -874,9 +904,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                   id: 'sms',
                   label: isAr ? 'إشعار التاجر' : 'Avis SMS',
                   icon: <Share2 size={14} />,
-                  disabled: true,
-                  tooltip: t('feature_not_available_phase2', language),
-                  onClick: () => {},
+                  onClick: () => setTrackingShipment(s),
                 },
               ];
             }}
@@ -1186,9 +1214,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                       id: 'execute',
                       label: 'Exécuter',
                       icon: <Send className="w-[15px] h-[15px]" />,
-                      onClick: () => {
-                        executeRemittance(r.id);
-                      },
+                      onClick: () => handleExecuteRemittance(r.id),
                     },
                   ]
                 : []),
@@ -1206,9 +1232,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                       id: 'execute',
                       label: 'Exécuter',
                       icon: <Send className="w-3.5 h-3.5" />,
-                      onClick: () => {
-                        executeRemittance(r.id);
-                      },
+                      onClick: () => handleExecuteRemittance(r.id),
                     },
                   ]
                 : []),
@@ -1230,106 +1254,156 @@ export const LogisticsCodView: React.FC<any> = () => {
       {activeTab === 'driver_payroll' && (
         <ScreenPod>
           <div className="flex items-center justify-between gap-3 px-1">
-            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
-              {isAr ? 'أجور السائقين والمناديب' : 'Paie Chauffeurs & Livreurs'}
-            </h2>
+            <div>
+              <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+                {isAr ? 'أجور السائقين والمناديب (بيانات حية)' : 'Paie Chauffeurs & Livreurs (Agrégat Réel)'}
+              </h2>
+              <p className="t-cap text-black/55 dark:text-white/55">
+                {isAr
+                  ? `محسوبة من ${shipments.length} طرد و${discharges.length} محاضر تبرئة (${driverPayouts.length} دفعة محفوظة)`
+                  : `Calculé depuis ${shipments.length} colis et ${discharges.length} décharges (${driverPayouts.length} paie(s) validée(s))`}
+              </p>
+            </div>
             <ListAdvancedMenuButton language={language} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="sq-elev-card">
-          <div
-            data-sq="card"
-            data-sq-border="none"
-            className="p-3 bg-white dark:bg-[#22201E] space-y-3"
-          >
-            <div className="flex items-center gap-2 px-2 pt-2">
-              <div
-                data-sq="tile"
-                data-sq-border="none"
-                className="w-9 h-9 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold"
-              >
-                <Truck size={18} />
-              </div>
-              <h3 className="font-semibold t-label text-black dark:text-white">
-                {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
-              </h3>
-            </div>
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2 t-cap"
-            >
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
-                <span className="tabular-nums font-semibold">1 846 DZD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Prime de Rendement (18 colis × 50 DZD):</span>
-                <span className="tabular-nums font-semibold text-emerald-600">+900 DZD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
-                <span className="tabular-nums font-semibold">+1 500 DZD</span>
-              </div>
-              <div className="pt-2 border-t border-[var(--atr-divider)] flex justify-between font-semibold t-label">
-                <span>Net Journalier à Payer:</span>
-                <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                  {formatMoney(salariedDriverPay.netPayoutDzd, language)}
-                </span>
-              </div>
-            </div>
-          </div>
-          </div>
-          <div className="sq-elev-card">
-          <div
-            data-sq="card"
-            data-sq-border="none"
-            className="p-3 bg-white dark:bg-[#22201E] space-y-3"
-          >
-            <div className="flex items-center gap-2 px-2 pt-2">
-              <div
-                data-sq="tile"
-                data-sq-border="none"
-                className="w-9 h-9 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-semibold"
-              >
-                <UserCheck size={18} />
-              </div>
-              <h3 className="font-semibold t-label text-black dark:text-white">
-                {isAr
-                  ? 'سائق مقاول ذاتي (Auto-Entrepreneur)'
-                  : 'Livreur Sous-Traitant Auto-Entrepreneur'}
-              </h3>
-            </div>
-            <div
-              data-sq="ctl"
-              data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2 t-cap"
-            >
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
-                <span className="tabular-nums font-semibold">5 720 DZD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Retours Traités (3 × 50 DZD):</span>
-                <span className="tabular-nums font-semibold">+150 DZD</span>
-              </div>
-              <div className="flex justify-between text-red-600">
-                <span>Retenue Impôt Libératoire IFU 5%:</span>
-                <span className="tabular-nums font-semibold">
-                  -{formatMoney(freelanceDriverPay.taxWithheldDzd, language)}
-                </span>
-              </div>
-              <div className="pt-2 border-t border-[var(--atr-divider)] flex justify-between font-semibold t-label">
-                <span>Net Viré au Chauffeur:</span>
-                <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
-                  {formatMoney(freelanceDriverPay.netPayoutDzd, language)}
-                </span>
-              </div>
-            </div>
-          </div>
-          </div>
+            {driverPayrollSummaries.map((driver) => {
+              const alreadySaved = driverPayouts.some(
+                (p) => p.driverName === driver.driverName && p.periodLabel === new Date().toISOString().slice(0, 7)
+              );
+              return (
+                <div key={driver.driverName} className="sq-elev-card">
+                  <div
+                    data-sq="card"
+                    data-sq-border="none"
+                    className="p-3 bg-white dark:bg-[#22201E] space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-2 px-2 pt-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div
+                          data-sq="tile"
+                          data-sq-border="none"
+                          className={`w-9 h-9 flex items-center justify-center font-semibold shrink-0 ${
+                            driver.employmentType === 'salaried'
+                              ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          {driver.employmentType === 'salaried' ? <Truck size={18} /> : <UserCheck size={18} />}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold t-label text-black dark:text-white truncate">
+                            {driver.driverName}
+                          </h3>
+                          <span className="t-cap text-black/55 dark:text-white/55">
+                            {driver.employmentType === 'salaried'
+                              ? isAr ? 'سائق أجير دائم' : 'Chauffeur Salarié'
+                              : isAr ? 'مقاول ذاتي بالعمولة' : 'Auto-Entrepreneur'}
+                          </span>
+                        </div>
+                      </div>
+                      <AtriumButton
+                        variant={alreadySaved ? 'secondary' : 'primary'}
+                        size="sm"
+                        onClick={() => {
+                          addDriverPayout({
+                            driverName: driver.driverName,
+                            employmentType: driver.employmentType,
+                            periodLabel: new Date().toISOString().slice(0, 7),
+                            deliveredCount: driver.deliveredCount,
+                            returnedCount: driver.returnedCount,
+                            shortageDeductionDzd: driver.dischargeShortageDzd,
+                            grossCompensationDzd: driver.grossCompensationDzd,
+                            taxWithheldDzd: driver.taxWithheldDzd,
+                            netPayableDzd: driver.netPayableAfterDeductionsDzd,
+                            status: 'Paid',
+                            paidAt: new Date().toISOString(),
+                          });
+                          showToast(
+                            isAr
+                              ? `تم اعتماد صرف أجر ${driver.driverName}`
+                              : `Paie validée pour ${driver.driverName}`,
+                            'success'
+                          );
+                        }}
+                      >
+                        {alreadySaved ? (isAr ? 'مؤكدة' : 'Enregistrée') : isAr ? 'اعتماد الصرف' : 'Valider Paie'}
+                      </AtriumButton>
+                    </div>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2 t-cap"
+                    >
+                      <div className="flex justify-between">
+                        <span className="text-black/55 dark:text-white/55">
+                          {isAr ? 'طرود مسلمة / مرتجعة:' : 'Colis Livrés / Retours :'}
+                        </span>
+                        <span className="tabular-nums font-semibold">
+                          {driver.deliveredCount} / {driver.returnedCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/55 dark:text-white/55">
+                          {isAr ? 'إجمالي الأجر والمنح:' : 'Rémunération Brute :'}
+                        </span>
+                        <span className="tabular-nums font-semibold text-emerald-600">
+                          {formatMoney(driver.grossCompensationDzd, language)}
+                        </span>
+                      </div>
+                      {driver.taxWithheldDzd > 0 && (
+                        <div className="flex justify-between text-red-600">
+                          <span>{isAr ? 'اقتطاع IFU 5%:' : 'Retenue IFU 5% :'}</span>
+                          <span className="tabular-nums font-semibold">
+                            -{formatMoney(driver.taxWithheldDzd, language)}
+                          </span>
+                        </div>
+                      )}
+                      {driver.dischargeShortageDzd > 0 && (
+                        <div className="flex justify-between text-red-600">
+                          <span>{isAr ? 'خصم عجز الصندوق:' : 'Déduction Écart Caisse :'}</span>
+                          <span className="tabular-nums font-semibold">
+                            -{formatMoney(driver.dischargeShortageDzd, language)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t border-[var(--atr-divider)] flex justify-between font-semibold t-label">
+                        <span>{isAr ? 'صافي مستحق الدفع:' : 'Net à Payer :'}</span>
+                        <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {formatMoney(driver.netPayableAfterDeductionsDzd, language)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </ScreenPod>
+      )}
+
+      {activeTab === 'operations' && (
+        <LogisticsOperationsPanel
+          language={language}
+          shipments={shipments}
+          vehicleLogs={vehicleLogs}
+          merchantFeeInvoices={merchantFeeInvoices}
+          carrierIntegrations={carrierIntegrations}
+          freightWaybills={freightWaybills}
+          movingQuotes={movingQuotes}
+          coldChainLogs={coldChainLogs}
+          customsDossiers={customsDossiers}
+          towingDispatches={towingDispatches}
+          onAddVehicleLog={addVehicleLog}
+          onIssueMerchantInvoice={issueMerchantFeeInvoice}
+          onAddIntegration={addCarrierIntegration}
+          onToggleIntegration={toggleCarrierIntegration}
+          onAddFreightWaybill={addFreightWaybill}
+          onAddMovingQuote={addMovingQuote}
+          onAddColdChainLog={addColdChainLog}
+          onAddCustomsDossier={addCustomsDossier}
+          onAddTowingDispatch={addTowingDispatch}
+        />
       )}
 
       <KineticFilterModal
@@ -1433,9 +1507,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                         id: 'sms',
                         label: isAr ? 'إشعار التاجر' : 'Avis SMS',
                         icon: <Share2 size={16} />,
-                        disabled: true,
-                        tooltip: t('feature_not_available_phase2', language),
-                        onClick: () => {},
+                        onClick: () => setTrackingShipment(s),
                       },
                     ]}
                   />
@@ -1547,6 +1619,26 @@ export const LogisticsCodView: React.FC<any> = () => {
               })()
             : []
         }
+      />
+
+      <LogisticsTrackingDrawer
+        isOpen={Boolean(trackingShipment)}
+        onClose={() => setTrackingShipment(null)}
+        shipment={trackingShipment}
+        events={parcelEvents}
+        language={language}
+        onLogNotification={({ parcelId, trackingCode, channel, recipientPhone, notes }) => {
+          addParcelEvent({
+            parcelId,
+            trackingCode,
+            status: 'NotificationSent',
+            location: trackingShipment?.destinationWilaya || 'Hub',
+            notes,
+            notificationChannel: channel,
+            notificationRecipient: recipientPhone,
+            notificationStatus: 'Sent',
+          });
+        }}
       />
     </div>
   );
