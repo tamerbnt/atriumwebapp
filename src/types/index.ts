@@ -3984,6 +3984,8 @@ export interface ManufacturingBom {
   finishedProductName: string;
   finishedProductSku?: string;
   bomCode: string;
+  bomFamilyId?: string;
+  parentBomId?: string;
   version?: number;
   archetype?: 'Discrete' | 'CustomJob' | 'BatchProcess' | 'TextileApparel';
   batchYield: number;
@@ -4005,6 +4007,17 @@ export interface ManufacturingBom {
   updatedAt?: string;
 }
 
+export interface ManufacturingBomSnapshot {
+  bomId: string;
+  bomCode: string;
+  version: number;
+  capturedAt: string;
+  batchYield: number;
+  standardCostCentimes: number;
+  components: ManufacturingBomComponent[];
+  routingSteps: ManufacturingRoutingStep[];
+}
+
 export interface ManufacturingOrder {
   id: string;
   accountId: string;
@@ -4014,6 +4027,8 @@ export interface ManufacturingOrder {
   orderNumber: string;
   bomId: string;
   bomCode?: string;
+  pinnedBomVersion?: number;
+  bomSnapshot?: ManufacturingBomSnapshot;
   productName: string;
   targetQuantity: number;
   quantityOrdered?: number;
@@ -4033,6 +4048,11 @@ export interface ManufacturingOrder {
   totalMaterialCostDzd: number;
   totalLaborCostDzd: number;
   totalCostDzd: number;
+  unitPieceRateCentimes?: number;
+  actualMaterialCostCentimes?: number;
+  actualLaborCostCentimes?: number;
+  cmupRecalcDeltaCentimes?: number;
+  linkedUnifiedDocId?: string;
   clientOrderId?: string;
   clientName?: string;
   notes?: string;
@@ -4041,13 +4061,26 @@ export interface ManufacturingOrder {
   updatedAt?: string;
 }
 
+export interface MfgPpeChecklist {
+  glasses: boolean;
+  gloves: boolean;
+  shoes: boolean;
+  helmet: boolean;
+}
+
 export interface WorkstationSessionLog {
   id: string;
   accountId: string;
   businessId: string;
   branchId: string;
   staffId: string;
+  operatorStaffId?: string;
   operatorName: string;
+  pinVerified?: boolean;
+  pinVerifiedAt?: string;
+  ppeChecklist?: MfgPpeChecklist;
+  ppeVerified?: boolean;
+  ppeVerifiedAt?: string;
   workCenterId: string;
   workCenterName: string;
   orderId: string;
@@ -4059,9 +4092,11 @@ export interface WorkstationSessionLog {
   durationSeconds: number;
   pauseDurationSeconds: number;
   pauseReason?: 'ToolingChange' | 'Breakdown' | 'ShiftChange' | 'MaterialWait';
+  downtimeReason?: string;
   goodQuantity: number;
   scrapQuantity: number;
-  scrapReason?: 'SetupPiece' | 'DimensionError' | 'BurntMaterial' | 'Cracked';
+  scrapReason?: 'SetupPiece' | 'DimensionError' | 'BurntMaterial' | 'Cracked' | string;
+  pieceRateCentimes?: number;
   status: 'Active' | 'Paused' | 'Submitted';
   version?: number;
   createdAt: string;
@@ -4165,6 +4200,189 @@ export interface MfgNcrRecord {
   notes?: string;
   version?: number;
   createdAt: string;
+}
+
+export interface MfgAlertRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  alertNumber: string;
+  alertType: 'AndonStop' | 'MaterialShortage' | 'ExcessScrap' | 'MaintenanceDue' | 'QualityHold';
+  severity: 'info' | 'warning' | 'critical';
+  workstationId?: string;
+  workstationName?: string;
+  orderId?: string;
+  orderNumber?: string;
+  raisedByStaffId?: string;
+  raisedByName: string;
+  notifiedRoles: string[];
+  message: string;
+  status: 'Open' | 'Acknowledged' | 'Resolved';
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  resolutionNotes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MfgFinishedGoodsLot {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  lotNumber: string;
+  sku: string;
+  productName: string;
+  orderId?: string;
+  orderNumber?: string;
+  qcInspectionId?: string;
+  qtyProduced: number;
+  qtyReserved: number;
+  qtyDelivered: number;
+  unit: string;
+  unitCmupCentimes: number;
+  warehouseLocation: string;
+  releaseStatus: 'Quarantine' | 'Released' | 'Shipped' | 'Hold';
+  linkedUnifiedDocId?: string;
+  producedAt: string;
+  releasedAt?: string;
+  releasedBy?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MfgMachineAsset {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  code: string;
+  name: string;
+  department: string;
+  machineType: string;
+  hourlyCostDzd: number;
+  status: 'Idle' | 'Running' | 'Setup' | 'Maintenance';
+  currentOrderCode?: string;
+  runningHours: number;
+  cycleCount: number;
+  maintenanceIntervalHours: number;
+  maintenanceIntervalDays: number;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDueDate?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MfgMachineMaintenanceLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ticketNumber: string;
+  machineId: string;
+  machineName: string;
+  maintenanceType: 'Preventive' | 'Corrective' | 'Calibration';
+  triggerReason: string;
+  runtimeHoursAtService: number;
+  cycleCountAtService: number;
+  scheduledDate: string;
+  completedDate?: string;
+  technicianName?: string;
+  costCentimes: number;
+  status: 'Scheduled' | 'InProgress' | 'Completed' | 'Overdue';
+  checklistNotes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MfgPieceRateEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  operatorStaffId?: string;
+  operatorName: string;
+  workstationLogId?: string;
+  orderId?: string;
+  orderNumber: string;
+  periodMonth: string;
+  goodUnits: number;
+  scrapUnits: number;
+  ratePerPieceCentimes: number;
+  grossAmountCentimes: number;
+  status: 'accrued' | 'posted_to_payroll' | 'paid';
+  payrollRunId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MfgCuttingPartInput {
+  id: string;
+  label: string;
+  lengthMm: number;
+  widthMm?: number;
+  quantity: number;
+  allowRotation?: boolean;
+}
+
+export interface MfgCuttingStockBarOrSheet {
+  stockIndex: number;
+  usedMmOrArea: number;
+  totalMmOrArea: number;
+  wasteMmOrArea: number;
+  offcutsMm: Array<{ lengthMm: number; widthMm?: number; reusable: boolean }>;
+  cuts: Array<{ label: string; xMm: number; yMm?: number; lengthMm: number; widthMm?: number }>;
+}
+
+export interface MfgCuttingLayoutResult {
+  mode: '1d_linear' | '2d_sheet';
+  stockUnitsRequired: number;
+  totalDemandedAreaOrLength: number;
+  totalStockAreaOrLength: number;
+  wastePercent: number;
+  reusableOffcutsCount: number;
+  reusableOffcutsSummary: Array<{ lengthMm: number; widthMm?: number; count: number }>;
+  layouts: MfgCuttingStockBarOrSheet[];
+}
+
+export interface MfgCuttingPlan {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  planNumber: string;
+  title: string;
+  tradeCategory: 'Textile' | 'Wood' | 'Aluminum' | 'Marble';
+  cuttingMode: '1d_linear' | '2d_sheet';
+  stockLengthMm: number;
+  stockWidthMm: number;
+  kerfMm: number;
+  parts: MfgCuttingPartInput[];
+  layoutResult: MfgCuttingLayoutResult;
+  stockUnitsRequired: number;
+  wastePercent: number;
+  reusableOffcuts: Array<{ lengthMm: number; widthMm?: number; count: number }>;
+  linkedQuoteId?: string;
+  unitPriceCentimes: number;
+  version?: number;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 // ==========================================

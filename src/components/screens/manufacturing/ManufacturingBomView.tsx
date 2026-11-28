@@ -12,6 +12,10 @@ import {
   MapPin,
   Eye,
   Trash2,
+  GitBranch,
+  Lock,
+  Scissors,
+  FileText,
 } from 'lucide-react';
 import {
   showToast,
@@ -24,12 +28,25 @@ import {
 import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
-import { ManufacturingBom } from '../../../types';
+import { centimesToDzd, dzdToCentimes } from '../../../utils/money';
+import {
+  isBomLockedByOrders,
+  optimizeLinearBarCutting1D,
+  optimizeSheetSlabCutting2D,
+  buildDimensionQuoteLineItems,
+} from '../../../utils/manufacturingDepth';
+import { ManufacturingBom, MfgCuttingPartInput, MfgCuttingPlan } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { LabelTextarea } from '../../ui/LabelTextarea';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import {
+  UnifiedInvoiceComposerModal,
+  type UnifiedInvoiceComposerPrefill,
+} from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -69,7 +86,26 @@ export const ManufacturingBomView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { boms, addBom, updateBom, deleteBom } = useManufacturingData();
+  const { boms, orders, cuttingPlans, addBom, updateBom, forkBom, deleteBom, saveCuttingPlan } =
+    useManufacturingData();
+
+  const [bomSubTab, setBomSubTab] = useState<'boms' | 'cutting'>('boms');
+  const [cutTitle, setCutTitle] = useState('Débit Aluminium / Panneaux Client');
+  const [cutTrade, setCutTrade] = useState<MfgCuttingPlan['tradeCategory']>('Aluminum');
+  const [cutMode, setCutMode] = useState<MfgCuttingPlan['cuttingMode']>('1d_linear');
+  const [stockLenMm, setStockLenMm] = useState('6000');
+  const [stockWidMm, setStockWidMm] = useState('1220');
+  const [kerfMm, setKerfMm] = useState('4');
+  const [cutUnitPriceDzd, setCutUnitPriceDzd] = useState('1850');
+  const [cutParts, setCutParts] = useState<MfgCuttingPartInput[]>([
+    { id: 'cp_1', label: 'Montant Dormant', lengthMm: 2150, widthMm: 600, quantity: 4, allowRotation: true },
+    { id: 'cp_2', label: 'Traverse Basse', lengthMm: 950, widthMm: 500, quantity: 4, allowRotation: true },
+  ]);
+  const [newPartLabel, setNewPartLabel] = useState('');
+  const [newPartLength, setNewPartLength] = useState('1200');
+  const [newPartWidth, setNewPartWidth] = useState('500');
+  const [newPartQty, setNewPartQty] = useState('2');
+  const [cutQuotePrefill, setCutQuotePrefill] = useState<UnifiedInvoiceComposerPrefill | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterActive, setFilterActive] = useState<string>('All');
@@ -98,6 +134,63 @@ export const ManufacturingBomView: React.FC<any> = () => {
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
+
+  const cuttingResult = useMemo(() => {
+    const stockL = Math.max(100, parseFloat(stockLenMm) || 6000);
+    const stockW = Math.max(100, parseFloat(stockWidMm) || 1220);
+    const kerf = Math.max(0, parseFloat(kerfMm) || 4);
+    if (cutMode === '1d_linear') {
+      return optimizeLinearBarCutting1D({
+        stockLengthMm: stockL,
+        kerfMm: kerf,
+        parts: cutParts,
+        minReusableOffcutMm: 500,
+      });
+    }
+    return optimizeSheetSlabCutting2D({
+      stockLengthMm: stockL,
+      stockWidthMm: stockW,
+      kerfMm: kerf,
+      parts: cutParts,
+    });
+  }, [cutMode, stockLenMm, stockWidMm, kerfMm, cutParts]);
+
+  const handleSaveCutPlan = () => {
+    const saved = saveCuttingPlan({
+      title: cutTitle.trim() || `Débit ${cutTrade}`,
+      tradeCategory: cutTrade,
+      cuttingMode: cutMode,
+      stockLengthMm: Math.max(100, parseFloat(stockLenMm) || 6000),
+      stockWidthMm: Math.max(100, parseFloat(stockWidMm) || 1220),
+      kerfMm: Math.max(0, parseFloat(kerfMm) || 4),
+      parts: cutParts,
+      layoutResult: cuttingResult,
+      stockUnitsRequired: cuttingResult.stockUnitsRequired,
+      wastePercent: cuttingResult.wastePercent,
+      reusableOffcuts: cuttingResult.reusableOffcutsSummary,
+      unitPriceCentimes: dzdToCentimes(Math.max(0, parseFloat(cutUnitPriceDzd) || 0)),
+    });
+    showToast(
+      isAr ? `تم حفظ مخطط التقطيع ${saved.planNumber}` : `Plan de coupe ${saved.planNumber} enregistré`,
+      'success'
+    );
+  };
+
+  const handleLaunchDimensionQuote = () => {
+    const quoteLines = buildDimensionQuoteLineItems({
+      tradeCategory: cutTrade,
+      cuttingMode: cutMode,
+      parts: cutParts,
+      layoutResult: cuttingResult,
+      unitPriceDzd: Math.max(0, parseFloat(cutUnitPriceDzd) || 1850),
+    });
+    setCutQuotePrefill({
+      docType: 'devis',
+      sourceVertical: 'manufacturing_production',
+      notesTop: `${cutTitle} · ${cuttingResult.stockUnitsRequired} unités stock · Chutes ${cuttingResult.wastePercent}%`,
+      items: quoteLines,
+    });
+  };
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -402,14 +495,24 @@ export const ManufacturingBomView: React.FC<any> = () => {
         header: isAr ? 'رمز التركيبة' : 'Code BOM',
         width: '2.0*',
         sortable: true,
-        renderCell: (b) => (
+        renderCell: (b) => {
+          const locked = isBomLockedByOrders(b.id, orders);
+          return (
           <div className="flex items-center gap-2 min-w-0">
             <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0">
               <Layers size={16} />
             </div>
             <div className="min-w-0">
-              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
-                {b.bomCode}
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-1.5 flex-wrap">
+                <span>{b.bomCode}</span>
+                <span className="px-1.5 py-0.5 rounded bg-[#EFE9E2] dark:bg-[#2B2825] text-[11px] font-semibold">
+                  v{b.version || 1}
+                </span>
+                {locked && (
+                  <span title={isAr ? 'مقفلة بأوامر تصنيع' : 'Verrouillée par OF actif'} className="inline-flex items-center text-amber-600 dark:text-amber-400">
+                    <Lock size={11} />
+                  </span>
+                )}
                 {pinnedIds.has(b.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
               </div>
               <div className="t-cap text-black/55 dark:text-white/55">
@@ -417,7 +520,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
               </div>
             </div>
           </div>
-        ),
+          );
+        },
       },
       {
         key: 'finishedProduct',
@@ -526,6 +630,18 @@ export const ManufacturingBomView: React.FC<any> = () => {
             ? `${boms.length} تركيبة BOM · ${totalComponents} مكون صناعي`
             : `${boms.length} nomenclatures BOM · ${totalComponents} composants intégrés`
         }
+        secondaryActions={
+          <LiveSegmentedControl
+            size="md"
+            value={bomSubTab}
+            onValueChange={(v) => setBomSubTab(v as 'boms' | 'cutting')}
+            options={[
+              { value: 'boms', label: isAr ? 'التركيبات BOM' : 'Nomenclatures BOM', count: boms.length },
+              { value: 'cutting', label: isAr ? 'تقطيع m²/ml' : 'Découpe 1D/2D & Devis', count: cuttingPlans.length },
+            ]}
+            aria-label="BOM and Cutting Optimizer Switcher"
+          />
+        }
         primaryAction={{
           label: isAr ? 'تركيبة جديدة' : 'Nouvelle BOM',
           onClick: openCreateModal,
@@ -565,6 +681,260 @@ export const ManufacturingBomView: React.FC<any> = () => {
         }}
       />
 
+      {bomSubTab === 'cutting' && (
+        <ScreenPod>
+          <div className="space-y-4" data-testid="mfg-cutting-optimizer-pod">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="t-pod font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Scissors size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <span>
+                    {isAr
+                      ? 'محرك تحسين التقطيع والتسعير (خشب / ألمنيوم / رخام / نسيج)'
+                      : 'Optimiseur Débit Barres (1D) & Panneaux/Dalles (2D) + Devis m²/ml'}
+                  </span>
+                </h2>
+                <p className="t-cap text-black/55 dark:text-white/60">
+                  {isAr
+                    ? 'خوارزمية FFD مع احتساب سمك المنشار والفضلات القابلة لإعادة الاستعمال'
+                    : 'Algorithme First-Fit Decreasing avec trait de scie (kerf), chutes réutilisables et génération Devis 6.1.'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <AtriumButton type="button" variant="outline" size="sm" icon={<Save size={14} />} onClick={handleSaveCutPlan}>
+                  {isAr ? 'حفظ مخطط التقطيع' : 'Enregistrer Plan'}
+                </AtriumButton>
+                <AtriumButton type="button" variant="primary" size="sm" icon={<FileText size={14} />} onClick={handleLaunchDimensionQuote}>
+                  {isAr ? 'إنشاء عرض سعر 6.1' : 'Créer Devis m²/ml (6.1)'}
+                </AtriumButton>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+              <LabelInput
+                field="cutTitle"
+                label={isAr ? 'عنوان المشروع' : 'Intitulé Débit'}
+                value={cutTitle}
+                onChange={setCutTitle}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="cutTrade"
+                label={isAr ? 'التخصص' : 'Métier'}
+                value={cutTrade}
+                onChange={(v) => {
+                  const trade = v as MfgCuttingPlan['tradeCategory'];
+                  setCutTrade(trade);
+                  if (trade === 'Wood' || trade === 'Marble' || trade === 'Textile') setCutMode('2d_sheet');
+                  else setCutMode('1d_linear');
+                }}
+                options={[
+                  { value: 'Aluminum', label: 'Menuiserie Aluminium' },
+                  { value: 'Wood', label: 'Menuiserie Bois / MDF' },
+                  { value: 'Marble', label: 'Marbre & Granit' },
+                  { value: 'Textile', label: 'Textile & Confection' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelSelect
+                field="cutMode"
+                label={isAr ? 'نمط التقطيع' : 'Mode'}
+                value={cutMode}
+                onChange={(v) => setCutMode(v as MfgCuttingPlan['cuttingMode'])}
+                options={[
+                  { value: '1d_linear', label: '1D Barres (ml)' },
+                  { value: '2d_sheet', label: '2D Panneaux / Dalles (m²)' },
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              <LabelInput
+                field="cutStockLen"
+                label={cutMode === '1d_linear' ? 'Longueur Barre (mm)' : 'Longueur Plaque (mm)'}
+                type="number"
+                value={stockLenMm}
+                onChange={setStockLenMm}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              {cutMode === '2d_sheet' ? (
+                <LabelInput
+                  field="cutStockWid"
+                  label="Largeur Plaque (mm)"
+                  type="number"
+                  value={stockWidMm}
+                  onChange={setStockWidMm}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              ) : (
+                <LabelInput
+                  field="cutKerf"
+                  label="Trait scie / Kerf (mm)"
+                  type="number"
+                  value={kerfMm}
+                  onChange={setKerfMm}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              )}
+              <LabelInput
+                field="cutUnitPrice"
+                label={cutMode === '1d_linear' ? 'Tarif HT / ml (DZD)' : 'Tarif HT / m² (DZD)'}
+                type="number"
+                value={cutUnitPriceDzd}
+                onChange={setCutUnitPriceDzd}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div className="lg:col-span-6 space-y-3">
+                <div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2">
+                  <div className="t-small font-semibold text-black dark:text-white">
+                    {isAr ? 'القطع المطلوبة' : `Liste de Débit (${cutParts.length} repères)`}
+                  </div>
+                  <div className="space-y-1.5">
+                    {cutParts.map((part) => (
+                      <div key={part.id} className="flex items-center justify-between gap-2 p-2 rounded bg-white dark:bg-[#191716] t-cap">
+                        <div>
+                          <span className="font-semibold text-black dark:text-white">{part.label}</span>
+                          <span className="text-black/55 dark:text-white/55 tabular-nums ml-2">
+                            {part.lengthMm}mm{cutMode === '2d_sheet' ? ` × ${part.widthMm || 500}mm` : ''} × {part.quantity} pcs
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          aria-label={`Supprimer ${part.label}`}
+                          onClick={() => setCutParts((prev) => prev.filter((p) => p.id !== part.id))}
+                          className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[var(--atr-divider)]">
+                    <LabelInput field="newCutLabel" label="Repère" value={newPartLabel} onChange={setNewPartLabel} placeholder="Traverse" width="100%" height={36} corner={10} />
+                    <LabelInput field="newCutLen" label="L (mm)" type="number" value={newPartLength} onChange={setNewPartLength} width="100%" height={36} corner={10} />
+                    {cutMode === '2d_sheet' && (
+                      <LabelInput field="newCutWid" label="l (mm)" type="number" value={newPartWidth} onChange={setNewPartWidth} width="100%" height={36} corner={10} />
+                    )}
+                    <LabelInput field="newCutQty" label="Qté" type="number" value={newPartQty} onChange={setNewPartQty} width="100%" height={36} corner={10} />
+                  </div>
+                  <AtriumButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    icon={<Plus size={13} />}
+                    onClick={() => {
+                      const len = parseFloat(newPartLength) || 0;
+                      const wid = parseFloat(newPartWidth) || 500;
+                      const qty = parseInt(newPartQty, 10) || 1;
+                      if (!newPartLabel.trim() || len <= 0) return;
+                      setCutParts((prev) => [
+                        ...prev,
+                        { id: `cp_${Date.now()}`, label: newPartLabel.trim(), lengthMm: len, widthMm: wid, quantity: qty, allowRotation: true },
+                      ]);
+                      setNewPartLabel('');
+                    }}
+                  >
+                    {isAr ? 'إضافة قطعة' : 'Ajouter Repère'}
+                  </AtriumButton>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6 space-y-3">
+                <div className="grid grid-cols-3 gap-2 tabular-nums">
+                  <div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                    <span className="t-cap text-black/55 dark:text-white/55 block">{cutMode === '1d_linear' ? 'Barres requises' : 'Plaques requises'}</span>
+                    <span className="t-card font-semibold text-black dark:text-white">{cuttingResult.stockUnitsRequired}</span>
+                  </div>
+                  <div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                    <span className="t-cap text-black/55 dark:text-white/55 block">Taux Chutes</span>
+                    <span className="t-card font-semibold text-amber-600 dark:text-amber-400">{cuttingResult.wastePercent}%</span>
+                  </div>
+                  <div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                    <span className="t-cap text-black/55 dark:text-white/55 block">Chutes réutilisables</span>
+                    <span className="t-card font-semibold text-emerald-600 dark:text-emerald-400">{cuttingResult.reusableOffcutsCount}</span>
+                  </div>
+                </div>
+                <div data-sq="card" data-sq-border="solid" className="p-3 bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2 max-h-60 overflow-y-auto">
+                  <div className="t-small font-semibold text-black dark:text-white">
+                    {isAr ? 'تفصيل التموضع' : `Calepinage (${cuttingResult.layouts.length} unités stock)`}
+                  </div>
+                  {cuttingResult.layouts.map((lay) => (
+                    <div key={lay.stockIndex} className="p-2 rounded bg-[#F5F1EC] dark:bg-[#191716] t-cap space-y-1">
+                      <div className="flex justify-between font-semibold">
+                        <span>#{lay.stockIndex}</span>
+                        <span className="tabular-nums text-black/60 dark:text-white/60">
+                          {lay.cuts.length} pièces · reste {lay.offcutsMm.map((o) => (o.widthMm ? `${o.lengthMm}×${o.widthMm}mm` : `${o.lengthMm}mm`)).join(', ') || '0'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {lay.cuts.map((c, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                            {c.label}: {c.lengthMm}{c.widthMm ? `×${c.widthMm}` : ''}mm
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {cuttingPlans.length > 0 && (
+              <div className="pt-2 border-t border-[var(--atr-divider)]">
+                <div className="t-small font-semibold text-black dark:text-white mb-2">
+                  {isAr ? 'المخططات المحفوظة' : `Plans de Coupe Enregistrés (${cuttingPlans.length})`}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {cuttingPlans.map((cp) => (
+                    <div key={cp.id} data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap flex items-center justify-between">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-black dark:text-white truncate">{cp.planNumber} · {cp.title}</div>
+                        <div className="text-black/55 dark:text-white/55 tabular-nums">
+                          {cp.tradeCategory} · {cp.stockUnitsRequired} u · chute {cp.wastePercent}%
+                        </div>
+                      </div>
+                      <AtriumButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCutTitle(cp.title);
+                          setCutTrade(cp.tradeCategory);
+                          setCutMode(cp.cuttingMode);
+                          setStockLenMm(String(cp.stockLengthMm));
+                          if (cp.stockWidthMm) setStockWidMm(String(cp.stockWidthMm));
+                          setKerfMm(String(cp.kerfMm));
+                          setCutParts(cp.parts);
+                          if (cp.unitPriceCentimes) setCutUnitPriceDzd(String(centimesToDzd(cp.unitPriceCentimes)));
+                        }}
+                      >
+                        {isAr ? 'تحميل' : 'Charger'}
+                      </AtriumButton>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </ScreenPod>
+      )}
+
+      {bomSubTab === 'boms' && (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={isAr ? 'قوائم المكونات الصناعية والتركيبات (BOM)' : 'Nomenclatures Produits & Formules BOM'}
@@ -759,6 +1129,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
           hasActiveFilters={hasAnyFilters}
         />
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -807,6 +1178,18 @@ export const ManufacturingBomView: React.FC<any> = () => {
         renderBody={(bom, tab) => (
           <div className="space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
+              <AtriumButton
+                type="button"
+                variant="primary"
+                size="sm"
+                icon={<GitBranch size={13} />}
+                onClick={() => {
+                  const next = forkBom(bom, {});
+                  if (next) setSelectedBom(next);
+                }}
+              >
+                {isAr ? `نسخة جديدة v${(bom.version || 1) + 1}` : `Nouvelle Version v${(bom.version || 1) + 1}`}
+              </AtriumButton>
               <AtriumButton
                 type="button"
                 variant="outline"
@@ -1053,6 +1436,13 @@ export const ManufacturingBomView: React.FC<any> = () => {
           </form>
         </div>
       </KineticModalShell>
+
+      <UnifiedInvoiceComposerModal
+        isOpen={Boolean(cutQuotePrefill)}
+        onClose={() => setCutQuotePrefill(null)}
+        prefill={cutQuotePrefill}
+        onSaved={() => setCutQuotePrefill(null)}
+      />
     </div>
   );
 };

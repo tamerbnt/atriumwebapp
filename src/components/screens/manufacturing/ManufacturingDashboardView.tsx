@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle, Wrench, PackageCheck, CheckCircle2 } from 'lucide-react';
 import {
   BulletChart,
   KpiMetricInverseCard,
@@ -9,9 +9,10 @@ import {
   StackedBarChart,
   WaterfallChart,
 } from '@/atrium';
-import { useDashboardShellState } from '../../../services/store';
+import { useDashboardShellState, useAtriumSelector } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useManufacturingData } from './manufacturingData';
+import { evaluateMachineMaintenanceStatus } from '../../../utils/manufacturingDepth';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { useCardFilters } from '../../../hooks/useCardFilters';
 import { SkeletonDashboardManufacturing } from '../../ui/skeleton/StructuralSkeletons';
@@ -45,9 +46,20 @@ export const ManufacturingDashboardView: React.FC = () => {
     retryCloudSync,
     lastSyncedAt,
   } = useDashboardShellState();
+  const currentUser = useAtriumSelector((s) => s.currentUser);
 
-  const { boms, orders, materials, qcRecords, addOrder, resetManufacturingDemoData } =
-    useManufacturingData();
+  const {
+    boms,
+    orders,
+    materials,
+    qcRecords,
+    alerts,
+    machines,
+    maintenanceLogs,
+    finishedGoods,
+    addOrder,
+    resolveAndonAlert,
+  } = useManufacturingData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -63,6 +75,23 @@ export const ManufacturingDashboardView: React.FC = () => {
     radar: '30d',
   });
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  const openAlerts = useMemo(
+    () => (alerts || []).filter((a) => a.status === 'Open' || a.status === 'Acknowledged'),
+    [alerts]
+  );
+
+  const pmDueCount = useMemo(() => {
+    const evals = evaluateMachineMaintenanceStatus(machines || [], maintenanceLogs || []);
+    return evals.filter((m) => m.isOverdue || m.isWarning).length;
+  }, [machines, maintenanceLogs]);
+
+  const releasedFgCount = useMemo(
+    () => (finishedGoods || []).filter((f) => f.releaseStatus === 'Released').length,
+    [finishedGoods]
+  );
+
+  const actorName = currentUser?.fullName || localizeText(language, "Chef d'atelier", 'Supervisor', 'رئيس الورشة');
 
   const locale = toChartLocale(language);
   const featuredSurface = getSurfaceProps(theme, true);
@@ -123,16 +152,107 @@ export const ManufacturingDashboardView: React.FC = () => {
     >
       <DashboardHeader
         extraActions={
-          <AtriumButton
-            variant="primary"
-            size="md"
-            icon={<Plus size={15} />}
-            onClick={() => setIsOrderModalOpen(true)}
-          >
-            {localizeText(language, 'Nouvel OF', 'New Order', 'أمر تصنيع')}
-          </AtriumButton>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              data-testid="mfg-pm-due-badge"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--r-ctl-sm,10px)] t-cap font-semibold tabular-nums ${
+                pmDueCount > 0
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  : 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/70 dark:text-white/75'
+              }`}
+            >
+              <Wrench size={13} />
+              <span>
+                {pmDueCount} {localizeText(language, 'PM à planifier', 'PM Due/Alert', 'صيانة وقائية')}
+              </span>
+            </span>
+            <span
+              data-testid="mfg-fg-released-badge"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--r-ctl-sm,10px)] t-cap font-semibold tabular-nums bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+            >
+              <PackageCheck size={13} />
+              <span>
+                {releasedFgCount} {localizeText(language, 'Lots PF libérés', 'Released FG', 'منتج نهائي محرر')}
+              </span>
+            </span>
+            <AtriumButton
+              variant="primary"
+              size="md"
+              icon={<Plus size={15} />}
+              onClick={() => setIsOrderModalOpen(true)}
+            >
+              {localizeText(language, 'Nouvel OF', 'New Order', 'أمر تصنيع')}
+            </AtriumButton>
+          </div>
         }
       />
+
+      {openAlerts.length > 0 && (
+        <div
+          data-testid="mfg-dashboard-andon-banner"
+          role="alert"
+          data-sq="card"
+          data-sq-border="solid"
+          className="bg-red-50 dark:bg-red-950/40 [--sq-stroke:rgba(220,38,38,0.35)] p-4 space-y-2.5"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-red-700 dark:text-red-300 font-semibold t-small">
+              <AlertTriangle size={17} className="shrink-0" />
+              <span>
+                {localizeText(
+                  language,
+                  `Alertes Andon Atelier Actives (${openAlerts.length})`,
+                  `Active Shopfloor Andon Alerts (${openAlerts.length})`,
+                  `تنبيهات أندون الورشة النشطة (${openAlerts.length})`
+                )}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {openAlerts.slice(0, 3).map((al) => (
+              <div
+                key={al.id}
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-white/90 dark:bg-[#22201E]"
+              >
+                <div className="min-w-0">
+                  <div className="t-cap font-semibold text-black dark:text-white flex items-center gap-2 flex-wrap">
+                    <span className="tabular-nums text-red-600 dark:text-red-400">{al.alertNumber}</span>
+                    <span>·</span>
+                    <span>{al.workstationName || al.orderNumber || 'Atelier'}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300 t-small">
+                      {al.status}
+                    </span>
+                  </div>
+                  <p className="t-cap text-black/70 dark:text-white/75 truncate">{al.message}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {al.status === 'Open' && (
+                    <AtriumButton
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => resolveAndonAlert(al.id, 'acknowledge', actorName)}
+                    >
+                      {localizeText(language, 'Accuser réception', 'Acknowledge', 'تأكيد الاستلام')}
+                    </AtriumButton>
+                  )}
+                  <AtriumButton
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    icon={<CheckCircle2 size={13} />}
+                    onClick={() => resolveAndonAlert(al.id, 'resolve', actorName)}
+                  >
+                    {localizeText(language, 'Résoudre', 'Resolve', 'حل التنبيه')}
+                  </AtriumButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <DashboardPod title={getDashboardPodTitle('manufacturing', 'production', language)}>
         <DashboardPodGrid layout="split84">

@@ -61,7 +61,16 @@ export const ManufacturingQcView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { orders, ncrRecords, updateOrder, recordScrapWithNcr } = useManufacturingData();
+  const {
+    orders,
+    qcRecords,
+    ncrRecords,
+    finishedGoods,
+    updateOrder,
+    recordScrapWithNcr,
+    produceFinishedGoodsFromOrder,
+    releaseFinishedGoodsLot,
+  } = useManufacturingData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [qcStatusFilter, setQcStatusFilter] = useState<string>('All');
@@ -221,13 +230,56 @@ export const ManufacturingQcView: React.FC<any> = () => {
     return list;
   }, [filteredOrders, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
+  const fgByOrderId = useMemo(() => {
+    const map = new Map<string, (typeof finishedGoods)[number]>();
+    finishedGoods.forEach((fg) => {
+      if (fg.orderId && !map.has(fg.orderId)) map.set(fg.orderId, fg);
+    });
+    return map;
+  }, [finishedGoods]);
+
   const handleReleaseLot = useCallback(
     (order: ManufacturingOrder) => {
       const updated: ManufacturingOrder = { ...order, status: 'Completed' };
       updateOrder(updated);
       if (selectedOrder?.id === order.id) setSelectedOrder(updated);
+
+      const inspectorName = currentUser?.fullName || (isAr ? 'مراقب الجودة' : 'Responsable CQ');
+      const linkedQc = qcRecords.find((q) => q.orderId === order.id || q.orderNumber === order.orderNumber);
+      const existingFg = fgByOrderId.get(order.id);
+      if (existingFg) {
+        releaseFinishedGoodsLot({
+          fgId: existingFg.id,
+          inspectorName,
+          qcInspectionId: linkedQc?.id,
+        });
+        showToast(
+          isAr ? `تم تحرير دفعة المنتج التام ${existingFg.lotNumber}` : `Lot PFG ${existingFg.lotNumber} libéré CQ pour BL/Facturation`,
+          'success'
+        );
+      } else {
+        const createdFg = produceFinishedGoodsFromOrder({
+          order: updated,
+          qcInspectionId: linkedQc?.id,
+          releaseImmediately: true,
+          releasedBy: inspectorName,
+        });
+        showToast(
+          isAr ? `تم إنتاج وتحرير دفعة ${createdFg.lotNumber}` : `Lot PFG ${createdFg.lotNumber} généré et libéré CQ`,
+          'success'
+        );
+      }
     },
-    [updateOrder, selectedOrder?.id]
+    [
+      updateOrder,
+      selectedOrder?.id,
+      currentUser?.fullName,
+      isAr,
+      qcRecords,
+      fgByOrderId,
+      releaseFinishedGoodsLot,
+      produceFinishedGoodsFromOrder,
+    ]
   );
 
   const handleSelectOrder = useCallback((order: ManufacturingOrder, openerEl?: HTMLElement | null) => {
@@ -324,14 +376,18 @@ export const ManufacturingQcView: React.FC<any> = () => {
         key: 'product',
         header: isAr ? 'المنتج & الدفعة' : 'Article Fabriqué & Lot',
         width: '2.8*',
-        renderCell: (o) => (
-          <div className="min-w-0">
-            <span className="font-semibold t-small text-black dark:text-white block truncate">{o.productName}</span>
-            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
-              Lot: {o.batchLotNumber || 'LOT-2026-STD'}
-            </span>
-          </div>
-        ),
+        renderCell: (o) => {
+          const fg = fgByOrderId.get(o.id);
+          return (
+            <div className="min-w-0">
+              <span className="font-semibold t-small text-black dark:text-white block truncate">{o.productName}</span>
+              <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
+                Lot: {o.batchLotNumber || 'LOT-2026-STD'}
+                {fg ? ` · ${fg.lotNumber} (${fg.releaseStatus})` : ''}
+              </span>
+            </div>
+          );
+        },
       },
       {
         key: 'branch',
@@ -792,6 +848,14 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     <span className="text-black/55 dark:text-white/55">Inspecteur Responsable:</span>
                     <span className="font-medium text-black dark:text-white">Ing. Sami Mansour (CQ)</span>
                   </div>
+                  {fgByOrderId.get(ord.id) && (
+                    <div className="flex items-center justify-between pt-1 border-t border-[var(--atr-divider)]">
+                      <span className="text-black/55 dark:text-white/55">Lot Produit Fini (PFG):</span>
+                      <span className="tabular-nums font-semibold text-emerald-700 dark:text-emerald-400">
+                        {fgByOrderId.get(ord.id)?.lotNumber} · {fgByOrderId.get(ord.id)?.releaseStatus}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

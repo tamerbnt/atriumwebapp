@@ -10,6 +10,12 @@ import {
   MapPin,
   Eye,
   Edit,
+  PackageCheck,
+  ShoppingCart,
+  GitBranch,
+  AlertTriangle,
+  CheckCircle2,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   showToast,
@@ -18,19 +24,36 @@ import {
   selectCurrentBranchFromState,
   selectCurrentBusinessFromState,
   selectCurrentBusinessConfigFromState,
+  selectCurrentUnifiedDocumentsFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
 import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules';
-import { RawMaterialStockItem, MaterialTransferVoucher } from '../../../types';
+import {
+  computeMultiOfPurchaseSuggestions,
+  computeLateReceiptCmupAdjustment,
+  buildLotTraceabilityGraph,
+  type MfgPurchaseSuggestion,
+} from '../../../utils/manufacturingDepth';
+import {
+  RawMaterialStockItem,
+  MaterialTransferVoucher,
+  MfgFinishedGoodsLot,
+} from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSelect } from '../../ui/live/LiveSelect';
+import {
+  UnifiedInvoiceComposerModal,
+  type UnifiedInvoiceComposerPrefill,
+} from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -54,7 +77,7 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingMaterialsView: React.FC<any> = () => {
-  const { account, language, currentBusiness, currentBusinessConfig, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBusinessConfig, currentBranch, branches, unifiedDocuments, currentUser, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
       account: s.account,
       language: s.language,
@@ -62,6 +85,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
       currentUser: s.currentUser,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
@@ -72,9 +96,21 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { materials, vouchers, addMaterial, updateMaterial, addVoucher } = useManufacturingData();
+  const {
+    materials,
+    vouchers,
+    orders,
+    boms,
+    qcRecords,
+    ncrRecords,
+    finishedGoods,
+    addMaterial,
+    updateMaterial,
+    addVoucher,
+    releaseFinishedGoodsLot,
+  } = useManufacturingData();
 
-  const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'vouchers'>('inventory');
+  const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'vouchers' | 'finished_goods' | 'shortages' | 'traceability'>('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [stockAlertFilter, setStockAlertFilter] = useState<string>('All');
@@ -110,9 +146,16 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
   const [voucherType, setVoucherType] = useState<'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert'>('BonDeSortie');
   const [voucherMaterialId, setVoucherMaterialId] = useState(materials[0]?.id || '');
   const [voucherQty, setVoucherQty] = useState('');
+  const [voucherIncomingUnitCost, setVoucherIncomingUnitCost] = useState('');
+  const [voucherOrderId, setVoucherOrderId] = useState('');
   const [voucherRecipient, setVoucherRecipient] = useState('');
   const [voucherNotes, setVoucherNotes] = useState('');
   const [printableVoucher, setPrintableVoucher] = useState<MaterialTransferVoucher | null>(null);
+  const [selectedTraceOrderId, setSelectedTraceOrderId] = useState(() => orders[0]?.id || '');
+  const [fgDeliveryPrefill, setFgDeliveryPrefill] = useState<{
+    lot: MfgFinishedGoodsLot;
+    prefill: UnifiedInvoiceComposerPrefill;
+  } | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -134,6 +177,50 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     () => materials.filter((m) => m.currentStock <= m.reorderThreshold).length,
     [materials]
   );
+
+  const purchaseSuggestions = useMemo(
+    () => computeMultiOfPurchaseSuggestions(orders, boms, materials),
+    [orders, boms, materials]
+  );
+
+  const releasedFgCount = useMemo(
+    () => finishedGoods.filter((f) => f.releaseStatus === 'Released').length,
+    [finishedGoods]
+  );
+
+  const lateReceiptPreview = useMemo(() => {
+    if (voucherType !== 'BonDeReception') return null;
+    const mat = materials.find((m) => m.id === voucherMaterialId) || materials[0];
+    const qty = parseFloat(voucherQty);
+    if (!mat || !Number.isFinite(qty) || qty <= 0) return null;
+    const parsedIncoming = parseFloat(voucherIncomingUnitCost);
+    const incomingCostDzd = Number.isFinite(parsedIncoming) && parsedIncoming >= 0 ? parsedIncoming : mat.unitCostPmpDzd;
+    return computeLateReceiptCmupAdjustment({
+      material: mat,
+      incomingQty: qty,
+      incomingUnitCostDzd: incomingCostDzd,
+      vouchers,
+      activeOrders: orders,
+    });
+  }, [voucherType, voucherMaterialId, voucherQty, voucherIncomingUnitCost, materials, vouchers, orders]);
+
+  const traceOrder = useMemo(
+    () => orders.find((o) => o.id === selectedTraceOrderId) || orders[0] || null,
+    [orders, selectedTraceOrderId]
+  );
+
+  const traceGraph = useMemo(() => {
+    if (!traceOrder) return null;
+    return buildLotTraceabilityGraph({
+      order: traceOrder,
+      materials,
+      vouchers,
+      qcRecords,
+      ncrRecords,
+      finishedGoodsLots: finishedGoods,
+      unifiedDocuments,
+    });
+  }, [traceOrder, materials, vouchers, qcRecords, ncrRecords, finishedGoods, unifiedDocuments]);
 
   const branchCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -359,8 +446,11 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       });
       return;
     }
-    const unitCost = mat.unitCostPmpDzd;
+    const parsedIncoming = voucherType === 'BonDeReception' ? parseFloat(voucherIncomingUnitCost) : NaN;
+    const unitCost =
+      Number.isFinite(parsedIncoming) && parsedIncoming >= 0 ? parsedIncoming : mat.unitCostPmpDzd;
     const totalVal = qty * unitCost;
+    const linkedOrder = voucherOrderId ? orders.find((o) => o.id === voucherOrderId) : undefined;
     const prefix = voucherType === 'BonDeSortie' ? 'BSM' : voucherType === 'BonDeReception' ? 'BR' : 'BT';
     const newVoucher: MaterialTransferVoucher = {
       id: `v_${Date.now()}`,
@@ -370,6 +460,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       staffId: currentUser?.id || '',
       voucherNumber: `${prefix}-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       voucherType,
+      orderId: linkedOrder?.id,
+      orderNumber: linkedOrder?.orderNumber,
       recipientStaffName: voucherRecipient,
       transferDate: new Date().toISOString(),
       items: [
@@ -423,10 +515,116 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     );
     setIsVoucherModalOpen(false);
     setVoucherQty('');
+    setVoucherIncomingUnitCost('');
+    setVoucherOrderId('');
     setVoucherRecipient('');
     setVoucherNotes('');
     setPrintableVoucher(newVoucher);
   };
+
+  const handleRestockFromSuggestion = useCallback(
+    (s: MfgPurchaseSuggestion) => {
+      const mat = materials.find((m) => m.id === s.materialId);
+      if (!mat) return;
+      const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+      const activeBranchId = (currentBranch?.id || '').trim();
+      if (!activeAccountId || !activeBranchId) {
+        showToast({
+          type: 'error',
+          title: t('tenant_context_missing_title', language),
+          message: t('tenant_context_missing_msg', language),
+        });
+        return;
+      }
+      const qty = Math.max(1, s.suggestedOrderQuantity);
+      const unitCost = centimesToDzd(s.estimatedUnitCostCentimes);
+      const newVoucher: MaterialTransferVoucher = {
+        id: `v_reappro_${Date.now()}`,
+        accountId: activeAccountId,
+        businessId: currentBusiness?.id || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        staffId: currentUser?.id || '',
+        voucherNumber: `BR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        voucherType: 'BonDeReception',
+        recipientStaffName: currentUser?.fullName || 'Magasinier Principal',
+        transferDate: new Date().toISOString(),
+        items: [
+          {
+            materialId: mat.id,
+            materialName: mat.name,
+            quantity: qty,
+            unit: mat.unit,
+            unitCostDzd: unitCost,
+            lotNumber: mat.supplierLotNumber || `IMP-${new Date().getFullYear()}`,
+          },
+        ],
+        totalValueDzd: qty * unitCost,
+        notes:
+          s.impactedOrderNumbers.length > 0
+            ? `Réapprovisionnement multi-OF: ${s.impactedOrderNumbers.join(', ')}`
+            : 'Réapprovisionnement seuil sécurité',
+      };
+      runUndoBatch(
+        {
+          vertical: 'manufacturing_production',
+          operationType: 'create',
+          branchId: activeBranchId,
+          summary: isAr
+            ? `تموين ${mat.name} (${qty} ${mat.unit})`
+            : isEn
+            ? `Restocked ${mat.name} (${qty} ${mat.unit})`
+            : `Réapprovisionnement BR ${mat.name} (+${qty} ${mat.unit})`,
+          entityLabel: newVoucher.voucherNumber,
+          toastType: 'success',
+        },
+        () => {
+          const newCmup = calculateCmupWeightedAverage(mat.currentStock, mat.unitCostPmpDzd, qty, unitCost);
+          const newQty = mat.currentStock + qty;
+          updateMaterial({
+            ...mat,
+            currentStock: newQty,
+            availableStock: Math.max(0, newQty - mat.allocatedStock),
+            unitCostPmpDzd: newCmup,
+            totalValuationDzd: newQty * newCmup,
+          });
+          addVoucher(newVoucher);
+        }
+      );
+      setPrintableVoucher(newVoucher);
+    },
+    [materials, currentBranch, account?.id, currentBusiness?.id, currentUser?.id, currentUser?.fullName, language, isAr, isEn, updateMaterial, addVoucher]
+  );
+
+  const handleOpenFgInvoice = useCallback(
+    (lot: MfgFinishedGoodsLot, docType: 'bl' | 'facture') => {
+      const unitPriceHt = Math.max(100, Math.round(centimesToDzd(lot.unitCmupCentimes) * 1.25));
+      const remainingQty = Math.max(1, lot.qtyProduced - lot.qtyDelivered);
+      const linkedOrder = orders.find((o) => o.id === lot.orderId);
+      setFgDeliveryPrefill({
+        lot,
+        prefill: {
+          docType,
+          sourceVertical: 'manufacturing_production',
+          partyName: linkedOrder?.clientName || 'Client Atelier',
+          sourceEntityType: 'manufacturing_order',
+          sourceEntityId: lot.orderId,
+          notesTop: `${docType === 'bl' ? 'Bon de Livraison' : 'Facture'} Lot PF ${lot.lotNumber} · ${lot.orderNumber}`,
+          items: [
+            {
+              description: `${lot.productName} — Lot ${lot.lotNumber} (${lot.orderNumber})`,
+              isService: false,
+              quantity: remainingQty,
+              unit: lot.unit || 'Unité',
+              unitPriceHt,
+              tvaPercent: 19,
+              discountPercent: 0,
+            },
+          ],
+        },
+      });
+    },
+    [orders]
+  );
 
   const handleTogglePin = useCallback((m: RawMaterialStockItem) => {
     setPinnedIds((prev) => {
@@ -831,12 +1029,15 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               size="md"
               value={activeSubTab}
               onValueChange={(val) => {
-                setActiveSubTab(val as 'inventory' | 'vouchers');
+                setActiveSubTab(val as typeof activeSubTab);
                 setSortBy(val === 'inventory' ? 'name' : 'voucherNumber');
               }}
               options={[
                 { value: 'inventory', label: isAr ? 'مخزون' : 'Stock', count: materials.length },
                 { value: 'vouchers', label: isAr ? 'سندات' : isEn ? 'Vouchers' : 'Bons', count: vouchers.length },
+                { value: 'finished_goods', label: isAr ? 'منتجات تامة' : isEn ? 'FG Lots' : 'Lots PF', count: finishedGoods.length },
+                { value: 'shortages', label: isAr ? 'نواقص' : isEn ? 'Shortages' : 'Manquants', count: purchaseSuggestions.length },
+                { value: 'traceability', label: isAr ? 'تتبع' : isEn ? 'Traceability' : 'Traçabilité', count: orders.length },
               ]}
               aria-label="Manufacturing Materials Subtab"
             />
@@ -888,51 +1089,53 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       />
 
       <ScreenPod>
-        <ScreenCollectionToolbar
-          title={
-            activeSubTab === 'inventory'
-              ? isAr ? 'دليل المواد الأولية' : 'Catalogue Matières Premières'
-              : isAr ? 'سجل السندات الرسمية (المرسوم التنفيذي 05-468)' : 'Registre Officiel des Bons (Décret 05-468)'
-          }
-          liveRegionText={
-            activeSubTab === 'inventory'
-              ? `${sortedMaterials.length} ${isAr ? 'مادة' : 'références'}`
-              : `${sortedVouchers.length} ${isAr ? 'سند' : 'bons'}`
-          }
-          language={language}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchPlaceholder={
-            activeSubTab === 'inventory'
-              ? isAr ? 'بحث بالاسم، الرمز، أو الرف...' : 'Recherche SKU, matière, casier...'
-              : isAr ? 'بحث برقم السند أو المستلم...' : 'Recherche N° bon, bénéficiaire...'
-          }
-          statusOptions={
-            activeSubTab === 'inventory'
-              ? [
-                  { value: 'All', label: isAr ? 'الكل' : 'Tous', count: materials.length },
-                  { value: 'Low', label: isAr ? 'تحت العتبة' : 'Alerte', count: lowStockCount },
-                  { value: 'Normal', label: isAr ? 'آمن' : 'Normal', count: materials.length - lowStockCount },
-                ]
-              : [
-                  { value: 'All', label: isAr ? 'الكل' : 'Tous', count: vouchers.length },
-                  { value: 'BonDeSortie', label: 'BSM', count: vouchers.filter((v) => v.voucherType === 'BonDeSortie').length },
-                  { value: 'BonDeReception', label: 'BR', count: vouchers.filter((v) => v.voucherType === 'BonDeReception').length },
-                ]
-          }
-          statusValue={activeSubTab === 'inventory' ? stockAlertFilter : voucherTypeFilter}
-          onStatusChange={activeSubTab === 'inventory' ? setStockAlertFilter : setVoucherTypeFilter}
-          hasActiveAdvancedFilters={activeFiltersCount > 0}
-          activeFiltersCount={activeFiltersCount}
-          isFilterModalOpen={isFilterModalOpen}
-          filterButtonRef={filterButtonRef}
-          onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onExport={handleExportCSV}
-          activeChips={activeChips}
-          onResetAllFilters={resetAllFilters}
-        />
+        {(activeSubTab === 'inventory' || activeSubTab === 'vouchers') && (
+          <ScreenCollectionToolbar
+            title={
+              activeSubTab === 'inventory'
+                ? isAr ? 'دليل المواد الأولية' : 'Catalogue Matières Premières'
+                : isAr ? 'سجل السندات الرسمية (المرسوم التنفيذي 05-468)' : 'Registre Officiel des Bons (Décret 05-468)'
+            }
+            liveRegionText={
+              activeSubTab === 'inventory'
+                ? `${sortedMaterials.length} ${isAr ? 'مادة' : 'références'}`
+                : `${sortedVouchers.length} ${isAr ? 'سند' : 'bons'}`
+            }
+            language={language}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder={
+              activeSubTab === 'inventory'
+                ? isAr ? 'بحث بالاسم، الرمز، أو الرف...' : 'Recherche SKU, matière, casier...'
+                : isAr ? 'بحث برقم السند أو المستلم...' : 'Recherche N° bon, bénéficiaire...'
+            }
+            statusOptions={
+              activeSubTab === 'inventory'
+                ? [
+                    { value: 'All', label: isAr ? 'الكل' : 'Tous', count: materials.length },
+                    { value: 'Low', label: isAr ? 'تحت العتبة' : 'Alerte', count: lowStockCount },
+                    { value: 'Normal', label: isAr ? 'آمن' : 'Normal', count: materials.length - lowStockCount },
+                  ]
+                : [
+                    { value: 'All', label: isAr ? 'الكل' : 'Tous', count: vouchers.length },
+                    { value: 'BonDeSortie', label: 'BSM', count: vouchers.filter((v) => v.voucherType === 'BonDeSortie').length },
+                    { value: 'BonDeReception', label: 'BR', count: vouchers.filter((v) => v.voucherType === 'BonDeReception').length },
+                  ]
+            }
+            statusValue={activeSubTab === 'inventory' ? stockAlertFilter : voucherTypeFilter}
+            onStatusChange={activeSubTab === 'inventory' ? setStockAlertFilter : setVoucherTypeFilter}
+            hasActiveAdvancedFilters={activeFiltersCount > 0}
+            activeFiltersCount={activeFiltersCount}
+            isFilterModalOpen={isFilterModalOpen}
+            filterButtonRef={filterButtonRef}
+            onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onExport={handleExportCSV}
+            activeChips={activeChips}
+            onResetAllFilters={resetAllFilters}
+          />
+        )}
 
         {activeSubTab === 'inventory' ? (
           <UniversalDataCollection
@@ -1079,7 +1282,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             onResetFilters={resetAllFilters}
             hasActiveFilters={hasAnyFilters}
           />
-        ) : (
+        ) : activeSubTab === 'vouchers' ? (
           <UniversalDataCollection
             hideToolbar
             data={sortedVouchers}
@@ -1202,6 +1405,328 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             onResetFilters={resetAllFilters}
             hasActiveFilters={hasAnyFilters}
           />
+        ) : activeSubTab === 'finished_goods' ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-2 t-cap text-black/60 dark:text-white/65">
+                <PackageCheck size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span>
+                  {isAr
+                    ? `${finishedGoods.length} دفعة منتجات تامة (${releasedFgCount} محررة للتسليم)`
+                    : isEn
+                    ? `${finishedGoods.length} finished goods lots (${releasedFgCount} QC released)`
+                    : `${finishedGoods.length} lots produits finis PFG (${releasedFgCount} libérés CQ pour BL/FAC)`}
+                </span>
+              </div>
+            </div>
+            {finishedGoods.length === 0 ? (
+              <div data-sq="card" data-sq-border="solid" className="p-8 text-center text-black/55 dark:text-white/60 t-cap bg-[#FAF7F4]/60 dark:bg-[#1E1C1A] [--sq-stroke:var(--sq-stroke-card)]">
+                {isAr ? 'لا توجد دفعات منتجات تامة بعد' : 'Aucun lot produit fini (PFG) enregistré.'}
+              </div>
+            ) : (
+              <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                <table className="w-full text-left rtl:text-right t-cap">
+                  <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                    <tr>
+                      <th className="py-2.5 px-3">{isAr ? 'رقم الدفعة' : 'Lot PFG'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'المنتج / OF' : 'Produit Finis & OF'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'الكمية' : 'Qté Produite'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'التكلفة CMUP' : 'Coût CMUP / u'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'المخزن' : 'Magasin'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'حالة الجودة' : 'Statut CQ'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'إجراء' : 'Actions'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--atr-divider)] tabular-nums">
+                    {finishedGoods.map((lot) => (
+                      <tr key={lot.id} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
+                        <td className="py-2.5 px-3 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {lot.lotNumber}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="font-semibold text-black dark:text-white">{lot.productName}</div>
+                          <div className="t-small text-black/55 dark:text-white/55">{lot.orderNumber} · {lot.sku}</div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-semibold text-black dark:text-white">
+                          {lot.qtyProduced - lot.qtyDelivered} / {lot.qtyProduced} {lot.unit}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-medium text-black dark:text-white">
+                          {formatMoney(centimesToDzd(lot.unitCmupCentimes), language)}
+                        </td>
+                        <td className="py-2.5 px-3 text-black/70 dark:text-white/75">{lot.warehouseLocation || 'Magasin PF'}</td>
+                        <td className="py-2.5 px-3">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full t-small font-semibold ${
+                              lot.releaseStatus === 'Released'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : lot.releaseStatus === 'Shipped'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            }`}
+                          >
+                            {lot.releaseStatus}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <div className="inline-flex items-center gap-1.5">
+                            {lot.releaseStatus === 'Quarantine' ? (
+                              <AtriumButton
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                icon={<CheckCircle2 size={13} />}
+                                onClick={() => {
+                                  releaseFinishedGoodsLot({
+                                    fgId: lot.id,
+                                    inspectorName: currentUser?.fullName || 'Responsable CQ',
+                                    qcInspectionId: lot.qcInspectionId,
+                                  });
+                                }}
+                              >
+                                {isAr ? 'تحرير CQ' : isEn ? 'Release QC' : 'Libérer CQ'}
+                              </AtriumButton>
+                            ) : (
+                              <>
+                                <AtriumButton
+                                  type="button"
+                                  size="sm"
+                                  variant="primary"
+                                  icon={<FileText size={13} />}
+                                  onClick={() => handleOpenFgInvoice(lot, 'bl')}
+                                >
+                                  BL (6.1)
+                                </AtriumButton>
+                                <AtriumButton
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  icon={<FileText size={13} />}
+                                  onClick={() => handleOpenFgInvoice(lot, 'facture')}
+                                >
+                                  FAC
+                                </AtriumButton>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : activeSubTab === 'shortages' ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-2 t-cap text-black/60 dark:text-white/65">
+                <ShoppingCart size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span>
+                  {isAr
+                    ? `${purchaseSuggestions.length} احتياج تموين عبر أوامر التصنيع النشطة`
+                    : isEn
+                    ? `${purchaseSuggestions.length} aggregated material shortage(s) across active MOs`
+                    : `${purchaseSuggestions.length} suggestion(s) d'achat agrégées multi-OF`}
+                </span>
+              </div>
+            </div>
+            {purchaseSuggestions.length === 0 ? (
+              <div data-sq="card" data-sq-border="solid" className="p-8 text-center text-emerald-700 dark:text-emerald-300 t-cap bg-emerald-50/60 dark:bg-emerald-950/25 [--sq-stroke:var(--sq-stroke-card)]">
+                {isAr ? 'جميع المواد الأولية متوفرة لتغطية أوامر التصنيع والحد الأدنى.' : 'Aucune rupture multi-OF ni alerte seuil détectée.'}
+              </div>
+            ) : (
+              <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
+                <table className="w-full text-left rtl:text-right t-cap">
+                  <thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+                    <tr>
+                      <th className="py-2.5 px-3">{isAr ? 'المادة' : 'Matière Première'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'المتاح / العتبة' : 'Dispo / Seuil'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'الاحتياج OFs' : 'Besoin Multi-OF'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'النقص / المقترح' : 'Manquant / À Commander'}</th>
+                      <th className="py-2.5 px-3">{isAr ? 'الأوامر المتأثرة' : 'OF Impactés'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'التقدير' : 'Budget Est.'}</th>
+                      <th className="py-2.5 px-3 text-right">{isAr ? 'تموين' : 'Réappro'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--atr-divider)] tabular-nums">
+                    {purchaseSuggestions.map((s) => (
+                      <tr key={s.materialId} className="hover:bg-[#FAF7F4] dark:hover:bg-[#282523]">
+                        <td className="py-2.5 px-3">
+                          <div className="font-semibold text-black dark:text-white">{s.materialName}</div>
+                          <div className="t-small text-black/55 dark:text-white/55 flex items-center gap-1.5">
+                            <span>{s.sku}</span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded t-small font-semibold ${
+                                s.urgency === 'critical'
+                                  ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+                                  : s.urgency === 'high'
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                  : 'bg-[#F3EDE7] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
+                              }`}
+                            >
+                              {s.urgency}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="font-semibold text-black dark:text-white">{s.availableStock}</span>
+                          <span className="text-black/55 dark:text-white/55"> / {s.reorderThreshold} {s.unit}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-medium text-black dark:text-white">
+                          {s.totalRequiredAcrossOfs} {s.unit}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="font-semibold text-red-600 dark:text-red-400">
+                            {s.shortageQuantity > 0 ? `-${s.shortageQuantity}` : '0'} → +{s.suggestedOrderQuantity} {s.unit}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          {s.impactedOrderNumbers.length > 0 ? (
+                            <span className="t-small text-black/75 dark:text-white/75">{s.impactedOrderNumbers.join(', ')}</span>
+                          ) : (
+                            <span className="t-small text-black/50 dark:text-white/50">Seuil sécurité</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-semibold text-black dark:text-white">
+                          {formatMoney(centimesToDzd(s.estimatedOrderTotalCentimes), language)}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <AtriumButton
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            icon={<ShoppingCart size={13} />}
+                            onClick={() => handleRestockFromSuggestion(s)}
+                          >
+                            {isAr ? 'استلام BR' : isEn ? 'Restock BR' : 'Réappro BR'}
+                          </AtriumButton>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 t-cap font-semibold text-black dark:text-white">
+                <GitBranch size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span>
+                  {isAr
+                    ? 'سلسلة التتبع الكاملة للدفعة (المورد ← التصنيع ← الجودة ← المنتج التام ← الفاتورة)'
+                    : 'Chaîne de Traçabilité Bout-en-Bout (Lots Fournisseurs → OF → CQ/NCR → PFG → BL/FAC)'}
+                </span>
+              </div>
+              <LiveSelect
+                size="sm"
+                tone="soft"
+                className="min-w-[260px]"
+                value={selectedTraceOrderId}
+                onValueChange={setSelectedTraceOrderId}
+                options={orders.map((o) => ({
+                  value: o.id,
+                  label: `${o.orderNumber} · ${o.batchLotNumber || 'LOT'} · ${o.productName}`,
+                }))}
+                aria-label="Traceability Order Selector"
+              />
+            </div>
+
+            {traceGraph ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 t-cap">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2">
+                  <div className="font-semibold text-black dark:text-white flex items-center justify-between">
+                    <span>1. {isAr ? 'المواد الأولية BSM/BR' : 'Lots Matières Amont'}</span>
+                    <span className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{traceGraph.upstreamMaterials.length}</span>
+                  </div>
+                  {traceGraph.upstreamMaterials.length === 0 ? (
+                    <p className="t-small text-black/55 dark:text-white/55">Aucun bon BSM/BR lié.</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {traceGraph.upstreamMaterials.map((u, idx) => (
+                        <div key={idx} className="p-2 rounded bg-white dark:bg-[#191716] border border-[var(--atr-divider)]">
+                          <div className="font-semibold text-black dark:text-white truncate">{u.materialName}</div>
+                          <div className="t-small text-black/60 dark:text-white/65 tabular-nums">
+                            {u.voucherNumber} · {u.quantity} {u.unit}
+                          </div>
+                          <div className="t-small text-emerald-700 dark:text-emerald-400 tabular-nums">
+                            Lot: {u.supplierLotNumber} {u.onmlCertificateRef ? `· ${u.onmlCertificateRef}` : ''}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2">
+                  <div className="font-semibold text-black dark:text-white flex items-center justify-between">
+                    <span>2. {isAr ? 'الجودة & NCR' : 'Contrôles CQ & NCR'}</span>
+                    <span className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{traceGraph.qualityGates.length + traceGraph.ncrHolds.length}</span>
+                  </div>
+                  {traceGraph.qualityGates.map((q, idx) => (
+                    <div key={idx} className="p-2 rounded bg-white dark:bg-[#191716] border border-[var(--atr-divider)]">
+                      <div className="font-semibold text-black dark:text-white">{q.inspectionNumber} · {q.verdict}</div>
+                      <div className="t-small text-black/60 dark:text-white/65 tabular-nums">
+                        +{q.acceptedQuantity} OK / -{q.rejectedQuantity} Rebut
+                      </div>
+                    </div>
+                  ))}
+                  {traceGraph.ncrHolds.map((n, idx) => (
+                    <div key={idx} className="p-2 rounded bg-amber-50 dark:bg-amber-950/35 border border-amber-400/40">
+                      <div className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                        <ShieldAlert size={12} /> {n.ncrNumber} ({n.scrappedQuantity} u)
+                      </div>
+                      <div className="t-small text-amber-700 dark:text-amber-200">
+                        {n.cmupAdjustmentHeld ? 'CMUP en attente (Gate 1)' : n.disposition}
+                      </div>
+                    </div>
+                  ))}
+                  {traceGraph.qualityGates.length === 0 && traceGraph.ncrHolds.length === 0 && (
+                    <p className="t-small text-black/55 dark:text-white/55">Aucun contrôle QC enregistré.</p>
+                  )}
+                </div>
+
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2">
+                  <div className="font-semibold text-black dark:text-white flex items-center justify-between">
+                    <span>3. {isAr ? 'المنتجات التامة PFG' : 'Lots Produits Finis'}</span>
+                    <span className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{traceGraph.finishedGoodsLots.length}</span>
+                  </div>
+                  {traceGraph.finishedGoodsLots.length === 0 ? (
+                    <p className="t-small text-black/55 dark:text-white/55">Aucun lot PFG généré.</p>
+                  ) : (
+                    traceGraph.finishedGoodsLots.map((fg) => (
+                      <div key={fg.id} className="p-2 rounded bg-white dark:bg-[#191716] border border-[var(--atr-divider)]">
+                        <div className="font-semibold text-black dark:text-white">{fg.lotNumber} · {fg.releaseStatus}</div>
+                        <div className="t-small text-black/60 dark:text-white/65 tabular-nums">
+                          {fg.qtyProduced} u · CMUP {formatMoney(centimesToDzd(fg.unitCmupCentimes), language)}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2">
+                  <div className="font-semibold text-black dark:text-white flex items-center justify-between">
+                    <span>4. {isAr ? 'التسليم والفوترة 6.1' : 'BL / Factures Aval'}</span>
+                    <span className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{traceGraph.downstreamDocuments.length}</span>
+                  </div>
+                  {traceGraph.downstreamDocuments.length === 0 ? (
+                    <p className="t-small text-black/55 dark:text-white/55">Aucun document commercial lié.</p>
+                  ) : (
+                    traceGraph.downstreamDocuments.map((d) => (
+                      <div key={d.id} className="p-2 rounded bg-white dark:bg-[#191716] border border-[var(--atr-divider)]">
+                        <div className="font-semibold text-black dark:text-white">{d.documentNumber} ({d.documentType})</div>
+                        <div className="t-small text-black/60 dark:text-white/65 tabular-nums">
+                          {d.customerName} · {formatMoney(centimesToDzd(d.totalCentimes), language)}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
         )}
       </ScreenPod>
 
@@ -1604,16 +2129,69 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 required
               />
             </div>
-            <LabelInput
-              field="voucherNotes"
-              label={isAr ? 'سبب التحويل / رقم أمر التصنيع' : 'Motif / N° Ordre de Fabrication lié'}
-              value={voucherNotes}
-              onChange={setVoucherNotes}
-              placeholder="Ex: Sortie pour OF-2026-0089..."
-              width="100%"
-              height={40}
-              corner={12}
-            />
+              <LabelInput
+                field="voucherNotes"
+                label={isAr ? 'سبب التحويل / ملاحظات' : 'Motif / Référence BL Fournisseur'}
+                value={voucherNotes}
+                onChange={setVoucherNotes}
+                placeholder="Ex: Sortie pour OF-2026-0089..."
+                width="100%"
+                height={40}
+                corner={12}
+              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelSelect
+                field="voucherOrderId"
+                label={isAr ? 'أمر التصنيع المرتبط (اختياري)' : 'Ordre de Fabrication lié (Optionnel)'}
+                value={voucherOrderId}
+                onChange={setVoucherOrderId}
+                options={[
+                  { value: '', label: isAr ? '-- بدون ربط --' : '-- Aucun --' },
+                  ...orders.map((o) => ({ value: o.id, label: `${o.orderNumber} · ${o.productName}` })),
+                ]}
+                width="100%"
+                height={40}
+                corner={12}
+              />
+              {voucherType === 'BonDeReception' && (
+                <LabelInput
+                  field="voucherIncomingUnitCost"
+                  label={isAr ? 'سعر الشراء الجديد (دج)' : 'Prix Réception Unitaire (DZD)'}
+                  type="number"
+                  step="any"
+                  placeholder={String(materials.find((m) => m.id === voucherMaterialId)?.unitCostPmpDzd || 0)}
+                  value={voucherIncomingUnitCost}
+                  onChange={setVoucherIncomingUnitCost}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              )}
+            </div>
+            {lateReceiptPreview && lateReceiptPreview.unitDeltaCentimes !== 0 && (
+              <div
+                data-testid="mfg-late-receipt-cmup-preview"
+                className="p-3 rounded-[var(--r-ctl,12px)] bg-amber-50 dark:bg-amber-950/35 border border-amber-400/50 t-cap space-y-1 text-amber-900 dark:text-amber-200"
+              >
+                <div className="font-semibold flex items-center gap-1.5">
+                  <AlertTriangle size={14} />
+                  <span>
+                    {isAr ? 'تحديث متوسط التكلفة المرجح CMUP' : 'Recalcul CMUP Réception Tardive'}
+                  </span>
+                </div>
+                <div className="tabular-nums">
+                  PMP: {formatMoney(centimesToDzd(lateReceiptPreview.previousCmupCentimes), language)} →{' '}
+                  <strong>{formatMoney(centimesToDzd(lateReceiptPreview.newCmupCentimes), language)}</strong>
+                </div>
+                {lateReceiptPreview.affectedOrders.length > 0 && (
+                  <div className="t-small">
+                    {lateReceiptPreview.affectedOrders.length}{' '}
+                    {isAr ? 'أمر تصنيع سيتأثر بالفرق:' : 'OF actif(s) impacté(s):'}{' '}
+                    {lateReceiptPreview.affectedOrders.map((a) => `${a.orderNumber} (${formatMoney(centimesToDzd(a.recalcDeltaCentimes), language)})`).join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <Button type="button" tone="soft" size={40} onClick={() => setIsVoucherModalOpen(false)}>
                 {isAr ? 'إلغاء' : 'Annuler'}
@@ -1744,6 +2322,15 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           </div>
         )}
       </KineticModalShell>
+
+      <UnifiedInvoiceComposerModal
+        isOpen={Boolean(fgDeliveryPrefill)}
+        onClose={() => setFgDeliveryPrefill(null)}
+        prefill={fgDeliveryPrefill?.prefill || null}
+        onSaved={() => {
+          setFgDeliveryPrefill(null);
+        }}
+      />
     </div>
   );
 };

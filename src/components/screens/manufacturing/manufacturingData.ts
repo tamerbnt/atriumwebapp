@@ -6,9 +6,32 @@ import {
   MaterialTransferVoucher,
   QualityInspectionRecord,
   MfgNcrRecord,
+  WorkstationSessionLog,
+  MfgAlertRecord,
+  MfgFinishedGoodsLot,
+  MfgMachineAsset,
+  MfgMachineMaintenanceLog,
+  MfgCuttingPlan,
+  MfgPieceRateEntry,
 } from '../../../types';
 import { buildScrapNcrArtifacts } from '../../../utils/step5Actions';
-import { useAtriumSelector } from '../../../services/store';
+import {
+  isBomLockedByOrders,
+  captureBomSnapshot,
+  forkBomNewVersion,
+  applySessionToMachineRuntime,
+  computePieceRateEarnings,
+  formatMfgSequentialCode,
+  computeLateReceiptCmupAdjustment,
+  optimizeLinearBarCutting1D,
+} from '../../../utils/manufacturingDepth';
+import { dzdToCentimes, roundHalfAwayFromZero } from '../../../utils/money';
+import {
+  useAtriumSelector,
+  getAtriumActions,
+  addNotification,
+  showToast,
+} from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import {
   cloneSnapshot,
@@ -604,6 +627,233 @@ export const INITIAL_QC_RECORDS: QualityInspectionRecord[] = [
   },
 ];
 
+export const INITIAL_MFG_MACHINES: MfgMachineAsset[] = [
+  {
+    id: 'wc_decoupe',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    code: 'CNC-01',
+    name: 'Centre Usinage CNC 5 Axes (Bois & Alu)',
+    department: 'Découpe & Usinage',
+    machineType: 'CNC 5 Axes',
+    hourlyCostDzd: 3500,
+    status: 'Running',
+    currentOrderCode: 'OF-2026-0089',
+    runningHours: 238,
+    cycleCount: 1480,
+    maintenanceIntervalHours: 250,
+    maintenanceIntervalDays: 90,
+    lastMaintenanceDate: '2026-03-01',
+    nextMaintenanceDueDate: '2026-06-01',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 'wc_injection',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    code: 'INJ-350T',
+    name: 'Presse Injection Plastique 350T',
+    department: 'Plasturgie',
+    machineType: 'Presse Hydraulique',
+    hourlyCostDzd: 5500,
+    status: 'Idle',
+    runningHours: 512,
+    cycleCount: 14200,
+    maintenanceIntervalHours: 500,
+    maintenanceIntervalDays: 60,
+    lastMaintenanceDate: '2026-02-15',
+    nextMaintenanceDueDate: '2026-04-16',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 'wc_piquage',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    code: 'TEX-LINE-02',
+    name: 'Ligne Piqueuses Industrielles Double Entraînement',
+    department: 'Confection Textile',
+    machineType: 'Piqueuse',
+    hourlyCostDzd: 1800,
+    status: 'Running',
+    currentOrderCode: 'OF-2026-0092',
+    runningHours: 145,
+    cycleCount: 3800,
+    maintenanceIntervalHours: 300,
+    maintenanceIntervalDays: 90,
+    lastMaintenanceDate: '2026-04-01',
+    nextMaintenanceDueDate: '2026-07-01',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+];
+
+export const INITIAL_MFG_MAINTENANCE: MfgMachineMaintenanceLog[] = [
+  {
+    id: 'mnt_01',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    ticketNumber: 'MNT-2026-00001',
+    machineId: 'wc_injection',
+    machineName: 'Presse Injection Plastique 350T',
+    maintenanceType: 'Preventive',
+    triggerReason: 'Seuil 500h dépassé (512h)',
+    runtimeHoursAtService: 512,
+    cycleCountAtService: 14200,
+    scheduledDate: '2026-05-25',
+    technicianName: 'Rafik Benali (Électromécanicien)',
+    costCentimes: 1_850_000,
+    status: 'Overdue',
+    checklistNotes: 'Vidange huile hydraulique ISO VG46, contrôle clapets buse & graissage colonnes.',
+    createdAt: '2026-05-20T09:00:00Z',
+  },
+];
+
+export const INITIAL_MFG_ALERTS: MfgAlertRecord[] = [
+  {
+    id: 'andn_01',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    alertNumber: 'ANDN-2026-00001',
+    alertType: 'MaintenanceDue',
+    severity: 'warning',
+    workstationId: 'wc_injection',
+    workstationName: 'Presse Injection Plastique 350T',
+    raisedByName: 'Système GMAO',
+    notifiedRoles: ['gerant', 'chef_atelier'],
+    message: 'Presse Injection 350T : intervalle préventif 500h atteint (512h). Révision requise.',
+    status: 'Open',
+    createdAt: '2026-05-24T08:15:00Z',
+  },
+];
+
+export const INITIAL_FINISHED_GOODS: MfgFinishedGoodsLot[] = [
+  {
+    id: 'pfg_01',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    lotNumber: 'PFG-2026-00001',
+    sku: 'FIN-CHAIR-04',
+    productName: 'Chaise Ergonomique Coque Polypropylène',
+    orderId: 'of_02',
+    orderNumber: 'OF-2026-0090',
+    qcInspectionId: 'qc_01',
+    qtyProduced: 100,
+    qtyReserved: 0,
+    qtyDelivered: 0,
+    unit: 'Unité',
+    unitCmupCentimes: 612_000,
+    warehouseLocation: 'Magasin PF - Travée A',
+    releaseStatus: 'Released',
+    producedAt: '2026-05-16T15:00:00Z',
+    releasedAt: '2026-05-16T15:30:00Z',
+    releasedBy: 'Ing. Sofiane Mokrani (CQ & Métrologie)',
+    notes: 'Lot certifié IANOR NA 1620 — Prêt pour expédition BL/FAC.',
+    createdAt: '2026-05-16T15:00:00Z',
+  },
+  {
+    id: 'pfg_02',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    lotNumber: 'PFG-2026-00002',
+    sku: 'FIN-CHAIR-04',
+    productName: 'Chaise Ergonomique Coque Polypropylène',
+    orderId: 'of_05',
+    orderNumber: 'OF-2026-0093',
+    qcInspectionId: 'qc_03',
+    qtyProduced: 39,
+    qtyReserved: 0,
+    qtyDelivered: 0,
+    unit: 'Unité',
+    unitCmupCentimes: 612_000,
+    warehouseLocation: 'Zone Quarantaine CQ',
+    releaseStatus: 'Quarantine',
+    producedAt: '2026-05-24T10:30:00Z',
+    notes: 'En attente de validation CQ finale suite micro-retassure.',
+    createdAt: '2026-05-24T10:30:00Z',
+  },
+];
+
+export const INITIAL_SESSION_LOGS: WorkstationSessionLog[] = [
+  {
+    id: 'wsl_01',
+    accountId: 'acc_01',
+    businessId: 'biz_manufacturing',
+    branchId: 'branch_manufacturing_main',
+    staffId: 'staff_01',
+    operatorStaffId: 'staff_01',
+    operatorName: 'Karim Belkacem (Opérateur CNC)',
+    pinVerified: true,
+    pinVerifiedAt: '2026-05-24T08:00:00Z',
+    ppeChecklist: { glasses: true, gloves: true, shoes: true, helmet: true },
+    ppeVerified: true,
+    ppeVerifiedAt: '2026-05-24T08:01:00Z',
+    workCenterId: 'wc_decoupe',
+    workCenterName: 'Centre Usinage CNC 5 Axes (Bois & Alu)',
+    orderId: 'of_01',
+    orderNumber: 'OF-2026-0089',
+    stepNumber: 1,
+    operationName: 'Dégauchissage & Rabotage CNC',
+    startTime: '2026-05-24T08:02:00Z',
+    endTime: '2026-05-24T12:02:00Z',
+    durationSeconds: 14400,
+    pauseDurationSeconds: 0,
+    goodQuantity: 2,
+    scrapQuantity: 0,
+    pieceRateCentimes: 250_000,
+    status: 'Submitted',
+    createdAt: '2026-05-24T12:02:00Z',
+  },
+];
+
+export const INITIAL_CUTTING_PLANS: MfgCuttingPlan[] = (() => {
+  const parts = [
+    { id: 'part_1', label: 'Montant Dormant 2150mm', lengthMm: 2150, quantity: 6 },
+    { id: 'part_2', label: 'Traverse Basse 950mm', lengthMm: 950, quantity: 6 },
+  ];
+  const layoutResult = optimizeLinearBarCutting1D({
+    stockLengthMm: 6000,
+    kerfMm: 4,
+    parts,
+    minReusableOffcutMm: 500,
+  });
+  return [
+    {
+      id: 'cut_01',
+      accountId: 'acc_01',
+      businessId: 'biz_manufacturing',
+      branchId: 'branch_manufacturing_main',
+      staffId: 'staff_01',
+      planNumber: 'CUT-2026-00001',
+      title: 'Débit Profilé Aluminium Série 60 — Lot Hydra',
+      tradeCategory: 'Aluminum',
+      cuttingMode: '1d_linear',
+      stockLengthMm: 6000,
+      stockWidthMm: 120,
+      kerfMm: 4,
+      parts,
+      layoutResult,
+      stockUnitsRequired: layoutResult.stockUnitsRequired,
+      wastePercent: layoutResult.wastePercent,
+      reusableOffcuts: layoutResult.reusableOffcutsSummary,
+      unitPriceCentimes: 185_000,
+      createdAt: '2026-05-24T09:00:00Z',
+    },
+  ];
+})();
+
 export const useManufacturingData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
@@ -682,6 +932,60 @@ export const useManufacturingData = () => {
     }
   });
 
+  const [alerts, setAlerts] = useState<MfgAlertRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_alerts_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [finishedGoods, setFinishedGoods] = useState<MfgFinishedGoodsLot[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_finished_goods_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [machines, setMachines] = useState<MfgMachineAsset[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_machines_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [maintenanceLogs, setMaintenanceLogs] = useState<MfgMachineMaintenanceLog[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_maintenance_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [sessionLogs, setSessionLogs] = useState<WorkstationSessionLog[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_session_logs_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [cuttingPlans, setCuttingPlans] = useState<MfgCuttingPlan[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_mfg_cutting_plans_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // LocalStorage synchronizers (idle-deferred)
   useIdlePersist('atrium_mfg_boms', boms);
   useIdlePersist('atrium_mfg_orders', orders);
@@ -689,6 +993,12 @@ export const useManufacturingData = () => {
   useIdlePersist('atrium_mfg_vouchers', vouchers);
   useIdlePersist('atrium_mfg_qc_records', qcRecords);
   useIdlePersist('atrium_mfg_ncr_records_v1', ncrRecords);
+  useIdlePersist('atrium_mfg_alerts_v2', alerts);
+  useIdlePersist('atrium_mfg_finished_goods_v2', finishedGoods);
+  useIdlePersist('atrium_mfg_machines_v2', machines);
+  useIdlePersist('atrium_mfg_maintenance_v2', maintenanceLogs);
+  useIdlePersist('atrium_mfg_session_logs_v2', sessionLogs);
+  useIdlePersist('atrium_mfg_cutting_plans_v2', cuttingPlans);
 
   // Hydrate manufacturing vertical state from Supabase when configured
   useEffect(() => {
@@ -704,6 +1014,12 @@ export const useManufacturingData = () => {
         remoteVouchers,
         remoteQc,
         remoteNcrs,
+        remoteAlerts,
+        remoteFinishedGoods,
+        remoteMachines,
+        remoteMaintenance,
+        remoteSessions,
+        remoteCuttingPlans,
       ] = await runWithConcurrency(
         [
           () => manufacturingService.fetchBoms(activeBranchId),
@@ -712,6 +1028,12 @@ export const useManufacturingData = () => {
           () => manufacturingService.fetchMaterialVouchers(activeBranchId),
           () => manufacturingService.fetchQcInspections(activeBranchId),
           () => manufacturingService.fetchNcrRecords(activeBranchId),
+          () => manufacturingService.fetchAlerts(activeBranchId),
+          () => manufacturingService.fetchFinishedGoods(activeBranchId),
+          () => manufacturingService.fetchMachines(activeBranchId),
+          () => manufacturingService.fetchMaintenanceLogs(activeBranchId),
+          () => manufacturingService.fetchSessionLogs(activeBranchId),
+          () => manufacturingService.fetchCuttingPlans(activeBranchId),
         ],
         4
       );
@@ -735,6 +1057,24 @@ export const useManufacturingData = () => {
       if (Array.isArray(remoteNcrs) && remoteNcrs.length > 0) {
         setNcrRecords((prev) => mergeMfgById(prev, remoteNcrs as MfgNcrRecord[]));
       }
+      if (Array.isArray(remoteAlerts) && remoteAlerts.length > 0) {
+        setAlerts((prev) => mergeMfgById(prev, remoteAlerts as MfgAlertRecord[]));
+      }
+      if (Array.isArray(remoteFinishedGoods) && remoteFinishedGoods.length > 0) {
+        setFinishedGoods((prev) => mergeMfgById(prev, remoteFinishedGoods as MfgFinishedGoodsLot[]));
+      }
+      if (Array.isArray(remoteMachines) && remoteMachines.length > 0) {
+        setMachines((prev) => mergeMfgById(prev, remoteMachines as MfgMachineAsset[]));
+      }
+      if (Array.isArray(remoteMaintenance) && remoteMaintenance.length > 0) {
+        setMaintenanceLogs((prev) => mergeMfgById(prev, remoteMaintenance as MfgMachineMaintenanceLog[]));
+      }
+      if (Array.isArray(remoteSessions) && remoteSessions.length > 0) {
+        setSessionLogs((prev) => mergeMfgById(prev, remoteSessions as WorkstationSessionLog[]));
+      }
+      if (Array.isArray(remoteCuttingPlans) && remoteCuttingPlans.length > 0) {
+        setCuttingPlans((prev) => mergeMfgById(prev, remoteCuttingPlans as MfgCuttingPlan[]));
+      }
     });
 
     return () => {
@@ -753,6 +1093,12 @@ export const useManufacturingData = () => {
       'mfg_material_vouchers',
       'mfg_qc_inspections',
       'mfg_ncr_records',
+      'mfg_alerts',
+      'mfg_finished_goods',
+      'mfg_workstations',
+      'mfg_machine_maintenance',
+      'mfg_workstation_logs',
+      'mfg_cutting_plans',
     ];
 
     return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
@@ -769,6 +1115,12 @@ export const useManufacturingData = () => {
       prune('mfg_material_vouchers', setVouchers);
       prune('mfg_qc_inspections', setQcRecords);
       prune('mfg_ncr_records', setNcrRecords);
+      prune('mfg_alerts', setAlerts);
+      prune('mfg_finished_goods', setFinishedGoods);
+      prune('mfg_workstations', setMachines);
+      prune('mfg_machine_maintenance', setMaintenanceLogs);
+      prune('mfg_workstation_logs', setSessionLogs);
+      prune('mfg_cutting_plans', setCuttingPlans);
 
       const changedSet = new Set(changedTables);
       const tasks: Array<() => Promise<void>> = [];
@@ -818,6 +1170,54 @@ export const useManufacturingData = () => {
           const rows = await manufacturingService.fetchNcrRecords(activeBranchId);
           if (!cancelled && Array.isArray(rows) && rows.length > 0) {
             setNcrRecords((prev) => mergeMfgById(prev, rows as MfgNcrRecord[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_alerts')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchAlerts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setAlerts((prev) => mergeMfgById(prev, rows as MfgAlertRecord[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_finished_goods')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchFinishedGoods(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setFinishedGoods((prev) => mergeMfgById(prev, rows as MfgFinishedGoodsLot[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_workstations')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMachines(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMachines((prev) => mergeMfgById(prev, rows as MfgMachineAsset[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_machine_maintenance')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMaintenanceLogs(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMaintenanceLogs((prev) => mergeMfgById(prev, rows as MfgMachineMaintenanceLog[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_workstation_logs')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchSessionLogs(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setSessionLogs((prev) => mergeMfgById(prev, rows as WorkstationSessionLog[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_cutting_plans')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchCuttingPlans(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setCuttingPlans((prev) => mergeMfgById(prev, rows as MfgCuttingPlan[]));
           }
         });
       }
@@ -871,6 +1271,34 @@ export const useManufacturingData = () => {
             setQcRecords((prev) => mergeMfgById(prev, rows as QualityInspectionRecord[]));
           }
         });
+      } else if (evt.table === 'mfg_alerts') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchAlerts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setAlerts((prev) => mergeMfgById(prev, rows as MfgAlertRecord[]));
+          }
+        });
+      } else if (evt.table === 'mfg_finished_goods') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchFinishedGoods(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setFinishedGoods((prev) => mergeMfgById(prev, rows as MfgFinishedGoodsLot[]));
+          }
+        });
+      } else if (evt.table === 'mfg_workstations') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMachines(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMachines((prev) => mergeMfgById(prev, rows as MfgMachineAsset[]));
+          }
+        });
+      } else if (evt.table === 'mfg_machine_maintenance') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMaintenanceLogs(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMaintenanceLogs((prev) => mergeMfgById(prev, rows as MfgMachineMaintenanceLog[]));
+          }
+        });
       }
 
       if (tasks.length > 0) {
@@ -893,6 +1321,12 @@ export const useManufacturingData = () => {
     vouchers,
     qcRecords,
     ncrRecords,
+    alerts,
+    finishedGoods,
+    machines,
+    maintenanceLogs,
+    sessionLogs,
+    cuttingPlans,
   });
   latestRef.current = {
     boms,
@@ -901,6 +1335,12 @@ export const useManufacturingData = () => {
     vouchers,
     qcRecords,
     ncrRecords,
+    alerts,
+    finishedGoods,
+    machines,
+    maintenanceLogs,
+    sessionLogs,
+    cuttingPlans,
   };
 
   const restoreAt = <T extends { id: string }>(
@@ -920,7 +1360,14 @@ export const useManufacturingData = () => {
 
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
-    const scoped = withBranch(order);
+    const matchedBom = latestRef.current.boms.find((b) => b.id === order.bomId);
+    const enriched: ManufacturingOrder = {
+      ...order,
+      bomCode: order.bomCode || matchedBom?.bomCode,
+      pinnedBomVersion: order.pinnedBomVersion ?? matchedBom?.version ?? 1,
+      bomSnapshot: order.bomSnapshot || (matchedBom ? captureBomSnapshot(matchedBom) : undefined),
+    };
+    const scoped = withBranch(enriched);
     const snap = cloneSnapshot(scoped);
     setOrders((prev) => [scoped, ...prev]);
     void manufacturingService.upsertOrder(scoped).catch(() => {});
@@ -1084,9 +1531,38 @@ export const useManufacturingData = () => {
     });
   };
 
+  const forkBom = (sourceBom: ManufacturingBom, updates: Partial<ManufacturingBom>) => {
+    const { archivedSource, nextBom } = forkBomNewVersion(sourceBom, updates);
+    const scopedArchived = withBranch(archivedSource);
+    const scopedNext = withBranch(nextBom);
+    setBoms((prev) => [
+      scopedNext,
+      ...prev.map((b) => (b.id === scopedArchived.id ? scopedArchived : b)),
+    ]);
+    void manufacturingService.forkBomVersion(scopedArchived.id, scopedNext).catch(() => {});
+    showToast({
+      type: 'info',
+      title: pickLocalizedText(language, {
+        fr: `Nomenclature révisée (v${scopedNext.version})`,
+        en: `BOM forked (v${scopedNext.version})`,
+        ar: `تم إنشاء نسخة جديدة (${scopedNext.version})`,
+      }),
+      message: pickLocalizedText(language, {
+        fr: `${scopedNext.bomCode} verrouillée sur OF actifs — nouvelle version v${scopedNext.version} créée.`,
+        en: `${scopedNext.bomCode} locked by active orders — forked to v${scopedNext.version}.`,
+        ar: `النسخة السابقة مقفلة بأوامر تصنيع نشطة — تم إنشاء النسخة v${scopedNext.version}.`,
+      }),
+    });
+    return scopedNext;
+  };
+
   const updateBom = (bom: ManufacturingBom) => {
-    const scoped = withBranch(bom);
     const existing = latestRef.current.boms.find((b) => b.id === bom.id);
+    if (existing && isBomLockedByOrders(existing.id, latestRef.current.orders)) {
+      return forkBom(existing, bom);
+    }
+
+    const scoped = withBranch(bom);
     const prevSnap = existing ? cloneSnapshot(existing) : null;
     const nextSnap = cloneSnapshot(scoped);
     setBoms((prev) => prev.map((b) => (b.id === bom.id ? scoped : b)));
@@ -1116,6 +1592,7 @@ export const useManufacturingData = () => {
         },
       });
     }
+    return scoped;
   };
 
   const deleteBom = (id: string) => {
@@ -1224,6 +1701,51 @@ export const useManufacturingData = () => {
     const snap = cloneSnapshot(scoped);
     setVouchers((prev) => [scoped, ...prev]);
     void manufacturingService.processMaterialVoucher(scoped).catch(() => {});
+
+    if (scoped.voucherType === 'BonDeReception') {
+      for (const item of scoped.items || []) {
+        const mat = latestRef.current.materials.find((m) => m.id === item.materialId);
+        if (!mat) continue;
+        const cmupCheck = computeLateReceiptCmupAdjustment({
+          material: mat,
+          incomingQty: item.quantity,
+          incomingUnitCostDzd: item.unitCostDzd,
+          vouchers: latestRef.current.vouchers,
+          activeOrders: latestRef.current.orders,
+        });
+        if (cmupCheck.hasMaterialDeltaWarning) {
+          const deltaMap = new Map(
+            cmupCheck.affectedOrders.map((a) => [a.orderId, a.recalcDeltaCentimes])
+          );
+          setOrders((prev) =>
+            prev.map((o) => {
+              const delta = deltaMap.get(o.id);
+              if (!delta) return o;
+              const nextOrder = {
+                ...o,
+                cmupRecalcDeltaCentimes: (o.cmupRecalcDeltaCentimes || 0) + delta,
+                updatedAt: new Date().toISOString(),
+              };
+              void manufacturingService.upsertOrder(nextOrder).catch(() => {});
+              return nextOrder;
+            })
+          );
+          showToast({
+            type: 'warning',
+            title: pickLocalizedText(language, {
+              fr: `Recalcul CMUP tardif (${mat.name})`,
+              en: `Late-Receipt CMUP Adjustment (${mat.name})`,
+              ar: `إعادة حساب التكلفة المرجحة المتأخرة (${mat.name})`,
+            }),
+            message: pickLocalizedText(language, {
+              fr: `${cmupCheck.affectedOrders.length} OF actif(s) impacté(s) par la variation de coût unitaire.`,
+              en: `${cmupCheck.affectedOrders.length} active order(s) impacted by unit cost change.`,
+              ar: `تأثرت ${cmupCheck.affectedOrders.length} أوامر تصنيع بتغير سعر الشراء.`,
+            }),
+          });
+        }
+      }
+    }
 
     registerUndoEntry({
       vertical: 'manufacturing_production',
@@ -1388,6 +1910,380 @@ export const useManufacturingData = () => {
     return { qcRecord: scopedQc, ncrRecord: scopedNcr };
   };
 
+  // Workstation Session Logging + Runtime Hours + Piece-Rate Payroll Bridge
+  const logWorkstationSession = (
+    log: WorkstationSessionLog,
+    ratePerPieceCentimes?: number
+  ) => {
+    const scopedLog = withBranch(log);
+    setSessionLogs((prev) => [scopedLog, ...prev]);
+    void manufacturingService.upsertSessionLog(scopedLog).catch(() => {});
+
+    const targetMachine = latestRef.current.machines.find(
+      (m) => m.id === scopedLog.workCenterId || m.name === scopedLog.workCenterName
+    );
+    if (targetMachine) {
+      const updatedMachine = applySessionToMachineRuntime(
+        targetMachine,
+        scopedLog.durationSeconds,
+        scopedLog.goodQuantity + scopedLog.scrapQuantity
+      );
+      setMachines((prev) => prev.map((m) => (m.id === updatedMachine.id ? updatedMachine : m)));
+      void manufacturingService.upsertMachine(updatedMachine).catch(() => {});
+    }
+
+    const targetOrder = latestRef.current.orders.find(
+      (o) => o.id === scopedLog.orderId || o.orderNumber === scopedLog.orderNumber
+    );
+    if (targetOrder) {
+      const hourlyRateDzd = targetMachine?.hourlyCostDzd || 2800;
+      const addedLaborCentimes = roundHalfAwayFromZero(
+        dzdToCentimes(hourlyRateDzd) * (Math.max(0, scopedLog.durationSeconds) / 3600)
+      );
+      const nextProduced = (targetOrder.actualQuantityProduced || targetOrder.quantityProduced || 0) + scopedLog.goodQuantity;
+      const nextScrap = (targetOrder.scrapQuantity || targetOrder.quantityScrapped || 0) + scopedLog.scrapQuantity;
+      const nextStatus: ManufacturingOrder['status'] =
+        nextProduced >= targetOrder.targetQuantity ? 'QC_Pending' : 'InProduction';
+      const updatedOrder: ManufacturingOrder = {
+        ...targetOrder,
+        actualQuantityProduced: nextProduced,
+        quantityProduced: nextProduced,
+        scrapQuantity: nextScrap,
+        quantityScrapped: nextScrap,
+        actualLaborCostCentimes: (targetOrder.actualLaborCostCentimes || 0) + addedLaborCentimes,
+        status: nextStatus,
+        updatedAt: new Date().toISOString(),
+      };
+      setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
+      void manufacturingService.upsertOrder(updatedOrder).catch(() => {});
+    }
+
+    const effectiveRate = ratePerPieceCentimes ?? scopedLog.pieceRateCentimes ?? targetOrder?.unitPieceRateCentimes ?? 0;
+    let pieceEntry: MfgPieceRateEntry | null = null;
+    if (scopedLog.goodQuantity > 0 && effectiveRate > 0) {
+      const grossCentimes = computePieceRateEarnings({
+        goodUnits: scopedLog.goodQuantity,
+        ratePerPieceCentimes: effectiveRate,
+      });
+      const periodMonth = (scopedLog.endTime || scopedLog.startTime || new Date().toISOString()).slice(0, 7);
+      pieceEntry = withBranch<MfgPieceRateEntry>({
+        id: `mpr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        accountId: scopedLog.accountId,
+        businessId: scopedLog.businessId,
+        branchId: scopedLog.branchId,
+        staffId: scopedLog.operatorStaffId || scopedLog.staffId,
+        operatorStaffId: scopedLog.operatorStaffId || scopedLog.staffId,
+        operatorName: scopedLog.operatorName,
+        workstationLogId: scopedLog.id,
+        orderId: scopedLog.orderId,
+        orderNumber: scopedLog.orderNumber,
+        periodMonth,
+        goodUnits: scopedLog.goodQuantity,
+        scrapUnits: scopedLog.scrapQuantity,
+        ratePerPieceCentimes: effectiveRate,
+        grossAmountCentimes: grossCentimes,
+        status: 'accrued',
+        createdAt: new Date().toISOString(),
+      });
+      getAtriumActions().recordMfgPieceRateEntry(pieceEntry);
+    }
+
+    return { log: scopedLog, pieceEntry };
+  };
+
+  // Persistent Andon & Shopfloor Alerts (mfg_alerts)
+  const triggerAndonAlert = (input: {
+    alertType: MfgAlertRecord['alertType'];
+    severity: MfgAlertRecord['severity'];
+    workstationId?: string;
+    workstationName?: string;
+    orderId?: string;
+    orderNumber?: string;
+    raisedByName: string;
+    raisedByStaffId?: string;
+    message: string;
+  }) => {
+    const alertNumber = formatMfgSequentialCode(
+      'ANDN',
+      latestRef.current.alerts.map((a) => a.alertNumber)
+    );
+    const alert = withBranch<MfgAlertRecord>({
+      id: `andn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      alertNumber,
+      alertType: input.alertType,
+      severity: input.severity,
+      workstationId: input.workstationId,
+      workstationName: input.workstationName,
+      orderId: input.orderId,
+      orderNumber: input.orderNumber,
+      raisedByStaffId: input.raisedByStaffId || currentStaffId,
+      raisedByName: input.raisedByName,
+      notifiedRoles: ['gerant', 'chef_atelier'],
+      message: input.message,
+      status: 'Open',
+      createdAt: new Date().toISOString(),
+    });
+    setAlerts((prev) => [alert, ...prev]);
+    void manufacturingService.triggerAndonAlert(alert).catch(() => {});
+
+    addNotification({
+      title: `${alert.alertNumber} — ${input.workstationName || input.orderNumber || 'Atelier'}`,
+      message: `${input.message} (Gérant & Chef Atelier notifiés)`,
+      type: input.severity === 'critical' ? 'error' : 'warning',
+      category: 'alert',
+      targetScreen: 'mfg_workstation',
+    });
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: alert.alertNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Alerte Andon ${alert.alertNumber} déclenchée`,
+        en: `Andon alert ${alert.alertNumber} triggered`,
+        ar: `تم تفعيل تنبيه أندون ${alert.alertNumber}`,
+      }),
+      undo: () => {
+        setAlerts((prev) => prev.filter((a) => a.id !== alert.id));
+        void syncCoordinator.softDeleteRow('mfg_alerts', alert.id, currentStaffId).catch(() => {});
+      },
+    });
+    return alert;
+  };
+
+  const resolveAndonAlert = (
+    alertId: string,
+    action: 'acknowledge' | 'resolve',
+    actorName: string,
+    resolutionNotes?: string
+  ) => {
+    const nowIso = new Date().toISOString();
+    const nextStatus: MfgAlertRecord['status'] = action === 'acknowledge' ? 'Acknowledged' : 'Resolved';
+    setAlerts((prev) =>
+      prev.map((a) =>
+        a.id === alertId
+          ? {
+              ...a,
+              status: nextStatus,
+              acknowledgedBy: a.acknowledgedBy || actorName,
+              acknowledgedAt: a.acknowledgedAt || nowIso,
+              resolvedBy: nextStatus === 'Resolved' ? actorName : a.resolvedBy,
+              resolvedAt: nextStatus === 'Resolved' ? nowIso : a.resolvedAt,
+              resolutionNotes: resolutionNotes || a.resolutionNotes,
+              updatedAt: nowIso,
+            }
+          : a
+      )
+    );
+    void manufacturingService
+      .resolveAndonAlert({ alertId, action, actorName, resolutionNotes })
+      .catch(() => {});
+  };
+
+  // Finished Goods Stock Lots & QC Release
+  const produceFinishedGoodsFromOrder = (params: {
+    order: ManufacturingOrder;
+    qtyProduced?: number;
+    warehouseLocation?: string;
+    qcInspectionId?: string;
+    releaseImmediately?: boolean;
+    releasedBy?: string;
+  }) => {
+    const { order, warehouseLocation = 'Magasin PF - Travée A', qcInspectionId, releaseImmediately, releasedBy } = params;
+    const qty = Math.max(1, params.qtyProduced ?? order.actualQuantityProduced ?? order.targetQuantity ?? 1);
+    const totalCostCentimes = dzdToCentimes(order.totalCostDzd || 0);
+    const unitCmupCentimes = roundHalfAwayFromZero(totalCostCentimes / qty);
+    const lotNumber = formatMfgSequentialCode(
+      'PFG',
+      latestRef.current.finishedGoods.map((f) => f.lotNumber)
+    );
+    const lot = withBranch<MfgFinishedGoodsLot>({
+      id: `pfg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      lotNumber,
+      sku: order.bomCode ? `FIN-${order.bomCode.replace('BOM-', '')}` : `FIN-${order.orderNumber}`,
+      productName: order.productName,
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      qcInspectionId,
+      qtyProduced: qty,
+      qtyReserved: 0,
+      qtyDelivered: 0,
+      unit: 'Unité',
+      unitCmupCentimes,
+      warehouseLocation,
+      releaseStatus: releaseImmediately ? 'Released' : 'Quarantine',
+      producedAt: new Date().toISOString(),
+      releasedAt: releaseImmediately ? new Date().toISOString() : undefined,
+      releasedBy: releaseImmediately ? releasedBy || 'Responsable CQ' : undefined,
+      createdAt: new Date().toISOString(),
+    });
+    setFinishedGoods((prev) => [lot, ...prev]);
+    void manufacturingService.upsertFinishedGoodsLot(lot).catch(() => {});
+    return lot;
+  };
+
+  const releaseFinishedGoodsLot = (params: {
+    fgId: string;
+    inspectorName: string;
+    qcInspectionId?: string;
+  }) => {
+    const nowIso = new Date().toISOString();
+    setFinishedGoods((prev) =>
+      prev.map((lot) =>
+        lot.id === params.fgId
+          ? {
+              ...lot,
+              releaseStatus: 'Released',
+              qcInspectionId: params.qcInspectionId || lot.qcInspectionId,
+              releasedBy: params.inspectorName,
+              releasedAt: nowIso,
+              updatedAt: nowIso,
+            }
+          : lot
+      )
+    );
+    void manufacturingService.releaseFinishedGoodsLot(params).catch(() => {});
+  };
+
+  // Machine & Preventive Maintenance Management
+  const upsertMachine = (machine: MfgMachineAsset) => {
+    const scoped = withBranch(machine);
+    setMachines((prev) => {
+      const exists = prev.some((m) => m.id === scoped.id);
+      return exists ? prev.map((m) => (m.id === scoped.id ? scoped : m)) : [scoped, ...prev];
+    });
+    void manufacturingService.upsertMachine(scoped).catch(() => {});
+    return scoped;
+  };
+
+  const scheduleMaintenanceTicket = (input: {
+    machine: MfgMachineAsset;
+    maintenanceType: MfgMachineMaintenanceLog['maintenanceType'];
+    triggerReason: string;
+    scheduledDate: string;
+    technicianName?: string;
+    costDzd?: number;
+    checklistNotes?: string;
+  }) => {
+    const ticketNumber = formatMfgSequentialCode(
+      'MNT',
+      latestRef.current.maintenanceLogs.map((l) => l.ticketNumber)
+    );
+    const ticket = withBranch<MfgMachineMaintenanceLog>({
+      id: `mnt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      ticketNumber,
+      machineId: input.machine.id,
+      machineName: input.machine.name,
+      maintenanceType: input.maintenanceType,
+      triggerReason: input.triggerReason,
+      runtimeHoursAtService: input.machine.runningHours,
+      cycleCountAtService: input.machine.cycleCount,
+      scheduledDate: input.scheduledDate,
+      technicianName: input.technicianName,
+      costCentimes: dzdToCentimes(input.costDzd || 0),
+      status: 'Scheduled',
+      checklistNotes: input.checklistNotes,
+      createdAt: new Date().toISOString(),
+    });
+    setMaintenanceLogs((prev) => [ticket, ...prev]);
+    void manufacturingService.upsertMaintenanceLog(ticket).catch(() => {});
+    return ticket;
+  };
+
+  const completeMaintenanceTicket = (params: {
+    maintenanceId: string;
+    technicianName: string;
+    costCentimes?: number;
+    notes?: string;
+  }) => {
+    const today = new Date().toISOString().split('T')[0];
+    const ticket = latestRef.current.maintenanceLogs.find((l) => l.id === params.maintenanceId);
+    setMaintenanceLogs((prev) =>
+      prev.map((l) =>
+        l.id === params.maintenanceId
+          ? {
+              ...l,
+              status: 'Completed',
+              completedDate: today,
+              technicianName: params.technicianName || l.technicianName,
+              costCentimes: params.costCentimes ?? l.costCentimes,
+              checklistNotes: params.notes || l.checklistNotes,
+              updatedAt: new Date().toISOString(),
+            }
+          : l
+      )
+    );
+    if (ticket) {
+      setMachines((prev) =>
+        prev.map((m) => {
+          if (m.id !== ticket.machineId) return m;
+          const nextDue = new Date();
+          nextDue.setDate(nextDue.getDate() + Math.max(1, m.maintenanceIntervalDays || 90));
+          return {
+            ...m,
+            lastMaintenanceDate: today,
+            nextMaintenanceDueDate: nextDue.toISOString().split('T')[0],
+            status: m.status === 'Maintenance' ? 'Idle' : m.status,
+            updatedAt: new Date().toISOString(),
+          };
+        })
+      );
+    }
+    void manufacturingService.completeMachineMaintenance(params).catch(() => {});
+  };
+
+  // Cutting Plans (Textile / Wood / Aluminum / Marble)
+  const saveCuttingPlan = (planInput: Omit<MfgCuttingPlan, 'id' | 'planNumber' | 'accountId' | 'businessId' | 'branchId' | 'staffId' | 'createdAt'> & { id?: string; planNumber?: string }) => {
+    const planNumber =
+      planInput.planNumber ||
+      formatMfgSequentialCode(
+        'CUT',
+        latestRef.current.cuttingPlans.map((p) => p.planNumber)
+      );
+    const plan = withBranch<MfgCuttingPlan>({
+      id: planInput.id || `cut_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      planNumber,
+      title: planInput.title,
+      tradeCategory: planInput.tradeCategory,
+      cuttingMode: planInput.cuttingMode,
+      stockLengthMm: planInput.stockLengthMm,
+      stockWidthMm: planInput.stockWidthMm,
+      kerfMm: planInput.kerfMm,
+      parts: planInput.parts,
+      layoutResult: planInput.layoutResult,
+      stockUnitsRequired: planInput.stockUnitsRequired,
+      wastePercent: planInput.wastePercent,
+      reusableOffcuts: planInput.reusableOffcuts,
+      linkedQuoteId: planInput.linkedQuoteId,
+      unitPriceCentimes: planInput.unitPriceCentimes,
+      createdAt: new Date().toISOString(),
+    });
+    setCuttingPlans((prev) => {
+      const exists = prev.some((p) => p.id === plan.id);
+      return exists ? prev.map((p) => (p.id === plan.id ? plan : p)) : [plan, ...prev];
+    });
+    void manufacturingService.upsertCuttingPlan(plan).catch(() => {});
+    return plan;
+  };
+
   const resetManufacturingDemoData = () => {
     const snap = cloneSnapshot(latestRef.current);
     setBoms((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
@@ -1396,6 +2292,12 @@ export const useManufacturingData = () => {
     setVouchers((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setQcRecords((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
     setNcrRecords((prev) => prev.filter((n) => !belongsToActiveBranch(n)));
+    setAlerts((prev) => prev.filter((a) => !belongsToActiveBranch(a)));
+    setFinishedGoods((prev) => prev.filter((f) => !belongsToActiveBranch(f)));
+    setMachines((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setMaintenanceLogs((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setSessionLogs((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
+    setCuttingPlans((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
 
     registerUndoEntry({
       vertical: 'manufacturing_production',
@@ -1415,6 +2317,12 @@ export const useManufacturingData = () => {
         setVouchers(s.vouchers);
         setQcRecords(s.qcRecords);
         setNcrRecords(s.ncrRecords);
+        setAlerts(s.alerts);
+        setFinishedGoods(s.finishedGoods);
+        setMachines(s.machines);
+        setMaintenanceLogs(s.maintenanceLogs);
+        setSessionLogs(s.sessionLogs);
+        setCuttingPlans(s.cuttingPlans);
       },
     });
   };
@@ -1425,6 +2333,12 @@ export const useManufacturingData = () => {
   const scopedVouchers = useMemo(() => vouchers.filter(belongsToActiveBranch), [vouchers, belongsToActiveBranch]);
   const scopedQcRecords = useMemo(() => qcRecords.filter(belongsToActiveBranch), [qcRecords, belongsToActiveBranch]);
   const scopedNcrRecords = useMemo(() => ncrRecords.filter(belongsToActiveBranch), [ncrRecords, belongsToActiveBranch]);
+  const scopedAlerts = useMemo(() => alerts.filter(belongsToActiveBranch), [alerts, belongsToActiveBranch]);
+  const scopedFinishedGoods = useMemo(() => finishedGoods.filter(belongsToActiveBranch), [finishedGoods, belongsToActiveBranch]);
+  const scopedMachines = useMemo(() => machines.filter(belongsToActiveBranch), [machines, belongsToActiveBranch]);
+  const scopedMaintenanceLogs = useMemo(() => maintenanceLogs.filter(belongsToActiveBranch), [maintenanceLogs, belongsToActiveBranch]);
+  const scopedSessionLogs = useMemo(() => sessionLogs.filter(belongsToActiveBranch), [sessionLogs, belongsToActiveBranch]);
+  const scopedCuttingPlans = useMemo(() => cuttingPlans.filter(belongsToActiveBranch), [cuttingPlans, belongsToActiveBranch]);
 
   return {
     boms: scopedBoms,
@@ -1433,12 +2347,19 @@ export const useManufacturingData = () => {
     vouchers: scopedVouchers,
     qcRecords: scopedQcRecords,
     ncrRecords: scopedNcrRecords,
+    alerts: scopedAlerts,
+    finishedGoods: scopedFinishedGoods,
+    machines: scopedMachines,
+    maintenanceLogs: scopedMaintenanceLogs,
+    sessionLogs: scopedSessionLogs,
+    cuttingPlans: scopedCuttingPlans,
     addOrder,
     updateOrder,
     deleteOrder,
     updateOrderStatus,
     addBom,
     updateBom,
+    forkBom,
     deleteBom,
     addMaterial,
     updateMaterial,
@@ -1446,6 +2367,15 @@ export const useManufacturingData = () => {
     addQcRecord,
     updateQcRecord,
     recordScrapWithNcr,
+    logWorkstationSession,
+    triggerAndonAlert,
+    resolveAndonAlert,
+    produceFinishedGoodsFromOrder,
+    releaseFinishedGoodsLot,
+    upsertMachine,
+    scheduleMaintenanceTicket,
+    completeMaintenanceTicket,
+    saveCuttingPlan,
     resetManufacturingDemoData,
   };
 };

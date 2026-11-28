@@ -10,6 +10,11 @@ import {
   BellRing,
   X,
   Eye,
+  KeyRound,
+  CalendarClock,
+  Check,
+  ShieldAlert,
+  PackageX,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -19,14 +24,21 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { computeScrapYield } from '../../../utils/manufacturingRules';
+import {
+  validateWorkstationStartPrerequisites,
+  evaluateScrapToleranceAlert,
+  evaluateMachineMaintenanceStatus,
+} from '../../../utils/manufacturingDepth';
 import { formatMoney } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
 import { useManufacturingData } from './manufacturingData';
-import { ManufacturingOrder } from '../../../types';
+import { ManufacturingOrder, WorkstationSessionLog } from '../../../types';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { LiveSelect } from '../../ui/live/LiveSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -81,9 +93,25 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const { language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const {
+    branches,
+    staffList,
+    currentUser,
+    account,
+    currentBusinessId,
+    currentBranchId,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
     (s) => ({
       branches: s.branches,
+      staffList: s.staff || [],
+      currentUser: s.currentUser,
+      account: s.account,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
       lastSyncedAt: s.lastSyncedAt,
@@ -94,7 +122,47 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const { retryCloudSync } = useAtriumActions();
   const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
-  const { orders, updateOrder } = useManufacturingData();
+  const {
+    orders,
+    boms,
+    materials,
+    machines,
+    maintenanceLogs,
+    alerts,
+    triggerAndonAlert,
+    resolveAndonAlert,
+    logWorkstationSession,
+    recordScrapWithNcr,
+    scheduleMaintenanceTicket,
+    completeMaintenanceTicket,
+  } = useManufacturingData();
+
+  const branchOperators = useMemo(() => {
+    const filtered = staffList.filter((s) =>
+      !s.facilityId || !currentBranchId ? true : s.facilityId === currentBranchId || s.branchId === currentBranchId
+    );
+    if (filtered.length > 0) return filtered;
+    return [
+      {
+        id: currentUser?.id || 'op_default',
+        fullName: currentUser?.fullName || 'Opérateur Atelier',
+        role: currentUser?.role || 'Opérateur CNC',
+        pinCode: '1234',
+      },
+    ];
+  }, [staffList, currentBranchId, currentUser]);
+
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string>(
+    () => branchOperators[0]?.id || ''
+  );
+  const [operatorPinInput, setOperatorPinInput] = useState<string>('');
+  const [pinVerifiedAt, setPinVerifiedAt] = useState<string | undefined>(undefined);
+  const [ppeVerifiedAt, setPpeVerifiedAt] = useState<string | undefined>(undefined);
+
+  const activeOperator = useMemo(
+    () => branchOperators.find((op) => op.id === selectedOperatorId) || branchOperators[0] || null,
+    [branchOperators, selectedOperatorId]
+  );
 
   const [selectedOrderId, setSelectedOrderId] = useState<string>(() => {
     const inProg = orders.find((o) => o.status === 'InProduction');
@@ -104,6 +172,20 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const currentOrder = useMemo<ManufacturingOrder | null>(() => {
     return orders.find((o) => o.id === selectedOrderId) || orders[0] || null;
   }, [orders, selectedOrderId]);
+
+  const currentBom = useMemo(
+    () => (currentOrder ? boms.find((b) => b.id === currentOrder.bomId) || null : null),
+    [boms, currentOrder]
+  );
+
+  const activeMachine = useMemo(() => {
+    if (!currentOrder) return machines[0] || null;
+    return (
+      machines.find((m) => currentOrder.assignedStation?.includes(m.code) || currentOrder.assignedStation === m.name) ||
+      machines[0] ||
+      null
+    );
+  }, [machines, currentOrder]);
 
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<'of' | 'epi' | 'yield'>('of');
@@ -116,6 +198,35 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const epiCount = [epiGlasses, epiGloves, epiShoes, epiHelmet].filter(Boolean).length;
   const isSafetyChecklistComplete = epiCount === 4;
 
+  const ppeChecklist = useMemo(
+    () => ({ glasses: epiGlasses, gloves: epiGloves, shoes: epiShoes, helmet: epiHelmet }),
+    [epiGlasses, epiGloves, epiShoes, epiHelmet]
+  );
+
+  const startPrereq = useMemo(
+    () =>
+      validateWorkstationStartPrerequisites({
+        operator: activeOperator,
+        enteredPin: operatorPinInput,
+        ppeChecklist,
+        order: currentOrder,
+        bom: currentBom,
+        materials,
+      }),
+    [activeOperator, operatorPinInput, ppeChecklist, currentOrder, currentBom, materials]
+  );
+
+  const openAlerts = useMemo(
+    () => alerts.filter((a) => a.status === 'Open' || a.status === 'Acknowledged'),
+    [alerts]
+  );
+  const andonActive = openAlerts.length > 0;
+
+  const maintenanceEvals = useMemo(
+    () => evaluateMachineMaintenanceStatus(machines, maintenanceLogs),
+    [machines, maintenanceLogs]
+  );
+
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
@@ -124,7 +235,16 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const [scrapQuantityInput, setScrapQuantityInput] = useState('0');
   const [selectedScrapReason, setSelectedScrapReason] = useState(SCRAP_REASON_CODES[0].id);
   const [activeNumpadField, setActiveNumpadField] = useState<'good' | 'scrap'>('good');
-  const [andonActive, setAndonActive] = useState(false);
+
+  const finishScrapEval = useMemo(
+    () =>
+      evaluateScrapToleranceAlert({
+        goodQty: parseInt(goodQuantityInput, 10) || 0,
+        scrapQty: parseInt(scrapQuantityInput, 10) || 0,
+        maxTolerancePercent: 10,
+      }),
+    [goodQuantityInput, scrapQuantityInput]
+  );
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -148,7 +268,18 @@ export const ManufacturingWorkstationView: React.FC = () => {
   };
 
   const handleStartTimer = () => {
-    if (!isSafetyChecklistComplete) {
+    if (!startPrereq.pinValid) {
+      showToast(
+        isAr
+          ? 'يرجى إدخال الرمز السري الصحيح للمشغل (4 أرقام)'
+          : isEn
+          ? 'Operator PIN Gate: Enter a valid 4+ digit operator PIN before starting.'
+          : 'Contrôle PIN Opérateur : Saisissez le code PIN valide (4 chiffres) avant démarrage.',
+        'error'
+      );
+      return;
+    }
+    if (!startPrereq.ppeComplete) {
       showToast(
         isAr
           ? 'تنبيه: يجب تأكيد جميع تدابير السلامة والوقاية (قانون 88-07) قبل تشغيل الآلة'
@@ -159,6 +290,22 @@ export const ManufacturingWorkstationView: React.FC = () => {
       );
       return;
     }
+    if (startPrereq.shortageDetected) {
+      triggerAndonAlert({
+        alertType: 'MaterialShortage',
+        severity: 'warning',
+        workstationId: activeMachine?.id,
+        workstationName: activeMachine?.name || 'Poste 03 CNC',
+        orderId: currentOrder?.id,
+        orderNumber: currentOrder?.orderNumber,
+        raisedByName: activeOperator?.fullName || currentUser?.fullName || 'Opérateur',
+        raisedByStaffId: activeOperator?.id,
+        message: `Rupture matière détectée (${startPrereq.shortageMaterials.join(', ')}) pour ${currentOrder?.orderNumber || 'OF'}.`,
+      });
+    }
+    const nowIso = new Date().toISOString();
+    setPinVerifiedAt(nowIso);
+    setPpeVerifiedAt(nowIso);
     setIsRunning(true);
     if (!sessionStartTime) setSessionStartTime(Date.now());
     showToast(
@@ -183,26 +330,42 @@ export const ManufacturingWorkstationView: React.FC = () => {
     );
   };
 
-  const handleTriggerAndon = () => {
-    setAndonActive(true);
+  const handleTriggerAndon = (alertType: 'AndonStop' | 'MaterialShortage' = 'AndonStop') => {
+    const isShortage = alertType === 'MaterialShortage';
+    triggerAndonAlert({
+      alertType,
+      severity: isShortage ? 'warning' : 'critical',
+      workstationId: activeMachine?.id || 'wc_decoupe',
+      workstationName: activeMachine?.name || 'Poste 03 Découpe & Usinage CNC',
+      orderId: currentOrder?.id,
+      orderNumber: currentOrder?.orderNumber,
+      raisedByName: activeOperator?.fullName || currentUser?.fullName || 'Opérateur CNC',
+      raisedByStaffId: activeOperator?.id || currentUser?.id,
+      message: isShortage
+        ? `Rupture matière signalée en cours de fabrication (${currentOrder?.orderNumber || 'Poste 03'}).`
+        : `Arrêt d'urgence / Alerte Andon déclenchée sur ${activeMachine?.name || 'Poste 03 CNC'} (${currentOrder?.orderNumber || 'Atelier'}).`,
+    });
     showToast(
       isAr
         ? 'تم إرسال إشعار نداء أندون عاجل لرئيس الورشة والمراقب'
         : isEn
-        ? 'Andon alert triggered! Workshop lead & maintenance notified.'
-        : "Alerte Andon émise ! Le chef d'atelier et le responsable maintenance ont été notifiés.",
+        ? 'Andon alert triggered! Workshop lead & manager notified.'
+        : "Alerte Andon persistée ! Le gérant et le chef d'atelier ont été notifiés.",
       'error'
     );
   };
 
   const handleCancelAndon = () => {
-    setAndonActive(false);
+    const actor = activeOperator?.fullName || currentUser?.fullName || 'Chef Atelier';
+    openAlerts.forEach((a) => {
+      resolveAndonAlert(a.id, 'resolve', actor, 'Résolu depuis le terminal atelier');
+    });
     showToast(
       isAr
         ? 'تم إلغاء نداء التنبيه العاجل'
         : isEn
         ? 'Andon alert resolved and closed'
-        : 'Alerte Andon résolue et clôturée',
+        : 'Alerte(s) Andon résolue(s) et clôturée(s)',
       'success'
     );
   };
@@ -230,16 +393,84 @@ export const ManufacturingWorkstationView: React.FC = () => {
     if (!currentOrder) return;
     const goodQty = parseInt(goodQuantityInput, 10) || 0;
     const scrapQty = parseInt(scrapQuantityInput, 10) || 0;
-    const updatedProduced =
-      (currentOrder.actualQuantityProduced || currentOrder.quantityProduced || 0) + goodQty;
-    const updatedOrder: ManufacturingOrder = {
-      ...currentOrder,
-      actualQuantityProduced: updatedProduced,
-      quantityProduced: updatedProduced,
-      scrapQuantity: (currentOrder.scrapQuantity || 0) + scrapQty,
-      status: updatedProduced >= currentOrder.targetQuantity ? 'Completed' : 'InProduction',
+    const nowIso = new Date().toISOString();
+    const durationSec = Math.max(60, elapsedSeconds);
+    const pieceRateCentimes = currentOrder.unitPieceRateCentimes || 25_000;
+
+    const sessionLog: WorkstationSessionLog = {
+      id: `wsl_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: currentBranch?.accountId || account?.id || '',
+      businessId: currentBusinessId || 'biz_manufacturing',
+      branchId: currentBranchId || 'branch_manufacturing_main',
+      staffId: activeOperator?.id || currentUser?.id || '',
+      operatorStaffId: activeOperator?.id || currentUser?.id || '',
+      operatorName: activeOperator?.fullName || currentUser?.fullName || 'Opérateur CNC',
+      pinVerified: startPrereq.pinValid,
+      pinVerifiedAt: pinVerifiedAt || nowIso,
+      ppeChecklist,
+      ppeVerified: isSafetyChecklistComplete,
+      ppeVerifiedAt: ppeVerifiedAt || nowIso,
+      workCenterId: activeMachine?.id || 'wc_decoupe',
+      workCenterName: activeMachine?.name || currentOrder.assignedStation || 'Poste 03 CNC',
+      orderId: currentOrder.id,
+      orderNumber: currentOrder.orderNumber,
+      stepNumber: 1,
+      operationName: currentOrder.productName,
+      startTime: sessionStartTime ? new Date(sessionStartTime).toISOString() : nowIso,
+      endTime: nowIso,
+      durationSeconds: durationSec,
+      pauseDurationSeconds: 0,
+      goodQuantity: goodQty,
+      scrapQuantity: scrapQty,
+      scrapReason: scrapQty > 0 ? selectedScrapReason : undefined,
+      pieceRateCentimes,
+      status: 'Submitted',
+      createdAt: nowIso,
     };
-    updateOrder(updatedOrder);
+
+    const { pieceEntry } = logWorkstationSession(sessionLog, pieceRateCentimes);
+
+    if (finishScrapEval.requiresNcr && scrapQty > 0) {
+      const reasonObj = SCRAP_REASON_CODES.find((c) => c.id === selectedScrapReason);
+      const reasonText = isAr
+        ? reasonObj?.labelAr || 'تجاوز نسبة الخردة >10%'
+        : isEn
+        ? reasonObj?.labelEn || 'Excess scrap >10% tolerance'
+        : reasonObj?.labelFr || 'Dépassement tolérance rebut >10%';
+      recordScrapWithNcr({
+        orderId: currentOrder.id,
+        orderNumber: currentOrder.orderNumber,
+        batchLotNumber: currentOrder.batchLotNumber,
+        productName: currentOrder.productName,
+        inspectorName: activeOperator?.fullName || currentUser?.fullName || 'Opérateur Poste',
+        scrappedQuantity: scrapQty,
+        reason: `${reasonText} (${finishScrapEval.scrapPercent}% > 10%)`,
+        notes: 'NCR automatique fin de cycle poste (Gate 1 CMUP en attente)',
+      });
+      triggerAndonAlert({
+        alertType: 'ExcessScrap',
+        severity: 'critical',
+        workstationId: activeMachine?.id,
+        workstationName: activeMachine?.name || 'Poste 03 CNC',
+        orderId: currentOrder.id,
+        orderNumber: currentOrder.orderNumber,
+        raisedByName: activeOperator?.fullName || 'Opérateur',
+        raisedByStaffId: activeOperator?.id,
+        message: `Taux de rebut critique ${finishScrapEval.scrapPercent}% (>10%) sur ${currentOrder.orderNumber}. Fiche NCR ouverte.`,
+      });
+    }
+
+    showToast(
+      pieceEntry
+        ? isAr
+          ? `تم تسجيل ${goodQty} قطعة وحساب منحة الإنتاج`
+          : `Cycle enregistré : +${goodQty} u · Prime pièce ${formatMoney(centimesToDzd(pieceEntry.grossAmountCentimes), language)}`
+        : isAr
+        ? `تم تسجيل ${goodQty} قطعة`
+        : `Cycle enregistré : +${goodQty} u (${scrapQty} rebuts)`,
+      finishScrapEval.requiresNcr ? 'warning' : 'success'
+    );
+
     setIsFinishModalOpen(false);
     setElapsedSeconds(0);
     setSessionStartTime(null);
@@ -320,7 +551,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
               ? 'إلغاء نداء أندون العاجل'
               : isEn
               ? 'Resolve Andon Alert'
-              : 'Résoudre Appel Andon'
+              : `Résoudre Andon (${openAlerts.length})`
             : isAr
             ? 'نداء الطوارئ / أندون'
             : isEn
@@ -331,7 +562,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
           ) : (
             <AlertTriangle size={16} />
           ),
-          onClick: andonActive ? handleCancelAndon : handleTriggerAndon,
+          onClick: () => (andonActive ? handleCancelAndon() : handleTriggerAndon('AndonStop')),
           dataAction: 'andon-alert',
         }}
       />
@@ -348,18 +579,11 @@ export const ManufacturingWorkstationView: React.FC = () => {
               <BellRing size={20} className="animate-bounce shrink-0" />
               <div>
                 <p className="t-small font-semibold">
-                  {isAr
-                    ? 'حالة طوارئ أندون نشطة — المحطة 03'
-                    : isEn
-                    ? 'Active Andon Alert — Station 03'
-                    : "Appel Andon Actif — Poste 03 Découpe & Usinage CNC"}
+                  {openAlerts[0]?.alertNumber || 'ANDN'} — {openAlerts[0]?.workstationName || 'Poste 03 CNC'}
                 </p>
                 <p className="t-cap text-white/90">
-                  {isAr
-                    ? 'تم إشعار رئيس الورشة وفريق الصيانة بالتدخل الفوري.'
-                    : isEn
-                    ? 'Workshop supervisor and maintenance team have been alerted.'
-                    : "Chef d'atelier et maintenance alertés pour intervention immédiate."}
+                  {openAlerts[0]?.message} ({openAlerts.length}{' '}
+                  {isAr ? 'تنبيه مفتوح' : isEn ? 'open alert(s)' : 'alerte(s) active(s) — Gérant & Chef Atelier notifiés'})
                 </p>
               </div>
             </div>
@@ -529,6 +753,72 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 ) : (
                   <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#191716] t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="sq-elev-card">
+              <div data-sq="card" data-sq-border="none" className="bg-white dark:bg-[#22201E] p-3 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <KeyRound size={17} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
+                    <h3 className="t-label font-semibold text-black dark:text-white">
+                      {isAr ? 'تعريف المشغل (PIN)' : isEn ? 'Operator PIN Login' : 'Authentification Opérateur (PIN)'}
+                    </h3>
+                  </div>
+                  <span
+                    className={`t-small font-semibold px-2.5 py-0.5 rounded-full ${
+                      startPrereq.pinValid
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                    }`}
+                  >
+                    {startPrereq.pinValid ? 'PIN OK ✓' : isAr ? 'مطلوب PIN' : 'PIN requis'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <LiveSelect
+                    size="sm"
+                    tone="soft"
+                    value={selectedOperatorId}
+                    onValueChange={(val) => {
+                      setSelectedOperatorId(val);
+                      setPinVerifiedAt(undefined);
+                    }}
+                    aria-label="Workstation Operator"
+                    options={branchOperators.map((op) => ({
+                      value: op.id,
+                      label: `${op.fullName} (${op.role || 'Opérateur'})`,
+                    }))}
+                  />
+                  <input
+                    data-testid="mfg-operator-pin"
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={operatorPinInput}
+                    onChange={(e) => setOperatorPinInput(e.target.value)}
+                    placeholder={
+                      activeOperator?.pinCode
+                        ? 'Code PIN (4+ chiffres)'
+                        : 'PIN Opérateur (démo: 1234)'
+                    }
+                    className="h-9 px-3 rounded-[var(--r-ctl,10px)] bg-[#F5F1EC] dark:bg-[#191716] border border-[var(--atr-divider)] t-small text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C9461F]/40"
+                  />
+                </div>
+                {startPrereq.shortageDetected && (
+                  <div className="p-2.5 rounded-[var(--r-ctl,10px)] bg-amber-50 dark:bg-amber-950/35 border border-amber-400/50 text-amber-900 dark:text-amber-200 t-small flex items-center justify-between gap-2">
+                    <span>
+                      {isAr ? 'تنبيه نفاد مادة:' : 'Alerte stock matière:'} {startPrereq.shortageMaterials.join(', ')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleTriggerAndon('MaterialShortage')}
+                      className="underline font-semibold cursor-pointer shrink-0"
+                    >
+                      {isAr ? 'إرسال تنبيه' : 'Alerter'}
+                    </button>
                   </div>
                 )}
               </div>
@@ -756,7 +1046,128 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="flex justify-end">
+              <AtriumButton
+                type="button"
+                variant="outline"
+                size="sm"
+                icon={<PackageX size={14} />}
+                onClick={() => handleTriggerAndon('MaterialShortage')}
+              >
+                {isAr ? 'إبلاغ عن نقص مادة أولية' : isEn ? 'Report Material Shortage' : 'Signaler Rupture Matière'}
+              </AtriumButton>
+            </div>
           </div>
+        </div>
+      </ScreenPod>
+
+      <ScreenPod>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+          <h2 className="t-pod text-[var(--text-1)] dark:text-white flex items-center gap-2">
+            <CalendarClock size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+            <span>
+              {isAr ? 'الصيانة الوقائية للآلات GMAO' : isEn ? 'Preventive Machine Maintenance' : 'Maintenance Préventive Machines (GMAO)'}
+            </span>
+          </h2>
+          <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
+            {maintenanceEvals.filter((e) => e.isOverdue).length} {isAr ? 'متأخرة' : 'échue(s)'} · {machines.length} {isAr ? 'آلات' : 'équipements'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 t-cap">
+          {machines.map((machine) => {
+            const evalRow = maintenanceEvals.find((e) => e.machineId === machine.id);
+            const openTicket = maintenanceLogs.find(
+              (l) => l.machineId === machine.id && (l.status === 'Scheduled' || l.status === 'InProgress' || l.status === 'Overdue')
+            );
+            return (
+              <div key={machine.id} data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{machine.code}</div>
+                    <div className="font-semibold text-black dark:text-white">{machine.name}</div>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full t-small font-semibold shrink-0 ${
+                      evalRow?.isOverdue
+                        ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+                        : evalRow?.isWarning
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    }`}
+                  >
+                    {evalRow?.isOverdue ? 'PM Échue' : evalRow?.isWarning ? 'PM Proche' : 'OK'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 tabular-nums py-2 border-y border-[var(--atr-divider)]">
+                  <div>
+                    <span className="t-small text-black/55 dark:text-white/55 block">Compteur / Seuil</span>
+                    <span className="font-semibold text-black dark:text-white">
+                      {machine.runningHours}h / {machine.maintenanceIntervalHours}h
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="t-small text-black/55 dark:text-white/55 block">Reste</span>
+                    <span className="font-semibold text-black dark:text-white">{evalRow?.hoursRemaining ?? 0}h</span>
+                  </div>
+                </div>
+                {openTicket && (
+                  <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/35 text-amber-900 dark:text-amber-200 t-small">
+                    <div className="font-semibold">{openTicket.ticketNumber} · {openTicket.status}</div>
+                    <div className="truncate">{openTicket.triggerReason}</div>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  {openTicket ? (
+                    <AtriumButton
+                      type="button"
+                      size="sm"
+                      variant="primary"
+                      icon={<Check size={13} />}
+                      className="w-full justify-center"
+                      onClick={() => {
+                        completeMaintenanceTicket({
+                          maintenanceId: openTicket.id,
+                          technicianName: activeOperator?.fullName || currentUser?.fullName || 'Technicien GMAO',
+                        });
+                        showToast(
+                          isAr ? `تم إتمام الصيانة ${openTicket.ticketNumber}` : `Maintenance ${openTicket.ticketNumber} clôturée`,
+                          'success'
+                        );
+                      }}
+                    >
+                      {isAr ? 'إتمام الصيانة' : isEn ? 'Complete PM' : 'Clôturer PM'}
+                    </AtriumButton>
+                  ) : (
+                    <AtriumButton
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      icon={<CalendarClock size={13} />}
+                      className="w-full justify-center"
+                      onClick={() => {
+                        const ticket = scheduleMaintenanceTicket({
+                          machine,
+                          maintenanceType: 'Preventive',
+                          triggerReason: evalRow?.isOverdue
+                            ? `Intervalle ${machine.maintenanceIntervalHours}h dépassé`
+                            : 'Visite préventive planifiée',
+                          scheduledDate: new Date().toISOString().split('T')[0],
+                          technicianName: currentUser?.fullName || 'Équipe GMAO',
+                        });
+                        showToast(
+                          isAr ? `تمت جدولة الصيانة ${ticket.ticketNumber}` : `Ticket ${ticket.ticketNumber} planifié`,
+                          'info'
+                        );
+                      }}
+                    >
+                      {isAr ? 'جدولة صيانة' : isEn ? 'Schedule PM' : 'Planifier PM'}
+                    </AtriumButton>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </ScreenPod>
 
@@ -845,6 +1256,27 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   </span>
                 </button>
               </div>
+
+              {finishScrapEval.requiresNcr && (
+                <div
+                  data-testid="mfg-excess-scrap-alert"
+                  className="p-3 rounded-[var(--r-ctl,12px)] bg-red-50 dark:bg-red-950/35 border border-red-400/50 text-red-800 dark:text-red-200 t-cap flex items-start gap-2"
+                >
+                  <ShieldAlert size={16} className="shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold">
+                      {isAr
+                        ? `تجاوز نسبة الهدر (${finishScrapEval.scrapPercent}% > 10%)`
+                        : `Taux de rebut critique (${finishScrapEval.scrapPercent}% > 10%)`}
+                    </div>
+                    <div className="t-small">
+                      {isAr
+                        ? 'سيتم فتح بطاقة عدم مطابقة NCR وتنبيه أندون تلقائياً (تجميد CMUP Gate 1).'
+                        : 'Une fiche NCR (CMUP en attente Gate 1) et une alerte Andon seront générées automatiquement.'}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {parseInt(scrapQuantityInput, 10) > 0 && (
                 <div className="space-y-2">
@@ -1006,7 +1438,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     }
                     icon={<AlertTriangle size={14} />}
                     tone={andonActive ? 'dark' : 'accent'}
-                    onClick={andonActive ? handleCancelAndon : handleTriggerAndon}
+                    onClick={() => (andonActive ? handleCancelAndon() : handleTriggerAndon('AndonStop'))}
                   />
                 </InspectorSection>
               </div>
@@ -1068,7 +1500,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       id: 'andon',
                       label: andonActive ? 'Clôturer' : 'Andon',
                       icon: <AlertTriangle size={15} />,
-                      onClick: andonActive ? handleCancelAndon : handleTriggerAndon,
+                      onClick: () => (andonActive ? handleCancelAndon() : handleTriggerAndon('AndonStop')),
                     },
                   ]}
                 />

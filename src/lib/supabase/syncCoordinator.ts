@@ -415,6 +415,12 @@ export const CATEGORY_TABLE_MAP: Record<BusinessCategory, string[]> = {
     'mfg_qc_inspections',
     'mfg_material_vouchers',
     'mfg_batches',
+    'mfg_ncr_records',
+    'mfg_alerts',
+    'mfg_finished_goods',
+    'mfg_machine_maintenance',
+    'mfg_piece_rate_entries',
+    'mfg_cutting_plans',
   ],
   legal_accounting: [
     'legal_staff',

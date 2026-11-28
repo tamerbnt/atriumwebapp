@@ -3,6 +3,7 @@ import { ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
 import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
+import { ManufacturingPieceRatePanel } from './ManufacturingPieceRatePanel';
 import { Factory, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export const ManufacturingStaffView: React.FC = () => {
@@ -139,12 +140,19 @@ export const ManufacturingStaffView: React.FC = () => {
   ];
 
   return (
-    <StandardStaffScreen
-      foundation={foundation}
-      category="manufacturing_production"
-      columns={columns}
-      categoryTitle={isAr ? 'مشغلو الورشة والإنتاج' : isEn ? 'Workshop Operators & Staff' : 'Opérateurs & Équipe Atelier'}
-      newStaffButtonLabel={isAr ? 'إضافة مشغل آلة' : isEn ? 'Add Operator' : 'Nouvel Opérateur'}
-    />
+    <div className="space-y-6">
+      <StandardStaffScreen
+        foundation={foundation}
+        category="manufacturing_production"
+        columns={columns}
+        categoryTitle={isAr ? 'مشغلو الورشة والإنتاج' : isEn ? 'Workshop Operators & Staff' : 'Opérateurs & Équipe Atelier'}
+        newStaffButtonLabel={isAr ? 'إضافة مشغل آلة' : isEn ? 'Add Operator' : 'Nouvel Opérateur'}
+      />
+      <ManufacturingPieceRatePanel
+        staffList={foundation.facilityStaff}
+        payrollRuns={foundation.staffPayrollRuns}
+        language={language}
+      />
+    </div>
   );
 };

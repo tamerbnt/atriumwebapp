@@ -2770,6 +2770,157 @@ BEGIN
   END IF;
 END $$;
 
+-- ============================================================================
+-- 30. PHASE 3 STEP 12 (7.12 manufacturing_production): BOM Versioning/Locking,
+--     Persistent Andon Alerts, Finished Goods Release, PM, Piece-Rate & Isolation
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid;
+  v_acc_b uuid;
+  v_biz_a uuid;
+  v_biz_b uuid;
+  v_br_a uuid;
+  v_br_b uuid;
+  v_user_a uuid := '00000000-0000-0000-0000-000000000911'::uuid;
+  v_user_b uuid := '00000000-0000-0000-0000-000000000912'::uuid;
+  v_bom_id uuid := gen_random_uuid();
+  v_of_id uuid := gen_random_uuid();
+  v_ws_id uuid := gen_random_uuid();
+  v_fg_id uuid := gen_random_uuid();
+  v_maint_id uuid := gen_random_uuid();
+  v_pr_id uuid := gen_random_uuid();
+  v_alert_res jsonb;
+  v_fork_res jsonb;
+  v_blocked boolean;
+  v_count int;
+  v_status text;
+  v_ver int;
+BEGIN
+  SELECT id INTO v_acc_a FROM public.accounts ORDER BY created_at ASC LIMIT 1;
+  SELECT id INTO v_acc_b FROM public.accounts WHERE id <> v_acc_a ORDER BY created_at ASC LIMIT 1;
+  IF v_acc_a IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Mfg Test A', 'mfg-a@atrium.test') RETURNING id INTO v_acc_a;
+  END IF;
+  IF v_acc_b IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Mfg Test B', 'mfg-b@atrium.test') RETURNING id INTO v_acc_b;
+  END IF;
+
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_a, 'Atelier Atlas Test', 'manufacturing_production') RETURNING id INTO v_biz_a;
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_b, 'Usine Concurrent Test', 'manufacturing_production') RETURNING id INTO v_biz_b;
+
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_a, v_biz_a, 'Usine Rouiba', true) RETURNING id INTO v_br_a;
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_b, v_biz_b, 'Usine Sétif', true) RETURNING id INTO v_br_b;
+
+  INSERT INTO public.staff (account_id, business_id, branch_id, auth_user_id, full_name, role, status)
+  VALUES
+    (v_acc_a, v_biz_a, v_br_a, v_user_a, 'Chef Atelier A', 'admin', 'active'),
+    (v_acc_b, v_biz_b, v_br_b, v_user_b, 'Chef Atelier B', 'admin', 'active');
+
+  INSERT INTO public.mfg_workstations (
+    id, account_id, business_id, branch_id, code, name, department, machine_type, running_hours, maintenance_interval_hours, status
+  ) VALUES (
+    v_ws_id, v_acc_a, v_biz_a, v_br_a, 'CNC-01', 'Centre Usinage CNC', 'Découpe', 'CNC', 260, 250, 'Running'
+  );
+
+  INSERT INTO public.mfg_bom_recipes (
+    id, account_id, business_id, branch_id, code, finished_product_name, output_unit, batch_size, estimated_unit_cost_dzd, version_number, bom_family_id
+  ) VALUES (
+    v_bom_id, v_acc_a, v_biz_a, v_br_a, 'BOM-TAB-99', 'Table Chêne Test', 'Unité', 1, 95000, 1, v_bom_id
+  );
+
+  INSERT INTO public.mfg_orders (
+    id, account_id, business_id, branch_id, of_number, bom_id, product_name, target_quantity, status, pinned_bom_version
+  ) VALUES (
+    v_of_id, v_acc_a, v_biz_a, v_br_a, 'OF-2026-9001', v_bom_id, 'Table Chêne Test', 5, 'InProgress', 1
+  );
+
+  -- 1. BOM referenced by active OF cannot have batch_size mutated in place
+  v_blocked := false;
+  BEGIN
+    UPDATE public.mfg_bom_recipes SET batch_size = 10 WHERE id = v_bom_id;
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected structural BOM mutation with active OF to be blocked';
+  END IF;
+
+  -- Tenant B isolation check
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.mfg_bom_recipes WHERE id = v_bom_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read mfg_bom_recipes'; END IF;
+  RESET ROLE;
+
+  -- Tenant A RPC flows
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 2. Fork BOM v2 cleanly while v1 stays pinned to OF
+  v_fork_res := public.mfg_create_bom_version(
+    v_bom_id,
+    jsonb_build_object('finished_product_name', 'Table Chêne Test v2', 'batch_size', 2, 'estimated_unit_cost_dzd', 98000),
+    '[]'::jsonb
+  );
+  v_ver := (v_fork_res->>'version_number')::int;
+  IF v_ver <> 2 THEN
+    RAISE EXCEPTION 'Expected forked BOM version_number=2, got %', v_ver;
+  END IF;
+
+  -- 3. Trigger & Resolve Andon Alert
+  v_alert_res := public.mfg_trigger_andon_alert(jsonb_build_object(
+    'business_id', v_biz_a, 'branch_id', v_br_a, 'workstation_id', v_ws_id,
+    'workstation_name', 'Centre Usinage CNC', 'order_id', v_of_id, 'order_number', 'OF-2026-9001',
+    'raised_by_name', 'Karim B.', 'message', 'Surchauffe broche CNC'
+  ));
+  PERFORM public.mfg_resolve_andon_alert((v_alert_res->>'id')::uuid, 'resolve', 'Chef Atelier A', 'Broche nettoyée');
+  SELECT status INTO v_status FROM public.mfg_alerts WHERE id = (v_alert_res->>'id')::uuid;
+  IF v_status <> 'Resolved' THEN
+    RAISE EXCEPTION 'Expected Andon alert status Resolved, got %', v_status;
+  END IF;
+
+  -- 4. Finished Goods Release & Preventive Maintenance & Piece-Rate Payroll Post
+  INSERT INTO public.mfg_finished_goods (
+    id, account_id, business_id, branch_id, lot_number, sku, product_name, order_id, order_number, qty_produced, unit_cmup_centimes
+  ) VALUES (
+    v_fg_id, v_acc_a, v_biz_a, v_br_a, 'PFG-2026-00001', 'FG-TAB-99', 'Table Chêne Test', v_of_id, 'OF-2026-9001', 5, 9500000
+  );
+  PERFORM public.mfg_release_finished_goods_lot(v_fg_id, 'Ing. CQ');
+  SELECT release_status INTO v_status FROM public.mfg_finished_goods WHERE id = v_fg_id;
+  IF v_status <> 'Released' THEN
+    RAISE EXCEPTION 'Expected FG lot Released, got %', v_status;
+  END IF;
+
+  INSERT INTO public.mfg_machine_maintenance (
+    id, account_id, business_id, branch_id, ticket_number, machine_id, machine_name, runtime_hours_at_service, scheduled_date
+  ) VALUES (
+    v_maint_id, v_acc_a, v_biz_a, v_br_a, 'MNT-2026-00001', v_ws_id, 'Centre Usinage CNC', 260, CURRENT_DATE
+  );
+  PERFORM public.mfg_complete_machine_maintenance(v_maint_id, 'Tech Maintenance', 450000, 'Graissage & calibration');
+  SELECT status INTO v_status FROM public.mfg_machine_maintenance WHERE id = v_maint_id;
+  IF v_status <> 'Completed' THEN
+    RAISE EXCEPTION 'Expected maintenance Completed, got %', v_status;
+  END IF;
+
+  INSERT INTO public.mfg_piece_rate_entries (
+    id, account_id, business_id, branch_id, operator_name, order_id, order_number, period_month, good_units, rate_per_piece_centimes, gross_amount_centimes
+  ) VALUES (
+    v_pr_id, v_acc_a, v_biz_a, v_br_a, 'Karim B.', v_of_id, 'OF-2026-9001', to_char(CURRENT_DATE, 'YYYY-MM'), 5, 150000, 750000
+  );
+  PERFORM public.mfg_post_piece_rate_to_payroll(ARRAY[v_pr_id], NULL);
+  SELECT status INTO v_status FROM public.mfg_piece_rate_entries WHERE id = v_pr_id;
+  IF v_status <> 'posted_to_payroll' THEN
+    RAISE EXCEPTION 'Expected piece-rate posted_to_payroll, got %', v_status;
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
 
 

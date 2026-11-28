@@ -13,6 +13,10 @@ import {
   MapPin,
   Eye,
   Trash2,
+  FileText,
+  PackageCheck,
+  GitBranch,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   showToast,
@@ -21,16 +25,26 @@ import {
   selectCurrentBranchFromState,
   selectCurrentBusinessFromState,
   selectCurrentBusinessConfigFromState,
+  selectCurrentUnifiedDocumentsFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { centimesToDzd } from '../../../utils/money';
+import {
+  computeOrderActualVsStandardCosting,
+  buildLotTraceabilityGraph,
+} from '../../../utils/manufacturingDepth';
 import { ManufacturingOrder } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { ManufacturingOrderModal } from './ManufacturingOrderModal';
+import {
+  UnifiedInvoiceComposerModal,
+  type UnifiedInvoiceComposerPrefill,
+} from '../../common/invoicing/UnifiedInvoiceComposerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -56,15 +70,17 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingOrdersView: React.FC<any> = () => {
-  const { language, currentBusiness, currentBusinessConfig, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const { language, currentBusiness, currentBusinessConfig, currentBranch, branches, unifiedDocuments, isSyncing, networkMode, currentUser } = useAtriumSelector(
     (s) => ({
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
+      unifiedDocuments: selectCurrentUnifiedDocumentsFromState(s),
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
+      currentUser: s.currentUser,
     }),
     shallowEqualObjects
   );
@@ -72,7 +88,21 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { orders, boms, addOrder, updateOrder, deleteOrder, updateOrderStatus } = useManufacturingData();
+  const {
+    orders,
+    boms,
+    materials,
+    vouchers,
+    qcRecords,
+    ncrRecords,
+    finishedGoods,
+    sessionLogs,
+    addOrder,
+    updateOrder,
+    deleteOrder,
+    updateOrderStatus,
+    produceFinishedGoodsFromOrder,
+  } = useManufacturingData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -91,6 +121,10 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<ManufacturingOrder | null>(null);
   const [orderForFiche, setOrderForFiche] = useState<ManufacturingOrder | null>(null);
+  const [salesPrefill, setSalesPrefill] = useState<{
+    order: ManufacturingOrder;
+    prefill: UnifiedInvoiceComposerPrefill;
+  } | null>(null);
 
   const [selectedOrder, setSelectedOrder] = useState<ManufacturingOrder | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -289,6 +323,57 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2000);
   };
+
+  const handleOpenSalesDoc = useCallback(
+    (ord: ManufacturingOrder, docType: 'devis' | 'commande' | 'bl' | 'facture') => {
+      const qty = Math.max(1, ord.actualQuantityProduced || ord.targetQuantity || 1);
+      const bom = ord.bomId ? bomMap.get(ord.bomId) : undefined;
+      const unitPriceHt = bom?.suggestedSalePriceDzd
+        ? Math.round(bom.suggestedSalePriceDzd / Math.max(1, bom.batchYield || 1))
+        : Math.round(((ord.totalCostDzd || 0) / qty) * 1.35);
+      setSalesPrefill({
+        order: ord,
+        prefill: {
+          docType,
+          sourceVertical: 'manufacturing_production',
+          partyName: ord.clientName || '',
+          sourceEntityType: 'manufacturing_order',
+          sourceEntityId: ord.id,
+          notesTop: `${ord.orderNumber} · Lot ${ord.batchLotNumber || ''}`,
+          items: [
+            {
+              description: `${ord.productName} (${ord.orderNumber} · Lot ${ord.batchLotNumber || 'STD'})`,
+              isService: false,
+              quantity: qty,
+              unit: bom?.unit || 'Unité',
+              unitPriceHt,
+              tvaPercent: 19,
+              discountPercent: 0,
+            },
+          ],
+        },
+      });
+    },
+    [bomMap]
+  );
+
+  const handleProduceFinishedGoods = useCallback(
+    (ord: ManufacturingOrder) => {
+      const lot = produceFinishedGoodsFromOrder({
+        order: ord,
+        releasedBy: currentUser?.fullName || 'Responsable CQ',
+      });
+      showToast(
+        isAr
+          ? `تم إنشاء دفعة المنتج النهائي ${lot.lotNumber}`
+          : isEn
+          ? `Finished goods lot ${lot.lotNumber} created in Quarantine`
+          : `Lot produit fini ${lot.lotNumber} enregistré (Quarantaine CQ)`,
+        'success'
+      );
+    },
+    [produceFinishedGoodsFromOrder, currentUser?.fullName, isAr, isEn]
+  );
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -827,8 +912,9 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
         }
         tabs={[
           { id: 'details', label: isAr ? 'أمر التصنيع' : 'Ordre' },
-          { id: 'costing', label: isAr ? 'التكاليف' : 'Coûts' },
+          { id: 'costing', label: isAr ? 'التكاليف والفوارق' : 'Coûts & Écarts' },
           { id: 'bom', label: isAr ? 'التركيبة BOM' : 'BOM' },
+          { id: 'traceability', label: isAr ? 'التتبع' : 'Traçabilité' },
           { id: 'notes', label: isAr ? 'الورشة' : 'Atelier' },
         ]}
         activeTab={activeTab}
@@ -837,7 +923,30 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
         onClose={() => setSelectedOrder(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(ord, tab) => (
+        renderBody={(ord, tab) => {
+          const bom = ord.bomId ? bomMap.get(ord.bomId) : undefined;
+          const costing = computeOrderActualVsStandardCosting({
+            order: ord,
+            bom,
+            vouchers,
+            sessionLogs,
+            materials,
+          });
+          const trace = buildLotTraceabilityGraph({
+            order: ord,
+            materials,
+            vouchers,
+            qcRecords,
+            ncrRecords,
+            finishedGoodsLots: finishedGoods,
+            unifiedDocuments,
+          });
+          const linkedDoc = ord.linkedUnifiedDocId
+            ? unifiedDocuments.find((d) => d.id === ord.linkedUnifiedDocId)
+            : undefined;
+          const hasFgLot = finishedGoods.some((f) => f.orderId === ord.id);
+
+          return (
           <div className="space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
               <AtriumButton
@@ -849,6 +958,26 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
               >
                 {isAr ? 'تقديم الخطوة' : 'Avancer Étape'}
               </AtriumButton>
+              <AtriumButton
+                type="button"
+                variant="outline"
+                size="sm"
+                icon={<FileText size={13} />}
+                onClick={() => handleOpenSalesDoc(ord, ord.status === 'Completed' ? 'facture' : 'devis')}
+              >
+                {isAr ? 'فاتورة / عرض سعر' : ord.status === 'Completed' ? 'Facturer / BL (6.1)' : 'Devis Client (6.1)'}
+              </AtriumButton>
+              {!hasFgLot && (ord.actualQuantityProduced || ord.targetQuantity) > 0 && (
+                <AtriumButton
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  icon={<PackageCheck size={13} />}
+                  onClick={() => handleProduceFinishedGoods(ord)}
+                >
+                  {isAr ? 'إدخال للمنتج النهائي' : 'Entrée Stock PF'}
+                </AtriumButton>
+              )}
               <AtriumButton
                 type="button"
                 variant="outline"
@@ -893,6 +1022,12 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     <span className="tabular-nums font-semibold text-black dark:text-white">{ord.batchLotNumber || 'LOT-2026-05'}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
+                    <span className="text-black/55 dark:text-white/55">{isAr ? 'إصدار BOM المثبت' : 'Version BOM Épinglée'}</span>
+                    <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                      {ord.bomCode || 'BOM'} · v{ord.pinnedBomVersion || bom?.version || 1}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'الكمية المستهدفة' : 'Quantité cible'}</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">
                       {ord.targetQuantity || ord.quantityOrdered || 1} unités
@@ -909,73 +1044,194 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     <span className="font-semibold text-black dark:text-white">{ord.assignedStation || 'Ligne Principale'}</span>
                   </div>
                 </div>
+                {linkedDoc && (
+                  <div data-sq="card" data-sq-border="none" className="bg-emerald-50 dark:bg-emerald-950/35 p-3 flex items-center justify-between">
+                    <div>
+                      <div className="t-small font-semibold text-emerald-800 dark:text-emerald-300">
+                        {linkedDoc.docNumber || linkedDoc.draftNumber} ({linkedDoc.docType.toUpperCase()})
+                      </div>
+                      <div className="t-cap text-emerald-700/80 dark:text-emerald-300/80">
+                        {linkedDoc.partyName} · {linkedDoc.status}
+                      </div>
+                    </div>
+                    <span className="tabular-nums font-semibold text-emerald-700 dark:text-emerald-300">
+                      {formatMoney(centimesToDzd(linkedDoc.totalTtcCentimes), language)}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
             {tab === 'costing' && (
-              <div className="space-y-3 t-cap">
+              <div className="space-y-3 t-cap" data-testid="mfg-order-costing-panel">
                 <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
-                  <div className="t-small font-semibold text-black/55 dark:text-white/55">
-                    {isAr ? 'تفكيك التكاليف الصناعية' : 'Décomposition Coût de Revient'}
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'المواد الأولية' : 'Matières premières'}</span>
-                    <span className="tabular-nums font-semibold text-black dark:text-white">
-                      {formatMoney(ord.totalMaterialCostDzd || 0, language)}
+                  <div className="flex items-center justify-between">
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55">
+                      {isAr ? 'المقارنة المعياري مقابل الفعلي' : 'Standard (BOM) vs Réel (BSM - Retours + Heures)'}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full t-small font-semibold tabular-nums ${
+                        costing.costVarianceFlag === 'overrun'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+                          : costing.costVarianceFlag === 'under_budget'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-[#E9E2DA] text-black/75 dark:bg-[#2B2825] dark:text-white/80'
+                      }`}
+                    >
+                      {costing.variancePercent > 0 ? `+${costing.variancePercent}%` : `${costing.variancePercent}%`}
                     </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'اليد العاملة المباشرة' : "Main d'œuvre atelier"}</span>
+                    <span className="text-black/55 dark:text-white/55">{isAr ? 'مواد معيارية / فعلية' : 'Matières (Std / Réel net)'}</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">
-                      {formatMoney(ord.totalLaborCostDzd || 0, language)}
+                      {formatMoney(centimesToDzd(costing.standardMaterialCentimes), language)} / {formatMoney(centimesToDzd(costing.actualMaterialNetCentimes), language)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
+                    <span className="text-black/55 dark:text-white/55">{isAr ? 'يد عاملة وآلات' : `MO & Machines (${costing.actualHoursLogged}h loggées)`}</span>
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
+                      {formatMoney(centimesToDzd(costing.standardLaborCentimes), language)} / {formatMoney(centimesToDzd(costing.actualLaborMachineCentimes), language)}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 font-semibold text-black dark:text-white t-label">
-                    <span>{isAr ? 'التكلفة الإجمالية' : 'Coût Total de Fabrication'}</span>
-                    <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(ord.totalCostDzd, language)}</span>
+                    <span>{isAr ? 'الإجمالي المعياري / الفعلي' : 'Total Std vs Réel'}</span>
+                    <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                      {formatMoney(centimesToDzd(costing.standardTotalCentimes), language)} / {formatMoney(centimesToDzd(costing.actualTotalCentimes), language)}
+                    </span>
                   </div>
                 </div>
+                {costing.cmupRecalcDeltaCentimes !== 0 && (
+                  <div
+                    data-sq="card"
+                    data-sq-border="none"
+                    className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 flex items-start gap-2"
+                  >
+                    <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-semibold">
+                        {isAr ? 'تنبيه إعادة تقييم PMP المتأخر' : 'Impact Réévaluation CMUP (Réception BR tardive)'}
+                      </div>
+                      <div className="tabular-nums">
+                        {isAr ? 'الفارق:' : 'Delta calculé :'}{' '}
+                        {costing.cmupRecalcDeltaCentimes > 0 ? '+' : ''}
+                        {formatMoney(centimesToDzd(costing.cmupRecalcDeltaCentimes), language)}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {tab === 'bom' && (
               <div className="space-y-2 t-cap">
-                {ord.bomId && bomMap.has(ord.bomId) ? (
-                  (() => {
-                    const b = bomMap.get(ord.bomId)!;
+                {(() => {
+                  const snapshot = ord.bomSnapshot;
+                  const comps = snapshot?.components?.length ? snapshot.components : bom?.components || [];
+                  if (!bom && !snapshot) {
                     return (
-                      <div className="space-y-2">
-                        <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F3EDE7] dark:bg-[#2B2825] font-semibold text-black dark:text-white flex items-center justify-between">
-                          <span>{b.bomCode}</span>
-                          <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(b.estimatedCostDzd, language)} / u</span>
-                        </div>
-                        <div className="space-y-2">
-                          {b.components.map((c, i) => (
-                            <div
-                              key={i}
-                              data-sq="ctl"
-                              data-sq-border="none"
-                              className="p-2 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between"
-                            >
-                              <span className="text-black/70 dark:text-white/75 truncate max-w-[190px]">{c.rawProductName}</span>
-                              <span className="tabular-nums text-black/55 dark:text-white/55">
-                                {c.quantity} {c.unit}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      <KineticEmptyStateMotion motionKey={`mfg-bom-${ord.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<Boxes />}
+                          title={isAr ? 'لا توجد تركيبة مرتبطة' : 'Aucune nomenclature liée.'}
+                        />
+                      </KineticEmptyStateMotion>
                     );
-                  })()
-                ) : (
-                  <KineticEmptyStateMotion motionKey={`mfg-bom-${ord.id}`}>
-                    <EmptyState
-                      variant="compact"
-                      icon={<Boxes />}
-                      title={isAr ? 'لا توجد تركيبة مرتبطة' : 'Aucune nomenclature liée.'}
-                    />
-                  </KineticEmptyStateMotion>
-                )}
+                  }
+                  const stdDzd = snapshot
+                    ? centimesToDzd(snapshot.standardCostCentimes)
+                    : bom?.estimatedCostDzd || 0;
+                  return (
+                    <div className="space-y-2">
+                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F3EDE7] dark:bg-[#2B2825] font-semibold text-black dark:text-white flex items-center justify-between">
+                        <span>
+                          {snapshot?.bomCode || bom?.bomCode} · v{ord.pinnedBomVersion || snapshot?.version || bom?.version || 1}
+                          {snapshot ? (isAr ? ' (نسخة مثبتة)' : ' (Snapshot figé)') : ''}
+                        </span>
+                        <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {formatMoney(stdDzd, language)} / lot
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {comps.map((c, i) => (
+                          <div
+                            key={i}
+                            data-sq="ctl"
+                            data-sq-border="none"
+                            className="p-2 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between"
+                          >
+                            <span className="text-black/70 dark:text-white/75 truncate max-w-[190px]">{c.rawProductName}</span>
+                            <span className="tabular-nums text-black/55 dark:text-white/55">
+                              {c.quantity} {c.unit}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {tab === 'traceability' && (
+              <div className="space-y-3 t-cap" data-testid="mfg-order-traceability-panel">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-3 space-y-2">
+                  <div className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center gap-1.5">
+                    <GitBranch size={14} className="text-[var(--brand-text,#BF431F)]" />
+                    <span>{isAr ? 'المواد الأولية المستهلكة (BSM/BR)' : `Amont Matières & Lots Fournisseurs (${trace.upstreamMaterials.length})`}</span>
+                  </div>
+                  {trace.upstreamMaterials.length === 0 ? (
+                    <div className="text-black/55 dark:text-white/55">{isAr ? 'لا توجد سندات صرف مرتبطة' : 'Aucun bon BSM/BR lié à cet OF.'}</div>
+                  ) : (
+                    trace.upstreamMaterials.map((u, idx) => (
+                      <div key={idx} className="p-2 rounded bg-white dark:bg-[#191716] flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-black dark:text-white">{u.materialName}</div>
+                          <div className="text-black/55 dark:text-white/55 tabular-nums">
+                            {u.voucherNumber} · Lot {u.supplierLotNumber}
+                          </div>
+                        </div>
+                        <span className="tabular-nums font-semibold">{u.quantity} {u.unit}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-3 space-y-2">
+                  <div className="t-small font-semibold text-black/70 dark:text-white/75">
+                    {isAr ? 'مراقبة الجودة و NCR' : `Contrôles Qualité (${trace.qualityGates.length}) & NCR (${trace.ncrHolds.length})`}
+                  </div>
+                  {trace.qualityGates.map((q, idx) => (
+                    <div key={idx} className="p-2 rounded bg-white dark:bg-[#191716] flex items-center justify-between">
+                      <span className="font-semibold">{q.inspectionNumber} ({q.verdict})</span>
+                      <span className="tabular-nums text-emerald-600">{q.acceptedQuantity} OK / {q.rejectedQuantity} Reb.</span>
+                    </div>
+                  ))}
+                  {trace.ncrHolds.map((n, idx) => (
+                    <div key={idx} className="p-2 rounded bg-red-50 dark:bg-red-950/35 text-red-700 dark:text-red-300 flex items-center justify-between">
+                      <span className="font-semibold">{n.ncrNumber} · {n.disposition}</span>
+                      <span>{n.cmupAdjustmentHeld ? 'CMUP bloqué (Gate 1)' : n.status}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-3 space-y-2">
+                  <div className="t-small font-semibold text-black/70 dark:text-white/75">
+                    {isAr ? 'دفعات المنتج النهائي والمستندات (BL/FAC)' : `Aval Produits Finis PFG (${trace.finishedGoodsLots.length}) & Ventes (${trace.downstreamDocuments.length})`}
+                  </div>
+                  {trace.finishedGoodsLots.map((fg) => (
+                    <div key={fg.id} className="p-2 rounded bg-white dark:bg-[#191716] flex items-center justify-between">
+                      <span className="font-semibold tabular-nums">{fg.lotNumber} ({fg.releaseStatus})</span>
+                      <span className="tabular-nums">{fg.qtyProduced} u · {formatMoney(centimesToDzd(fg.unitCmupCentimes), language)}/u</span>
+                    </div>
+                  ))}
+                  {trace.downstreamDocuments.map((d) => (
+                    <div key={d.id} className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/35 flex items-center justify-between">
+                      <span className="font-semibold tabular-nums">{d.documentNumber} ({d.documentType.toUpperCase()})</span>
+                      <span className="tabular-nums">{formatMoney(centimesToDzd(d.totalCentimes), language)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1006,7 +1262,25 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
               </div>
             )}
           </div>
-        )}
+          );
+        }}
+      />
+
+      <UnifiedInvoiceComposerModal
+        isOpen={Boolean(salesPrefill)}
+        onClose={() => setSalesPrefill(null)}
+        prefill={salesPrefill?.prefill || null}
+        onSaved={(doc) => {
+          if (salesPrefill?.order) {
+            const updated: ManufacturingOrder = {
+              ...salesPrefill.order,
+              linkedUnifiedDocId: doc.id,
+            };
+            updateOrder(updated);
+            if (selectedOrder?.id === updated.id) setSelectedOrder(updated);
+          }
+          setSalesPrefill(null);
+        }}
       />
 
       <ManufacturingOrderModal

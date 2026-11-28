@@ -12,7 +12,9 @@ import { ManufacturingBom, ManufacturingOrder } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Button } from '@/atrium/core';
-import { validateStockAvailabilityForOf } from '../../../utils/manufacturingRules';
+import { validateStockAvailabilityForOf, calculateBomCost } from '../../../utils/manufacturingRules';
+import { captureBomSnapshot } from '../../../utils/manufacturingDepth';
+import { dzdToCentimes, centimesToDzd } from '../../../utils/money';
 import { useManufacturingData } from './manufacturingData';
 import { KineticModalShell } from '../../ui/kinetic';
 
@@ -51,6 +53,9 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   const [dueDate, setDueDate] = useState(orderToEdit?.dueDate?.split('T')[0] || '');
   const [station, setStation] = useState(orderToEdit?.assignedStation || 'Poste 03 - Découpe & Usinage CNC');
   const [clientName, setClientName] = useState(orderToEdit?.clientName || '');
+  const [unitPieceRateDzd, setUnitPieceRateDzd] = useState(
+    orderToEdit?.unitPieceRateCentimes ? String(centimesToDzd(orderToEdit.unitPieceRateCentimes)) : ''
+  );
   const [notes, setNotes] = useState(orderToEdit?.notes || '');
 
   useEffect(() => {
@@ -60,6 +65,9 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       setDueDate(orderToEdit.dueDate ? orderToEdit.dueDate.split('T')[0] : '');
       setStation(orderToEdit.assignedStation || 'Poste 03 - Découpe & Usinage CNC');
       setClientName(orderToEdit.clientName || '');
+      setUnitPieceRateDzd(
+        orderToEdit.unitPieceRateCentimes ? String(centimesToDzd(orderToEdit.unitPieceRateCentimes)) : ''
+      );
       setNotes(orderToEdit.notes || '');
     } else {
       setBomId(boms[0]?.id || '');
@@ -67,6 +75,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       setDueDate('');
       setStation('Poste 03 - Découpe & Usinage CNC');
       setClientName('');
+      setUnitPieceRateDzd('');
       setNotes('');
     }
   }, [orderToEdit, boms]);
@@ -108,6 +117,27 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       });
       return;
     }
+    const batchYield = Math.max(1, selectedBom.batchYield || 1);
+    const batchFactor = targetQty / batchYield;
+    const bomBreakdown =
+      (selectedBom.components?.length || 0) > 0 || (selectedBom.routingSteps?.length || 0) > 0
+        ? calculateBomCost(
+            selectedBom.components || [],
+            selectedBom.routingSteps || [],
+            batchYield,
+            selectedBom.targetMarginPercent ?? 35
+          )
+        : null;
+    const matCostDzd = bomBreakdown
+      ? Math.round(bomBreakdown.totalMaterialCostDzd * batchFactor)
+      : Math.round((selectedBom.estimatedCostDzd || 0) * batchFactor);
+    const laborCostDzd =
+      orderToEdit?.totalLaborCostDzd ??
+      (bomBreakdown
+        ? Math.round(bomBreakdown.totalLaborMachineCostDzd * batchFactor)
+        : Math.round((selectedBom.standardLaborHours || 10) * 1200 * batchFactor));
+    const parsedPieceRate = Math.max(0, parseFloat(unitPieceRateDzd) || 0);
+
     onSave({
       id: orderToEdit ? orderToEdit.id : `of_${Date.now()}`,
       accountId: activeAccountId,
@@ -117,6 +147,8 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       orderNumber: orderToEdit ? orderToEdit.orderNumber : `OF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       bomId: selectedBom.id,
       bomCode: selectedBom.bomCode,
+      pinnedBomVersion: orderToEdit?.pinnedBomVersion ?? (selectedBom.version || 1),
+      bomSnapshot: orderToEdit?.bomSnapshot ?? captureBomSnapshot(selectedBom),
       productName: selectedBom.finishedProductName,
       targetQuantity: targetQty,
       quantityOrdered: targetQty,
@@ -129,12 +161,10 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       targetDueDate: new Date(dueDate).toISOString(),
       status: orderToEdit?.status || 'Planned',
       assignedStation: station,
-      totalMaterialCostDzd: (selectedBom.estimatedCostDzd || 0) * targetQty,
-      totalLaborCostDzd:
-        orderToEdit?.totalLaborCostDzd || Math.round((selectedBom.standardLaborHours || 10) * 1200 * targetQty),
-      totalCostDzd:
-        orderToEdit?.totalCostDzd ||
-        Math.round(((selectedBom.estimatedCostDzd || 0) + (selectedBom.standardLaborHours || 10) * 1200) * targetQty),
+      totalMaterialCostDzd: matCostDzd,
+      totalLaborCostDzd: laborCostDzd,
+      totalCostDzd: orderToEdit?.totalCostDzd ?? matCostDzd + laborCostDzd,
+      unitPieceRateCentimes: parsedPieceRate > 0 ? dzdToCentimes(parsedPieceRate) : orderToEdit?.unitPieceRateCentimes,
       clientName: clientName.trim() || undefined,
       notes: notes.trim() || undefined,
       createdAt: orderToEdit?.createdAt || new Date().toISOString(),
@@ -144,7 +174,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
 
   const bomOptions = boms.map((b) => ({
     value: b.id,
-    label: `${b.finishedProductName} (${b.bomCode})`,
+    label: `${b.finishedProductName} (${b.bomCode} v${b.version || 1})`,
   }));
 
   return (
@@ -264,13 +294,25 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             height={40}
             corner={12}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
               field="ofClientName"
               label={isAr ? 'اسم العميل / الوجهة' : 'Client ou Destination'}
               value={clientName}
               onChange={setClientName}
               placeholder="Ex: Sonatrach, BNA, Sur stock..."
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              field="ofPieceRateDzd"
+              label={isAr ? 'أجر القطعة (دج/وحدة)' : 'Tarif Pièce (DZD/u)'}
+              type="number"
+              step="any"
+              value={unitPieceRateDzd}
+              onChange={setUnitPieceRateDzd}
+              placeholder="Ex: 250"
               width="100%"
               height={40}
               corner={12}

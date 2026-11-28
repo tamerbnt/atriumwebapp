@@ -776,7 +776,54 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS indexation_history');
     expect(downSql).toContain('DROP COLUMN IF EXISTS primary_split_bps');
   });
+
+  it('verifies Phase 3 Step 12 (7.12) manufacturing_production depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280012_phase3_manufacturing_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280012_phase3_manufacturing_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain("'mfg_alert'");
+    expect(sql).toContain("'mfg_maint'");
+    expect(sql).toContain("'mfg_fg_lot'");
+    expect(sql).toContain("'mfg_cut'");
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS bom_family_id');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS version_number');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS pinned_bom_version');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS ppe_checklist');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_alerts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_finished_goods');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_machine_maintenance');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_piece_rate_entries');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.mfg_cutting_plans');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_mfg_bom_immutable_on_active_orders(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_create_bom_version(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_trigger_andon_alert(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_resolve_andon_alert(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_release_finished_goods_lot(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_complete_machine_maintenance(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.mfg_post_piece_rate_to_payroll(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_post_piece_rate_to_payroll(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_complete_machine_maintenance(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_release_finished_goods_lot(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_resolve_andon_alert(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_trigger_andon_alert(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.mfg_create_bom_version(');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_guard_mfg_bom_immutable_on_active_orders');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_mfg_bom_immutable_on_active_orders()');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_cutting_plans');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_piece_rate_entries');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_machine_maintenance');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_finished_goods');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.mfg_alerts');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS ppe_checklist');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS pinned_bom_version');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS bom_family_id');
+  });
 });
+
 
 
 
