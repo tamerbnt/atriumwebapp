@@ -5,9 +5,11 @@ import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
 import { Wrench, Shield, CheckCircle2 } from 'lucide-react';
 
+import { AutoGarageTechCommissionsPanel } from './AutoGarageTechCommissionsPanel';
+
 export const AutoGarageStaffView: React.FC = () => {
   const foundation = useStaffFoundation({ category: 'auto_garage' });
-  const { isAr, isEn, language } = foundation;
+  const { isAr, isEn, language, facilityStaff, staffPayrollRuns } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
     {
@@ -130,12 +132,19 @@ export const AutoGarageStaffView: React.FC = () => {
   ];
 
   return (
-    <StandardStaffScreen
-      foundation={foundation}
-      category="auto_garage"
-      columns={columns}
-      categoryTitle={isAr ? 'فريق صيانة السيارات' : isEn ? 'Garage Mechanics & Techs' : 'Mécaniciens & Atelier Auto'}
-      newStaffButtonLabel={isAr ? 'إضافة تقني / ميكانيكي' : isEn ? 'Add Mechanic' : 'Nouveau Mécanicien'}
-    />
+    <div className="space-y-6">
+      <StandardStaffScreen
+        foundation={foundation}
+        category="auto_garage"
+        columns={columns}
+        categoryTitle={isAr ? 'فريق صيانة السيارات' : isEn ? 'Garage Mechanics & Techs' : 'Mécaniciens & Atelier Auto'}
+        newStaffButtonLabel={isAr ? 'إضافة تقني / ميكانيكي' : isEn ? 'Add Mechanic' : 'Nouveau Mécanicien'}
+      />
+      <AutoGarageTechCommissionsPanel
+        staffList={facilityStaff}
+        payrollRuns={staffPayrollRuns}
+        language={language}
+      />
+    </div>
   );
 };

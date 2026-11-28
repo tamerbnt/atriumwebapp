@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { useAtriumSelector } from '../../../services/store';
+import { atriumActions, useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import {
   cloneSnapshot,
@@ -15,6 +15,57 @@ import {
   runWithConcurrency,
 } from '../../../lib/supabase/index';
 import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
+import type { GarageTechCommission } from '../../../types';
+import {
+  captureQuoteUnitPricesSnapshot,
+  computeFlatRateLaborLine,
+  createSupplierPurchaseOrder,
+  evaluateBayAssignment,
+  prepareWorkOrderReopenWithCreditNote,
+  receivePurchaseOrderGoods,
+  startTechTimeLog,
+  stopTechTimeLog,
+  transferVehicleOwnership,
+  type BodyShopInsuranceClaim,
+  type DetailingPackage,
+  type FlatRateLaborItem,
+  type GarageEstimatePhoto,
+  type GaragePlateFormat,
+  type GaragePurchaseOrderLine,
+  type GaragePurchaseOrderRecord,
+  type GarageSupplierRecord,
+  type GarageVehicleType,
+  type InspectionCenterPv,
+  type OrderLaborLine,
+  type TechnicianTimeLog,
+  type TireStorageEntry,
+  type VehicleOwnershipHistoryEntry,
+} from '../../../utils/garageDepth';
+
+export type {
+  BodyShopInsuranceClaim,
+  DetailingPackage,
+  FlatRateLaborItem,
+  GarageEstimatePhoto,
+  GaragePlateFormat,
+  GaragePurchaseOrderLine,
+  GaragePurchaseOrderRecord,
+  GarageSupplierRecord,
+  GarageVehicleType,
+  InspectionCenterPv,
+  OrderLaborLine,
+  TechnicianTimeLog,
+  TireStorageEntry,
+  VehicleOwnershipHistoryEntry,
+};
+
+const GARAGE_SYNC_EVENT = 'atrium-garage-sync';
+
+function emitGarageSync(key: string) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(GARAGE_SYNC_EVENT, { detail: { key } }));
+  }
+}
 
 function mergeGarageById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -117,7 +168,23 @@ export interface RepairOrder {
   isVehicleDirty?: boolean;
   damageMarkers?: DamageMarker[];
   clientSignatureSvg?: string;
+  clientCrmPartyId?: string;
   technicianChecklist?: Array<{ id: string; label: string; done: boolean }>;
+  laborLines?: OrderLaborLine[];
+  mileageOverrideReason?: string;
+  estimateStatus?: 'draft' | 'sent' | 'approved' | 'rejected';
+  estimateApprovedAt?: string;
+  estimateApprovedBy?: string;
+  estimatePhotos?: GarageEstimatePhoto[];
+  quoteUnitPricesSnapshot?: Record<string, number>;
+  detailingPackageId?: string;
+  isLockedInvoiced?: boolean;
+  reopenCreditNoteId?: string;
+  reopenCreditNoteNumber?: string;
+  reopenReason?: string;
+  reopenedAt?: string;
+  unifiedDocumentId?: string;
+  journalEntryId?: string;
   billingType?: 'bon_caisse' | 'facture_dgi';
   isPaid?: boolean;
   invoiceId?: string;
@@ -130,6 +197,9 @@ export interface VehicleAsset {
   businessId?: string;
   branchId?: string;
   staffId?: string;
+  crmPartyId?: string;
+  vehicleType?: GarageVehicleType;
+  plateFormat?: GaragePlateFormat;
   plateNumber: string; // e.g. "00142-118-16"
   brand: string;
   model: string;
@@ -146,8 +216,12 @@ export interface VehicleAsset {
   lastServiceKm?: number;
   lastServiceDate?: string;
   nextServiceKm?: number;
+  nextServiceDate?: string;
   dailyAvgKm?: number;
+  techControlExpiry?: string;
+  insuranceExpiry?: string;
   carteGriseNumber?: string;
+  ownershipHistory?: VehicleOwnershipHistoryEntry[];
   notes?: string;
   version?: number;
 }
@@ -169,7 +243,9 @@ export interface SparePart {
   sellingPriceDzd: number;
   locationBin: string; // e.g. "Rayon B-02"
   unit?: 'piece' | 'litre' | 'jeu' | 'kit';
+  supplierId?: string;
   supplierName?: string;
+  defaultWarrantyMonths?: number;
   compatibility?: string[];
   createdAt?: string;
   version?: number;
@@ -885,6 +961,155 @@ export const INITIAL_INVOICES: GarageInvoice[] = [
   },
 ];
 
+export const INITIAL_GARAGE_SUPPLIERS: GarageSupplierRecord[] = [
+  {
+    id: 'sup_gar_01',
+    branchId: 'branch_garage_main',
+    name: 'SARL AutoPièces El Harrach',
+    phone: '0550 88 12 34',
+    wilaya: 'Alger',
+    specialty: 'Freinage, Filtration & Embrayage',
+    nif: '001616088991122',
+    rcNumber: '16/00-2233445B17',
+    paymentTermsDays: 30,
+    balanceDzd: 0,
+  },
+  {
+    id: 'sup_gar_02',
+    branchId: 'branch_garage_main',
+    name: 'EURL Naftal Lubrifiants & Batteries',
+    phone: '0661 33 44 55',
+    wilaya: 'Blida',
+    specialty: 'Huiles Synthétiques & Liquides',
+    nif: '001409033445566',
+    rcNumber: '09/00-5566778B14',
+    paymentTermsDays: 45,
+    balanceDzd: 0,
+  },
+  {
+    id: 'sup_gar_03',
+    branchId: 'branch_garage_main',
+    name: 'SPA Pneumatiques & Jantes DZ',
+    phone: '0770 91 22 40',
+    wilaya: 'Oran',
+    specialty: 'Pneumatiques Tourisme & Poids Lourds',
+    nif: '001731077889900',
+    rcNumber: '31/00-7788990B17',
+    paymentTermsDays: 30,
+    balanceDzd: 0,
+  },
+];
+
+export const INITIAL_FLAT_RATE_LABOR: FlatRateLaborItem[] = [
+  {
+    id: 'fr_01',
+    branchId: 'branch_garage_main',
+    code: 'BAR-VID-01',
+    label: 'Vidange Moteur + Remplacement 3 Filtres',
+    category: 'Entretien Périodique',
+    standardHours: 1.0,
+    hourlyRateDzd: 2500,
+    isActive: true,
+  },
+  {
+    id: 'fr_02',
+    branchId: 'branch_garage_main',
+    code: 'BAR-FRN-02',
+    label: 'Remplacement Disques & Plaquettes Avant + Purge',
+    category: 'Freinage',
+    standardHours: 1.5,
+    hourlyRateDzd: 2500,
+    isActive: true,
+  },
+  {
+    id: 'fr_03',
+    branchId: 'branch_garage_main',
+    code: 'BAR-EMB-03',
+    label: 'Dépose Boîte & Kit Embrayage + Butée',
+    category: 'Transmission',
+    standardHours: 4.5,
+    hourlyRateDzd: 2800,
+    isActive: true,
+  },
+  {
+    id: 'fr_04',
+    branchId: 'branch_garage_main',
+    code: 'BAR-DIAG-04',
+    label: 'Diagnostic Électronique Complet Valise OBD-II',
+    category: 'Électronique',
+    standardHours: 1.0,
+    hourlyRateDzd: 3000,
+    isActive: true,
+  },
+  {
+    id: 'fr_05',
+    branchId: 'branch_garage_main',
+    code: 'BAR-DST-05',
+    label: 'Remplacement Kit Distribution & Pompe à Eau',
+    category: 'Moteur',
+    standardHours: 3.5,
+    hourlyRateDzd: 3000,
+    isActive: true,
+  },
+  {
+    id: 'fr_06',
+    branchId: 'branch_garage_main',
+    code: 'BAR-GEO-06',
+    label: 'Contrôle Géométrie / Parallélisme 3D + Équilibrage',
+    category: 'Pneumatiques',
+    standardHours: 1.0,
+    hourlyRateDzd: 2500,
+    isActive: true,
+  },
+];
+
+export const INITIAL_DETAILING_PACKAGES: DetailingPackage[] = [
+  {
+    id: 'det_01',
+    branchId: 'branch_garage_main',
+    code: 'DET-EXP',
+    name: 'Lavage Intérieur/Extérieur Express + Cire',
+    tier: 'express',
+    durationMinutes: 60,
+    priceDzd: 3500,
+    includedSteps: ['Prélavage mousse active', 'Aspiration habitacle', 'Dressing plastiques & pneus'],
+    isActive: true,
+  },
+  {
+    id: 'det_02',
+    branchId: 'branch_garage_main',
+    code: 'DET-STD',
+    name: 'Rénovation Intérieure Shampouineuse + Polissage 1 Passe',
+    tier: 'standard',
+    durationMinutes: 240,
+    priceDzd: 14000,
+    includedSteps: ['Décontamination ferreuse', 'Injection-extraction sièges & moquettes', 'Polissage lustrage brillant'],
+    isActive: true,
+  },
+  {
+    id: 'det_03',
+    branchId: 'branch_garage_main',
+    code: 'DET-CER',
+    name: 'Traitement Protection Céramique 9H (3 ans)',
+    tier: 'ceramic',
+    durationMinutes: 480,
+    priceDzd: 45000,
+    includedSteps: ['Correction vernis 2 passes', 'Dégraissage IPA', 'Pose céramique 9H carrosserie & jantes'],
+    isActive: true,
+  },
+  {
+    id: 'det_04',
+    branchId: 'branch_garage_main',
+    code: 'DET-PPF',
+    name: 'Film Protection Carrosserie PPF Face Avant',
+    tier: 'ppf',
+    durationMinutes: 360,
+    priceDzd: 68000,
+    includedSteps: ['Préparation carrosserie', 'Pose film polyuréthane auto-cicatrisant', 'Finition bords invisibles'],
+    isActive: true,
+  },
+];
+
 // ----------------------------------------------------------------------
 // Algerian Fiscal & Mileage Math Pure Utilities
 // ----------------------------------------------------------------------
@@ -1009,6 +1234,80 @@ export const useGarageData = () => {
     }
   });
 
+  const [suppliers, setSuppliers] = useState<GarageSupplierRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_suppliers_v1');
+      return saved ? JSON.parse(saved) : INITIAL_GARAGE_SUPPLIERS;
+    } catch {
+      return INITIAL_GARAGE_SUPPLIERS;
+    }
+  });
+
+  const [purchaseOrders, setPurchaseOrders] = useState<GaragePurchaseOrderRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_pos_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [flatRateCatalog, setFlatRateCatalog] = useState<FlatRateLaborItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_flat_rates_v1');
+      return saved ? JSON.parse(saved) : INITIAL_FLAT_RATE_LABOR;
+    } catch {
+      return INITIAL_FLAT_RATE_LABOR;
+    }
+  });
+
+  const [timeLogs, setTimeLogs] = useState<TechnicianTimeLog[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_time_logs_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [claims, setClaims] = useState<BodyShopInsuranceClaim[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_claims_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [inspectionPvs, setInspectionPvs] = useState<InspectionCenterPv[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_inspections_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [detailingPackages, setDetailingPackages] = useState<DetailingPackage[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_detailing_v1');
+      return saved ? JSON.parse(saved) : INITIAL_DETAILING_PACKAGES;
+    } catch {
+      return INITIAL_DETAILING_PACKAGES;
+    }
+  });
+
+  const [tireStorage, setTireStorage] = useState<TireStorageEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_garage_tire_storage_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const techCommissions = useAtriumSelector((s) => s.garageTechCommissions) || [];
+
   // LocalStorage synchronizations (idle-deferred)
   useIdlePersist('atrium_garage_orders_v2', orders);
   useIdlePersist('atrium_garage_vehicles_v2', vehicles);
@@ -1017,6 +1316,60 @@ export const useGarageData = () => {
   useIdlePersist('atrium_garage_fleets_v2', fleets);
   useIdlePersist('atrium_garage_invoices_v2', invoices);
   useIdlePersist('atrium_garage_closures_v1', cashClosures);
+  useIdlePersist('atrium_garage_suppliers_v1', suppliers);
+  useIdlePersist('atrium_garage_pos_v1', purchaseOrders);
+  useIdlePersist('atrium_garage_flat_rates_v1', flatRateCatalog);
+  useIdlePersist('atrium_garage_time_logs_v1', timeLogs);
+  useIdlePersist('atrium_garage_claims_v1', claims);
+  useIdlePersist('atrium_garage_inspections_v1', inspectionPvs);
+  useIdlePersist('atrium_garage_detailing_v1', detailingPackages);
+  useIdlePersist('atrium_garage_tire_storage_v1', tireStorage);
+
+  // Cross-component garage sync listener (keeps Vehicles/Orders/Parts/Billing views live-synced)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleSync = (evt: Event) => {
+      const key = (evt as CustomEvent<{ key?: string }>).detail?.key;
+      try {
+        if (!key || key === 'atrium_garage_orders_v2') {
+          const s = localStorage.getItem('atrium_garage_orders_v2');
+          if (s) setOrders(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_vehicles_v2') {
+          const s = localStorage.getItem('atrium_garage_vehicles_v2');
+          if (s) setVehicles(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_parts_v2') {
+          const s = localStorage.getItem('atrium_garage_parts_v2');
+          if (s) setParts(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_bays_v2') {
+          const s = localStorage.getItem('atrium_garage_bays_v2');
+          if (s) setBays(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_invoices_v2') {
+          const s = localStorage.getItem('atrium_garage_invoices_v2');
+          if (s) setInvoices(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_pos_v1') {
+          const s = localStorage.getItem('atrium_garage_pos_v1');
+          if (s) setPurchaseOrders(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_time_logs_v1') {
+          const s = localStorage.getItem('atrium_garage_time_logs_v1');
+          if (s) setTimeLogs(JSON.parse(s));
+        }
+        if (!key || key === 'atrium_garage_tire_storage_v1') {
+          const s = localStorage.getItem('atrium_garage_tire_storage_v1');
+          if (s) setTireStorage(JSON.parse(s));
+        }
+      } catch {
+        // ignore malformed cache
+      }
+    };
+    window.addEventListener(GARAGE_SYNC_EVENT, handleSync);
+    return () => window.removeEventListener(GARAGE_SYNC_EVENT, handleSync);
+  }, []);
 
   // Hydrate garage vertical state from Supabase when configured
   useEffect(() => {
@@ -1032,6 +1385,14 @@ export const useGarageData = () => {
         remoteBays,
         remoteFleets,
         remoteInvoices,
+        remoteSuppliers,
+        remotePos,
+        remoteFlatRates,
+        remoteTimeLogs,
+        remoteClaims,
+        remotePvs,
+        remoteDetailing,
+        remoteTires,
       ] = await runWithConcurrency(
         [
           () => garageService.fetchWorkOrders(activeBranchId),
@@ -1040,6 +1401,14 @@ export const useGarageData = () => {
           () => garageService.fetchBays(activeBranchId),
           () => garageService.fetchFleetAccounts(activeBranchId),
           () => garageService.fetchInvoices(activeBranchId),
+          () => garageService.fetchSuppliers(activeBranchId),
+          () => garageService.fetchPurchaseOrders(activeBranchId),
+          () => garageService.fetchFlatRateLabor(activeBranchId),
+          () => garageService.fetchTechTimeLogs(activeBranchId),
+          () => garageService.fetchInsuranceClaims(activeBranchId),
+          () => garageService.fetchInspectionPvs(activeBranchId),
+          () => garageService.fetchDetailingPackages(activeBranchId),
+          () => garageService.fetchTireStorage(activeBranchId),
         ],
         4
       );
@@ -1062,6 +1431,30 @@ export const useGarageData = () => {
       }
       if (Array.isArray(remoteInvoices) && remoteInvoices.length > 0) {
         setInvoices((prev) => mergeGarageById(prev, remoteInvoices as GarageInvoice[]));
+      }
+      if (Array.isArray(remoteSuppliers) && remoteSuppliers.length > 0) {
+        setSuppliers((prev) => mergeGarageById(prev, remoteSuppliers as GarageSupplierRecord[]));
+      }
+      if (Array.isArray(remotePos) && remotePos.length > 0) {
+        setPurchaseOrders((prev) => mergeGarageById(prev, remotePos as GaragePurchaseOrderRecord[]));
+      }
+      if (Array.isArray(remoteFlatRates) && remoteFlatRates.length > 0) {
+        setFlatRateCatalog((prev) => mergeGarageById(prev, remoteFlatRates as FlatRateLaborItem[]));
+      }
+      if (Array.isArray(remoteTimeLogs) && remoteTimeLogs.length > 0) {
+        setTimeLogs((prev) => mergeGarageById(prev, remoteTimeLogs as TechnicianTimeLog[]));
+      }
+      if (Array.isArray(remoteClaims) && remoteClaims.length > 0) {
+        setClaims((prev) => mergeGarageById(prev, remoteClaims as BodyShopInsuranceClaim[]));
+      }
+      if (Array.isArray(remotePvs) && remotePvs.length > 0) {
+        setInspectionPvs((prev) => mergeGarageById(prev, remotePvs as InspectionCenterPv[]));
+      }
+      if (Array.isArray(remoteDetailing) && remoteDetailing.length > 0) {
+        setDetailingPackages((prev) => mergeGarageById(prev, remoteDetailing as DetailingPackage[]));
+      }
+      if (Array.isArray(remoteTires) && remoteTires.length > 0) {
+        setTireStorage((prev) => mergeGarageById(prev, remoteTires as TireStorageEntry[]));
       }
     });
 
@@ -1227,6 +1620,14 @@ export const useGarageData = () => {
     bays,
     fleets,
     invoices,
+    suppliers,
+    purchaseOrders,
+    flatRateCatalog,
+    timeLogs,
+    claims,
+    inspectionPvs,
+    detailingPackages,
+    tireStorage,
   });
   latestRef.current = {
     orders,
@@ -1235,6 +1636,14 @@ export const useGarageData = () => {
     bays,
     fleets,
     invoices,
+    suppliers,
+    purchaseOrders,
+    flatRateCatalog,
+    timeLogs,
+    claims,
+    inspectionPvs,
+    detailingPackages,
+    tireStorage,
   };
 
   const restoreAt = <T extends { id: string }>(
@@ -1455,11 +1864,19 @@ export const useGarageData = () => {
     });
   };
 
-  // Bay Assignment
-  const assignBayToOrder = (orderId: string, bayId: string) => {
+  // Bay Assignment (guarded against occupied double-assignment)
+  const assignBayToOrder = (
+    orderId: string,
+    bayId: string
+  ): { ok: boolean; errorMessage?: string } => {
     const targetBay = latestRef.current.bays.find((b) => b.id === bayId);
     const targetOrder = latestRef.current.orders.find((o) => o.id === orderId);
-    if (!targetOrder) return;
+    if (!targetOrder) return { ok: false, errorMessage: 'Ordre de réparation introuvable.' };
+
+    const guard = evaluateBayAssignment({ bay: targetBay, workOrderId: orderId });
+    if (!guard.ok) {
+      return { ok: false, errorMessage: guard.errorMessage };
+    }
 
     const prevOrder = cloneSnapshot(targetOrder);
     const prevBays = cloneSnapshot(latestRef.current.bays);
@@ -1473,6 +1890,8 @@ export const useGarageData = () => {
         return b;
       })
     );
+    emitGarageSync('atrium_garage_orders_v2');
+    emitGarageSync('atrium_garage_bays_v2');
     void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
     void garageService.assignBay(bayId, orderId, targetOrder.technicianName || '').catch(() => {});
 
@@ -1513,6 +1932,7 @@ export const useGarageData = () => {
         void garageService.assignBay(bayId, orderId, targetOrder.technicianName || '').catch(() => {});
       },
     });
+    return { ok: true };
   };
 
   const releaseBay = (bayId: string) => {
@@ -1958,11 +2378,14 @@ export const useGarageData = () => {
           isPaid: scopedInv.isPaid,
           billingType: scopedInv.billingType,
           invoiceId: scopedInv.id,
+          isLockedInvoiced: true,
         };
         void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
         return next;
       })
     );
+    emitGarageSync('atrium_garage_invoices_v2');
+    emitGarageSync('atrium_garage_orders_v2');
 
     registerUndoEntry({
       vertical: 'auto_garage',
@@ -2121,6 +2544,382 @@ export const useGarageData = () => {
     return closure;
   };
 
+  // Phase 3 Step 10 (7.10) Depth Actions
+  const transferVehicleOwner = (
+    vehicleId: string,
+    params: {
+      newOwnerName: string;
+      newOwnerPhone: string;
+      newOwnerEmail?: string;
+      newFleetId?: string;
+      newFleetName?: string;
+      reason: string;
+      odometerAtTransferKm?: number;
+    }
+  ) => {
+    const existing = latestRef.current.vehicles.find((v) => v.id === vehicleId);
+    if (!existing) throw new Error('VEHICLE_NOT_FOUND');
+    const prevSnap = cloneSnapshot(existing);
+    const { updatedVehicle } = transferVehicleOwnership({
+      vehicle: existing,
+      ...params,
+    });
+    const scoped = withBranch(updatedVehicle);
+    setVehicles((prev) => prev.map((v) => (v.id === vehicleId ? scoped : v)));
+    emitGarageSync('atrium_garage_vehicles_v2');
+    void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'edit',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.plateNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Cession véhicule ${scoped.plateNumber} → ${scoped.ownerName}`,
+        en: `Vehicle ${scoped.plateNumber} transferred → ${scoped.ownerName}`,
+        ar: `نقل ملكية المركبة ${scoped.plateNumber} ← ${scoped.ownerName}`,
+      }),
+      undo: () => {
+        setVehicles((prev) => prev.map((v) => (v.id === vehicleId ? prevSnap : v)));
+        void garageService.upsertVehicle(withBranch(prevSnap), garageCtx).catch(() => {});
+      },
+      redo: () => {
+        setVehicles((prev) => prev.map((v) => (v.id === vehicleId ? scoped : v)));
+        void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
+      },
+    });
+    return scoped;
+  };
+
+  const approveWorkOrderEstimate = (orderId: string, approvedBy: string) => {
+    const existing = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!existing) return null;
+    const prevSnap = cloneSnapshot(existing);
+    const snapshot = captureQuoteUnitPricesSnapshot(existing.partsUsed);
+    const nextOrder = withBranch({
+      ...existing,
+      estimateStatus: 'approved' as const,
+      estimateApprovedAt: new Date().toISOString(),
+      estimateApprovedBy: approvedBy.trim() || 'Client',
+      quoteUnitPricesSnapshot: snapshot,
+      status: existing.status === 'WaitingApproval' ? ('InRepair' as const) : existing.status,
+    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: nextOrder.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Devis ${nextOrder.orderNumber} approuvé`,
+        en: `Estimate ${nextOrder.orderNumber} approved`,
+        ar: `تمت الموافقة على عرض السعر ${nextOrder.orderNumber}`,
+      }),
+      undo: () => {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? prevSnap : o)));
+        void garageService.upsertWorkOrder(withBranch(prevSnap), garageCtx).catch(() => {});
+      },
+      redo: () => {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+        void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+      },
+    });
+    return nextOrder;
+  };
+
+  const attachEstimatePhoto = (orderId: string, photo: GarageEstimatePhoto) => {
+    const existing = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!existing) return;
+    const nextOrder = withBranch({
+      ...existing,
+      estimatePhotos: [photo, ...(existing.estimatePhotos || [])],
+    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+  };
+
+  const removeEstimatePhoto = (orderId: string, photoId: string) => {
+    const existing = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!existing) return;
+    const nextOrder = withBranch({
+      ...existing,
+      estimatePhotos: (existing.estimatePhotos || []).filter((p) => p.id !== photoId),
+    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+  };
+
+  const addFlatRateLaborLine = (
+    orderId: string,
+    item: FlatRateLaborItem,
+    technicianStaffId?: string,
+    technicianName?: string
+  ) => {
+    const existing = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!existing) return null;
+    const fleet = existing.fleetId
+      ? latestRef.current.fleets.find((f) => f.id === existing.fleetId)
+      : undefined;
+    const line = computeFlatRateLaborLine({
+      item,
+      fleetNegotiatedHourlyRateDzd: fleet?.negotiatedHourlyRateDzd,
+      technicianStaffId,
+      technicianName: technicianName || existing.technicianName,
+    });
+    const nextLines = [...(existing.laborLines || []), line];
+    const laborHoursActual = nextLines.reduce((s, l) => s + l.hours, 0);
+    const laborCostDzd = nextLines.reduce((s, l) => s + l.totalDzd, 0);
+    const partsCostDzd = existing.partsUsed.reduce((s, p) => s + p.totalPriceDzd, 0);
+    const nextOrder = withBranch({
+      ...existing,
+      laborLines: nextLines,
+      laborHoursActual,
+      laborCostDzd,
+      partsCostDzd,
+      finalCostDzd: laborCostDzd + partsCostDzd,
+    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+    return nextOrder;
+  };
+
+  const startWorkOrderTimer = (params: {
+    orderId: string;
+    technicianStaffId?: string;
+    technicianName: string;
+    taskLabel: string;
+    commissionRateBps?: number;
+  }) => {
+    const order = latestRef.current.orders.find((o) => o.id === params.orderId);
+    if (!order) return null;
+    const log = startTechTimeLog({
+      branchId: activeBranchId,
+      workOrderId: order.id,
+      orderNumber: order.orderNumber,
+      technicianStaffId: params.technicianStaffId,
+      technicianName: params.technicianName,
+      taskLabel: params.taskLabel,
+      commissionRateBps: params.commissionRateBps,
+    });
+    setTimeLogs((prev) => [log, ...prev]);
+    emitGarageSync('atrium_garage_time_logs_v1');
+    void garageService.upsertTechTimeLog(log, garageCtx).catch(() => {});
+    return log;
+  };
+
+  const stopWorkOrderTimer = (logId: string, hourlyRateOverrideDzd?: number) => {
+    const log = latestRef.current.timeLogs.find((l) => l.id === logId);
+    if (!log || log.status !== 'running') return null;
+    const order = latestRef.current.orders.find((o) => o.id === log.workOrderId);
+    const hourlyRateDzd = hourlyRateOverrideDzd ?? order?.hourlyRateDzd ?? 2500;
+    const { completedLog, commissionRecord } = stopTechTimeLog({
+      log,
+      hourlyRateDzd,
+      accountId: garageCtx.accountId,
+      businessId: garageCtx.businessId,
+    });
+    setTimeLogs((prev) => prev.map((l) => (l.id === logId ? completedLog : l)));
+    emitGarageSync('atrium_garage_time_logs_v1');
+    void garageService.upsertTechTimeLog(completedLog, garageCtx).catch(() => {});
+    atriumActions.recordGarageTechCommission(commissionRecord);
+    return { completedLog, commissionRecord };
+  };
+
+  const applyDetailingPackage = (orderId: string, pkg: DetailingPackage) => {
+    const existing = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!existing) return null;
+    const pkgLine: OrderLaborLine = {
+      id: `lab_det_${Date.now()}`,
+      flatRateCode: pkg.code,
+      label: `Detailing · ${pkg.name}`,
+      hours: Number((pkg.durationMinutes / 60).toFixed(2)),
+      hourlyRateDzd: pkg.priceDzd,
+      totalDzd: pkg.priceDzd,
+      technicianName: existing.technicianName,
+    };
+    const nextLines = [...(existing.laborLines || []), pkgLine];
+    const laborCostDzd = nextLines.reduce((s, l) => s + l.totalDzd, 0);
+    const partsCostDzd = existing.partsUsed.reduce((s, p) => s + p.totalPriceDzd, 0);
+    const nextOrder = withBranch({
+      ...existing,
+      detailingPackageId: pkg.id,
+      laborLines: nextLines,
+      laborCostDzd,
+      finalCostDzd: laborCostDzd + partsCostDzd,
+    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+    return nextOrder;
+  };
+
+  const addSupplier = (supplier: Omit<GarageSupplierRecord, 'id' | 'branchId'>) => {
+    const record: GarageSupplierRecord = {
+      ...supplier,
+      id: `sup_gar_${Date.now()}`,
+      branchId: activeBranchId,
+    };
+    setSuppliers((prev) => [record, ...prev]);
+    void garageService.upsertSupplier(record, garageCtx).catch(() => {});
+    return record;
+  };
+
+  const createPurchaseOrder = (params: {
+    supplierId: string;
+    supplierName: string;
+    items: GaragePurchaseOrderLine[];
+    warrantyMonths?: number;
+    notes?: string;
+    status?: 'Draft' | 'Ordered';
+  }) => {
+    const po = createSupplierPurchaseOrder({
+      branchId: activeBranchId,
+      existingPoNumbers: latestRef.current.purchaseOrders.map((p) => p.poNumber),
+      ...params,
+    });
+    setPurchaseOrders((prev) => [po, ...prev]);
+    emitGarageSync('atrium_garage_pos_v1');
+    void garageService.upsertPurchaseOrder(po, garageCtx).catch(() => {});
+    return po;
+  };
+
+  const receivePurchaseOrderWithBl = (params: {
+    poId: string;
+    deliveryNoteNumber: string;
+    receivedByName: string;
+    receivedLines?: GaragePurchaseOrderLine[];
+  }) => {
+    const po = latestRef.current.purchaseOrders.find((p) => p.id === params.poId);
+    if (!po) throw new Error('GARAGE_PO_NOT_FOUND');
+    const prevPartsSnap = cloneSnapshot(latestRef.current.parts);
+    const prevPoSnap = cloneSnapshot(po);
+    const { updatedPo, stockAdjustments } = receivePurchaseOrderGoods({
+      po,
+      deliveryNoteNumber: params.deliveryNoteNumber,
+      receivedByName: params.receivedByName,
+      receivedLines: params.receivedLines,
+    });
+
+    setPurchaseOrders((prev) => prev.map((p) => (p.id === po.id ? updatedPo : p)));
+    setParts((prev) =>
+      prev.map((part) => {
+        const adj = stockAdjustments.find((a) => a.partId === part.id);
+        if (!adj) return part;
+        const nextPart = withBranch({
+          ...part,
+          stockQuantity: part.stockQuantity + adj.addedQty,
+          buyingPriceDzd: adj.newBuyingPriceDzd > 0 ? adj.newBuyingPriceDzd : part.buyingPriceDzd,
+          supplierId: po.supplierId || part.supplierId,
+          supplierName: po.supplierName || part.supplierName,
+        });
+        void garageService.upsertPart(nextPart, garageCtx).catch(() => {});
+        return nextPart;
+      })
+    );
+    emitGarageSync('atrium_garage_pos_v1');
+    emitGarageSync('atrium_garage_parts_v2');
+    void garageService.receivePurchaseOrder(po.id, params.deliveryNoteNumber, params.receivedByName, params.receivedLines).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'edit',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: updatedPo.poNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Réception BL ${updatedPo.deliveryNoteNumber} (${updatedPo.poNumber}) enregistrée`,
+        en: `Goods receipt BL ${updatedPo.deliveryNoteNumber} (${updatedPo.poNumber}) completed`,
+        ar: `تم استلام وصل التسليم ${updatedPo.deliveryNoteNumber} للطلب ${updatedPo.poNumber}`,
+      }),
+      undo: () => {
+        setPurchaseOrders((prev) => prev.map((p) => (p.id === po.id ? prevPoSnap : p)));
+        setParts(prevPartsSnap);
+      },
+      redo: () => {
+        setPurchaseOrders((prev) => prev.map((p) => (p.id === po.id ? updatedPo : p)));
+      },
+    });
+    return { updatedPo, stockAdjustments };
+  };
+
+  const upsertInsuranceClaim = (claim: BodyShopInsuranceClaim) => {
+    const scoped: BodyShopInsuranceClaim = { ...claim, branchId: claim.branchId || activeBranchId };
+    setClaims((prev) => {
+      const idx = prev.findIndex((c) => c.id === scoped.id);
+      return idx >= 0 ? prev.map((c) => (c.id === scoped.id ? scoped : c)) : [scoped, ...prev];
+    });
+    void garageService.upsertInsuranceClaim(scoped, garageCtx).catch(() => {});
+    return scoped;
+  };
+
+  const createInspectionPv = (pv: InspectionCenterPv) => {
+    const scoped: InspectionCenterPv = { ...pv, branchId: pv.branchId || activeBranchId };
+    setInspectionPvs((prev) => [scoped, ...prev.filter((p) => p.id !== scoped.id)]);
+    void garageService.upsertInspectionPv(scoped, garageCtx).catch(() => {});
+    return scoped;
+  };
+
+  const upsertTireStorageEntry = (entry: TireStorageEntry) => {
+    const scoped: TireStorageEntry = { ...entry, branchId: entry.branchId || activeBranchId };
+    setTireStorage((prev) => {
+      const idx = prev.findIndex((t) => t.id === scoped.id);
+      return idx >= 0 ? prev.map((t) => (t.id === scoped.id ? scoped : t)) : [scoped, ...prev];
+    });
+    emitGarageSync('atrium_garage_tire_storage_v1');
+    void garageService.upsertTireStorage(scoped, garageCtx).catch(() => {});
+    return scoped;
+  };
+
+  const reopenInvoicedWorkOrder = (params: {
+    orderId: string;
+    creditNoteId: string;
+    creditNoteNumber: string;
+    reason: string;
+  }) => {
+    const existing = latestRef.current.orders.find((o) => o.id === params.orderId);
+    if (!existing) throw new Error('GARAGE_WORK_ORDER_NOT_FOUND');
+    const prevSnap = cloneSnapshot(existing);
+    const updated = withBranch(
+      prepareWorkOrderReopenWithCreditNote({
+        order: existing,
+        creditNoteId: params.creditNoteId,
+        creditNoteNumber: params.creditNoteNumber,
+        reason: params.reason,
+      })
+    );
+    setOrders((prev) => prev.map((o) => (o.id === existing.id ? updated : o)));
+    emitGarageSync('atrium_garage_orders_v2');
+    void garageService.reopenWorkOrderWithCreditNote(existing.id, params.creditNoteId, params.reason).catch(() => {});
+    void garageService.upsertWorkOrder(updated, garageCtx).catch(() => {});
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: updated.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `OR ${updated.orderNumber} réouvert suite à Avoir ${params.creditNoteNumber}`,
+        en: `Work order ${updated.orderNumber} reopened via Credit Note ${params.creditNoteNumber}`,
+        ar: `إعادة فتح أمر الإصلاح ${updated.orderNumber} بإشعار دائن ${params.creditNoteNumber}`,
+      }),
+      undo: () => {
+        setOrders((prev) => prev.map((o) => (o.id === existing.id ? prevSnap : o)));
+        void garageService.upsertWorkOrder(withBranch(prevSnap), garageCtx).catch(() => {});
+      },
+      redo: () => {
+        setOrders((prev) => prev.map((o) => (o.id === existing.id ? updated : o)));
+        void garageService.upsertWorkOrder(updated, garageCtx).catch(() => {});
+      },
+    });
+    return updated;
+  };
+
   const scopedOrders = useMemo(() => orders.filter(belongsToActiveBranch), [orders, belongsToActiveBranch]);
   const scopedVehicles = useMemo(() => vehicles.filter(belongsToActiveBranch), [vehicles, belongsToActiveBranch]);
   const scopedParts = useMemo(() => parts.filter(belongsToActiveBranch), [parts, belongsToActiveBranch]);
@@ -2128,6 +2927,18 @@ export const useGarageData = () => {
   const scopedFleets = useMemo(() => fleets.filter(belongsToActiveBranch), [fleets, belongsToActiveBranch]);
   const scopedInvoices = useMemo(() => invoices.filter(belongsToActiveBranch), [invoices, belongsToActiveBranch]);
   const scopedCashClosures = useMemo(() => cashClosures.filter(belongsToActiveBranch), [cashClosures, belongsToActiveBranch]);
+  const scopedSuppliers = useMemo(() => suppliers.filter(belongsToActiveBranch), [suppliers, belongsToActiveBranch]);
+  const scopedPurchaseOrders = useMemo(() => purchaseOrders.filter(belongsToActiveBranch), [purchaseOrders, belongsToActiveBranch]);
+  const scopedFlatRateCatalog = useMemo(() => flatRateCatalog.filter(belongsToActiveBranch), [flatRateCatalog, belongsToActiveBranch]);
+  const scopedTimeLogs = useMemo(() => timeLogs.filter(belongsToActiveBranch), [timeLogs, belongsToActiveBranch]);
+  const scopedClaims = useMemo(() => claims.filter(belongsToActiveBranch), [claims, belongsToActiveBranch]);
+  const scopedInspectionPvs = useMemo(() => inspectionPvs.filter(belongsToActiveBranch), [inspectionPvs, belongsToActiveBranch]);
+  const scopedDetailingPackages = useMemo(() => detailingPackages.filter(belongsToActiveBranch), [detailingPackages, belongsToActiveBranch]);
+  const scopedTireStorage = useMemo(() => tireStorage.filter(belongsToActiveBranch), [tireStorage, belongsToActiveBranch]);
+  const scopedTechCommissions = useMemo(
+    () => (techCommissions || []).filter((c) => (c.branchId || 'branch_garage_main') === activeBranchId),
+    [techCommissions, activeBranchId]
+  );
 
   return {
     orders: scopedOrders,
@@ -2137,6 +2948,15 @@ export const useGarageData = () => {
     fleets: scopedFleets,
     invoices: scopedInvoices,
     cashClosures: scopedCashClosures,
+    suppliers: scopedSuppliers,
+    purchaseOrders: scopedPurchaseOrders,
+    flatRateCatalog: scopedFlatRateCatalog,
+    timeLogs: scopedTimeLogs,
+    techCommissions: scopedTechCommissions,
+    claims: scopedClaims,
+    inspectionPvs: scopedInspectionPvs,
+    detailingPackages: scopedDetailingPackages,
+    tireStorage: scopedTireStorage,
     addOrder,
     updateOrder,
     deleteOrder,
@@ -2146,10 +2966,25 @@ export const useGarageData = () => {
     addVehicle,
     updateVehicle,
     deleteVehicle,
+    transferVehicleOwner,
     addPart,
     updatePart,
     deletePart,
     requisitionPartToOrder,
+    addSupplier,
+    createPurchaseOrder,
+    receivePurchaseOrderWithBl,
+    approveWorkOrderEstimate,
+    attachEstimatePhoto,
+    removeEstimatePhoto,
+    addFlatRateLaborLine,
+    startWorkOrderTimer,
+    stopWorkOrderTimer,
+    applyDetailingPackage,
+    upsertInsuranceClaim,
+    createInspectionPv,
+    upsertTireStorageEntry,
+    reopenInvoicedWorkOrder,
     addFleet,
     updateFleet,
     deleteFleet,

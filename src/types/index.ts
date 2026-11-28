@@ -5542,7 +5542,8 @@ export type CrmLinkEntityType =
   | 'freelance_client'
   | 'appointment_client'
   | 'owner'
-  | 'merchant';
+  | 'merchant'
+  | 'garage_client';
 
 export interface CrmParty {
   id: string;
@@ -6830,6 +6831,27 @@ export interface PosOpticalPrescription {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface GarageTechCommission {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  technicianStaffId: string;
+  technicianName: string;
+  workOrderId?: string;
+  orderNumber: string;
+  periodMonth: string;
+  laborBaseCentimes: number;
+  commissionRateBps: number;
+  commissionCentimes: number;
+  commissionAmountDzd: number;
+  status: 'pending' | 'posted_to_payroll' | 'cancelled';
+  payrollRunId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 

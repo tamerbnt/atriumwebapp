@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   X,
   Car,
-  Gauge,
-  Fuel,
   ShieldCheck,
-  Wrench,
-  Camera,
-  AlertTriangle,
   CheckCircle2,
   Trash2,
-  FileText,
   PenTool,
 } from 'lucide-react';
 import {
@@ -19,8 +13,14 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  selectCurrentStaffFromState,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
+import {
+  evaluateBayAssignment,
+  formatGarageSequentialCode,
+  validateIntakeOdometer,
+} from '../../../utils/garageDepth';
 import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -34,161 +34,248 @@ interface AutoOrderModalProps {
   onClose: () => void;
   vehicles: VehicleAsset[];
   bays?: WorkshopBay[];
+  existingOrders?: RepairOrder[];
   onSave: (order: RepairOrder) => void;
 }
 
-export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
-	const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
-	  (s) => ({
-	    account: s.account,
-	    language: s.language,
-	    currentBusiness: selectCurrentBusinessFromState(s),
-	    currentBranch: selectCurrentBranchFromState(s),
-	    currentUser: s.currentUser,
-	  }),
-	  shallowEqualObjects
-	);
-	const [activeTab, setActiveTab] = React.useState("intake");
-	const [selectedVehicleId, setSelectedVehicleId] = React.useState(vehicles[0]?.id || "");
-	const [currentMileage, setCurrentMileage] = React.useState("");
-	const [isOdometerReplaced, setIsOdometerReplaced] = React.useState(false);
-	const [fuelLevel, setFuelLevel] = React.useState("50");
-	const [isVehicleDirty, setIsVehicleDirty] = React.useState(false);
-	const [accessories, setAccessories] = React.useState<Record<string, boolean>>({
-		spareWheel: true,
-		jackAndKit: true,
-		carteGrise: true,
-		radioScreen: true,
-		wheelLockKey: false
-	});
-	const [activeCarView, setActiveCarView] = React.useState("front");
-	const [damageMarkers, setDamageMarkers] = React.useState<DamageMarker[]>([]);
-	const [selectedDamageType, setSelectedDamageType] = React.useState("scratch");
-	const [selectedSeverity, setSelectedSeverity] = React.useState("minor");
-	const [markerNote, setMarkerNote] = React.useState("");
-	const [diagnostic, setDiagnostic] = React.useState("");
-	const [estimatedCost, setEstimatedCost] = React.useState("");
-	const [assignedBayId, setAssignedBayId] = React.useState(bays[0]?.id || "bay_01");
-	const [technician, setTechnician] = React.useState(currentUser?.fullName || "Chef Atelier");
-	const [isClientSigned, setIsClientSigned] = React.useState(false);
-	const activeVehicle = vehicles.find((v: VehicleAsset) => v.id === selectedVehicleId) || vehicles[0];
-	React.useEffect(() => {
-		if (!isOpen) return;
-		setActiveTab("intake");
-		setSelectedVehicleId(vehicles[0]?.id || "");
-		setIsOdometerReplaced(false);
-		setFuelLevel("50");
-		setIsVehicleDirty(false);
-		setDamageMarkers([]);
-		setMarkerNote("");
-		setDiagnostic("");
-		setEstimatedCost("");
-		setTechnician(currentUser?.fullName || "Chef Atelier");
-		setIsClientSigned(false);
-	}, [isOpen, vehicles, currentUser?.fullName]);
-	React.useEffect(() => {
-		if (activeVehicle) {
-			setCurrentMileage(String(activeVehicle.mileageKm || 5e4));
-			const freeBay = bays.find((b: WorkshopBay) => !b.isOccupied);
-			if (freeBay) setAssignedBayId(freeBay.id);
-		}
-	}, [selectedVehicleId, activeVehicle, bays]);
-	const handleCanvasClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-		const rect = e.currentTarget.getBoundingClientRect();
-		const x = Math.round((e.clientX - rect.left) / rect.width * 100);
-		const y = Math.round((e.clientY - rect.top) / rect.height * 100);
-		const newMarker: DamageMarker = {
-			id: `dmg_${Date.now()}`,
-			view: activeCarView as DamageMarker['view'],
-			xPercent: x,
-			yPercent: y,
-			damageType: selectedDamageType as DamageMarker['damageType'],
-			severity: selectedSeverity as DamageMarker['severity'],
-			notes: markerNote.trim() || undefined
-		};
-		setDamageMarkers((prev) => [...prev, newMarker]);
-		setMarkerNote("");
-		showToast({
-			type: "info",
-			title: language === "ar" ? "فحص الهيكل" : "Inspection",
-			message: language === "ar" ? "تم تحديد موضع الضرر بنجاح" : "Repère de dommage consigné",
-		});
-	};
-	const removeMarker = (id: string) => {
-		setDamageMarkers((prev) => prev.filter((m) => m.id !== id));
-	};
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!activeVehicle) {
-			showToast({
-				type: "error",
-				title: language === "ar" ? "خطأ" : "Véhicule manquant",
-				message: language === "ar" ? "يرجى اختيار مركبة" : "Veuillez sélectionner un véhicule",
-			});
-			return;
-		}
-		const enteredKm = parseInt(currentMileage, 10);
-		if (!isOdometerReplaced && activeVehicle.lastServiceKm && enteredKm < activeVehicle.lastServiceKm) {
-			showToast({
-				type: "error",
-				title: language === "ar" ? "خطأ في العداد" : "Kilométrage incohérent",
-				message: language === "ar" ? `العداد المدخل (${enteredKm} كم) أقل من المسجل سابقاً (${activeVehicle.lastServiceKm} كم)` : `Kilométrage saisi (${enteredKm} km) inférieur au dernier relevé (${activeVehicle.lastServiceKm} km)`,
-			});
-			return;
-		}
-		const activeAccountId = (activeVehicle.accountId || currentBranch?.accountId || account?.id || '').trim();
-		const activeBranchId = (currentBranch?.id || activeVehicle.branchId || '').trim();
-		if (!activeAccountId || !activeBranchId) {
-			showToast({
-				type: 'error',
-				title: t('tenant_context_missing_title', language),
-				message: t('tenant_context_missing_msg', language),
-			});
-			return;
-		}
-		const assignedBay = bays.find((b: WorkshopBay) => b.id === assignedBayId);
-		const newOrder: RepairOrder = {
-			id: `ro_${Date.now()}`,
-			accountId: activeAccountId,
-			businessId: currentBusiness?.id || activeVehicle.businessId || currentBranch?.businessId || '',
-			branchId: activeBranchId,
-			staffId: currentUser?.id || '',
-			orderNumber: `OR-2026-${Math.floor(1e3 + Math.random() * 9e3)}`,
-			vehiclePlate: activeVehicle.plateNumber,
-			vehicleModel: `${activeVehicle.brand} ${activeVehicle.model}`,
-			clientName: activeVehicle.ownerName,
-			clientPhone: activeVehicle.ownerPhone,
-			clientType: activeVehicle.isFleet ? "corporate_fleet" : "individual",
-			fleetId: activeVehicle.fleetId,
-			fleetName: activeVehicle.fleetName,
-			intakeDate: new Date().toISOString(),
-			diagnosticNotes: diagnostic.trim() || "Diagnostic préliminaire & révision générale",
-			status: "Diagnostic",
-			estimatedCostDzd: estimatedCost.trim() ? parseFloat(estimatedCost) || 0 : 0,
-			finalCostDzd: 0,
-			partsUsed: [],
-			technicianName: technician,
-			assignedBayId: assignedBay?.id,
-			bayName: assignedBay?.name || "Pont 1",
-			fuelLevel: fuelLevel as RepairOrder['fuelLevel'],
-			inOdometerKm: enteredKm || activeVehicle.mileageKm,
-			isVehicleDirty,
-			damageMarkers,
-			billingType: activeVehicle.isFleet ? "facture_dgi" : "bon_caisse",
-			isPaid: false
-		};
-		onSave(newOrder);
-		onClose();
-	};
-	const vehicleOptions = vehicles.map((v: VehicleAsset) => ({
-		value: v.id,
-		label: `${v.plateNumber} — ${v.brand} ${v.model} (${v.ownerName}${v.fleetName ? ` · ${v.fleetName}` : ""})`
-	}));
-	const bayOptions = bays.map((b: WorkshopBay) => ({
-		value: b.id,
-		label: `${b.name} ${b.isOccupied ? "(Occupé)" : "(Libre)"}`
-	}));
-	return (
+export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
+  isOpen,
+  onClose,
+  vehicles,
+  bays = [],
+  existingOrders = [],
+  onSave,
+}) => {
+  const { account, language, currentBusiness, currentBranch, currentUser, staff } = useAtriumSelector(
+    (s) => ({
+      account: s.account,
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+      staff: selectCurrentStaffFromState(s),
+    }),
+    shallowEqualObjects
+  );
+
+  const garageStaff = React.useMemo(
+    () => (staff || []).filter((m) => !m.status || m.status === 'active'),
+    [staff]
+  );
+
+  const [activeTab, setActiveTab] = React.useState('intake');
+  const [selectedVehicleId, setSelectedVehicleId] = React.useState(vehicles[0]?.id || '');
+  const [currentMileage, setCurrentMileage] = React.useState('');
+  const [isOdometerReplaced, setIsOdometerReplaced] = React.useState(false);
+  const [mileageOverrideReason, setMileageOverrideReason] = React.useState('');
+  const [fuelLevel, setFuelLevel] = React.useState('50');
+  const [isVehicleDirty, setIsVehicleDirty] = React.useState(false);
+  const [accessories, setAccessories] = React.useState<Record<string, boolean>>({
+    spareWheel: true,
+    jackAndKit: true,
+    carteGrise: true,
+    radioScreen: true,
+    wheelLockKey: false,
+  });
+  const [activeCarView, setActiveCarView] = React.useState('front');
+  const [damageMarkers, setDamageMarkers] = React.useState<DamageMarker[]>([]);
+  const [selectedDamageType, setSelectedDamageType] = React.useState('scratch');
+  const [selectedSeverity, setSelectedSeverity] = React.useState('minor');
+  const [markerNote, setMarkerNote] = React.useState('');
+  const [diagnostic, setDiagnostic] = React.useState('');
+  const [estimatedCost, setEstimatedCost] = React.useState('');
+  const [assignedBayId, setAssignedBayId] = React.useState(
+    bays.find((b) => !b.isOccupied)?.id || bays[0]?.id || ''
+  );
+  const [technician, setTechnician] = React.useState(
+    garageStaff[0]?.fullName || currentUser?.fullName || 'Chef Atelier'
+  );
+  const [isClientSigned, setIsClientSigned] = React.useState(false);
+  const activeVehicle = vehicles.find((v: VehicleAsset) => v.id === selectedVehicleId) || vehicles[0];
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    setActiveTab('intake');
+    setSelectedVehicleId(vehicles[0]?.id || '');
+    setIsOdometerReplaced(false);
+    setMileageOverrideReason('');
+    setFuelLevel('50');
+    setIsVehicleDirty(false);
+    setDamageMarkers([]);
+    setMarkerNote('');
+    setDiagnostic('');
+    setEstimatedCost('');
+    setTechnician(garageStaff[0]?.fullName || currentUser?.fullName || 'Chef Atelier');
+    setIsClientSigned(false);
+  }, [isOpen, vehicles, currentUser?.fullName, garageStaff]);
+
+  React.useEffect(() => {
+    if (activeVehicle) {
+      setCurrentMileage(
+        typeof activeVehicle.mileageKm === 'number' && Number.isFinite(activeVehicle.mileageKm)
+          ? String(activeVehicle.mileageKm)
+          : ''
+      );
+      const freeBay = bays.find((b: WorkshopBay) => !b.isOccupied);
+      setAssignedBayId(freeBay?.id || '');
+    }
+  }, [selectedVehicleId, activeVehicle, bays]);
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    const newMarker: DamageMarker = {
+      id: `dmg_${Date.now()}`,
+      view: activeCarView as DamageMarker['view'],
+      xPercent: x,
+      yPercent: y,
+      damageType: selectedDamageType as DamageMarker['damageType'],
+      severity: selectedSeverity as DamageMarker['severity'],
+      notes: markerNote.trim() || undefined,
+    };
+    setDamageMarkers((prev) => [...prev, newMarker]);
+    setMarkerNote('');
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'فحص الهيكل' : 'Inspection',
+      message: language === 'ar' ? 'تم تحديد موضع الضرر بنجاح' : 'Repère de dommage consigné',
+    });
+  };
+
+  const removeMarker = (id: string) => {
+    setDamageMarkers((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeVehicle) {
+      showToast({
+        type: 'error',
+        title: language === 'ar' ? 'خطأ' : 'Véhicule manquant',
+        message: language === 'ar' ? 'يرجى اختيار مركبة' : 'Veuillez sélectionner un véhicule',
+      });
+      return;
+    }
+
+    const enteredKm = Number.parseInt(currentMileage, 10);
+    if (!Number.isFinite(enteredKm) || enteredKm < 0) {
+      showToast({
+        type: 'error',
+        title: language === 'ar' ? 'عداد غير صالح' : 'Kilométrage requis',
+        message: language === 'ar' ? 'أدخل قراءة العداد الصحيحة' : 'Veuillez saisir le kilométrage actuel.',
+      });
+      return;
+    }
+
+    const odoCheck = validateIntakeOdometer({
+      newKm: enteredKm,
+      recordedKm: activeVehicle.mileageKm,
+      lastServiceKm: activeVehicle.lastServiceKm,
+      isOdometerReplaced,
+      overrideReason: mileageOverrideReason,
+    });
+    if (!odoCheck.ok) {
+      showToast({
+        type: 'error',
+        title: language === 'ar' ? 'خطأ في العداد' : 'Kilométrage incohérent',
+        message: odoCheck.errorMessage || 'Kilométrage invalide',
+      });
+      return;
+    }
+
+    const activeAccountId = (activeVehicle.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || activeVehicle.branchId || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
+    const newOrderId = `ro_${Date.now()}`;
+    const assignedBay = assignedBayId ? bays.find((b: WorkshopBay) => b.id === assignedBayId) : undefined;
+    if (assignedBay) {
+      const bayCheck = evaluateBayAssignment({ bay: assignedBay, workOrderId: newOrderId });
+      if (!bayCheck.ok) {
+        showToast({
+          type: 'error',
+          title: language === 'ar' ? 'الجسر مشغول' : 'Pont occupé',
+          message: bayCheck.errorMessage || 'Ce pont est déjà occupé par un autre OR.',
+        });
+        return;
+      }
+    }
+
+    const orderNumber = formatGarageSequentialCode(
+      'OR',
+      existingOrders.map((o) => o.orderNumber)
+    );
+
+    const newOrder: RepairOrder = {
+      id: newOrderId,
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || activeVehicle.businessId || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
+      orderNumber,
+      vehiclePlate: activeVehicle.plateNumber,
+      vehicleModel: `${activeVehicle.brand} ${activeVehicle.model}`,
+      clientName: activeVehicle.ownerName,
+      clientPhone: activeVehicle.ownerPhone,
+      clientType: activeVehicle.isFleet ? 'corporate_fleet' : 'individual',
+      fleetId: activeVehicle.fleetId,
+      fleetName: activeVehicle.fleetName,
+      intakeDate: new Date().toISOString(),
+      diagnosticNotes: diagnostic.trim() || 'Diagnostic préliminaire & révision générale',
+      status: 'Diagnostic',
+      estimatedCostDzd: estimatedCost.trim() ? parseFloat(estimatedCost) || 0 : 0,
+      finalCostDzd: 0,
+      partsUsed: [],
+      technicianName: technician,
+      assignedBayId: assignedBay?.id,
+      bayName: assignedBay?.name || 'Cour / Attente',
+      fuelLevel: fuelLevel as RepairOrder['fuelLevel'],
+      inOdometerKm: enteredKm,
+      mileageOverrideReason: isOdometerReplaced ? mileageOverrideReason.trim() || undefined : undefined,
+      isVehicleDirty,
+      damageMarkers,
+      billingType: activeVehicle.isFleet ? 'facture_dgi' : 'bon_caisse',
+      isPaid: false,
+    };
+    onSave(newOrder);
+    onClose();
+  };
+
+  const vehicleOptions = vehicles.map((v: VehicleAsset) => ({
+    value: v.id,
+    label: `${v.plateNumber} — ${v.brand} ${v.model} (${v.ownerName}${v.fleetName ? ` · ${v.fleetName}` : ''})`,
+  }));
+
+  const bayOptions = [
+    { value: '', label: language === 'ar' ? '-- بدون تخصيص جسر (الساحة) --' : '-- Cour / En attente --' },
+    ...bays.map((b: WorkshopBay) => ({
+      value: b.id,
+      label: `${b.name} ${b.isOccupied ? '(Occupé — bloqué)' : '(Libre)'}`,
+      disabled: b.isOccupied && Boolean(b.activeOrderId),
+    })),
+  ];
+
+  const technicianOptions = React.useMemo(() => {
+    if (garageStaff.length > 0) {
+      return garageStaff.map((s) => ({
+        value: s.fullName,
+        label: s.technicalSpecialty ? `${s.fullName} (${s.technicalSpecialty})` : `${s.fullName} (${s.role})`,
+      }));
+    }
+    return [
+      { value: currentUser?.fullName || 'Chef Atelier', label: currentUser?.fullName || 'Chef Atelier' },
+    ];
+  }, [garageStaff, currentUser?.fullName]);
+
+  return (
 <KineticModalShell isOpen={isOpen} onClose={onClose} maxWidthClass="max-w-4xl" zIndexClass="z-[9990]" scrimClassName="bg-black/60">
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#22201E]">
@@ -249,6 +336,19 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <span>{language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}</span>
 <LiveSwitch checked={isOdometerReplaced} onCheckedChange={setIsOdometerReplaced} />
 </div>
+{isOdometerReplaced && (
+  <LabelInput
+    field="orderMileageOverrideReason"
+    label={language === "ar" ? "سبب استبدال العداد (إجباري) *" : "Motif remplacement compteur (min. 5 car.) *"}
+    value={mileageOverrideReason}
+    onChange={setMileageOverrideReason}
+    placeholder={language === "ar" ? "استبدال لوحة العدادات..." : "Remplacement bloc compteur suite panne"}
+    width="100%"
+    height={40}
+    corner={12}
+    required
+  />
+)}
 </div>
 <LabelSelect
   field="orderFuelLevel"
@@ -427,24 +527,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 <LabelInput field="orderEstimatedCost" label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" placeholder="18500" value={estimatedCost} onChange={setEstimatedCost} width="100%" height={40} corner={12} />
 <LabelSelect field="orderAssignedBayId" label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={setAssignedBayId} options={bayOptions} width="100%" height={40} corner={12} />
-<LabelSelect field="orderTechnician" label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={setTechnician} options={[
-												{
-													value: "Karim (Chef Atelier)",
-													label: "Karim (Chef Atelier)"
-												},
-												{
-													value: "Farid (Mécanicien)",
-													label: "Farid (Mécanicien)"
-												},
-												{
-													value: "Amine (Électricien Auto)",
-													label: "Amine (Électricien Auto)"
-												},
-												{
-													value: "Yassine (Technicien Entretien)",
-													label: "Yassine (Technicien Entretien)"
-												}
-											]} width="100%" height={40} corner={12} />
+<LabelSelect field="orderTechnician" label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={setTechnician} options={technicianOptions} width="100%" height={40} corner={12} />
 </div>
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2 t-cap">
 <span className="font-semibold text-black dark:text-white block">

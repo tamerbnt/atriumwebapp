@@ -23,6 +23,8 @@ import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { resolveBatchSelection } from '../../../utils/step5Actions';
 import { useGarageData, SparePart } from './garageData';
+import { AutoGaragePurchasingPanel } from './AutoGaragePurchasingPanel';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
@@ -94,8 +96,18 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { parts, addPart, updatePart, deletePart } = useGarageData();
+  const {
+    parts,
+    suppliers,
+    purchaseOrders,
+    addPart,
+    updatePart,
+    deletePart,
+    createPurchaseOrder,
+    receivePurchaseOrderWithBl,
+  } = useGarageData();
 
+  const [activePartsTab, setActivePartsTab] = useState<'catalog' | 'purchasing' | 'warranties'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [branchFilter, setBranchFilter] = useState<string>('All');
@@ -122,10 +134,11 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const [compatibility, setCompatibility] = useState('');
 
   const [isPoModalOpen, setIsPoModalOpen] = useState(false);
-  const [poSupplier, setPoSupplier] = useState('Comptoir Pièces Bab Ezzouar (Alger)');
+  const [poSupplierId, setPoSupplierId] = useState(suppliers[0]?.id || '');
   const [poPartId, setPoPartId] = useState(parts[0]?.id || '');
   const [poQuantity, setPoQuantity] = useState('');
   const [poUnitCost, setPoUnitCost] = useState('');
+  const [poBlNumber, setPoBlNumber] = useState('');
 
   const [inspectedPart, setInspectedPart] = useState<SparePart | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -690,26 +703,40 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     <div className="space-y-6 animate-in fade-in duration-200">
       <ScreenHeaderBar
         icon={<Boxes size={26} />}
-        title={isAr ? 'قطع الغيار' : isEn ? 'Parts' : 'Pièces'}
+        title={isAr ? 'قطع الغيار والمشتريات' : isEn ? 'Parts & Purchasing' : 'Pièces & Achats'}
         secondaryActions={
-          <AtriumButton
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              const target = activePart || parts[0];
-              setPoQuantity('');
-              if (target) {
-                setPoPartId(target.id);
-                setPoUnitCost(target.buyingPriceDzd ? String(target.buyingPriceDzd) : '');
-              } else {
-                setPoUnitCost('');
-              }
-              setIsPoModalOpen(true);
-            }}
-            icon={<Package size={14} />}
-          >
-            {isAr ? 'طلبية مورد' : isEn ? 'Supplier PO' : 'Commande Fournisseur'}
-          </AtriumButton>
+          <div className="flex flex-wrap items-center gap-2">
+            <LiveSegmentedControl
+              size="sm"
+              value={activePartsTab}
+              onValueChange={(v) => setActivePartsTab(v as 'catalog' | 'purchasing' | 'warranties')}
+              options={[
+                { value: 'catalog', label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue', count: parts.length },
+                { value: 'purchasing', label: isAr ? 'الموردون والطلبيات' : isEn ? 'Suppliers & POs' : 'Achats & BL', count: purchaseOrders.length },
+                { value: 'warranties', label: isAr ? 'الضمانات' : isEn ? 'Warranties' : 'Garanties' },
+              ]}
+            />
+            <AtriumButton
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const target = activePart || parts[0];
+                setPoSupplierId(suppliers[0]?.id || '');
+                setPoQuantity('10');
+                setPoBlNumber('');
+                if (target) {
+                  setPoPartId(target.id);
+                  setPoUnitCost(target.buyingPriceDzd ? String(target.buyingPriceDzd) : '');
+                } else {
+                  setPoUnitCost('');
+                }
+                setIsPoModalOpen(true);
+              }}
+              icon={<Package size={14} />}
+            >
+              {isAr ? 'طلبية مورد' : isEn ? 'Supplier PO' : 'Commande Fournisseur'}
+            </AtriumButton>
+          </div>
         }
         primaryAction={{
           label: isAr ? 'صنف جديد' : isEn ? 'New Part' : 'Nouvelle Référence',
@@ -751,6 +778,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         }}
       />
 
+      {activePartsTab !== 'catalog' ? (
+        <AutoGaragePurchasingPanel mode={activePartsTab} language={language} />
+      ) : (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={isAr ? 'كتالوج قطع الغيار' : isEn ? 'Spare Parts Catalog' : 'Catalogue Pièces de Rechange'}
@@ -864,6 +894,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
           ]}
         />
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -1235,38 +1266,67 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             onSubmit={(e) => {
               e.preventDefault();
               const target = parts.find((p) => p.id === poPartId);
+              const supplier = suppliers.find((s) => s.id === poSupplierId) || suppliers[0];
               const qty = parseInt(poQuantity, 10);
               const cost = poUnitCost === '' ? target?.buyingPriceDzd : parseFloat(poUnitCost);
-              if (!target || isNaN(qty) || qty <= 0 || cost === undefined || isNaN(cost) || cost < 0) {
+              if (!target || !supplier || isNaN(qty) || qty <= 0 || cost === undefined || isNaN(cost) || cost < 0) {
                 showToast({
                   type: 'error',
                   title: isAr ? 'خطأ' : 'Champs requis',
-                  message: isAr ? 'يرجى تحديد القطعة والكمية والسعر بشكل صحيح' : 'Veuillez saisir une quantité et un prix valides',
+                  message: isAr ? 'يرجى تحديد المورد والقطعة والكمية والسعر بشكل صحيح' : 'Veuillez sélectionner un fournisseur, une pièce, une quantité et un prix valides',
                 });
                 return;
               }
-              const updated: SparePart = {
-                ...target,
-                stockQuantity: target.stockQuantity + qty,
-                buyingPriceDzd: cost,
-              };
-              updatePart(updated);
-              if (inspectedPart?.id === target.id) setInspectedPart(updated);
+              const po = createPurchaseOrder({
+                supplierId: supplier.id,
+                supplierName: supplier.name,
+                items: [
+                  {
+                    partId: target.id,
+                    sku: target.sku,
+                    name: target.name,
+                    quantity: qty,
+                    unitCostDzd: cost,
+                  },
+                ],
+                warrantyMonths: 12,
+                status: 'Ordered',
+              });
+              if (poBlNumber.trim()) {
+                receivePurchaseOrderWithBl({
+                  poId: po.id,
+                  deliveryNoteNumber: poBlNumber.trim(),
+                  receivedByName: currentUser?.fullName || 'Magasinier',
+                });
+                showToast({
+                  type: 'success',
+                  title: po.poNumber,
+                  message: isAr
+                    ? `تم إنشاء الطلب واستلام وصل التسليم ${poBlNumber.trim()}`
+                    : `BC ${po.poNumber} reçu sur BL ${poBlNumber.trim()} · Stock mis à jour`,
+                });
+              } else {
+                showToast({
+                  type: 'success',
+                  title: po.poNumber,
+                  message: isAr
+                    ? `تم إنشاء طلبية الشراء ${po.poNumber} بانتظار الاستلام`
+                    : `Bon de commande ${po.poNumber} enregistré (en attente de BL)`,
+                });
+              }
               setIsPoModalOpen(false);
             }}
             className="space-y-4"
           >
             <LabelSelect
-              field="poSupplier"
+              field="poSupplierId"
               label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
-              value={poSupplier}
-              onChange={setPoSupplier}
-              options={[
-                { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
-                { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
-                { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
-                { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
-              ]}
+              value={poSupplierId || suppliers[0]?.id || ''}
+              onChange={setPoSupplierId}
+              options={suppliers.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.wilaya})`,
+              }))}
               width="100%"
               height={40}
               corner={12}
@@ -1314,6 +1374,16 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 required
               />
             </div>
+            <LabelInput
+              field="poBlNumber"
+              label={isAr ? 'رقم وصل التسليم (اختياري للاستلام الفوري)' : 'N° Bon de Livraison BL (optionnel pour réception immédiate)'}
+              placeholder="BL-2026-0042"
+              value={poBlNumber}
+              onChange={setPoBlNumber}
+              width="100%"
+              height={40}
+              corner={12}
+            />
             <div
               data-sq="card"
               data-sq-border="none"
@@ -1331,7 +1401,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 {isAr ? 'إلغاء' : 'Annuler'}
               </Button>
               <Button type="submit" tone="accent" size={40} leading={<Check size={14} />}>
-                {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
+                {poBlNumber.trim()
+                  ? isAr ? 'إنشاء واستلام وصل التسليم' : 'Créer & Réceptionner (BL)'
+                  : isAr ? 'تسجيل طلبية الشراء' : 'Enregistrer Bon de Commande'}
               </Button>
             </div>
           </form>

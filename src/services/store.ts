@@ -262,6 +262,7 @@ import {
   PosCustomerCreditEntry,
   PosOpticalPrescription,
   PosSelectedModifier,
+  GarageTechCommission,
 } from '../types/index';
 import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
@@ -979,6 +980,7 @@ interface AppState {
   tradingPriceLists: TradingPriceList[];
   tradingDeliveryRounds: TradingDeliveryRound[];
   tradingRepCommissions: TradingRepCommission[];
+  garageTechCommissions: GarageTechCommission[];
   // Phase 2 Shared Horizontal Foundations (6.1, 6.2 & 6.3)
   unifiedDocuments: UnifiedDocument[];
   unifiedPayments: UnifiedPayment[];
@@ -1250,6 +1252,7 @@ const DEFAULT_STATE: AppState = {
   tradingPriceLists: INITIAL_TRADING_PRICE_LISTS,
   tradingDeliveryRounds: INITIAL_TRADING_DELIVERY_ROUNDS,
   tradingRepCommissions: INITIAL_TRADING_REP_COMMISSIONS,
+  garageTechCommissions: [],
   unifiedDocuments: [],
   unifiedPayments: [],
   scfAccounts: [],
@@ -1397,6 +1400,7 @@ function backfillTraceability(state: AppState): AppState {
     tradingPriceLists: (state.tradingPriceLists || []).map(patch),
     tradingDeliveryRounds: (state.tradingDeliveryRounds || []).map(patch),
     tradingRepCommissions: (state.tradingRepCommissions || []).map(patch),
+    garageTechCommissions: (state.garageTechCommissions || []).map(patch),
   };
 }
 
@@ -1606,6 +1610,7 @@ let globalState: AppState = backfillTraceability((() => {
           tradingPriceLists: Array.isArray(parsed.tradingPriceLists) ? parsed.tradingPriceLists : INITIAL_TRADING_PRICE_LISTS,
           tradingDeliveryRounds: Array.isArray(parsed.tradingDeliveryRounds) ? parsed.tradingDeliveryRounds : INITIAL_TRADING_DELIVERY_ROUNDS,
           tradingRepCommissions: Array.isArray(parsed.tradingRepCommissions) ? parsed.tradingRepCommissions : INITIAL_TRADING_REP_COMMISSIONS,
+          garageTechCommissions: Array.isArray(parsed.garageTechCommissions) ? parsed.garageTechCommissions : [],
           unifiedDocuments: Array.isArray(parsed.unifiedDocuments) ? parsed.unifiedDocuments : [],
           unifiedPayments: Array.isArray(parsed.unifiedPayments) ? parsed.unifiedPayments : [],
           scfAccounts: Array.isArray(parsed.scfAccounts) ? parsed.scfAccounts : [],
@@ -2467,6 +2472,10 @@ export const selectCurrentTradingDeliveryRoundsFromState = createBranchSelector<
 export const selectCurrentTradingRepCommissionsFromState = createBranchSelector<TradingRepCommission>(
   (s) => s.tradingRepCommissions,
   (c, b) => c.facilityId === b || c.branchId === b
+);
+export const selectCurrentGarageTechCommissionsFromState = createBranchSelector<GarageTechCommission>(
+  (s) => s.garageTechCommissions,
+  (c, b) => c.branchId === b
 );
 export const selectCurrentUnifiedDocumentsFromState = createBranchSelector<UnifiedDocument>(
   (s) => s.unifiedDocuments,
@@ -10140,6 +10149,16 @@ function createAtriumActions() {
         (sum, c) => sum + Number(c.commissionAmountDzd || 0),
         0
       );
+      const postedGarageCommissions = (globalState.garageTechCommissions || []).filter(
+        (c) =>
+          c.technicianStaffId === member.id &&
+          c.status === 'posted_to_payroll' &&
+          (!c.payrollRunId || c.payrollRunId === runId)
+      );
+      const postedGarageCommDzd = postedGarageCommissions.reduce(
+        (sum, c) => sum + centimesToDzd(c.commissionCentimes),
+        0
+      );
       const baseServiceComm = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
       const coachingCommission = baseServiceComm + postedCommissionDzd;
       const primesCotisables = [
@@ -10151,6 +10170,9 @@ function createAtriumActions() {
           : []),
         ...(postedTradingCommDzd > 0
           ? [{ label: 'Commissions Ventes B2B', amount: Math.round(postedTradingCommDzd) }]
+          : []),
+        ...(postedGarageCommDzd > 0
+          ? [{ label: 'Commissions Atelier Mécanique', amount: Math.round(postedGarageCommDzd) }]
           : []),
       ];
 
@@ -10258,6 +10280,11 @@ function createAtriumActions() {
         ? { ...c, payrollRunId: runId }
         : c;
     });
+    const boundGarageTechCommissions = (globalState.garageTechCommissions || []).map((c) =>
+      c.status === 'posted_to_payroll' && !c.payrollRunId && staffPoolIds.has(c.technicianStaffId)
+        ? { ...c, payrollRunId: runId }
+        : c
+    );
 
     globalState = {
       ...globalState,
@@ -10266,6 +10293,7 @@ function createAtriumActions() {
       trainerCommissions: boundTrainerCommissions,
       eduVacataireLogs: boundVacataireLogs,
       tradingRepCommissions: boundTradingRepCommissions,
+      garageTechCommissions: boundGarageTechCommissions,
     };
     notify();
 
@@ -24574,6 +24602,81 @@ function createAtriumActions() {
     return updatedList;
   };
 
+  const recordGarageTechCommission = (record: GarageTechCommission): GarageTechCommission => {
+    const before = captureStoreSlices(['garageTechCommissions']);
+    const existing = globalState.garageTechCommissions || [];
+    const existsIdx = existing.findIndex((c) => c.id === record.id);
+    const nextList =
+      existsIdx >= 0
+        ? existing.map((c, i) => (i === existsIdx ? record : c))
+        : [record, ...existing];
+    globalState = {
+      ...globalState,
+      garageTechCommissions: nextList,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      garageService.upsertTechCommission(record).catch(() => {});
+    }
+    const after = captureStoreSlices(['garageTechCommissions']);
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      summary: ul(
+        `Technician commission recorded for ${record.technicianName}`,
+        `Commission mécanicien enregistrée pour ${record.technicianName}`,
+        `تم تسجيل عمولة الميكانيكي ${record.technicianName}`
+      ),
+      entityLabel: record.orderNumber,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return record;
+  };
+
+  const postGarageCommissionsToPayroll = (commissionIds: string[], payrollRunId?: string): GarageTechCommission[] => {
+    const idSet = new Set(commissionIds);
+    const updatedList: GarageTechCommission[] = [];
+    const nextAll = (globalState.garageTechCommissions || []).map((c) => {
+      if (!idSet.has(c.id) || c.status === 'posted_to_payroll') return c;
+      const next: GarageTechCommission = {
+        ...c,
+        status: 'posted_to_payroll',
+        payrollRunId: payrollRunId || c.payrollRunId,
+        updatedAt: new Date().toISOString(),
+      };
+      updatedList.push(next);
+      return next;
+    });
+    if (updatedList.length === 0) return [];
+    const before = captureStoreSlices(['garageTechCommissions']);
+    globalState = {
+      ...globalState,
+      garageTechCommissions: nextAll,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      for (const item of updatedList) {
+        garageService.upsertTechCommission(item).catch(() => {});
+      }
+    }
+    const after = captureStoreSlices(['garageTechCommissions']);
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      summary: ul(
+        `Posted ${updatedList.length} mechanic commission(s) to payroll`,
+        `${updatedList.length} commission(s) atelier transférée(s) en paie`,
+        `تم ترحيل ${updatedList.length} عمولات ورشة للرواتب`
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return updatedList;
+  };
+
   const resetTradingMockData = () => {
     const keys: (keyof AppState)[] = [
       'b2bClients',
@@ -33191,6 +33294,8 @@ function createAtriumActions() {
     saveBiReportConfig,
     deleteBiSavedReport,
     generateBiReportSnapshot,
+    recordGarageTechCommission,
+    postGarageCommissionsToPayroll,
   };
 }
 
@@ -33302,6 +33407,7 @@ export function useAtriumStore() {
   const currentTradingPriceLists = selectCurrentTradingPriceListsFromState(state);
   const currentTradingDeliveryRounds = selectCurrentTradingDeliveryRoundsFromState(state);
   const currentTradingRepCommissions = selectCurrentTradingRepCommissionsFromState(state);
+  const currentGarageTechCommissions = selectCurrentGarageTechCommissionsFromState(state);
   const currentUnifiedDocuments = selectCurrentUnifiedDocumentsFromState(state);
   const currentUnifiedPayments = selectCurrentUnifiedPaymentsFromState(state);
   const currentScfAccounts = selectCurrentScfAccountsFromState(state);
@@ -33479,6 +33585,7 @@ export function useAtriumStore() {
     tradingPriceLists: currentTradingPriceLists,
     tradingDeliveryRounds: currentTradingDeliveryRounds,
     tradingRepCommissions: currentTradingRepCommissions,
+    garageTechCommissions: currentGarageTechCommissions,
     unifiedDocuments: currentUnifiedDocuments,
     allUnifiedDocuments: state.unifiedDocuments || [],
     unifiedPayments: currentUnifiedPayments,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Car, X, Building2, Fuel, Gauge } from 'lucide-react';
+import { Car, X, Building2 } from 'lucide-react';
 import {
   showToast,
   useAtriumSelector,
@@ -8,6 +8,11 @@ import {
   selectCurrentBranchFromState,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
+import {
+  validateVehiclePlateAndVin,
+  type GaragePlateFormat,
+  type GarageVehicleType,
+} from '../../../utils/garageDepth';
 import { VehicleAsset, useGarageData } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -39,12 +44,15 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
     shallowEqualObjects
   );
   const isAr = language === 'ar';
+  const isEn = language === 'en';
   const { fleets } = useGarageData();
 
+  const [vehicleType, setVehicleType] = useState<GarageVehicleType>(vehicleToEdit?.vehicleType || 'car');
+  const [plateFormat, setPlateFormat] = useState<GaragePlateFormat>(vehicleToEdit?.plateFormat || 'algeria_standard');
   const [plate, setPlate] = useState(vehicleToEdit?.plateNumber || '');
   const [brand, setBrand] = useState(vehicleToEdit?.brand || '');
   const [model, setModel] = useState(vehicleToEdit?.model || '');
-  const [year, setYear] = useState(vehicleToEdit ? String(vehicleToEdit.year) : '2021');
+  const [year, setYear] = useState(vehicleToEdit?.year ? String(vehicleToEdit.year) : '');
   const [vin, setVin] = useState(vehicleToEdit?.vin || '');
   const [fuelType, setFuelType] = useState<VehicleAsset['fuelType']>(vehicleToEdit?.fuelType || 'Diesel');
   const [isFleet, setIsFleet] = useState<boolean>(vehicleToEdit?.isFleet || false);
@@ -52,31 +60,44 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
   const [ownerName, setOwnerName] = useState(vehicleToEdit?.ownerName || '');
   const [ownerPhone, setOwnerPhone] = useState(vehicleToEdit?.ownerPhone || '');
   const [ownerEmail, setOwnerEmail] = useState(vehicleToEdit?.ownerEmail || '');
-  const [mileage, setMileage] = useState(vehicleToEdit ? String(vehicleToEdit.mileageKm) : '65000');
-  const [dailyAvgKm, setDailyAvgKm] = useState(vehicleToEdit?.dailyAvgKm ? String(vehicleToEdit.dailyAvgKm) : '50');
+  const [mileage, setMileage] = useState(
+    vehicleToEdit && typeof vehicleToEdit.mileageKm === 'number' ? String(vehicleToEdit.mileageKm) : ''
+  );
+  const [dailyAvgKm, setDailyAvgKm] = useState(
+    vehicleToEdit?.dailyAvgKm ? String(vehicleToEdit.dailyAvgKm) : ''
+  );
   const [carteGriseNumber, setCarteGriseNumber] = useState(vehicleToEdit?.carteGriseNumber || '');
+  const [techControlExpiry, setTechControlExpiry] = useState(vehicleToEdit?.techControlExpiry || '');
+  const [insuranceExpiry, setInsuranceExpiry] = useState(vehicleToEdit?.insuranceExpiry || '');
 
   React.useEffect(() => {
+    if (!isOpen) return;
     if (vehicleToEdit) {
+      setVehicleType(vehicleToEdit.vehicleType || 'car');
+      setPlateFormat(vehicleToEdit.plateFormat || 'algeria_standard');
       setPlate(vehicleToEdit.plateNumber);
       setBrand(vehicleToEdit.brand);
       setModel(vehicleToEdit.model);
-      setYear(String(vehicleToEdit.year));
-      setVin(vehicleToEdit.vin);
+      setYear(vehicleToEdit.year ? String(vehicleToEdit.year) : '');
+      setVin(vehicleToEdit.vin || '');
       setFuelType(vehicleToEdit.fuelType || 'Diesel');
       setIsFleet(Boolean(vehicleToEdit.isFleet));
       setFleetId(vehicleToEdit.fleetId || (fleets[0]?.id || ''));
       setOwnerName(vehicleToEdit.ownerName);
       setOwnerPhone(vehicleToEdit.ownerPhone);
       setOwnerEmail(vehicleToEdit.ownerEmail || '');
-      setMileage(String(vehicleToEdit.mileageKm));
-      setDailyAvgKm(String(vehicleToEdit.dailyAvgKm || 50));
+      setMileage(typeof vehicleToEdit.mileageKm === 'number' ? String(vehicleToEdit.mileageKm) : '');
+      setDailyAvgKm(vehicleToEdit.dailyAvgKm ? String(vehicleToEdit.dailyAvgKm) : '');
       setCarteGriseNumber(vehicleToEdit.carteGriseNumber || '');
+      setTechControlExpiry(vehicleToEdit.techControlExpiry || '');
+      setInsuranceExpiry(vehicleToEdit.insuranceExpiry || '');
     } else {
+      setVehicleType('car');
+      setPlateFormat('algeria_standard');
       setPlate('');
       setBrand('');
       setModel('');
-      setYear('2021');
+      setYear('');
       setVin('');
       setFuelType('Diesel');
       setIsFleet(false);
@@ -84,11 +105,13 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       setOwnerName('');
       setOwnerPhone('');
       setOwnerEmail('');
-      setMileage('65000');
-      setDailyAvgKm('50');
+      setMileage('');
+      setDailyAvgKm('');
       setCarteGriseNumber('');
+      setTechControlExpiry('');
+      setInsuranceExpiry('');
     }
-  }, [vehicleToEdit, fleets]);
+  }, [isOpen, vehicleToEdit, fleets]);
 
   const handleFleetToggle = (fleetEnabled: boolean) => {
     setIsFleet(fleetEnabled);
@@ -112,13 +135,66 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
     }
   };
 
+  const handleVehicleTypeChange = (nextType: GarageVehicleType) => {
+    setVehicleType(nextType);
+    if (nextType === 'moto') {
+      setPlateFormat('moto');
+    } else if (plateFormat === 'moto') {
+      setPlateFormat('algeria_standard');
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!plate.trim() || !brand.trim() || !ownerName.trim()) {
+    const parsedYear = Number.parseInt(year, 10);
+    const parsedMileage = Number.parseInt(mileage, 10);
+    if (
+      !plate.trim() ||
+      !brand.trim() ||
+      !model.trim() ||
+      !ownerName.trim() ||
+      !Number.isFinite(parsedYear) ||
+      parsedYear < 1950 ||
+      parsedYear > new Date().getFullYear() + 1 ||
+      !Number.isFinite(parsedMileage) ||
+      parsedMileage < 0
+    ) {
       showToast({
         type: 'error',
-        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
-        message: isAr ? 'يرجى إدخال الترقيم، الماركة، وبيانات المالك' : 'Veuillez renseigner l’immatriculation, la marque et le propriétaire',
+        title: isAr ? 'بيانات ناقصة' : isEn ? 'Required fields' : 'Champs requis',
+        message: isAr
+          ? 'يرجى إدخال الترقيم، الماركة، الموديل، السنة، العداد وبيانات المالك'
+          : isEn
+          ? 'Please enter valid plate, brand, model, year, odometer, and owner details.'
+          : 'Veuillez renseigner l’immatriculation, la marque, le modèle, l’année, le kilométrage et le propriétaire.',
+      });
+      return;
+    }
+
+    const plateVinCheck = validateVehiclePlateAndVin({
+      plateNumber: plate,
+      plateFormat,
+      vehicleType,
+      vin,
+    });
+    if (!plateVinCheck.valid) {
+      const hasVinErr = plateVinCheck.errors.includes('VIN_17_CHARS_REQUIRED_NON_MOTO');
+      showToast({
+        type: 'error',
+        title: hasVinErr
+          ? isAr ? 'رقم الشاسيه (VIN) غير صالح' : isEn ? 'Invalid VIN' : 'N° Châssis (VIN) invalide'
+          : isAr ? 'تنسيق الترقيم غير مطابق' : isEn ? 'Invalid plate format' : 'Format d’immatriculation invalide',
+        message: hasVinErr
+          ? isAr
+            ? 'يجب أن يتكون رقم الهيكل (VIN) من 17 خانة (تُعفى الدراجات النارية).'
+            : isEn
+            ? 'Standard vehicles require a 17-character VIN when provided (motorcycles exempt).'
+            : 'Un véhicule (hors moto) requiert un VIN de 17 caractères lorsqu’il est renseigné.'
+          : isAr
+          ? 'يرجى التحقق من صيغة لوحة الترقيم المختارة (مثال: 00142-118-16).'
+          : isEn
+          ? 'Check the plate number against the selected plate format (e.g. 00142-118-16).'
+          : 'Vérifiez le matricule selon le format choisi (ex: 00142-118-16 ou 16-001420-23).',
       });
       return;
     }
@@ -134,7 +210,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       return;
     }
 
-    const curMileage = parseInt(mileage, 10) || 0;
+    const parsedDaily = Number.parseInt(dailyAvgKm, 10);
     const selectedFleetObj = isFleet ? fleets.find((f) => f.id === fleetId) : null;
 
     const saved: VehicleAsset = {
@@ -143,11 +219,14 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       businessId: currentBusiness?.id || currentBranch?.businessId || '',
       branchId: activeBranchId,
       staffId: currentUser?.id || '',
-      plateNumber: plate.trim(),
+      crmPartyId: vehicleToEdit?.crmPartyId,
+      vehicleType,
+      plateFormat,
+      plateNumber: plateVinCheck.normalizedPlate,
       brand: brand.trim(),
       model: model.trim(),
-      year: parseInt(year, 10) || 2021,
-      vin: vin.trim() || `VF1${Date.now()}`,
+      year: parsedYear,
+      vin: plateVinCheck.normalizedVin,
       fuelType,
       isFleet,
       fleetId: isFleet ? fleetId : undefined,
@@ -155,12 +234,15 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       ownerName: ownerName.trim(),
       ownerPhone: ownerPhone.trim(),
       ownerEmail: ownerEmail.trim(),
-      mileageKm: curMileage,
-      lastServiceKm: vehicleToEdit?.lastServiceKm || curMileage - 5000,
+      mileageKm: parsedMileage,
+      lastServiceKm: vehicleToEdit?.lastServiceKm ?? parsedMileage,
       lastServiceDate: vehicleToEdit?.lastServiceDate || new Date().toISOString().split('T')[0],
-      nextServiceKm: curMileage + 10000,
-      dailyAvgKm: parseInt(dailyAvgKm, 10) || 50,
+      nextServiceKm: vehicleToEdit?.nextServiceKm ?? parsedMileage + 10000,
+      dailyAvgKm: Number.isFinite(parsedDaily) && parsedDaily > 0 ? parsedDaily : 50,
       carteGriseNumber: carteGriseNumber.trim() || undefined,
+      techControlExpiry: techControlExpiry.trim() || undefined,
+      insuranceExpiry: insuranceExpiry.trim() || undefined,
+      ownershipHistory: vehicleToEdit?.ownershipHistory,
     };
 
     onSave(saved);
@@ -186,8 +268,8 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             <div>
               <h3 className="font-semibold t-card text-black dark:text-white">
                 {vehicleToEdit
-                  ? (isAr ? 'تعديل بيانات المركبة' : 'Modifier la Fiche Véhicule')
-                  : (isAr ? 'تسجيل مركبة جديدة في الحظيرة' : 'Nouveau Véhicule au Parc')}
+                  ? (isAr ? 'تعديل بيانات المركبة' : isEn ? 'Edit Vehicle' : 'Modifier la Fiche Véhicule')
+                  : (isAr ? 'تسجيل مركبة جديدة في الحظيرة' : isEn ? 'Register New Vehicle' : 'Nouveau Véhicule au Parc')}
               </h3>
             </div>
           </div>
@@ -202,19 +284,51 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Client Type Switcher (Particulier vs Flotte B2B) */}
           <LiveSegmentedControl
             value={isFleet ? 'fleet' : 'individual'}
             onChange={(val) => handleFleetToggle(val === 'fleet')}
             options={[
-              { value: 'individual', label: isAr ? 'زبون فردي (Particulier)' : 'Client Particulier' },
-              { value: 'fleet', label: isAr ? 'أسطول شركات (Flotte B2B)' : 'Flotte Entreprise B2B' },
+              { value: 'individual', label: isAr ? 'زبون فردي (Particulier)' : isEn ? 'Private Client' : 'Client Particulier' },
+              { value: 'fleet', label: isAr ? 'أسطول شركات (Flotte B2B)' : isEn ? 'Corporate Fleet B2B' : 'Flotte Entreprise B2B' },
             ]}
             size="sm"
             fullWidth
           />
 
-          {/* If Corporate Fleet, show fleet account picker */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelSelect
+              field="vehicleType"
+              label={isAr ? 'نوع المركبة' : isEn ? 'Vehicle Type' : 'Catégorie Véhicule'}
+              value={vehicleType}
+              onChange={(val) => handleVehicleTypeChange(val as GarageVehicleType)}
+              options={[
+                { value: 'car', label: isAr ? 'سيارة سياحية' : isEn ? 'Passenger Car' : 'Véhicule Léger (VL)' },
+                { value: 'utility', label: isAr ? 'مركبة نفعية' : isEn ? 'Utility / Van' : 'Utilitaire (VUL)' },
+                { value: 'truck', label: isAr ? 'شاحنة وزن ثقيل' : isEn ? 'Heavy Truck' : 'Poids Lourd (PL)' },
+                { value: 'moto', label: isAr ? 'دراجة نارية (إعفاء VIN)' : isEn ? 'Motorcycle (VIN Exempt)' : 'Moto / Scooter (Sans VIN 17c)' },
+              ]}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelSelect
+              field="vehiclePlateFormat"
+              label={isAr ? 'صيغة لوحة الترقيم' : isEn ? 'Plate Format' : 'Format Immatriculation'}
+              value={plateFormat}
+              onChange={(val) => setPlateFormat(val as GaragePlateFormat)}
+              options={[
+                { value: 'algeria_standard', label: isAr ? 'الترقيم الجزائري (00142-118-16)' : 'Algérie Standard (00142-118-16)' },
+                { value: 'algeria_new', label: isAr ? 'الترقيم الجديد (16-001420-23)' : 'Algérie Nouveau (16-001420-23)' },
+                { value: 'temporary', label: isAr ? 'ترقيم مؤقت (WW / PROV)' : 'Provisoire (WW / PROV)' },
+                { value: 'foreign', label: isAr ? 'ترقيم أجنبي / حر' : 'Étranger / Libre' },
+                { value: 'moto', label: isAr ? 'ترقيم دراجة نارية' : 'Plaque Moto' },
+              ]}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+          </div>
+
           {isFleet && (
             <div
               data-sq="card"
@@ -241,14 +355,13 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             </div>
           )}
 
-          {/* Registration Plate & VIN */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="vehiclePlate"
               label={isAr ? 'الماتريكيل / لوحة الترقيم *' : 'Immatriculation (Matricule) *'}
               value={plate}
               onChange={setPlate}
-              placeholder="00142-118-16"
+              placeholder={plateFormat === 'algeria_new' ? '16-001420-23' : '00142-118-16'}
               width="100%"
               height={40}
               corner={12}
@@ -256,17 +369,20 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             />
             <LabelInput
               field="vehicleVin"
-              label={isAr ? 'رقم الشاسيه (VIN)' : 'N° Châssis (VIN)'}
+              label={
+                vehicleType === 'moto'
+                  ? (isAr ? 'رقم الإطار (اختياري للدراجة)' : 'N° Cadre / Châssis (optionnel moto)')
+                  : (isAr ? 'رقم الشاسيه (VIN 17 خانة)' : 'N° Châssis (VIN 17 car.)')
+              }
               value={vin}
               onChange={setVin}
-              placeholder="VF15R240..."
+              placeholder={vehicleType === 'moto' ? 'MOTO-FRAME-902' : 'VF15R240H51234567'}
               width="100%"
               height={40}
               corner={12}
             />
           </div>
 
-          {/* Make, Model, Year */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
               field="vehicleBrand"
@@ -292,17 +408,18 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             />
             <LabelInput
               field="vehicleYear"
-              label={isAr ? 'السنة' : 'Année'}
+              label={isAr ? 'السنة *' : 'Année *'}
               type="number"
               value={year}
               onChange={setYear}
+              placeholder="2022"
               width="100%"
               height={40}
               corner={12}
+              required
             />
           </div>
 
-          {/* Fuel Type (4 options -> LiveSegmentedControl) */}
           <div className="space-y-1.5">
             <label className="t-small font-semibold text-black/70 dark:text-white/75 block">
               {isAr ? 'نوع الوقود' : 'Carburant'}
@@ -321,7 +438,6 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             />
           </div>
 
-          {/* Owner details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="vehicleOwnerName"
@@ -347,7 +463,6 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             />
           </div>
 
-          {/* Mileage & Daily Rhythm */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
               field="vehicleMileage"
@@ -355,6 +470,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               type="number"
               value={mileage}
               onChange={setMileage}
+              placeholder="65000"
               width="100%"
               height={40}
               corner={12}
@@ -366,6 +482,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               type="number"
               value={dailyAvgKm}
               onChange={setDailyAvgKm}
+              placeholder="50"
               width="100%"
               height={40}
               corner={12}
@@ -376,6 +493,29 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               value={carteGriseNumber}
               onChange={setCarteGriseNumber}
               placeholder="CG-16-..."
+              width="100%"
+              height={40}
+              corner={12}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelInput
+              field="vehicleTechControlExpiry"
+              label={isAr ? 'انتهاء المراقبة التقنية' : isEn ? 'Technical Inspection Expiry' : 'Échéance Contrôle Technique'}
+              type="date"
+              value={techControlExpiry}
+              onChange={setTechControlExpiry}
+              width="100%"
+              height={40}
+              corner={12}
+            />
+            <LabelInput
+              field="vehicleInsuranceExpiry"
+              label={isAr ? 'انتهاء التأمين' : isEn ? 'Insurance Expiry' : 'Échéance Assurance'}
+              type="date"
+              value={insuranceExpiry}
+              onChange={setInsuranceExpiry}
               width="100%"
               height={40}
               corner={12}

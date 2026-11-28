@@ -2751,7 +2751,7 @@ export const useMedicalData = () => {
     const palette = ['#0D9488', '#d4522f', '#2563EB', '#9333EA', '#D97706'];
     return (storeStaff || [])
       .filter((member) => {
-        if (!member || member.status === 'Terminated' || member.isActive === false) return false;
+        if (!member || member.status === 'terminated' || member.isActive === false) return false;
         const memberBranch = member.branchId || member.facilityId;
         if (memberBranch && memberBranch !== activeBranchId) return false;
         const roleText = String(member.role || '').toLowerCase();
@@ -2783,7 +2783,7 @@ export const useMedicalData = () => {
             ? member.serviceCommissionRate
             : 70,
         color: palette[idx % palette.length],
-        isAvailable: member.status !== 'OnLeave' && member.status !== 'Suspended',
+        isAvailable: member.status !== 'on_leave' && member.status !== 'frozen' && member.status !== 'vacation',
         branchId: member.branchId || member.facilityId || activeBranchId,
       }));
   }, [storeStaff, activeBranchId]);

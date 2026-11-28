@@ -687,6 +687,47 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS lots');
     expect(downSql).toContain('DROP COLUMN IF EXISTS has_chifa_100_percent_ald');
   });
+
+  it('verifies Phase 3 Step 10 (7.10) auto_garage depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280010_phase3_auto_garage_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280010_phase3_auto_garage_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS vehicle_type text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS plate_format text');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS ownership_history jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS quote_unit_prices_snapshot jsonb');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS is_locked_invoiced boolean');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS delivery_note_number text');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_flat_rate_labor');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_technician_time_logs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_tech_commissions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_insurance_claims');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_inspection_pvs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_detailing_packages');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.garage_tire_storage');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_garage_bay_double_assignment(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.garage_assign_bay(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.garage_receive_purchase_order(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.garage_reopen_invoiced_order(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.garage_reopen_invoiced_order(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.garage_receive_purchase_order(');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_guard_garage_bay_double_assignment');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_garage_bay_double_assignment()');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_tire_storage');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_detailing_packages');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_inspection_pvs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_insurance_claims');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_tech_commissions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_technician_time_logs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.garage_flat_rate_labor');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS delivery_note_number');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS is_locked_invoiced');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS vehicle_type');
+  });
 });
 
 

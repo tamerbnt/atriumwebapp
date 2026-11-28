@@ -8,6 +8,10 @@ import {
   Building2,
   Edit,
   Pin,
+  ArrowLeftRight,
+  Disc,
+  Link2,
+  X,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -19,6 +23,11 @@ import {
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
+  evaluateTireStorageAlert,
+  evaluateVehicleServiceReminders,
+  type TireStorageEntry,
+} from '../../../utils/garageDepth';
+import {
   useGarageData,
   VehicleAsset,
   RepairOrder,
@@ -26,6 +35,10 @@ import {
 } from './garageData';
 import { AutoVehicleModal } from './AutoVehicleModal';
 import { AutoOrderModal } from './AutoOrderModal';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -48,6 +61,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticModalShell,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -72,19 +86,25 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
     }),
     shallowEqualObjects
   );
-  const { retryCloudSync } = useAtriumActions();
+  const { retryCloudSync, ensurePartyForEntity } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const L = (en: string, fr: string, ar: string) => (isAr ? ar : isEn ? en : fr);
 
   const {
     vehicles,
     orders,
     bays,
+    tireStorage,
     addVehicle,
     updateVehicle,
     deleteVehicle,
+    transferVehicleOwner,
+    upsertTireStorageEntry,
     addOrder,
   } = useGarageData();
+
+  const [activeMode, setActiveMode] = useState<'vehicles' | 'tires'>('vehicles');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSegment, setFilterSegment] = useState<string>('All');
@@ -109,6 +129,23 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
   const [inspectedVehicle, setInspectedVehicle] = useState<VehicleAsset | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
+
+  const [transferTarget, setTransferTarget] = useState<VehicleAsset | null>(null);
+  const [newOwnerName, setNewOwnerName] = useState('');
+  const [newOwnerPhone, setNewOwnerPhone] = useState('');
+  const [newOwnerEmail, setNewOwnerEmail] = useState('');
+  const [transferReason, setTransferReason] = useState('');
+  const [transferOdometer, setTransferOdometer] = useState('');
+
+  const [isTireModalOpen, setIsTireModalOpen] = useState(false);
+  const [tireVehicleId, setTireVehicleId] = useState('');
+  const [tireSeason, setTireSeason] = useState<'summer' | 'winter' | 'all_season'>('winter');
+  const [tireSize, setTireSize] = useState('');
+  const [tireBrand, setTireBrand] = useState('');
+  const [tireQty, setTireQty] = useState('4');
+  const [tireTreadMm, setTireTreadMm] = useState('5.5');
+  const [tireRack, setTireRack] = useState('');
+  const [tireDueSwapDate, setTireDueSwapDate] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -456,7 +493,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (v) => {
           const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
-          const needsOilChange = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500;
+          const reminders = evaluateVehicleServiceReminders(v);
+          const urgentReminder = reminders.find((r) => r.severity === 'overdue' || r.severity === 'due_soon');
+          const needsOilChange = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500 || urgentReminder?.kind === 'vidange';
           return (
             <div className="space-y-0.5">
               <div className="t-small tabular-nums font-semibold text-black dark:text-white flex items-center gap-2">
@@ -464,9 +503,18 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                 <span>{estKm.toLocaleString()} km</span>
                 <span className="t-cap text-black/55 dark:text-white/55 font-normal">(est.)</span>
               </div>
-              <div className="flex items-center gap-2">
-                {needsOilChange ? (
-                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {urgentReminder ? (
+                  <span className={`t-small font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] flex items-center gap-1 ${
+                    urgentReminder.severity === 'overdue'
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  }`}>
+                    <AlertTriangle size={10} />
+                    {urgentReminder.message}
+                  </span>
+                ) : needsOilChange ? (
+                  <span className="t-small font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
                     <AlertTriangle size={9} />
                     {isAr ? 'تغيير زيت مطلوب' : 'Vidange requise'}
                   </span>
@@ -658,11 +706,45 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Car size={26} />}
         title={isAr ? 'المركبات' : isEn ? 'Vehicles' : 'Véhicules'}
-        primaryAction={{
-          label: isAr ? 'تسجيل مركبة' : isEn ? 'New Vehicle' : 'Nouveau Véhicule',
-          icon: <Plus size={16} strokeWidth={2.5} />,
-          onClick: handleOpenAdd,
-        }}
+        secondaryActions={
+          <LiveSegmentedControl
+            size="sm"
+            value={activeMode}
+            onValueChange={(val) => setActiveMode(val as 'vehicles' | 'tires')}
+            options={[
+              {
+                value: 'vehicles',
+                label: L('Vehicles', 'Parc', 'المركبات'),
+                count: vehicles.length,
+              },
+              {
+                value: 'tires',
+                label: L('Tire Hotel', 'Hôtel Pneus', 'فندق الإطارات'),
+                count: tireStorage.length,
+              },
+            ]}
+            aria-label="Vehicles View Switcher"
+          />
+        }
+        primaryAction={
+          activeMode === 'tires'
+            ? {
+                label: L('Store Tire Set', 'Dépôt Pneus', 'إيداع إطارات'),
+                icon: <Plus size={16} strokeWidth={2.5} />,
+                onClick: () => {
+                  setTireVehicleId(vehicles[0]?.id || '');
+                  setTireSize('');
+                  setTireBrand('');
+                  setTireRack('');
+                  setIsTireModalOpen(true);
+                },
+              }
+            : {
+                label: isAr ? 'تسجيل مركبة' : isEn ? 'New Vehicle' : 'Nouveau Véhicule',
+                icon: <Plus size={16} strokeWidth={2.5} />,
+                onClick: handleOpenAdd,
+              }
+        }
       />
 
       <ScreenKpiBanner
@@ -696,6 +778,96 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         }}
       />
 
+      {activeMode === 'tires' ? (
+        <ScreenPod>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="t-pod font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Disc size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <span>{L('Seasonal Tire Storage (Hôtel Pneus)', 'Hôtel Pneus & Gardiennage Saisonnier', 'مستودع حفظ الإطارات الموسمية')}</span>
+                </h2>
+                <p className="t-cap text-black/55 dark:text-white/60 mt-0.5">
+                  {L(
+                    'Monitors tread depth (< 3.0mm wear alert) and seasonal swap due dates.',
+                    'Suivi des racks, profondeur des sculptures (< 3.0 mm) et dates de permutation saisonnière.',
+                    'تتبع الرفوف وتنبيهات تآكل الإطارات وتواريخ الاستبدال الموسمي.'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {tireStorage.length === 0 ? (
+              <div data-sq="card" data-sq-border="solid" className="p-6 text-center t-cap text-black/55 dark:text-white/60 [--sq-stroke:var(--sq-stroke-card)]">
+                {L('No tire sets currently in storage.', 'Aucun train de pneus en gardiennage.', 'لا توجد إطارات مودعة حالياً.')}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {tireStorage.map((entry) => {
+                  const alert = evaluateTireStorageAlert(entry);
+                  return (
+                    <div
+                      key={entry.id}
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="p-4 bg-[#FAF7F4] dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] space-y-2 t-cap"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-semibold text-black dark:text-white">{entry.plateNumber} · {entry.storageTag}</div>
+                          <div className="text-black/60 dark:text-white/65">{entry.ownerName}</div>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-[var(--r-check,6px)] t-small font-semibold ${
+                            alert.status === 'replace_recommended'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                              : alert.status === 'swap_due'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          }`}
+                        >
+                          {entry.status === 'mounted'
+                            ? L('Mounted', 'Montés', 'مركبة')
+                            : alert.status === 'replace_recommended'
+                            ? L('Replace Tire', 'À Remplacer', 'تحتاج تغيير')
+                            : alert.status === 'swap_due'
+                            ? L('Swap Due', 'Permutation Due', 'حان التبديل')
+                            : L('Stored OK', 'En Stock OK', 'محفوظة')}
+                        </span>
+                      </div>
+                      <div className="text-black/70 dark:text-white/75 tabular-nums">
+                        {entry.tireSize} · {entry.brand || 'Multi'} ×{entry.quantity} · {entry.treadDepthMm} mm
+                      </div>
+                      <div className="text-black/55 dark:text-white/55">
+                        Rack: {entry.rackLocation} · {entry.dueSwapDate ? `Swap: ${entry.dueSwapDate}` : entry.season}
+                      </div>
+                      {alert.warnings.length > 0 && (
+                        <div className="text-amber-700 dark:text-amber-300 font-medium">
+                          {alert.warnings.join(' · ')}
+                        </div>
+                      )}
+                      <div className="pt-1 flex justify-end">
+                        <AtriumButton
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            const nextStatus = entry.status === 'stored' ? 'mounted' : 'stored';
+                            upsertTireStorageEntry({ ...entry, status: nextStatus });
+                          }}
+                        >
+                          {entry.status === 'stored'
+                            ? L('Mark Mounted', 'Sortir / Monter', 'تركيب على المركبة')
+                            : L('Return to Rack', 'Remettre en Rack', 'إرجاع للمستودع')}
+                        </AtriumButton>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </ScreenPod>
+      ) : (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={isAr ? 'دليل السيارات' : isEn ? 'Vehicle Registry' : 'Registre Automobile'}
@@ -794,6 +966,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           ]}
         />
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -881,6 +1054,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           }
 
           if (tab === 'maintenance') {
+            const serviceReminders = evaluateVehicleServiceReminders(v);
             return (
               <>
                 <InspectorSection index={0} title={isAr ? 'الصيانة التنبؤية' : 'Échéancier Vidange & Distribution'}>
@@ -897,7 +1071,25 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                     <InspectorProgressBar percent={vidangePercent} tone={isOverdue ? 'warn' : 'ok'} animateKey={v.id} />
                   </InspectorCard>
                 </InspectorSection>
-                <InspectorSection index={1} title="Distribution & Préconisations">
+                {serviceReminders.length > 0 && (
+                  <InspectorSection index={1} title={L('Service & Compliance Reminders', 'Rappels Entretien, CT & Assurance', 'تذكيرات الصيانة والفحص')}>
+                    <InspectorCard>
+                      {serviceReminders.map((rem, idx) => (
+                        <InspectorListItem
+                          key={`${rem.kind}_${idx}`}
+                          title={rem.message}
+                          subtitle={rem.targetDate || rem.kind}
+                          badge={{
+                            label: rem.severity === 'overdue' ? L('Overdue', 'Expiré', 'متأخر') : rem.severity === 'due_soon' ? L('Due Soon', 'Proche', 'قريباً') : 'OK',
+                            tone: rem.severity === 'ok' ? 'ok' : 'warn',
+                          }}
+                          isLast={idx === serviceReminders.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
+                <InspectorSection index={2} title="Distribution & Préconisations">
                   <InspectorCard>
                     <InspectorKeyValue
                       label="Courroie Distribution"
@@ -919,6 +1111,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             );
           }
 
+          const ownershipHistory = v.ownershipHistory || [];
           return (
             <>
               <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
@@ -938,6 +1131,19 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                       onClick: () => handleOpenEdit(v),
                     },
                     {
+                      id: 'transfer',
+                      label: L('Transfer Owner', 'Céder / Transférer', 'نقل الملكية'),
+                      icon: <ArrowLeftRight className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        setNewOwnerName('');
+                        setNewOwnerPhone('');
+                        setNewOwnerEmail('');
+                        setTransferReason('');
+                        setTransferOdometer(String(v.mileageKm));
+                        setTransferTarget(v);
+                      },
+                    },
+                    {
                       id: 'pin',
                       label: pinnedIds.has(v.id) ? 'Désépingler' : 'Épingler',
                       icon: <Pin className="w-[18px] h-[18px]" />,
@@ -949,8 +1155,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 
               <InspectorSection index={1} title={isAr ? 'المواصفات الفنية' : 'Données Constructeur'}>
                 <InspectorCard>
-                  <InspectorKeyValue label="N° Châssis (VIN)" value={v.vin} />
+                  <InspectorKeyValue label="N° Châssis (VIN)" value={v.vin || (v.vehicleType === 'moto' ? 'Exempté (Moto)' : '—')} />
                   <InspectorKeyValue label="Immatriculation" value={v.plateNumber} tone="accent" />
+                  <InspectorKeyValue label="Catégorie" value={`${v.vehicleType || 'car'} · ${v.plateFormat || 'algeria_standard'}`} mono={false} />
                   <InspectorKeyValue label="Motorisation" value={v.fuelType || 'Diesel'} mono={false} />
                   <InspectorKeyValue label="Année modèle" value={String(v.year)} />
                   <InspectorKeyValue label="Compteur Enregistré" value={`${v.mileageKm.toLocaleString()} km`} />
@@ -968,13 +1175,56 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                   )}
                   <InspectorKeyValue label="Contact / Titulaire" value={v.ownerName} mono={false} />
                   <InspectorKeyValue label="Téléphone" value={v.ownerPhone} />
+                  <InspectorKeyValue label="Fiche CRM Unifiée" value={v.crmPartyId ? `Lié (${v.crmPartyId.slice(0, 8)})` : 'Non liée'} tone={v.crmPartyId ? 'ok' : 'warn'} />
                   <InspectorKeyValue
                     label="Carte Grise"
                     value={v.carteGriseNumber || 'Non renseignée'}
                     isLast
                   />
                 </InspectorCard>
+                {!v.crmPartyId && (
+                  <div className="mt-2.5">
+                    <InspectorWideButton
+                      label={L('Link Client to CRM Master', 'Lier au Référentiel CRM', 'ربط بملف الزبائن الموحد')}
+                      icon={<Link2 className="w-4 h-4" />}
+                      onClick={() => {
+                        const res = ensurePartyForEntity({
+                          businessId: v.businessId,
+                          branchId: v.branchId,
+                          sourceVertical: 'auto_garage',
+                          entityType: 'garage_client',
+                          entityId: v.id,
+                          partyKind: v.isFleet ? 'company' : 'person',
+                          displayName: v.ownerName,
+                          phone: v.ownerPhone,
+                          email: v.ownerEmail,
+                        });
+                        updateVehicle({ ...v, crmPartyId: res.party.id });
+                        showToast({
+                          type: 'success',
+                          title: L('CRM Linked', 'Fiche CRM Liée', 'تم ربط الزبون'),
+                          message: `${res.party.displayName}`,
+                        });
+                      }}
+                    />
+                  </div>
+                )}
               </InspectorSection>
+
+              {ownershipHistory.length > 0 && (
+                <InspectorSection index={3} title={L('Ownership Transfer History', 'Historique Cessions Propriétaire', 'سجل نقل الملكية')}>
+                  <InspectorCard>
+                    {ownershipHistory.map((h, i) => (
+                      <InspectorListItem
+                        key={h.id}
+                        title={`${h.previousOwnerName} → ${h.newOwnerName}`}
+                        subtitle={`${new Date(h.transferredAt).toLocaleDateString()} · ${h.reason} · ${h.odometerAtTransferKm.toLocaleString()} km`}
+                        isLast={i === ownershipHistory.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              )}
             </>
           );
         }}
@@ -1007,12 +1257,151 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         }}
         vehicles={orderVehicle ? [orderVehicle] : []}
         bays={bays}
+        existingOrders={orders}
         onSave={(order) => {
           addOrder(order);
           setIsOrderModalOpen(false);
           setOrderVehicle(null);
         }}
       />
+
+      <KineticModalShell
+        isOpen={Boolean(transferTarget)}
+        onClose={() => setTransferTarget(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        {transferTarget && (
+          <div data-sq="panel" data-sq-border="solid" className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+              <h3 className="t-card font-semibold text-black dark:text-white">
+                {L('Transfer Vehicle Ownership', 'Cession / Changement Propriétaire', 'نقل ملكية المركبة')} · {transferTarget.plateNumber}
+              </h3>
+              <button type="button" onClick={() => setTransferTarget(null)} className="p-1 cursor-pointer"><X size={18} /></button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                try {
+                  const updated = transferVehicleOwner(transferTarget.id, {
+                    newOwnerName,
+                    newOwnerPhone,
+                    newOwnerEmail,
+                    reason: transferReason,
+                    odometerAtTransferKm: parseInt(transferOdometer, 10) || transferTarget.mileageKm,
+                  });
+                  setInspectedVehicle(updated);
+                  setTransferTarget(null);
+                  showToast({
+                    type: 'success',
+                    title: L('Ownership Transferred', 'Cession Enregistrée', 'تم نقل الملكية'),
+                    message: `${updated.plateNumber} → ${updated.ownerName}`,
+                  });
+                } catch (err: any) {
+                  showToast({
+                    type: 'error',
+                    title: L('Transfer Error', 'Erreur Cession', 'خطأ في النقل'),
+                    message: err?.message || L('Owner name and reason (>= 3 chars) required.', 'Nom et motif (3 car. min) requis.', 'الاسم والسبب مطلوبان.'),
+                  });
+                }
+              }}
+              className="space-y-3"
+            >
+              <LabelInput label={L('New Owner Name *', 'Nouveau Propriétaire *', 'المالك الجديد *')} value={newOwnerName} onChange={setNewOwnerName} required />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput label={L('New Phone *', 'Nouveau Téléphone *', 'الهاتف الجديد *')} value={newOwnerPhone} onChange={setNewOwnerPhone} required />
+                <LabelInput type="number" label={L('Odometer (km)', 'Compteur (km)', 'العداد (كم)')} value={transferOdometer} onChange={setTransferOdometer} />
+              </div>
+              <LabelInput label={L('Transfer Reason *', 'Motif de cession (min. 3 car.) *', 'سبب نقل الملكية *')} value={transferReason} onChange={setTransferReason} placeholder="Vente entre particuliers / Rachat flotte" required />
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setTransferTarget(null)}>{L('Cancel', 'Annuler', 'إلغاء')}</AtriumButton>
+                <AtriumButton type="submit" variant="primary" size="sm">{L('Confirm Transfer', 'Valider Cession', 'تأكيد النقل')}</AtriumButton>
+              </div>
+            </form>
+          </div>
+        )}
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={isTireModalOpen}
+        onClose={() => setIsTireModalOpen(false)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h3 className="t-card font-semibold text-black dark:text-white">{L('Store Tires (Hôtel Pneus)', 'Nouveau Dépôt Hôtel Pneus', 'إيداع إطارات جديدة')}</h3>
+            <button type="button" onClick={() => setIsTireModalOpen(false)} className="p-1 cursor-pointer"><X size={18} /></button>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const veh = vehicles.find((v) => v.id === tireVehicleId) || vehicles[0];
+              if (!veh || !tireSize.trim() || !tireRack.trim()) return;
+              const entry: TireStorageEntry = {
+                id: `tire_${Date.now()}`,
+                branchId: veh.branchId || currentBranch?.id || 'branch_garage_main',
+                storageTag: `HTL-${new Date().getFullYear()}-${String(tireStorage.length + 1).padStart(3, '0')}`,
+                vehicleId: veh.id,
+                plateNumber: veh.plateNumber,
+                ownerName: veh.ownerName,
+                season: tireSeason,
+                tireSize: tireSize.trim(),
+                brand: tireBrand.trim() || 'Michelin',
+                quantity: parseInt(tireQty, 10) || 4,
+                treadDepthMm: parseFloat(tireTreadMm) || 5.0,
+                rackLocation: tireRack.trim(),
+                storedAt: new Date().toISOString().slice(0, 10),
+                dueSwapDate: tireDueSwapDate.trim() || undefined,
+                status: 'stored',
+              };
+              upsertTireStorageEntry(entry);
+              setIsTireModalOpen(false);
+              showToast({
+                type: 'success',
+                title: L('Tires Stored', 'Dépôt Enregistré', 'تم حفظ الإطارات'),
+                message: `${entry.storageTag} · ${entry.plateNumber}`,
+              });
+            }}
+            className="space-y-3"
+          >
+            <LabelSelect
+              label={L('Vehicle *', 'Véhicule *', 'المركبة *')}
+              value={tireVehicleId}
+              onChange={setTireVehicleId}
+              options={vehicles.map((v) => ({ value: v.id, label: `${v.plateNumber} · ${v.ownerName}` }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput label={L('Tire Size *', 'Dimension *', 'المقاس *')} value={tireSize} onChange={setTireSize} placeholder="205/55 R16" required />
+              <LabelSelect
+                label={L('Season', 'Saison', 'الموسم')}
+                value={tireSeason}
+                onChange={(v) => setTireSeason(v as any)}
+                options={[
+                  { value: 'winter', label: 'Hiver' },
+                  { value: 'summer', label: 'Été' },
+                  { value: 'all_season', label: '4 Saisons' },
+                ]}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <LabelInput label={L('Brand', 'Marque', 'العلامة')} value={tireBrand} onChange={setTireBrand} placeholder="Michelin" />
+              <LabelInput type="number" label={L('Qty', 'Qté', 'الكمية')} value={tireQty} onChange={setTireQty} />
+              <LabelInput type="number" label={L('Tread (mm)', 'Sculpture (mm)', 'العمق')} value={tireTreadMm} onChange={setTireTreadMm} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <LabelInput label={L('Rack *', 'Emplacement Rack *', 'الرف *')} value={tireRack} onChange={setTireRack} placeholder="Rack P-04" required />
+              <LabelInput type="date" label={L('Due Swap Date', 'Échéance Permutation', 'تاريخ التبديل')} value={tireDueSwapDate} onChange={setTireDueSwapDate} />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsTireModalOpen(false)}>{L('Cancel', 'Annuler', 'إلغاء')}</AtriumButton>
+              <AtriumButton type="submit" variant="primary" size="sm">{L('Store Tires', 'Valider Dépôt', 'حفظ الإيداع')}</AtriumButton>
+            </div>
+          </form>
+        </div>
+      </KineticModalShell>
     </div>
   );
 };

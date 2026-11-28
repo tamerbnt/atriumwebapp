@@ -24,6 +24,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AutoOrderModal } from './AutoOrderModal';
+import { AutoGarageOrderDepthPanels } from './AutoGarageOrderDepthPanels';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { KineticEmptyStateMotion } from '../../ui/kinetic';
@@ -108,6 +109,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
     updateOrder,
     deleteOrder,
     updateOrderStatus,
+    assignBayToOrder,
     requisitionPartToOrder,
   } = useGarageData();
 
@@ -1064,8 +1066,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         }
         tabs={[
           { id: 'ordre', label: isAr ? 'تفاصيل الأمر' : 'Détails OR' },
+          { id: 'devis', label: isAr ? 'العرض والصور' : isEn ? 'Estimate' : 'Devis & Photos' },
+          { id: 'labor', label: isAr ? 'الوقت والعمالة' : isEn ? 'Labor & Clock' : 'Barème & Chrono' },
           { id: 'parts', label: `${isAr ? 'القطع' : 'Pièces'} (${activeOrder?.partsUsed.length || 0})` },
           { id: 'diag', label: isAr ? 'التشخيص' : 'Diagnostic' },
+          { id: 'specialties', label: isAr ? 'الفحص والتأمين' : isEn ? 'Inspection & Body' : 'CT / Sinistre / Detailing' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -1074,6 +1079,17 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         onDelete={handleDeleteOrder}
         holdToDelete
         renderBody={(order, tab) => {
+          if (tab === 'devis' || tab === 'labor' || tab === 'specialties') {
+            return (
+              <AutoGarageOrderDepthPanels
+                order={order}
+                panelTab={tab}
+                language={language}
+                isMechanicRole={isMechanicRole}
+              />
+            );
+          }
+
           if (tab === 'parts') {
             return (
               <>
@@ -1169,6 +1185,23 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 
           return (
             <>
+              {order.isLockedInvoiced && (
+                <InspectorSection index={0}>
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 t-cap text-amber-800 dark:text-amber-300 font-semibold">
+                    {isAr
+                      ? 'تمت فوترة هذا الأمر وقفله. يجب إصدار إشعار دائن لإعادة الفتح.'
+                      : 'OR facturé et verrouillé. Réouverture autorisée uniquement via Avoir (Caisse).'}
+                  </div>
+                </InspectorSection>
+              )}
+              {order.reopenCreditNoteNumber && (
+                <InspectorSection index={0}>
+                  <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 t-cap text-blue-800 dark:text-blue-300">
+                    Réouvert via Avoir {order.reopenCreditNoteNumber} · {order.reopenReason}
+                  </div>
+                </InspectorSection>
+              )}
+
               <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
                 <InspectorQuickActions
                   actions={[
@@ -1198,8 +1231,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                   <InspectorBigStat
                     value={formatMoney(order.finalCostDzd || order.estimatedCostDzd, language)}
                     tone="accent"
-                    caption={`MO: ${formatMoney(order.laborCostDzd || 3750, language)} · Pièces: ${formatMoney(
-                      order.partsCostDzd || 15500,
+                    caption={`MO: ${formatMoney(order.laborCostDzd ?? 0, language)} · Pièces: ${formatMoney(
+                      order.partsCostDzd ?? 0,
                       language
                     )}`}
                   />
@@ -1207,6 +1240,44 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               )}
 
               <InspectorSection index={2} title={isAr ? 'جسر الرفع والمعطيات' : 'Affectation Pont & Compteur'}>
+                <div className="mb-2.5">
+                  <LabelSelect
+                    field="inspectorBayAssign"
+                    label={isAr ? 'تعيين جسر الرفع' : 'Réaffecter Pont / Baie'}
+                    value={order.assignedBayId || ''}
+                    onChange={(nextBayId) => {
+                      if (!nextBayId) return;
+                      const res = assignBayToOrder(order.id, nextBayId);
+                      if (!res.ok) {
+                        showToast({
+                          type: 'error',
+                          title: isAr ? 'جسر مشغول' : 'Pont déjà occupé',
+                          message: res.errorMessage || 'Double affectation bloquée sur ce pont.',
+                        });
+                      } else {
+                        showToast({
+                          type: 'success',
+                          title: isAr ? 'تم تعيين الجسر' : 'Pont affecté',
+                          message: bays.find((b) => b.id === nextBayId)?.name || nextBayId,
+                        });
+                      }
+                    }}
+                    options={[
+                      { value: '', label: isAr ? '-- بدون جسر --' : '-- En attente cour --' },
+                      ...bays.map((b) => {
+                        const occupiedByOther = b.isOccupied && b.activeOrderId && b.activeOrderId !== order.id;
+                        return {
+                          value: b.id,
+                          label: `P${b.bayNumber} · ${b.name}${occupiedByOther ? ' (Occupé)' : ''}`,
+                          disabled: Boolean(occupiedByOther),
+                        };
+                      }),
+                    ]}
+                    width="100%"
+                    height={38}
+                    corner={12}
+                  />
+                </div>
                 <InspectorCard>
                   <InspectorKeyValue label="Pont / Baie" value={order.bayName || 'Non assigné'} mono={false} />
                   <InspectorKeyValue label="Technicien" value={order.technicianName} mono={false} />
@@ -1250,6 +1321,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         onClose={() => setIsOrderModalOpen(false)}
         vehicles={vehicles}
         bays={bays}
+        existingOrders={orders}
         onSave={(newOrder) => {
           addOrder(newOrder);
           setInspectedOrder(newOrder);

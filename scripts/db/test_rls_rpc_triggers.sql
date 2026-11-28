@@ -2488,6 +2488,134 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 28. PHASE 3 STEP 10 (7.10 auto_garage): RLS, Bay Double-Assignment Guard,
+--     PO Goods Receipt & Credit-Note Reopen RPC Tests
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_user_a uuid := 'aaaaaaaa-1111-1111-1111-111111111111';
+  v_user_b uuid := 'bbbbbbbb-1111-1111-1111-111111111111';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '11111111-1111-1111-1111-111111111112';
+  v_bay_id uuid := gen_random_uuid();
+  v_wo1_id uuid := gen_random_uuid();
+  v_wo2_id uuid := gen_random_uuid();
+  v_part_id uuid := gen_random_uuid();
+  v_sup_id uuid := gen_random_uuid();
+  v_po_id uuid := gen_random_uuid();
+  v_claim_id uuid := gen_random_uuid();
+  v_credit_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean;
+  v_stock numeric;
+  v_po_status text;
+  v_wo_locked boolean;
+  v_wo_status text;
+BEGIN
+  -- Seed base workshop fixtures as postgres
+  INSERT INTO public.garage_bays (id, account_id, business_id, branch_id, bay_code, name, status)
+  VALUES (v_bay_id, v_acc_a, v_biz_a, v_br_a, 'BAY-TEST-01', 'Pont Test 1', 'Free');
+
+  INSERT INTO public.garage_work_orders (
+    id, account_id, business_id, branch_id, order_number, plate_number, vehicle_label, client_name, status, is_locked_invoiced
+  ) VALUES
+    (v_wo1_id, v_acc_a, v_biz_a, v_br_a, 'OR-TEST-01', '00142-118-16', 'Renault Clio 4', 'Client Test 1', 'Intake', false),
+    (v_wo2_id, v_acc_a, v_biz_a, v_br_a, 'OR-TEST-02', '09845-120-09', 'Peugeot 208', 'Client Test 2', 'Delivered', true);
+
+  INSERT INTO public.garage_parts (id, account_id, business_id, branch_id, part_number, name, stock_quantity, min_stock, cost_dzd, sell_price_dzd)
+  VALUES (v_part_id, v_acc_a, v_biz_a, v_br_a, 'GAR-BRK-TEST', 'Plaquettes Test', 2, 2, 3200, 4800);
+
+  INSERT INTO public.garage_suppliers (id, account_id, business_id, branch_id, name, phone, wilaya)
+  VALUES (v_sup_id, v_acc_a, v_biz_a, v_br_a, 'Fournisseur Test Pièces', '0550000001', 'Alger');
+
+  INSERT INTO public.garage_purchase_orders (
+    id, account_id, business_id, branch_id, po_number, supplier_id, supplier_name, items, total_dzd, status, warranty_months
+  ) VALUES (
+    v_po_id, v_acc_a, v_biz_a, v_br_a, 'BC-GAR-TEST-01', v_sup_id, 'Fournisseur Test Pièces',
+    jsonb_build_array(jsonb_build_object('partId', v_part_id, 'quantity', 5, 'unitCostDzd', 3400)),
+    17000, 'Ordered', 12
+  );
+
+  INSERT INTO public.garage_insurance_claims (
+    id, account_id, business_id, branch_id, claim_number, work_order_id, insurer_name, claimed_centimes, deductible_centimes, approved_centimes
+  ) VALUES (
+    v_claim_id, v_acc_a, v_biz_a, v_br_a, 'SIN-TEST-01', v_wo1_id, 'SAA Assurances', 15000000, 1500000, 13500000
+  );
+
+  -- 1. Cross-tenant RLS isolation on garage_insurance_claims
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.garage_insurance_claims WHERE id = v_claim_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read garage_insurance_claims'; END IF;
+  RESET ROLE;
+
+  -- 2. Tenant A operations
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- Assign free bay to OR-1 -> succeeds
+  PERFORM public.garage_assign_bay(v_bay_id, v_wo1_id, 'Karim');
+
+  -- Assigning same occupied bay to OR-2 MUST fail (double-assignment guard)
+  v_blocked := false;
+  BEGIN
+    PERFORM public.garage_assign_bay(v_bay_id, v_wo2_id, 'Farid');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected double-assignment of occupied garage bay to fail';
+  END IF;
+
+  -- Receive PO without delivery note MUST fail
+  v_blocked := false;
+  BEGIN
+    PERFORM public.garage_receive_purchase_order(v_po_id, '   ', 'Magasinier', NULL);
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected garage_receive_purchase_order without BL number to fail';
+  END IF;
+
+  -- Receive PO with BL MUST increment stock_quantity from 2 to 7 & update PO status
+  PERFORM public.garage_receive_purchase_order(v_po_id, 'BL-2026-909', 'Magasinier', NULL);
+  RESET ROLE;
+
+  SELECT stock_quantity INTO v_stock FROM public.garage_parts WHERE id = v_part_id;
+  IF v_stock <> 7 THEN
+    RAISE EXCEPTION 'Expected garage_parts stock_quantity to become 7 after receipt, got %', v_stock;
+  END IF;
+  SELECT status INTO v_po_status FROM public.garage_purchase_orders WHERE id = v_po_id;
+  IF v_po_status <> 'Received' THEN
+    RAISE EXCEPTION 'Expected PO status Received, got %', v_po_status;
+  END IF;
+
+  -- Reopen invoiced RO without credit note MUST fail
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+  v_blocked := false;
+  BEGIN
+    PERFORM public.garage_reopen_invoiced_order(v_wo2_id, NULL, 'Correction');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected garage_reopen_invoiced_order without credit note to fail';
+  END IF;
+
+  -- Reopen invoiced RO WITH credit note + audit reason MUST succeed
+  PERFORM public.garage_reopen_invoiced_order(v_wo2_id, v_credit_id, 'Avoir AV-2026-0001 suite erreur référence pièce');
+  RESET ROLE;
+
+  SELECT is_locked_invoiced, status INTO v_wo_locked, v_wo_status FROM public.garage_work_orders WHERE id = v_wo2_id;
+  IF v_wo_locked OR v_wo_status <> 'InProgress' THEN
+    RAISE EXCEPTION 'Expected RO to unlock to InProgress after credit note reopen, got locked=% status=%', v_wo_locked, v_wo_status;
+  END IF;
+END $$;
+
 ROLLBACK;
 
 

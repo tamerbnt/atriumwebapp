@@ -9,27 +9,37 @@ import {
   FileText,
   Wallet,
   Pin,
+  RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   useAtriumSelector,
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { isDateInClosedPeriod } from '../../../utils/invoicingEngine';
+import {
+  formatGarageSequentialCode,
+  computeGarageInvoiceTotalsCentimes,
+  detectQuoteToInvoicePriceDrift,
+  buildGarageInvoiceScfDraft,
+} from '../../../utils/garageDepth';
 import {
   useGarageData,
   RepairOrder,
   GarageInvoice,
-  computeAlgerianTimbreFiscal,
 } from './garageData';
 import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { Button } from '@/atrium/core';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -65,6 +75,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     account,
     language,
     currentBranch,
+    currentBusiness,
     currentBusinessConfig,
     branches,
     isSyncing,
@@ -75,6 +86,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       account: s.account,
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -83,7 +95,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     }),
     shallowEqualObjects
   );
-  const { retryCloudSync } = useAtriumActions();
+  const {
+    retryCloudSync,
+    ensurePartyForEntity,
+    createUnifiedDocument,
+    recordUnifiedPayment,
+    createCreditNoteForDocument,
+    postManualJournalEntry,
+  } = useAtriumActions();
   const configuredTvaRate = currentBusinessConfig.defaultTvaRate ?? 19;
   const applyTimbre = currentBusinessConfig.applyTimbreFiscal !== false;
   const workshopHourlyRate = currentBusinessConfig.categorySettings?.workshopHourlyRateDzd ?? 2500;
@@ -91,7 +110,16 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { orders, fleets, invoices, updateOrder, createInvoice, closeCashRegisterZ } = useGarageData();
+  const {
+    orders,
+    fleets,
+    invoices,
+    parts,
+    updateOrder,
+    createInvoice,
+    closeCashRegisterZ,
+    reopenInvoicedWorkOrder,
+  } = useGarageData();
 
   const [activeScreenTab, setActiveScreenTab] = useState<'orders' | 'fleets' | 'invoices'>('orders');
   const [billingFilter, setBillingFilter] = useState<string>('all');
@@ -153,7 +181,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const [orderToSettle, setOrderToSettle] = useState<RepairOrder | null>(null);
   const [billingType, setBillingType] = useState<'facture_dgi' | 'bon_caisse'>('facture_dgi');
   const [paymentMethod, setPaymentMethod] = useState<'especes' | 'cib_dahabia' | 'cheque' | 'virement'>('especes');
-  const [discountAmount, setDiscountAmount] = useState('0');
+  const [partsDiscountPercent, setPartsDiscountPercent] = useState('0');
+  const [reopenTargetOrder, setReopenTargetOrder] = useState<RepairOrder | null>(null);
+  const [reopenReason, setReopenReason] = useState('');
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [activePrintInvoice, setActivePrintInvoice] = useState<GarageInvoice | null>(null);
@@ -163,6 +193,31 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     page: PrintSheetPage;
     onExportCsv?: () => void;
   } | null>(null);
+
+  const resolveOrderAmounts = useCallback(
+    (order: RepairOrder) => {
+      const labor =
+        order.laborLines && order.laborLines.length > 0
+          ? order.laborLines.reduce((sum, l) => sum + l.totalDzd, 0)
+          : order.laborCostDzd ?? (order.estimatedCostDzd > 0 ? Math.round(order.estimatedCostDzd * 0.35) : defaultLaborFallback);
+      const partsCost =
+        order.partsUsed && order.partsUsed.length > 0
+          ? order.partsUsed.reduce((sum, p) => sum + p.totalPriceDzd, 0)
+          : order.partsCostDzd ?? Math.max(0, (order.estimatedCostDzd || 0) - labor);
+      return { labor, partsCost };
+    },
+    [defaultLaborFallback]
+  );
+
+  const liveBusinessName =
+    currentBusinessConfig.fiscalProfile?.companyLegalName ||
+    currentBusiness?.displayName ||
+    currentBusiness?.name ||
+    (isAr ? 'ورشة السيارات' : isEn ? 'Auto Workshop' : 'Atelier Automobile');
+  const liveFiscalRc = currentBusinessConfig.fiscalProfile?.rc || '—';
+  const liveFiscalNif = currentBusinessConfig.fiscalProfile?.nif || '—';
+  const liveFiscalNis = currentBusinessConfig.fiscalProfile?.nis || '—';
+  const liveFiscalAi = currentBusinessConfig.fiscalProfile?.ai || '—';
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -292,13 +347,23 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const openSettlementModal = useCallback((order: RepairOrder) => {
     setOrderToSettle(order);
     setBillingType(order.billingType === 'bon_caisse' ? 'bon_caisse' : 'facture_dgi');
-    setDiscountAmount('0');
+    setPartsDiscountPercent('0');
     setIsPaymentModalOpen(true);
   }, []);
 
   const handleExecutePayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderToSettle) return;
+    if (orderToSettle.isLockedInvoiced && orderToSettle.invoiceId) {
+      showToast({
+        type: 'warning',
+        title: orderToSettle.orderNumber,
+        message: isAr
+          ? 'أمر الإصلاح مغلق ومفوتر. افتحه أولاً عبر إشعار دائن (Avoir).'
+          : 'OR verrouillé après facturation : utilisez Réouvrir via Avoir avant refacturation.',
+      });
+      return;
+    }
     const activeAccountId = (orderToSettle.accountId || currentBranch?.accountId || account?.id || '').trim();
     const activeBranchId = (orderToSettle.branchId || currentBranch?.id || '').trim();
     if (!activeAccountId || !activeBranchId) {
@@ -309,34 +374,154 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       });
       return;
     }
-    const laborHt =
-      orderToSettle.laborCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.25 : defaultLaborFallback);
-    const partsHt =
-      orderToSettle.partsCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.75 : 15500);
-    const disc = parseFloat(discountAmount) || 0;
-    const subtotalHt = Math.max(0, laborHt + partsHt - disc);
-    const tva = billingType === 'facture_dgi' ? Math.round(subtotalHt * (configuredTvaRate / 100)) : 0;
-    const ttc = subtotalHt + tva;
-    const timbre = applyTimbre ? computeAlgerianTimbreFiscal(ttc, paymentMethod) : 0;
-    const net = ttc + timbre;
-    const matchedFleet = orderToSettle.clientType === 'corporate_fleet'
-      ? fleets.find((f) => f.id === orderToSettle.fleetId || f.companyName === orderToSettle.clientName)
-      : undefined;
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const closedPeriods = currentBusinessConfig.accountingPeriodClosedMonths || [];
+    if (isDateInClosedPeriod(todayIso, closedPeriods)) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'فترة محاسبية مغلقة' : 'Période Comptable Clôturée',
+        message: isAr
+          ? `الفترة المحاسبية للتاريخ ${todayIso} مقفلة ولا يمكن إصدار فاتورة فيها.`
+          : `La période comptable du ${todayIso} est clôturée (verrouillage SCF).`,
+      });
+      return;
+    }
+
+    const { labor, partsCost } = resolveOrderAmounts(orderToSettle);
+    const parsedDiscPct = Math.max(0, Math.min(100, parseFloat(partsDiscountPercent) || 0));
+    const totalsRaw = computeGarageInvoiceTotalsCentimes({
+      laborTotalDzd: labor,
+      partsTotalDzd: partsCost,
+      partsDiscountPercent: parsedDiscPct,
+      billingType,
+      paymentMethod,
+      tvaRatePercent: configuredTvaRate,
+    });
+    const timbreFiscal = applyTimbre ? totalsRaw.timbreFiscal : 0;
+    const netToPayDzd = applyTimbre ? totalsRaw.netToPayDzd : totalsRaw.totalTtc;
+
+    const matchedFleet =
+      orderToSettle.clientType === 'corporate_fleet'
+        ? fleets.find((f) => f.id === orderToSettle.fleetId || f.companyName === orderToSettle.clientName)
+        : undefined;
+
+    const sequentialNumber = formatGarageSequentialCode(
+      billingType === 'facture_dgi' ? 'FAC' : 'BC',
+      invoices.map((i) => i.invoiceNumber)
+    );
+
+    let partyId = orderToSettle.clientCrmPartyId || '';
+    let unifiedDocId = orderToSettle.unifiedDocumentId || '';
+    let postedJournalEntryId = orderToSettle.journalEntryId || '';
+
+    try {
+      const partyResult = ensurePartyForEntity({
+        businessId: orderToSettle.businessId || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        sourceVertical: 'auto_garage',
+        entityType: 'garage_client',
+        entityId: matchedFleet?.id || orderToSettle.vehiclePlate || orderToSettle.id,
+        partyKind: orderToSettle.clientType === 'corporate_fleet' ? 'company' : 'person',
+        displayName: orderToSettle.clientName,
+        phone: orderToSettle.clientPhone,
+        nif: matchedFleet?.nif,
+        nis: matchedFleet?.nis,
+      });
+      partyId = partyResult.party.id;
+
+      const mappedPaymentMethod =
+        paymentMethod === 'especes'
+          ? 'cash'
+          : paymentMethod === 'cib_dahabia'
+          ? 'cib_dahabia'
+          : paymentMethod === 'cheque'
+          ? 'cheque'
+          : 'bank_transfer';
+
+      const docItems = [
+        ...(labor > 0
+          ? [
+              {
+                description: `Main-d'œuvre atelier · ${orderToSettle.orderNumber} (${orderToSettle.vehiclePlate})`,
+                isService: true,
+                quantity: 1,
+                unit: 'forfait',
+                unitPriceHt: labor,
+                tvaPercent: totalsRaw.tvaRate,
+              },
+            ]
+          : []),
+        ...(partsCost > 0
+          ? [
+              {
+                description: `Pièces de rechange & fluides · ${orderToSettle.orderNumber}`,
+                isService: false,
+                quantity: 1,
+                unit: 'lot',
+                unitPriceHt: partsCost,
+                tvaPercent: totalsRaw.tvaRate,
+                discountPercent: parsedDiscPct,
+              },
+            ]
+          : []),
+      ];
+
+      if (docItems.length > 0) {
+        const createdDoc = createUnifiedDocument({
+          docType: billingType === 'facture_dgi' ? 'facture' : 'bl',
+          sourceVertical: 'auto_garage',
+          partyId,
+          partyName: orderToSettle.clientName,
+          partyNif: matchedFleet?.nif,
+          partyNis: matchedFleet?.nis,
+          partyPhone: orderToSettle.clientPhone,
+          docDate: todayIso,
+          paymentMethod: mappedPaymentMethod,
+          timbreBasis: 'art_317',
+          isCashFiscalStampEnabled: applyTimbre,
+          sourceEntityType: 'garage_work_order',
+          sourceEntityId: orderToSettle.id,
+          items: docItems,
+          issueImmediately: true,
+        });
+        unifiedDocId = createdDoc.id;
+
+        recordUnifiedPayment({
+          sourceVertical: 'auto_garage',
+          partyId,
+          partyName: orderToSettle.clientName,
+          method: mappedPaymentMethod,
+          direction: 'inflow',
+          amountDzd: netToPayDzd,
+          paymentDate: todayIso,
+          allocations: [{ documentId: createdDoc.id, requestedDzd: netToPayDzd }],
+          idempotencyKey: `garage_pay_${orderToSettle.id}_${sequentialNumber}`,
+        });
+      }
+    } catch (err: any) {
+      if (err?.message === 'PERIOD_CLOSED_LOCKED') {
+        showToast({
+          type: 'error',
+          title: isAr ? 'فترة محاسبية مغلقة' : 'Période Comptable Clôturée',
+          message: isAr ? 'لا يمكن ترحيل التسوية في شهر مقفل.' : 'Impossible de facturer sur une période comptable clôturée.',
+        });
+        return;
+      }
+    }
+
     const newInvoice: GarageInvoice = {
       id: `inv_${Date.now()}`,
       accountId: activeAccountId,
       businessId: orderToSettle.businessId || currentBranch?.businessId || '',
       branchId: activeBranchId,
       staffId: orderToSettle.staffId || '',
-      invoiceNumber:
-        billingType === 'facture_dgi'
-          ? `FAC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
-          : `BC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      invoiceNumber: sequentialNumber,
       orderId: orderToSettle.id,
       orderNumber: orderToSettle.orderNumber,
       vehiclePlate: orderToSettle.vehiclePlate,
       vehicleModel: orderToSettle.vehicleModel,
-      clientId: orderToSettle.fleetId || '',
+      clientId: partyId || orderToSettle.fleetId || '',
       clientName: orderToSettle.clientName,
       clientPhone: orderToSettle.clientPhone,
       clientType: orderToSettle.clientType || 'individual',
@@ -344,25 +529,67 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       clientNis: matchedFleet?.nis || undefined,
       billingType,
       paymentMethod,
-      laborTotalHt: laborHt,
-      partsTotalHt: partsHt,
-      discountHt: disc,
-      subtotalHt,
-      tvaRate: billingType === 'facture_dgi' ? configuredTvaRate : 0,
-      tvaAmount: tva,
-      totalTtc: ttc,
-      timbreFiscal: timbre,
-      netToPayDzd: net,
+      laborTotalHt: totalsRaw.laborTotalHt,
+      partsTotalHt: totalsRaw.partsTotalHt,
+      discountHt: totalsRaw.discountHt,
+      subtotalHt: totalsRaw.subtotalHt,
+      tvaRate: totalsRaw.tvaRate,
+      tvaAmount: totalsRaw.tvaAmount,
+      totalTtc: totalsRaw.totalTtc,
+      timbreFiscal,
+      netToPayDzd,
       issuedAt: new Date().toISOString(),
       isPaid: true,
     };
+
+    try {
+      const scfDraft = buildGarageInvoiceScfDraft({
+        invoiceNumber: newInvoice.invoiceNumber,
+        orderNumber: orderToSettle.orderNumber,
+        clientName: orderToSettle.clientName,
+        partyId: partyId || undefined,
+        laborTotalHtDzd: newInvoice.laborTotalHt,
+        partsTotalHtDzd: newInvoice.partsTotalHt,
+        discountHtDzd: newInvoice.discountHt,
+        tvaAmountDzd: newInvoice.tvaAmount,
+        timbreFiscalDzd: newInvoice.timbreFiscal,
+        totalTtcDzd: newInvoice.totalTtc,
+        netToPayDzd: newInvoice.netToPayDzd,
+        paymentMethod,
+        isPaid: true,
+      });
+      const entry = postManualJournalEntry({
+        journalCode: scfDraft.journalCode,
+        entryDate: todayIso,
+        pieceRef: newInvoice.invoiceNumber,
+        libelle: scfDraft.memo,
+        lines: scfDraft.lines,
+        sourceVertical: 'auto_garage',
+        sourceEventType: scfDraft.eventType,
+        sourceDocId: unifiedDocId || newInvoice.id,
+        idempotencyKey: `garage_scf_${newInvoice.id}`,
+        silentSuccessToast: true,
+      });
+      if (entry && typeof entry === 'object' && 'id' in entry) {
+        postedJournalEntryId = (entry as { id: string }).id;
+      }
+    } catch {
+      // Non-blocking fallback when SCF period guard handled above
+    }
+
     const updatedOrder: RepairOrder = {
       ...orderToSettle,
       status: 'Delivered',
-      finalCostDzd: net,
+      laborCostDzd: totalsRaw.laborTotalHt,
+      partsCostDzd: totalsRaw.partsTotalHt,
+      finalCostDzd: netToPayDzd,
       isPaid: true,
+      isLockedInvoiced: true,
       billingType,
       invoiceId: newInvoice.id,
+      unifiedDocumentId: unifiedDocId || orderToSettle.unifiedDocumentId,
+      journalEntryId: postedJournalEntryId || orderToSettle.journalEntryId,
+      clientCrmPartyId: partyId || orderToSettle.clientCrmPartyId,
     };
     runUndoBatch(
       {
@@ -1298,10 +1525,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         onSelectItem={(item) => setInspectedOrder(item)}
         onClose={() => setInspectedOrder(null)}
         renderBody={(o, tab) => {
-          const settled = o.status === 'Delivered' || Boolean(o.isPaid);
-          const labor = o.laborCostDzd || 3750;
-          const partsCost = o.partsCostDzd || 15500;
+          const settled = o.status === 'Delivered' || Boolean(o.isPaid) || Boolean(o.isLockedInvoiced);
+          const { labor, partsCost } = resolveOrderAmounts(o);
           const existingInv = o.invoiceId ? invoices.find((i) => i.id === o.invoiceId) : null;
+          const priceDrift = detectQuoteToInvoicePriceDrift({
+            partsUsed: o.partsUsed || [],
+            quoteUnitPricesSnapshot: o.quoteUnitPricesSnapshot,
+            catalogParts: parts,
+          });
 
           if (tab === 'client') {
             return (
@@ -1327,22 +1558,40 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 <InspectorSection index={0} title={isAr ? 'إجراءات التحصيل' : 'Actions de Caisse'}>
                   <InspectorQuickActions
                     actions={[
-                      {
-                        id: 'settle',
-                        label: settled ? 'Rééditer DGI' : 'Encaisser DGI',
-                        icon: <CreditCard className="w-[18px] h-[18px]" />,
-                        primary: true,
-                        onClick: () => openSettlementModal(o),
-                      },
+                      ...(!settled
+                        ? [
+                            {
+                              id: 'settle',
+                              label: 'Encaisser DGI',
+                              icon: <CreditCard className="w-[18px] h-[18px]" />,
+                              primary: true,
+                              onClick: () => openSettlementModal(o),
+                            },
+                          ]
+                        : []),
                       ...(existingInv
                         ? [
                             {
                               id: 'print',
                               label: 'Imprimer',
                               icon: <Printer className="w-[18px] h-[18px]" />,
+                              primary: settled,
                               onClick: () => {
                                 setActivePrintInvoice(existingInv);
                                 setIsPrintModalOpen(true);
+                              },
+                            },
+                          ]
+                        : []),
+                      ...(settled
+                        ? [
+                            {
+                              id: 'reopen',
+                              label: isAr ? 'إشعار دائن' : 'Avoir & Réouvrir',
+                              icon: <RotateCcw className="w-[18px] h-[18px]" />,
+                              onClick: () => {
+                                setReopenTargetOrder(o);
+                                setReopenReason('');
                               },
                             },
                           ]
@@ -1364,7 +1613,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                       isLast
                     />
                   </InspectorCard>
-                  <div className="mt-3">
+                  <div className="mt-3 space-y-2">
                     {!settled ? (
                       <InspectorWideButton
                         tone="accent"
@@ -1381,11 +1630,15 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                           setIsPrintModalOpen(true);
                         }}
                       />
-                    ) : (
+                    ) : null}
+                    {settled && (
                       <InspectorWideButton
-                        label={isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
-                        icon={<CreditCard className="w-4 h-4" />}
-                        onClick={() => openSettlementModal(o)}
+                        label={isAr ? 'إعادة فتح الأمر عبر إشعار دائن' : 'Réouvrir OR via Avoir'}
+                        icon={<RotateCcw className="w-4 h-4" />}
+                        onClick={() => {
+                          setReopenTargetOrder(o);
+                          setReopenReason('');
+                        }}
                       />
                     )}
                   </div>
@@ -1400,10 +1653,26 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 <InspectorBigStat
                   value={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
                   tone={settled ? 'ok' : 'accent'}
-                  caption={settled ? 'Règlement soldé & livré' : 'Montant atelier TTC en attente d’encaissement'}
+                  caption={settled ? 'Règlement soldé & livré (verrouillé)' : 'Montant atelier TTC en attente d’encaissement'}
                 />
               </InspectorSection>
-              <InspectorSection index={1} title={isAr ? 'تفصيل الفاتورة' : 'Décompte Atelier HT'}>
+              {priceDrift.hasDrift && (
+                <InspectorSection index={1}>
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/35 border border-amber-300/60 dark:border-amber-700/50 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">
+                        {isAr ? 'فارق أسعار عن عرض السعر المعتمد' : 'Écart de tarif détecté vs devis approuvé'}
+                      </p>
+                      <p className="opacity-85 tabular-nums">
+                        {priceDrift.items.length} pièce(s) · Delta: {priceDrift.totalDeltaDzd > 0 ? '+' : ''}
+                        {formatMoney(priceDrift.totalDeltaDzd, language)}
+                      </p>
+                    </div>
+                  </div>
+                </InspectorSection>
+              )}
+              <InspectorSection index={2} title={isAr ? 'تفصيل الفاتورة' : 'Décompte Atelier HT'}>
                 <InspectorCard>
                   <InspectorKeyValue label="Main d'œuvre HT" value={formatMoney(labor, language)} />
                   <InspectorKeyValue label="Pièces utilisées HT" value={formatMoney(partsCost, language)} />
@@ -1415,30 +1684,36 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   />
                 </InspectorCard>
               </InspectorSection>
-              <InspectorSection index={2}>
-                {!settled ? (
-                  <InspectorWideButton
-                    tone="accent"
-                    label={isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
-                    icon={<CreditCard className="w-4 h-4" />}
-                    onClick={() => openSettlementModal(o)}
-                  />
-                ) : existingInv ? (
-                  <InspectorWideButton
-                    label={isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
-                    icon={<Printer className="w-4 h-4" />}
-                    onClick={() => {
-                      setActivePrintInvoice(existingInv);
-                      setIsPrintModalOpen(true);
-                    }}
-                  />
-                ) : (
-                  <InspectorWideButton
-                    label={isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
-                    icon={<CreditCard className="w-4 h-4" />}
-                    onClick={() => openSettlementModal(o)}
-                  />
-                )}
+              <InspectorSection index={3}>
+                <div className="space-y-2">
+                  {!settled ? (
+                    <InspectorWideButton
+                      tone="accent"
+                      label={isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
+                      icon={<CreditCard className="w-4 h-4" />}
+                      onClick={() => openSettlementModal(o)}
+                    />
+                  ) : existingInv ? (
+                    <InspectorWideButton
+                      label={isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
+                      icon={<Printer className="w-4 h-4" />}
+                      onClick={() => {
+                        setActivePrintInvoice(existingInv);
+                        setIsPrintModalOpen(true);
+                      }}
+                    />
+                  ) : null}
+                  {settled && (
+                    <InspectorWideButton
+                      label={isAr ? 'إعادة فتح الأمر عبر إشعار دائن' : 'Réouvrir OR via Avoir'}
+                      icon={<RotateCcw className="w-4 h-4" />}
+                      onClick={() => {
+                        setReopenTargetOrder(o);
+                        setReopenReason('');
+                      }}
+                    />
+                  )}
+                </div>
               </InspectorSection>
             </>
           );
@@ -1546,60 +1821,93 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   ))}
                 </div>
               </div>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-2 t-cap tabular-nums"
-              >
-                <div className="flex justify-between text-black/55 dark:text-white/55">
-                  <span>Main d'œuvre :</span>
-                  <span>{formatMoney(retainedOrderToSettle.laborCostDzd || defaultLaborFallback, language)}</span>
-                </div>
-                <div className="flex justify-between text-black/55 dark:text-white/55">
-                  <span>Pièces utilisées :</span>
-                  <span>{formatMoney(retainedOrderToSettle.partsCostDzd || 15500, language)}</span>
-                </div>
-                {billingType === 'facture_dgi' && configuredTvaRate > 0 && (
-                  <div className="flex justify-between text-black/55 dark:text-white/55">
-                    <span>TVA Réglementaire ({configuredTvaRate}%) :</span>
-                    <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-                      {formatMoney((retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) * (configuredTvaRate / 100), language)}
-                    </span>
-                  </div>
-                )}
-                {applyTimbre && paymentMethod === 'especes' && (
-                  <div className="flex justify-between text-amber-700 dark:text-amber-400">
-                    <span>Droit de Timbre Fiscal (Espèces) :</span>
-                    <span className="font-semibold">
-                      {formatMoney(
-                        computeAlgerianTimbreFiscal(
-                          (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
-                            (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
-                          'especes'
-                        ),
-                        language
-                      )}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] t-label font-semibold text-black dark:text-white">
-                  <span>Net à Payer Client :</span>
-                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                    {formatMoney(
-                      (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
-                        (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1) +
-                        (applyTimbre && paymentMethod === 'especes'
-                          ? computeAlgerianTimbreFiscal(
-                              (retainedOrderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
-                                (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
-                              'especes'
-                            )
-                          : 0),
-                      language
+              {(() => {
+                const { labor, partsCost } = resolveOrderAmounts(retainedOrderToSettle);
+                const parsedDiscPct = Math.max(0, Math.min(100, parseFloat(partsDiscountPercent) || 0));
+                const totals = computeGarageInvoiceTotalsCentimes({
+                  laborTotalDzd: labor,
+                  partsTotalDzd: partsCost,
+                  partsDiscountPercent: parsedDiscPct,
+                  billingType,
+                  paymentMethod,
+                  tvaRatePercent: configuredTvaRate,
+                });
+                const modalTimbre = applyTimbre ? totals.timbreFiscal : 0;
+                const modalNet = applyTimbre ? totals.netToPayDzd : totals.totalTtc;
+                const modalDrift = detectQuoteToInvoicePriceDrift({
+                  partsUsed: retainedOrderToSettle.partsUsed || [],
+                  quoteUnitPricesSnapshot: retainedOrderToSettle.quoteUnitPricesSnapshot,
+                  catalogParts: parts,
+                });
+                return (
+                  <>
+                    {modalDrift.hasDrift && (
+                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/35 border border-amber-300/60 dark:border-amber-700/50 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold">
+                            {isAr ? 'فارق أسعار عن عرض السعر المعتمد' : 'Écart de tarif détecté vs devis approuvé'}
+                          </p>
+                          <p className="opacity-85 tabular-nums">
+                            {modalDrift.items.map((d) => `${d.sku}: ${d.quotedUnitPriceDzd} → ${d.currentUnitPriceDzd} DA`).join(' · ')}
+                          </p>
+                        </div>
+                      </div>
                     )}
-                  </span>
-                </div>
-              </div>
+                    <LabelInput
+                      field="partsDiscountPercent"
+                      label={isAr ? 'نسبة التخفيض على القطع (%)' : 'Remise Pièces (%)'}
+                      type="number"
+                      placeholder="0"
+                      value={partsDiscountPercent}
+                      onChange={setPartsDiscountPercent}
+                      width="100%"
+                      height={40}
+                      corner={12}
+                    />
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-2 t-cap tabular-nums"
+                    >
+                      <div className="flex justify-between text-black/55 dark:text-white/55">
+                        <span>Main d'œuvre HT :</span>
+                        <span>{formatMoney(totals.laborTotalHt, language)}</span>
+                      </div>
+                      <div className="flex justify-between text-black/55 dark:text-white/55">
+                        <span>Pièces utilisées HT :</span>
+                        <span>{formatMoney(totals.partsTotalHt, language)}</span>
+                      </div>
+                      {totals.discountHt > 0 && (
+                        <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                          <span>Remise Pièces ({parsedDiscPct}%) :</span>
+                          <span>-{formatMoney(totals.discountHt, language)}</span>
+                        </div>
+                      )}
+                      {billingType === 'facture_dgi' && configuredTvaRate > 0 && (
+                        <div className="flex justify-between text-black/55 dark:text-white/55">
+                          <span>TVA Réglementaire ({configuredTvaRate}%) :</span>
+                          <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
+                            {formatMoney(totals.tvaAmount, language)}
+                          </span>
+                        </div>
+                      )}
+                      {applyTimbre && paymentMethod === 'especes' && (
+                        <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                          <span>Droit de Timbre Fiscal (Espèces) :</span>
+                          <span className="font-semibold">{formatMoney(modalTimbre, language)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] t-label font-semibold text-black dark:text-white">
+                        <span>Net à Payer Client :</span>
+                        <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {formatMoney(modalNet, language)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
                   Annuler
@@ -1625,16 +1933,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           <div className="printable-document bg-white rounded-[var(--r-panel,28px)] w-full p-8 shadow-2xl border border-black/[0.14] text-black space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between border-b pb-4 border-black/[0.14]">
               <div>
-                <h2 className="t-dialog font-semibold text-black">ATRIUM AUTO GARAGE & FLEET DZ</h2>
-                <p className="t-cap text-black/55 mt-0.5">Réparation Mécanique, Électricité & Maintenance Flottes B2B</p>
+                <h2 className="t-dialog font-semibold text-black">{liveBusinessName}</h2>
+                <p className="t-cap text-black/55 mt-0.5">
+                  {currentBranch?.name || (isAr ? 'ورشة الصيانة والميكانيك' : 'Atelier Mécanique, Carrosserie & Flottes B2B')}
+                </p>
                 <div className="t-cap text-black/55 tabular-nums mt-1 space-x-2">
-                  <span>RC: 16/00-0987654B20</span>
+                  <span>RC: {liveFiscalRc}</span>
                   <span>·</span>
-                  <span>NIF: 002016012345678</span>
+                  <span>NIF: {liveFiscalNif}</span>
                   <span>·</span>
-                  <span>NIS: 00201601234</span>
+                  <span>NIS: {liveFiscalNis}</span>
                   <span>·</span>
-                  <span>AI: 16012345678</span>
+                  <span>AI: {liveFiscalAi}</span>
                 </div>
               </div>
               <div className="text-right">
@@ -1827,6 +2137,101 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             </Button>
           </div>
         </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(reopenTargetOrder)}
+        onClose={() => setReopenTargetOrder(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+        ariaLabel={isAr ? 'إعادة فتح أمر الإصلاح بإشعار دائن' : 'Réouvrir OR via Avoir'}
+      >
+        {reopenTargetOrder && (
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                <RotateCcw size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span>{isAr ? `إشعار دائن وإعادة فتح ${reopenTargetOrder.orderNumber}` : `Réouvrir ${reopenTargetOrder.orderNumber} via Avoir`}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setReopenTargetOrder(null)}
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="t-cap text-black/65 dark:text-white/70">
+              {isAr
+                ? 'سيؤدي هذا الإجراء إلى إصدار إشعار دائن إلزامي وإلغاء قفل الفوترة مع تسجيل السبب.'
+                : 'La réouverture d’un OR déjà facturé génère obligatoirement un Avoir (note de crédit) tracé avec motif.'}
+            </p>
+            <LabelInput
+              field="reopenReason"
+              label={isAr ? 'سبب إعادة الفتح (3 أحرف على الأقل) *' : 'Motif de réouverture (obligatoire, min. 3 car.) *'}
+              placeholder="Ex: Complément diagnostic embrayage / erreur quantité"
+              value={reopenReason}
+              onChange={setReopenReason}
+              width="100%"
+              height={40}
+              corner={12}
+              required
+            />
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+              <Button type="button" tone="soft" size={40} onClick={() => setReopenTargetOrder(null)}>
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </Button>
+              <Button
+                type="button"
+                tone="accent"
+                size={40}
+                onClick={() => {
+                  const cleanReason = reopenReason.trim();
+                  if (cleanReason.length < 3) {
+                    showToast({
+                      type: 'error',
+                      title: isAr ? 'السبب مطلوب' : 'Motif requis',
+                      message: isAr ? 'أدخل سبباً لا يقل عن 3 أحرف' : 'Saisissez un motif de réouverture d’au moins 3 caractères.',
+                    });
+                    return;
+                  }
+                  const creditDoc = reopenTargetOrder.unifiedDocumentId
+                    ? createCreditNoteForDocument(reopenTargetOrder.unifiedDocumentId, cleanReason, undefined, true)
+                    : null;
+                  const creditNoteId = creditDoc?.id || `cn_gar_${Date.now()}`;
+                  const creditNoteNumber =
+                    creditDoc?.docNumber ||
+                    creditDoc?.draftNumber ||
+                    formatGarageSequentialCode('AV', invoices.map((i) => i.invoiceNumber));
+                  try {
+                    const updated = reopenInvoicedWorkOrder({
+                      orderId: reopenTargetOrder.id,
+                      creditNoteId,
+                      creditNoteNumber,
+                      reason: cleanReason,
+                    });
+                    if (inspectedOrder?.id === updated.id) setInspectedOrder(updated);
+                    setReopenTargetOrder(null);
+                  } catch (err: any) {
+                    showToast({
+                      type: 'error',
+                      title: isAr ? 'تعذر إعادة الفتح' : 'Réouverture impossible',
+                      message: err?.message || 'Erreur Avoir',
+                    });
+                  }
+                }}
+              >
+                {isAr ? 'إصدار الإشعار وإعادة الفتح' : 'Émettre Avoir & Réouvrir OR'}
+              </Button>
+            </div>
+          </div>
+        )}
       </KineticModalShell>
 
       <PrintSheetModal

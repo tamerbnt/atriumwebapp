@@ -210,6 +210,15 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
   { key: 'atrium_gym_class_enrollments_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 class enrollment cache synced to gym_class_enrollments' },
   { key: 'atrium_mfg_ncr_records_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 non-conformance scrap log synced to mfg_ncr_records' },
   { key: 'atrium_garage_closures_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 5 garage register Z-closure records' },
+  { key: 'atrium_garage_suppliers_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage suppliers cache synced to garage_suppliers' },
+  { key: 'atrium_garage_pos_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage purchase orders cache synced to garage_purchase_orders' },
+  { key: 'atrium_garage_flat_rates_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage flat-rate labor catalog cache' },
+  { key: 'atrium_garage_time_logs_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage technician time logs cache' },
+  { key: 'atrium_garage_tech_commissions_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage technician commissions cache' },
+  { key: 'atrium_garage_claims_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage body-shop insurance claims cache' },
+  { key: 'atrium_garage_inspections_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage inspection center PV cache' },
+  { key: 'atrium_garage_detailing_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage detailing packages cache' },
+  { key: 'atrium_garage_tire_storage_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage tire hotel storage cache' },
 ];
 
 export const REGISTERED_LOCAL_STORAGE_KEYS = new Set(LOCAL_STORAGE_REGISTRY.map((e) => e.key));
