@@ -4,10 +4,11 @@ import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
 import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
 import { Building, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { RealEstateAgentCommissionsPanel } from './RealEstateAgentCommissionsPanel';
 
 export const RealEstateStaffView: React.FC = () => {
   const foundation = useStaffFoundation({ category: 'real_estate' });
-  const { isAr, isEn, language } = foundation;
+  const { isAr, isEn, language, facilityStaff, staffPayrollRuns } = foundation;
 
   const columns: ColumnDefinition<StaffMember>[] = [
     {
@@ -139,12 +140,19 @@ export const RealEstateStaffView: React.FC = () => {
   ];
 
   return (
-    <StandardStaffScreen
-      foundation={foundation}
-      category="real_estate"
-      columns={columns}
-      categoryTitle={isAr ? 'فريق الوكالة العقارية' : isEn ? 'Real Estate Agents & Staff' : 'Agents & Négociateurs Immo'}
-      newStaffButtonLabel={isAr ? 'إضافة وكيل عقاري' : isEn ? 'Add Agent' : 'Nouvel Agent Immobilier'}
-    />
+    <div className="space-y-6">
+      <StandardStaffScreen
+        foundation={foundation}
+        category="real_estate"
+        columns={columns}
+        categoryTitle={isAr ? 'فريق الوكالة العقارية' : isEn ? 'Real Estate Agents & Staff' : 'Agents & Négociateurs Immo'}
+        newStaffButtonLabel={isAr ? 'إضافة وكيل عقاري' : isEn ? 'Add Agent' : 'Nouvel Agent Immobilier'}
+      />
+      <RealEstateAgentCommissionsPanel
+        staffList={facilityStaff}
+        payrollRuns={staffPayrollRuns}
+        language={language}
+      />
+    </div>
   );
 };

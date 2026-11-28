@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Receipt, CheckCircle, Printer, AlertCircle, Stamp } from 'lucide-react';
+import { X, Receipt, Printer, Stamp } from 'lucide-react';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateLease, RentalQuittanceRecord } from '../../../types';
-import { computeRentalTimbreFiscal } from '../../../utils/realEstateRules';
+import { allocatePartialRentPayment, formatRealEstateSequentialCode } from '../../../utils/realEstateDepth';
 import {
   useAtriumSelector,
   shallowEqualObjects,
@@ -22,6 +22,7 @@ interface QuittanceModalProps {
   onSave: (quittance: RentalQuittanceRecord) => void;
   leases: RealEstateLease[];
   selectedLease?: RealEstateLease | null;
+  existingQuittances?: RentalQuittanceRecord[];
 }
 
 export const QuittanceModal: React.FC<QuittanceModalProps> = ({
@@ -30,6 +31,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
   onSave,
   leases,
   selectedLease,
+  existingQuittances = [],
 }) => {
   const activeLeases = leases.filter((l) => l.status === 'Active');
   const [leaseId, setLeaseId] = useState(selectedLease?.id || activeLeases[0]?.id || '');
@@ -41,32 +43,9 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   const [rentAmountDzd, setRentAmountDzd] = useState<number>(activeLease?.monthlyRentDzd || 100000);
   const [chargesDzd, setChargesDzd] = useState<number>(5000);
+  const [paidOverrideDzd, setPaidOverrideDzd] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Cheque' | 'Virement' | 'BaridiMob'>('Cash');
-  const [cashierStaffName, setCashierStaffName] = useState('Yasmine Cherif');
   const [notes, setNotes] = useState('');
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const nextLeaseId = selectedLease?.id || activeLeases[0]?.id || '';
-    const nextLease = leases.find((l) => l.id === nextLeaseId) || selectedLease || activeLeases[0];
-    const now = new Date();
-    setLeaseId(nextLeaseId);
-    setPeriodMonth(now.getMonth() + 1);
-    setPeriodYear(now.getFullYear());
-    setRentAmountDzd(nextLease?.monthlyRentDzd || 100000);
-    setChargesDzd(5000);
-    setPaymentMethod('Cash');
-    setCashierStaffName('Yasmine Cherif');
-    setNotes('');
-  }, [isOpen, selectedLease]);
-
-  const handleLeaseChange = (newLeaseId: string) => {
-    setLeaseId(newLeaseId);
-    const chosen = leases.find((l) => l.id === newLeaseId);
-    if (chosen) {
-      setRentAmountDzd(chosen.monthlyRentDzd);
-    }
-  };
 
   const {
     account,
@@ -86,20 +65,55 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
     }),
     shallowEqualObjects
   );
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+  const cashierStaffName = currentUser?.fullName || 'Agent Gestion';
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const nextLeaseId = selectedLease?.id || activeLeases[0]?.id || '';
+    const nextLease = leases.find((l) => l.id === nextLeaseId) || selectedLease || activeLeases[0];
+    const now = new Date();
+    setLeaseId(nextLeaseId);
+    setPeriodMonth(now.getMonth() + 1);
+    setPeriodYear(now.getFullYear());
+    setRentAmountDzd(nextLease?.monthlyRentDzd || 100000);
+    setChargesDzd(5000);
+    setPaidOverrideDzd('');
+    setPaymentMethod('Cash');
+    setNotes('');
+  }, [isOpen, selectedLease]);
+
+  const handleLeaseChange = (newLeaseId: string) => {
+    setLeaseId(newLeaseId);
+    const chosen = leases.find((l) => l.id === newLeaseId);
+    if (chosen) {
+      setRentAmountDzd(chosen.monthlyRentDzd);
+      setPaidOverrideDzd('');
+    }
+  };
+
   const configuredMgmtFee = businessConfig.categorySettings?.defaultAgencyManagementFeePercent ?? 7.0;
   const configuredTvaRate = businessConfig.defaultTvaRate ?? 19;
   const applyTimbre = businessConfig.applyTimbreFiscal !== false;
 
-  // Timbre fiscal on total collected if cash and enabled
-  const subTotal = Number(rentAmountDzd) + Number(chargesDzd);
-  const timbreFiscalDzd = applyTimbre ? computeRentalTimbreFiscal(subTotal, paymentMethod) : 0;
-  const totalCollectedDzd = subTotal + timbreFiscalDzd;
+  const amountDueDzd = Math.max(0, Number(rentAmountDzd) + Number(chargesDzd));
+  const requestedPaymentDzd = paidOverrideDzd.trim() !== '' ? Math.max(0, Number(paidOverrideDzd) || 0) : amountDueDzd;
 
-  // Agency management fee (configured rate + configured TVA)
+  const partialCalc = allocatePartialRentPayment({
+    amountDueDzd,
+    previouslyPaidDzd: 0,
+    previousSeq: 0,
+    paymentAmountDzd: requestedPaymentDzd,
+    paymentMethod,
+    applyTimbre,
+  });
+
   const managementRate = activeLease?.agencyManagementRatePercent || configuredMgmtFee;
-  const agencyCommissionFeeDzd = Math.round(rentAmountDzd * (managementRate / 100));
+  const appliedBaseForFees = partialCalc.ok ? partialCalc.appliedPaymentDzd : amountDueDzd;
+  const agencyCommissionFeeDzd = Math.round(appliedBaseForFees * (managementRate / 100));
   const agencyCommissionTvaDzd = Math.round(agencyCommissionFeeDzd * (configuredTvaRate / 100));
-  const netDisbursedToOwnerDzd = rentAmountDzd - (agencyCommissionFeeDzd + agencyCommissionTvaDzd);
+  const netDisbursedToOwnerDzd = Math.max(0, appliedBaseForFees - (agencyCommissionFeeDzd + agencyCommissionTvaDzd));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,8 +128,21 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
       return;
     }
 
-    const quittanceSeq = Math.floor(100000 + Math.random() * 900000);
-    const quittanceNumber = `QTC-${periodYear}-${quittanceSeq}`;
+    if (!partialCalc.ok) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'مبلغ غير صالح' : isEn ? 'Invalid Payment Amount' : 'Montant Encaissé Invalide',
+        message: isAr ? 'أدخل مبلغاً موجباً أقل أو يساوي المستحق.' : isEn ? 'Enter a positive payment amount.' : 'Veuillez saisir un montant encaissé positif.',
+      });
+      return;
+    }
+
+    const quittanceNumber = formatRealEstateSequentialCode(
+      'QTC',
+      existingQuittances.map((q) => q.quittanceNumber),
+      Number(periodYear) || new Date().getFullYear()
+    );
+    const nowIso = new Date().toISOString();
 
     const newQuittance: RentalQuittanceRecord = {
       id: `qtc_${Date.now()}`,
@@ -128,22 +155,28 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
       propertyId: activeLease?.propertyId,
       propertyTitle: activeLease?.propertyTitle || 'Appartement en Gestion',
       tenantName: activeLease?.tenantName || 'Locataire',
-      ownerName: activeLease?.ownerName || 'Propriétaire Bailleurs',
+      ownerName: activeLease?.ownerName || 'Propriétaire Bailleur',
       periodMonth: Number(periodMonth),
       periodYear: Number(periodYear),
       rentAmountDzd: Number(rentAmountDzd),
       chargesDzd: Number(chargesDzd),
+      amountDueDzd,
+      paidAmountDzd: partialCalc.totalPaidDzd,
+      remainingDueDzd: partialCalc.remainingDueDzd,
+      isPartial: partialCalc.isPartial,
+      paymentStatus: partialCalc.paymentStatus,
+      partialPaymentSeq: partialCalc.partialPaymentSeq,
       paymentMethod,
-      timbreFiscalDzd,
-      totalCollectedDzd,
+      timbreFiscalDzd: partialCalc.timbreFiscalDzd,
+      totalCollectedDzd: partialCalc.totalCollectedWithTimbreDzd,
       agencyCommissionFeeDzd,
       agencyCommissionTvaDzd,
       netDisbursedToOwnerDzd,
       isDisbursedToOwner: false,
-      paymentDate: new Date().toISOString().split('T')[0],
+      paymentDate: nowIso.split('T')[0],
       cashierStaffName,
       notes: notes.trim(),
-      createdAt: new Date().toISOString(),
+      createdAt: nowIso,
     };
 
     onSave(newQuittance);
@@ -152,7 +185,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
   ];
 
   return (
@@ -164,14 +197,13 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
       ariaLabel="Encaissement & Quittance de Loyer"
     >
       <div data-sq="panel" data-sq-border="solid" className="relative w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
-        {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-5">
           <div className="flex items-center gap-3">
             <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="t-dialog font-semibold">Encaissement & Quittance de Loyer</h2>
+              <h2 className="t-dialog font-semibold">{isAr ? 'تحصيل وإصدار وصل الإيجار' : isEn ? 'Rent Collection & Receipt' : 'Encaissement & Quittance de Loyer'}</h2>
             </div>
           </div>
           <button
@@ -187,7 +219,6 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Lease Selection */}
           <LabelSelect
             label="Bail Locatif Concerné"
             value={leaseId}
@@ -198,7 +229,6 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             }))}
           />
 
-          {/* Period Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <LabelSelect
               label="Mois de Facturation"
@@ -219,11 +249,10 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             />
           </div>
 
-          {/* Amounts */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <LabelInput
               type="number"
-              label="Loyer Mensuel Principal (DZD)"
+              label="Loyer Principal (DZD)"
               value={rentAmountDzd}
               onChange={(v) => setRentAmountDzd(Number(v))}
               required
@@ -231,9 +260,17 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
             <LabelInput
               type="number"
-              label="Charges Locatives (DZD)"
+              label="Charges (DZD)"
               value={chargesDzd}
               onChange={(v) => setChargesDzd(Number(v))}
+            />
+
+            <LabelInput
+              type="number"
+              label={isAr ? 'المدفوع حالياً (جزئي اختياري)' : isEn ? 'Paid Now (Optional Partial)' : 'Montant Payé (Partiel optionnel)'}
+              value={paidOverrideDzd}
+              onChange={setPaidOverrideDzd}
+              placeholder={String(amountDueDzd)}
             />
 
             <LabelSelect
@@ -241,15 +278,14 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               value={paymentMethod}
               onChange={(val) => setPaymentMethod(val as 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob')}
               options={[
-                { value: 'Cash', label: 'Espèces (Timbre Fiscal Applicable)' },
-                { value: 'BaridiMob', label: 'BaridiMob / Virement Postal (Exonéré)' },
-                { value: 'Cheque', label: 'Chèque Bancaire (Exonéré)' },
-                { value: 'Virement', label: 'Virement Bancaire (Exonéré)' },
+                { value: 'Cash', label: 'Espèces (Timbre Art. 317)' },
+                { value: 'BaridiMob', label: 'BaridiMob (Exonéré)' },
+                { value: 'Cheque', label: 'Chèque (Exonéré)' },
+                { value: 'Virement', label: 'Virement (Exonéré)' },
               ]}
             />
           </div>
 
-          {/* Fiscal Calculation Breakdown Pod */}
           <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3">
             <div className="flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75">
               <span>Décompte Légal de la Quittance</span>
@@ -261,28 +297,33 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
             <div className="space-y-2 t-cap">
               <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
-                <span>Loyer Principal HT + Charges</span>
-                <span className="tabular-nums font-semibold">{subTotal.toLocaleString()} DZD</span>
+                <span>Loyer Principal + Charges (Appelé)</span>
+                <span className="tabular-nums font-semibold">{amountDueDzd.toLocaleString()} DZD</span>
               </div>
 
+              {partialCalc.isPartial && (
+                <div className="flex justify-between py-1 border-b border-[var(--atr-divider)] text-amber-700 dark:text-amber-300 font-semibold">
+                  <span>Reste à payer (Paiement Partiel #1)</span>
+                  <span className="tabular-nums">{partialCalc.remainingDueDzd.toLocaleString()} DZD</span>
+                </div>
+              )}
+
               <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
-                <span className="flex items-center gap-1">
-                  <span>Droit de Timbre Fiscal ({paymentMethod === 'Cash' ? '1% progressif' : 'Exonéré'})</span>
-                </span>
+                <span>Droit de Timbre Fiscal ({paymentMethod === 'Cash' ? 'sur portion espèces' : 'Exonéré'})</span>
                 <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                  {timbreFiscalDzd > 0 ? `+ ${timbreFiscalDzd.toLocaleString()} DZD` : '0 DZD (Exonéré)'}
+                  {partialCalc.timbreFiscalDzd > 0 ? `+ ${partialCalc.timbreFiscalDzd.toLocaleString()} DZD` : '0 DZD (Exonéré)'}
                 </span>
               </div>
 
               <div className="flex justify-between py-2 t-label font-semibold text-black dark:text-white">
                 <span>Total Net Encaissé du Locataire</span>
                 <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                  {totalCollectedDzd.toLocaleString()} DZD
+                  {partialCalc.totalCollectedWithTimbreDzd.toLocaleString()} DZD
                 </span>
               </div>
             </div>
 
-            <div data-sq="ctl" data-sq-border="none" className="p-3 bg-white dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 flex items-center justify-between">
+            <div data-sq="ctl" data-sq-border="none" className="p-3 bg-white dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 flex items-center justify-between flex-wrap gap-2">
               <span>Commission Agence ({managementRate}% + TVA {configuredTvaRate}%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
               <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
             </div>
@@ -295,13 +336,12 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             placeholder="Ex: Paiement reçu en agence le 02 du mois, aucun arriéré restant..."
           />
 
-          {/* Action buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="secondary" onClick={onClose} type="button">
               Annuler
             </AtriumButton>
             <AtriumButton variant="primary" icon={<Printer size={14} />} type="submit">
-              Encaisser & Émettre Quittance
+              {partialCalc.isPartial ? 'Encaisser Paiement Partiel' : 'Encaisser & Émettre Quittance'}
             </AtriumButton>
           </div>
         </form>

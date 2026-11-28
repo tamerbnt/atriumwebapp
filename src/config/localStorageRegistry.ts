@@ -219,6 +219,16 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
   { key: 'atrium_garage_inspections_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage inspection center PV cache' },
   { key: 'atrium_garage_detailing_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage detailing packages cache' },
   { key: 'atrium_garage_tire_storage_v1', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 10 auto_garage tire hotel storage cache' },
+  { key: 'atrium_realestate_sales_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate sales pipeline deals cache synced to re_sales' },
+  { key: 'atrium_realestate_maintenance_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate maintenance tickets cache synced to re_maintenance_tickets' },
+  { key: 'atrium_realestate_owner_ledger_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate owner ledger cache synced to re_owner_ledger' },
+  { key: 'atrium_realestate_syndic_buildings_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate syndic buildings cache' },
+  { key: 'atrium_realestate_syndic_calls_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate syndic fund calls cache' },
+  { key: 'atrium_realestate_syndic_assemblies_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate syndic assemblies cache' },
+  { key: 'atrium_realestate_dev_programs_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate VEFA development programs cache' },
+  { key: 'atrium_realestate_dev_lots_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate VEFA lots cache' },
+  { key: 'atrium_realestate_student_beds_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate student housing beds cache' },
+  { key: 'atrium_realestate_vacation_stays_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate vacation stays cache' },
 ];
 
 export const REGISTERED_LOCAL_STORAGE_KEYS = new Set(LOCAL_STORAGE_REGISTRY.map((e) => e.key));

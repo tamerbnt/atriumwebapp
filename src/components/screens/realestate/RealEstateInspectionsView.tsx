@@ -26,6 +26,7 @@ import { RealEstateInspection, BonDeVisiteRecord } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { t } from '../../../utils/i18n';
 import { buildRealEstateInspectionShareText } from '../../../utils/step5Actions';
+import { formatVisitGpsLabel } from '../../../utils/realEstateDepth';
 import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { ShareArtifactModal } from '../../modals/ShareArtifactModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -254,7 +255,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
               { label: isAr ? 'الهاتف' : 'Téléphone', value: v.clientPhone },
               { label: 'CNI', value: v.clientNationalId || '—' },
               { label: isAr ? 'المفاوض' : 'Négociateur', value: v.negotiatorName },
-              { label: 'GPS', value: `${v.gpsLatitude?.toFixed(4) ?? '—'}°N, ${v.gpsLongitude?.toFixed(4) ?? '—'}°E` },
+              { label: 'GPS', value: formatVisitGpsLabel(v, language) },
               ...(v.counterOfferDzd ? [{ label: 'Contre-Offre', value: formatMoney(v.counterOfferDzd, language) }] : []),
             ],
           },
@@ -280,7 +281,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 
   const openVisitShare = useCallback(
     (v: BonDeVisiteRecord) => {
-      const gps = `${v.gpsLatitude?.toFixed(4) ?? '0'}°N, ${v.gpsLongitude?.toFixed(4) ?? '0'}°E`;
+      const gps = formatVisitGpsLabel(v, language);
       const text = [
         `${isAr ? 'وصل زيارة عقارية' : isEn ? 'Property Viewing Slip' : 'Bon de Visite Immobilier'} — ${v.propertyTitle}`,
         `${isAr ? 'الزائر' : 'Visiteur'}: ${v.clientFullName} (${v.clientPhone})`,
@@ -548,8 +549,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         renderCell: (v) => (
           <div className="t-cap">
             <div className="font-medium text-black dark:text-white truncate">{v.negotiatorName}</div>
-            <div className="t-cap tabular-nums text-emerald-600 dark:text-emerald-400">
-              {v.gpsLatitude?.toFixed(4)}° N, {v.gpsLongitude?.toFixed(4)}° E
+            <div className={`t-cap tabular-nums ${v.gpsStatus === 'captured' || (v.gpsLatitude != null && v.gpsStatus !== 'denied' && v.gpsStatus !== 'unavailable' && v.gpsStatus !== 'timeout') ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+              {formatVisitGpsLabel(v, language)}
             </div>
           </div>
         ),
@@ -875,9 +876,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 statusLabel: v.clientImpression || 'Interested',
                 statusVariant: v.clientImpression === 'OfferSubmitted' ? 'active' : 'info',
                 metricPrimary: v.counterOfferDzd ? formatMoney(v.counterOfferDzd, language) : v.visitTimestamp.slice(0, 10),
-                metricSecondary: `${v.gpsLatitude?.toFixed(3)}°N`,
+                metricSecondary: formatVisitGpsLabel(v, language),
                 detailCol1: { heading: isAr ? 'المفاوض' : 'Négociateur', primaryText: v.negotiatorName },
-                detailCol2: { heading: 'GPS', primaryText: `${v.gpsLatitude?.toFixed(4)}°N, ${v.gpsLongitude?.toFixed(4)}°E` },
+                detailCol2: { heading: 'GPS', primaryText: formatVisitGpsLabel(v, language) },
                 detailCol3: { heading: isAr ? 'التاريخ' : 'Date', primaryText: v.visitTimestamp.slice(0, 10) },
               };
             }}
@@ -1134,7 +1135,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
             {tab === 'gps' && (
               <InspectorSection index={1} title={isAr ? 'التوثيق الجغرافي' : 'Géolocalisation & Signature'}>
                 <InspectorCard>
-                  <InspectorKeyValue label="Coordonnées GPS" value={`${v.gpsLatitude}° N, ${v.gpsLongitude}° E`} tone="ok" />
+                  <InspectorKeyValue label="GPS" value={formatVisitGpsLabel(v, language)} tone={v.gpsLatitude != null ? 'ok' : 'warn'} />
                   <InspectorKeyValue label="Horodatage" value={new Date(v.visitTimestamp).toLocaleString()} isLast />
                 </InspectorCard>
                 {v.signatureSvgData && (

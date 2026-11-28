@@ -255,6 +255,23 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   garage_inspection_pvs: 40,
   garage_invoices: 42,
   garage_tech_commissions: 44,
+  re_staff: 16,
+  re_clients: 20,
+  re_leads: 21,
+  re_syndic_buildings: 21,
+  re_dev_programs: 21,
+  re_mandates: 23,
+  re_dev_lots: 25,
+  re_student_beds: 25,
+  re_visits: 32,
+  re_vacation_stays: 34,
+  re_sales: 36,
+  re_maintenance_tickets: 38,
+  re_rent_schedules: 40,
+  re_syndic_fund_calls: 40,
+  re_syndic_assemblies: 41,
+  re_owner_ledger: 42,
+  re_agent_commissions: 44,
   immutable_audit_logs: 50,
 };
 
@@ -613,6 +630,8 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'medical_settle_chifa_bordereau') return 420;
     if (item.fn === 'medical_issue_practitioner_payout') return 455;
     if (item.fn === 'medical_close_daily_cash') return 465;
+    if (item.fn === 're_record_partial_rent_payment') return 412;
+    if (item.fn === 're_apply_lease_indexation') return 365;
     if (item.fn === 'record_bi_report_snapshot') return 520;
     if (item.fn === 'log_sensitive_read_event') return 500;
   }

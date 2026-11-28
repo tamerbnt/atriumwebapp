@@ -17,10 +17,15 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
+import { evaluatePortalReadiness } from '../../../utils/realEstateDepth';
 import { RealEstateProperty } from '../../../types';
 import { useRealEstateData } from './realEstateData';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
+import { RealEstateBuyerMatchPanel } from './RealEstateBuyerMatchPanel';
+import { RealEstateSalesPipelinePanel } from './RealEstateSalesPipelinePanel';
+import { RealEstateMaintenancePanel } from './RealEstateMaintenancePanel';
+import { RealEstateTradeModesPanel } from './RealEstateTradeModesPanel';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -65,8 +70,41 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { properties, leases, addProperty, updateProperty, deleteProperty, addLease } = useRealEstateData();
+  const {
+    properties,
+    mandates,
+    leases,
+    buyers,
+    saleDeals,
+    ownerLedger,
+    maintenanceTickets,
+    syndicBuildings,
+    syndicFundCalls,
+    syndicAssemblies,
+    devPrograms,
+    devLots,
+    studentBeds,
+    vacationStays,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    addLease,
+    addBuyer,
+    addSaleDeal,
+    updateSaleDeal,
+    advanceSaleDealStage,
+    addMaintenanceTicket,
+    updateMaintenanceTicket,
+    addSyndicBuilding,
+    issueSyndicFundCall,
+    recordSyndicAssembly,
+    addDevProgram,
+    saveDevLot,
+    saveStudentBed,
+    saveVacationStay,
+  } = useRealEstateData();
 
+  const [workspaceMode, setWorkspaceMode] = useState<'portfolio' | 'matching' | 'pipeline' | 'maintenance' | 'trades'>('portfolio');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [typeFilter, setTypeFilter] = useState<string>('All');
@@ -388,11 +426,22 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (p) => {
           const isPinned = pinnedIds.has(p.id);
+          const thumb = p.featuredPhotoUrl || p.photoUrls?.[0];
+          const readiness = evaluatePortalReadiness(p);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
-                <Building2 size={18} />
-              </div>
+              {thumb ? (
+                <img
+                  src={thumb}
+                  alt={p.title}
+                  data-sq="tile"
+                  className="w-10 h-10 object-cover shrink-0 bg-[#FAF7F4] dark:bg-[#2B2825]"
+                />
+              ) : (
+                <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
+                  <Building2 size={18} />
+                </div>
+              )}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="t-small font-semibold text-black dark:text-white truncate">{p.title}</span>
@@ -404,6 +453,14 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
                   <span>{p.surfaceM2} m²</span>
                   <span>·</span>
                   <span>{p.roomsCount} {isAr ? 'غرف' : 'pièces'}</span>
+                  {readiness.activePortals.length > 0 && (
+                    <>
+                      <span>·</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+                        {readiness.score}% ({readiness.activePortals.length} {isAr ? 'بوابات' : isEn ? 'portals' : 'portails'})
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -519,11 +576,17 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
       />
 
       <ScreenKpiBanner
-        heading={isAr ? 'مؤشرات المحفظة العقارية ونسبة الإشغال' : "Indicateurs de Portefeuille & Taux d'Occupation"}
+        heading={
+          isAr
+            ? 'مؤشرات المحفظة العقارية ونسبة الإشغال'
+            : isEn
+            ? 'Portfolio Indicators & Occupancy Rate'
+            : "Indicateurs de Portefeuille & Taux d'Occupation"
+        }
         language={language}
         primaryCard={{
           label: isAr ? 'شاغرة متاحة' : isEn ? 'Available Lots' : 'Biens Disponibles',
-          badgeText: isAr ? 'جاهز للتأجير/البيع' : 'Disponibles',
+          badgeText: isAr ? 'جاهز للتأجير/البيع' : isEn ? 'Available' : 'Disponibles',
           count: availableCount,
           tone: 'emerald',
           isActive: statusFilter === 'Available',
@@ -531,24 +594,104 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         }}
         secondaryCard={{
           label: isAr ? 'وحدات مؤجرة' : isEn ? 'Rented Units' : 'Biens Loués',
-          badgeText: isAr ? 'عقد سارٍ' : 'Sous bail actif',
+          badgeText: isAr ? 'عقد سارٍ' : isEn ? 'Active lease' : 'Sous bail actif',
           count: rentedCount,
           tone: 'terracotta',
           isActive: statusFilter === 'Rented',
           onToggle: () => setStatusFilter((prev) => (prev === 'Rented' ? 'All' : 'Rented')),
         }}
         darkCard={{
-          label: isAr ? 'نسبة الإشغال والتوثيق' : 'Taux Occupation & Sécurité',
+          label: isAr ? 'نسبة الإشغال والتوثيق' : isEn ? 'Occupancy & Escrow Security' : 'Taux Occupation & Sécurité',
           badgeCount: properties.length,
           badgePrefix: '',
-          badgeSuffix: isAr ? 'عقار' : 'lots',
+          badgeSuffix: isAr ? 'عقار' : isEn ? 'units' : 'lots',
           valueCount: occupancyRate,
           valuePrefix: '',
           valueSuffix: '%',
-          caption: isAr ? 'عقود موثقة وضمانات محفوظة' : 'Baux notariés & cautions séquestrées',
+          caption: isAr
+            ? 'عقود موثقة وضمانات محفوظة'
+            : isEn
+            ? 'Notarized leases & escrowed deposits'
+            : 'Baux notariés & cautions séquestrées',
         }}
       />
 
+      <div className="flex flex-wrap items-center gap-2">
+        {([
+          { id: 'portfolio', label: isAr ? 'محفظة العقارات' : isEn ? 'Portfolio' : 'Portefeuille Biens' },
+          { id: 'matching', label: isAr ? 'مطابقة المشترين' : isEn ? 'Buyer Match' : 'Rapprochement & WhatsApp' },
+          { id: 'pipeline', label: isAr ? 'مسار المبيعات والتوثيق' : isEn ? 'Sales Pipeline' : `Pipeline Ventes (${saleDeals.length})` },
+          { id: 'maintenance', label: isAr ? 'الصيانة والأشغال' : isEn ? 'Maintenance' : `Maintenance (${maintenanceTickets.length})` },
+          { id: 'trades', label: isAr ? 'الأنماط المتخصصة' : isEn ? 'Trade Modes' : 'Syndic / VEFA / Résidences' },
+        ] as const).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setWorkspaceMode(tab.id)}
+            data-sq="ctl-sm"
+            data-sq-border="solid"
+            className={`px-3.5 py-2 t-small font-semibold cursor-pointer transition-colors ${
+              workspaceMode === tab.id
+                ? 'bg-[#BF431F] text-white [--sq-stroke:#BF431F]'
+                : 'bg-[#FAF7F4] dark:bg-[#22201E] text-black/75 dark:text-white/75 [--sq-stroke:var(--sq-stroke-card)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {workspaceMode === 'matching' && (
+        <RealEstateBuyerMatchPanel
+          properties={properties}
+          buyers={buyers}
+          onAddBuyer={addBuyer}
+        />
+      )}
+
+      {workspaceMode === 'pipeline' && (
+        <RealEstateSalesPipelinePanel
+          saleDeals={saleDeals}
+          properties={properties}
+          mandates={mandates}
+          onAddSaleDeal={addSaleDeal}
+          onUpdateSaleDeal={updateSaleDeal}
+          onAdvanceStage={advanceSaleDealStage}
+        />
+      )}
+
+      {workspaceMode === 'maintenance' && (
+        <RealEstateMaintenancePanel
+          tickets={maintenanceTickets}
+          properties={properties}
+          leases={leases}
+          ownerLedger={ownerLedger}
+          onAddTicket={addMaintenanceTicket}
+          onUpdateTicket={updateMaintenanceTicket}
+        />
+      )}
+
+      {workspaceMode === 'trades' && (
+        <RealEstateTradeModesPanel
+          properties={properties}
+          syndicBuildings={syndicBuildings}
+          syndicFundCalls={syndicFundCalls}
+          syndicAssemblies={syndicAssemblies}
+          devPrograms={devPrograms}
+          devLots={devLots}
+          studentBeds={studentBeds}
+          vacationStays={vacationStays}
+          onAddSyndicBuilding={addSyndicBuilding}
+          onIssueSyndicFundCall={issueSyndicFundCall}
+          onRecordSyndicAssembly={recordSyndicAssembly}
+          onAddDevProgram={addDevProgram}
+          onSaveDevLot={saveDevLot}
+          onSaveStudentBed={saveStudentBed}
+          onSaveVacationStay={saveVacationStay}
+        />
+      )}
+
+      {workspaceMode === 'portfolio' && (
       <ScreenPod>
         <ScreenCollectionToolbar
           title={isAr ? 'دليل العقارات' : isEn ? 'Property Portfolio' : 'Inventaire Immobilier'}
@@ -675,6 +818,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           hasActiveFilters={hasAnyFilters}
         />
       </ScreenPod>
+      )}
 
       <KineticFilterModal
         isOpen={isFilterModalOpen}
@@ -873,6 +1017,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           setLeaseProperty(null);
         }}
         properties={leaseProperty ? [leaseProperty] : []}
+        existingLeases={leases}
         onSave={(lease) => {
           if (!leaseProperty) return;
           const updated: RealEstateProperty = { ...leaseProperty, status: 'Rented' };

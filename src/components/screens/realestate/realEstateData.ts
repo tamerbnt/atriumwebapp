@@ -7,8 +7,28 @@ import {
   RentalQuittanceRecord,
   BonDeVisiteRecord,
   BuyerDemandProfile,
+  RealEstateSaleDeal,
+  RealEstateSaleStage,
+  RealEstateOwnerLedgerEntry,
+  RealEstateMaintenanceTicket,
+  SyndicBuilding,
+  SyndicFundCall,
+  SyndicAssembly,
+  DevProgram,
+  DevLot,
+  StudentHousingBed,
+  VacationRentalStay,
 } from '../../../types';
 import { computeRentalTimbreFiscal, calculateMandateCommission } from '../../../utils/realEstateRules';
+import {
+  allocatePartialRentPayment,
+  applyLeaseIndexation,
+  checkVacationStayOverlap,
+  createMaintenanceOwnerDebitEntry,
+  formatRealEstateSequentialCode,
+  renewLeaseContract,
+  transitionSaleDealStage,
+} from '../../../utils/realEstateDepth';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import {
@@ -721,6 +741,101 @@ export const INITIAL_BUYERS: BuyerDemandProfile[] = [
   },
 ];
 
+export const INITIAL_SALE_DEALS: RealEstateSaleDeal[] = [
+  {
+    id: 'deal_01',
+    accountId: 'acc_01',
+    businessId: 'biz_realestate',
+    branchId: 'branch_realestate_main',
+    staffId: 'staff_01',
+    dealNumber: 'DEAL-2026-00001',
+    propertyId: 'prop_03',
+    propertyTitle: 'Villa Coloniale R+1 avec Piscine Chemin Mackley El Biar',
+    mandateId: 'mnd_03',
+    buyerName: 'Nadia Bensaid',
+    buyerPhone: '0551 77 88 99',
+    sellerName: 'Dr. Rachid Benyoucef',
+    notaryName: 'Maître Karim Ziani (Notaire Alger)',
+    salePriceDzd: 85000000,
+    depositPaidDzd: 8500000,
+    commissionHtDzd: 1475000,
+    commissionTvaDzd: 280250,
+    commissionTtcDzd: 1755250,
+    primaryAgentStaffId: 'staff_02',
+    secondaryAgentStaffId: 'staff_01',
+    primarySplitBps: 7000,
+    secondarySplitBps: 3000,
+    stage: 'Notaire',
+    closingChecklist: {
+      livretFoncierVerified: true,
+      certificatNegatifValid: true,
+      quitusFiscalCleared: false,
+      mainleveeBankCleared: true,
+      notaryActSigned: false,
+    },
+    createdAt: '2026-03-10T09:00:00Z',
+    updatedAt: '2026-03-18T11:00:00Z',
+  },
+];
+
+export const INITIAL_MAINTENANCE_TICKETS: RealEstateMaintenanceTicket[] = [
+  {
+    id: 'mtk_01',
+    accountId: 'acc_01',
+    businessId: 'biz_realestate',
+    branchId: 'branch_realestate_main',
+    staffId: 'staff_01',
+    ticketNumber: 'MTK-2026-00001',
+    propertyId: 'prop_01',
+    propertyTitle: 'Appartement Haut Standing F4 Hydra Djenane El Malik',
+    leaseId: 'lease_01',
+    ownerName: 'Kamel Boumaza',
+    tenantName: 'Sami Benali',
+    category: 'Plumbing',
+    priority: 'High',
+    title: 'Remplacement colonne eau chaude & détartrage chaudière',
+    vendorName: 'Sarl ThermoHydra',
+    vendorPhone: '0550 88 77 11',
+    estimatedCostDzd: 28000,
+    actualCostDzd: 26500,
+    chargeTarget: 'Owner',
+    ownerLedgerEntryId: 'led_mtk_01',
+    status: 'Resolved',
+    reportedAt: '2026-03-12',
+    resolvedAt: '2026-03-14',
+    createdAt: '2026-03-12T10:00:00Z',
+    updatedAt: '2026-03-14T16:00:00Z',
+  },
+];
+
+export const INITIAL_OWNER_LEDGER: RealEstateOwnerLedgerEntry[] = [
+  {
+    id: 'led_mtk_01',
+    accountId: 'acc_01',
+    businessId: 'biz_realestate',
+    branchId: 'branch_realestate_main',
+    staffId: 'staff_01',
+    leaseId: 'lease_01',
+    propertyId: 'prop_01',
+    ownerName: 'Kamel Boumaza',
+    propertyTitle: 'Appartement Haut Standing F4 Hydra Djenane El Malik',
+    entryType: 'MaintenanceDebit',
+    amountDzd: 26500,
+    entryDate: '2026-03-14',
+    reference: 'MTK-2026-00001',
+    notes: 'Remplacement colonne eau chaude & détartrage chaudière (Sarl ThermoHydra)',
+    createdAt: '2026-03-14T16:00:00Z',
+  },
+];
+
+export const INITIAL_SYNDIC_BUILDINGS: SyndicBuilding[] = [];
+export const INITIAL_SYNDIC_FUND_CALLS: SyndicFundCall[] = [];
+export const INITIAL_SYNDIC_ASSEMBLIES: SyndicAssembly[] = [];
+export const INITIAL_DEV_PROGRAMS: DevProgram[] = [];
+export const INITIAL_DEV_LOTS: DevLot[] = [];
+export const INITIAL_STUDENT_BEDS: StudentHousingBed[] = [];
+export const INITIAL_VACATION_STAYS: VacationRentalStay[] = [];
+
 export const useRealEstateData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
@@ -808,6 +923,26 @@ export const useRealEstateData = () => {
     }
   });
 
+  const readLocalSlice = <T,>(key: string): T[] => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const [saleDeals, setSaleDeals] = useState<RealEstateSaleDeal[]>(() => readLocalSlice('atrium_realestate_sales_v2'));
+  const [ownerLedger, setOwnerLedger] = useState<RealEstateOwnerLedgerEntry[]>(() => readLocalSlice('atrium_realestate_owner_ledger_v2'));
+  const [maintenanceTickets, setMaintenanceTickets] = useState<RealEstateMaintenanceTicket[]>(() => readLocalSlice('atrium_realestate_maintenance_v2'));
+  const [syndicBuildings, setSyndicBuildings] = useState<SyndicBuilding[]>(() => readLocalSlice('atrium_realestate_syndic_buildings_v2'));
+  const [syndicFundCalls, setSyndicFundCalls] = useState<SyndicFundCall[]>(() => readLocalSlice('atrium_realestate_syndic_calls_v2'));
+  const [syndicAssemblies, setSyndicAssemblies] = useState<SyndicAssembly[]>(() => readLocalSlice('atrium_realestate_syndic_assemblies_v2'));
+  const [devPrograms, setDevPrograms] = useState<DevProgram[]>(() => readLocalSlice('atrium_realestate_dev_programs_v2'));
+  const [devLots, setDevLots] = useState<DevLot[]>(() => readLocalSlice('atrium_realestate_dev_lots_v2'));
+  const [studentBeds, setStudentBeds] = useState<StudentHousingBed[]>(() => readLocalSlice('atrium_realestate_student_beds_v2'));
+  const [vacationStays, setVacationStays] = useState<VacationRentalStay[]>(() => readLocalSlice('atrium_realestate_vacation_stays_v2'));
+
   useIdlePersist('atrium_realestate_props_v2', properties);
   useIdlePersist('atrium_realestate_mandates_v2', mandates);
   useIdlePersist('atrium_realestate_leases_v2', leases);
@@ -815,6 +950,16 @@ export const useRealEstateData = () => {
   useIdlePersist('atrium_realestate_visits_v2', visits);
   useIdlePersist('atrium_realestate_inspections_v2', inspections);
   useIdlePersist('atrium_realestate_buyers_v2', buyers);
+  useIdlePersist('atrium_realestate_sales_v2', saleDeals);
+  useIdlePersist('atrium_realestate_owner_ledger_v2', ownerLedger);
+  useIdlePersist('atrium_realestate_maintenance_v2', maintenanceTickets);
+  useIdlePersist('atrium_realestate_syndic_buildings_v2', syndicBuildings);
+  useIdlePersist('atrium_realestate_syndic_calls_v2', syndicFundCalls);
+  useIdlePersist('atrium_realestate_syndic_assemblies_v2', syndicAssemblies);
+  useIdlePersist('atrium_realestate_dev_programs_v2', devPrograms);
+  useIdlePersist('atrium_realestate_dev_lots_v2', devLots);
+  useIdlePersist('atrium_realestate_student_beds_v2', studentBeds);
+  useIdlePersist('atrium_realestate_vacation_stays_v2', vacationStays);
 
   // Hydrate real estate vertical state from Supabase when configured
   useEffect(() => {
@@ -831,6 +976,16 @@ export const useRealEstateData = () => {
         remoteVisits,
         remoteInspections,
         remoteBuyers,
+        remoteDeals,
+        remoteLedger,
+        remoteMaintenance,
+        remoteSyndicBldgs,
+        remoteSyndicCalls,
+        remoteSyndicAssem,
+        remoteDevProgs,
+        remoteDevLots,
+        remoteStudentBeds,
+        remoteVacationStays,
       ] = await runWithConcurrency(
         [
           () => realEstateService.fetchProperties(activeBranchId),
@@ -840,32 +995,38 @@ export const useRealEstateData = () => {
           () => realEstateService.fetchBonsDeVisite(activeBranchId),
           () => realEstateService.fetchInspections(activeBranchId),
           () => realEstateService.fetchBuyerDemands(activeBranchId),
+          () => realEstateService.fetchSaleDeals(activeBranchId),
+          () => realEstateService.fetchOwnerLedger(activeBranchId),
+          () => realEstateService.fetchMaintenanceTickets(activeBranchId),
+          () => realEstateService.fetchSyndicBuildings(activeBranchId),
+          () => realEstateService.fetchSyndicFundCalls(activeBranchId),
+          () => realEstateService.fetchSyndicAssemblies(activeBranchId),
+          () => realEstateService.fetchDevPrograms(activeBranchId),
+          () => realEstateService.fetchDevLots(activeBranchId),
+          () => realEstateService.fetchStudentBeds(activeBranchId),
+          () => realEstateService.fetchVacationStays(activeBranchId),
         ],
         4
       );
 
       if (cancelled) return;
-      if (Array.isArray(remoteProps) && remoteProps.length > 0) {
-        setProperties((prev) => mergeReById(prev, remoteProps as RealEstateProperty[]));
-      }
-      if (Array.isArray(remoteMandates) && remoteMandates.length > 0) {
-        setMandates((prev) => mergeReById(prev, remoteMandates as RealEstateMandate[]));
-      }
-      if (Array.isArray(remoteLeases) && remoteLeases.length > 0) {
-        setLeases((prev) => mergeReById(prev, remoteLeases as RealEstateLease[]));
-      }
-      if (Array.isArray(remoteQuittances) && remoteQuittances.length > 0) {
-        setQuittances((prev) => mergeReById(prev, remoteQuittances as RentalQuittanceRecord[]));
-      }
-      if (Array.isArray(remoteVisits) && remoteVisits.length > 0) {
-        setVisits((prev) => mergeReById(prev, remoteVisits as BonDeVisiteRecord[]));
-      }
-      if (Array.isArray(remoteInspections) && remoteInspections.length > 0) {
-        setInspections((prev) => mergeReById(prev, remoteInspections as RealEstateInspection[]));
-      }
-      if (Array.isArray(remoteBuyers) && remoteBuyers.length > 0) {
-        setBuyers((prev) => mergeReById(prev, remoteBuyers as BuyerDemandProfile[]));
-      }
+      if (Array.isArray(remoteProps) && remoteProps.length > 0) setProperties((prev) => mergeReById(prev, remoteProps as RealEstateProperty[]));
+      if (Array.isArray(remoteMandates) && remoteMandates.length > 0) setMandates((prev) => mergeReById(prev, remoteMandates as RealEstateMandate[]));
+      if (Array.isArray(remoteLeases) && remoteLeases.length > 0) setLeases((prev) => mergeReById(prev, remoteLeases as RealEstateLease[]));
+      if (Array.isArray(remoteQuittances) && remoteQuittances.length > 0) setQuittances((prev) => mergeReById(prev, remoteQuittances as RentalQuittanceRecord[]));
+      if (Array.isArray(remoteVisits) && remoteVisits.length > 0) setVisits((prev) => mergeReById(prev, remoteVisits as BonDeVisiteRecord[]));
+      if (Array.isArray(remoteInspections) && remoteInspections.length > 0) setInspections((prev) => mergeReById(prev, remoteInspections as RealEstateInspection[]));
+      if (Array.isArray(remoteBuyers) && remoteBuyers.length > 0) setBuyers((prev) => mergeReById(prev, remoteBuyers as BuyerDemandProfile[]));
+      if (Array.isArray(remoteDeals) && remoteDeals.length > 0) setSaleDeals((prev) => mergeReById(prev, remoteDeals as RealEstateSaleDeal[]));
+      if (Array.isArray(remoteLedger) && remoteLedger.length > 0) setOwnerLedger((prev) => mergeReById(prev, remoteLedger as RealEstateOwnerLedgerEntry[]));
+      if (Array.isArray(remoteMaintenance) && remoteMaintenance.length > 0) setMaintenanceTickets((prev) => mergeReById(prev, remoteMaintenance as RealEstateMaintenanceTicket[]));
+      if (Array.isArray(remoteSyndicBldgs) && remoteSyndicBldgs.length > 0) setSyndicBuildings((prev) => mergeReById(prev, remoteSyndicBldgs as SyndicBuilding[]));
+      if (Array.isArray(remoteSyndicCalls) && remoteSyndicCalls.length > 0) setSyndicFundCalls((prev) => mergeReById(prev, remoteSyndicCalls as SyndicFundCall[]));
+      if (Array.isArray(remoteSyndicAssem) && remoteSyndicAssem.length > 0) setSyndicAssemblies((prev) => mergeReById(prev, remoteSyndicAssem as SyndicAssembly[]));
+      if (Array.isArray(remoteDevProgs) && remoteDevProgs.length > 0) setDevPrograms((prev) => mergeReById(prev, remoteDevProgs as DevProgram[]));
+      if (Array.isArray(remoteDevLots) && remoteDevLots.length > 0) setDevLots((prev) => mergeReById(prev, remoteDevLots as DevLot[]));
+      if (Array.isArray(remoteStudentBeds) && remoteStudentBeds.length > 0) setStudentBeds((prev) => mergeReById(prev, remoteStudentBeds as StudentHousingBed[]));
+      if (Array.isArray(remoteVacationStays) && remoteVacationStays.length > 0) setVacationStays((prev) => mergeReById(prev, remoteVacationStays as VacationRentalStay[]));
     });
 
     return () => {
@@ -884,6 +1045,16 @@ export const useRealEstateData = () => {
       're_visits',
       're_inspections',
       're_leads',
+      're_sales',
+      're_owner_ledger',
+      're_maintenance_tickets',
+      're_syndic_buildings',
+      're_syndic_fund_calls',
+      're_syndic_assemblies',
+      're_dev_programs',
+      're_dev_lots',
+      're_student_beds',
+      're_vacation_stays',
     ];
 
     return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
@@ -901,66 +1072,51 @@ export const useRealEstateData = () => {
       prune('re_visits', setVisits);
       prune('re_inspections', setInspections);
       prune('re_leads', setBuyers);
+      prune('re_sales', setSaleDeals);
+      prune('re_owner_ledger', setOwnerLedger);
+      prune('re_maintenance_tickets', setMaintenanceTickets);
+      prune('re_syndic_buildings', setSyndicBuildings);
+      prune('re_syndic_fund_calls', setSyndicFundCalls);
+      prune('re_syndic_assemblies', setSyndicAssemblies);
+      prune('re_dev_programs', setDevPrograms);
+      prune('re_dev_lots', setDevLots);
+      prune('re_student_beds', setStudentBeds);
+      prune('re_vacation_stays', setVacationStays);
 
       const changedSet = new Set(changedTables);
       const tasks: Array<() => Promise<void>> = [];
 
-      if (changedSet.has('re_properties')) {
+      const queueRefresh = <T extends { id: string }>(
+        table: string,
+        fetcher: (branchId: string) => Promise<T[]>,
+        setter: React.Dispatch<React.SetStateAction<T[]>>
+      ) => {
+        if (!changedSet.has(table)) return;
         tasks.push(async () => {
-          const rows = await realEstateService.fetchProperties(activeBranchId);
+          const rows = await fetcher(activeBranchId);
           if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setProperties((prev) => mergeReById(prev, rows as RealEstateProperty[]));
+            setter((prev) => mergeReById(prev, rows));
           }
         });
-      }
-      if (changedSet.has('re_mandates')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchMandates(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setMandates((prev) => mergeReById(prev, rows as RealEstateMandate[]));
-          }
-        });
-      }
-      if (changedSet.has('re_leases')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchLeases(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setLeases((prev) => mergeReById(prev, rows as RealEstateLease[]));
-          }
-        });
-      }
-      if (changedSet.has('re_rent_schedules')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchQuittances(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setQuittances((prev) => mergeReById(prev, rows as RentalQuittanceRecord[]));
-          }
-        });
-      }
-      if (changedSet.has('re_visits')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchBonsDeVisite(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setVisits((prev) => mergeReById(prev, rows as BonDeVisiteRecord[]));
-          }
-        });
-      }
-      if (changedSet.has('re_inspections')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchInspections(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setInspections((prev) => mergeReById(prev, rows as RealEstateInspection[]));
-          }
-        });
-      }
-      if (changedSet.has('re_leads')) {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchBuyerDemands(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setBuyers((prev) => mergeReById(prev, rows as BuyerDemandProfile[]));
-          }
-        });
-      }
+      };
+
+      queueRefresh('re_properties', realEstateService.fetchProperties, setProperties);
+      queueRefresh('re_mandates', realEstateService.fetchMandates, setMandates);
+      queueRefresh('re_leases', realEstateService.fetchLeases, setLeases);
+      queueRefresh('re_rent_schedules', realEstateService.fetchQuittances, setQuittances);
+      queueRefresh('re_visits', realEstateService.fetchBonsDeVisite, setVisits);
+      queueRefresh('re_inspections', realEstateService.fetchInspections, setInspections);
+      queueRefresh('re_leads', realEstateService.fetchBuyerDemands, setBuyers);
+      queueRefresh('re_sales', realEstateService.fetchSaleDeals, setSaleDeals);
+      queueRefresh('re_owner_ledger', realEstateService.fetchOwnerLedger, setOwnerLedger);
+      queueRefresh('re_maintenance_tickets', realEstateService.fetchMaintenanceTickets, setMaintenanceTickets);
+      queueRefresh('re_syndic_buildings', realEstateService.fetchSyndicBuildings, setSyndicBuildings);
+      queueRefresh('re_syndic_fund_calls', realEstateService.fetchSyndicFundCalls, setSyndicFundCalls);
+      queueRefresh('re_syndic_assemblies', realEstateService.fetchSyndicAssemblies, setSyndicAssemblies);
+      queueRefresh('re_dev_programs', realEstateService.fetchDevPrograms, setDevPrograms);
+      queueRefresh('re_dev_lots', realEstateService.fetchDevLots, setDevLots);
+      queueRefresh('re_student_beds', realEstateService.fetchStudentBeds, setStudentBeds);
+      queueRefresh('re_vacation_stays', realEstateService.fetchVacationStays, setVacationStays);
 
       if (tasks.length > 0) {
         void syncCoordinator.runSingleFlight(
@@ -976,56 +1132,29 @@ export const useRealEstateData = () => {
     let cancelled = false;
     const unsub = subscribeConcurrencyResolutions((evt) => {
       const tasks: Array<() => Promise<void>> = [];
-      if (evt.table === 're_properties') {
+      const refreshOn = <T extends { id: string }>(
+        table: string,
+        fetcher: (branchId: string) => Promise<T[]>,
+        setter: React.Dispatch<React.SetStateAction<T[]>>
+      ) => {
+        if (evt.table !== table) return;
         tasks.push(async () => {
-          const rows = await realEstateService.fetchProperties(activeBranchId);
+          const rows = await fetcher(activeBranchId);
           if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setProperties((prev) => mergeReById(prev, rows as RealEstateProperty[]));
+            setter((prev) => mergeReById(prev, rows));
           }
         });
-      } else if (evt.table === 're_mandates') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchMandates(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setMandates((prev) => mergeReById(prev, rows as RealEstateMandate[]));
-          }
-        });
-      } else if (evt.table === 're_leases') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchLeases(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setLeases((prev) => mergeReById(prev, rows as RealEstateLease[]));
-          }
-        });
-      } else if (evt.table === 're_rent_schedules') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchQuittances(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setQuittances((prev) => mergeReById(prev, rows as RentalQuittanceRecord[]));
-          }
-        });
-      } else if (evt.table === 're_visits') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchBonsDeVisite(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setVisits((prev) => mergeReById(prev, rows as BonDeVisiteRecord[]));
-          }
-        });
-      } else if (evt.table === 're_inspections') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchInspections(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setInspections((prev) => mergeReById(prev, rows as RealEstateInspection[]));
-          }
-        });
-      } else if (evt.table === 're_leads') {
-        tasks.push(async () => {
-          const rows = await realEstateService.fetchBuyerDemands(activeBranchId);
-          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-            setBuyers((prev) => mergeReById(prev, rows as BuyerDemandProfile[]));
-          }
-        });
-      }
+      };
+      refreshOn('re_properties', realEstateService.fetchProperties, setProperties);
+      refreshOn('re_mandates', realEstateService.fetchMandates, setMandates);
+      refreshOn('re_leases', realEstateService.fetchLeases, setLeases);
+      refreshOn('re_rent_schedules', realEstateService.fetchQuittances, setQuittances);
+      refreshOn('re_visits', realEstateService.fetchBonsDeVisite, setVisits);
+      refreshOn('re_inspections', realEstateService.fetchInspections, setInspections);
+      refreshOn('re_leads', realEstateService.fetchBuyerDemands, setBuyers);
+      refreshOn('re_sales', realEstateService.fetchSaleDeals, setSaleDeals);
+      refreshOn('re_owner_ledger', realEstateService.fetchOwnerLedger, setOwnerLedger);
+      refreshOn('re_maintenance_tickets', realEstateService.fetchMaintenanceTickets, setMaintenanceTickets);
 
       if (tasks.length > 0) {
         void syncCoordinator.runSingleFlight(
@@ -1048,6 +1177,16 @@ export const useRealEstateData = () => {
     visits,
     inspections,
     buyers,
+    saleDeals,
+    ownerLedger,
+    maintenanceTickets,
+    syndicBuildings,
+    syndicFundCalls,
+    syndicAssemblies,
+    devPrograms,
+    devLots,
+    studentBeds,
+    vacationStays,
   });
   latestRef.current = {
     properties,
@@ -1057,6 +1196,16 @@ export const useRealEstateData = () => {
     visits,
     inspections,
     buyers,
+    saleDeals,
+    ownerLedger,
+    maintenanceTickets,
+    syndicBuildings,
+    syndicFundCalls,
+    syndicAssemblies,
+    devPrograms,
+    devLots,
+    studentBeds,
+    vacationStays,
   };
 
   const restoreAt = <T extends { id: string }>(
@@ -1538,6 +1687,231 @@ export const useRealEstateData = () => {
     });
   };
 
+  const renewLease = (leaseId: string, additionalMonths = 12): RealEstateLease | null => {
+    const existing = latestRef.current.leases.find((l) => l.id === leaseId);
+    if (!existing) return null;
+    const renewed = withBranch(renewLeaseContract(existing, additionalMonths));
+    updateLease(renewed);
+    return renewed;
+  };
+
+  const indexLeaseRent = (
+    leaseId: string,
+    ratePercent: number,
+    asOfDate = new Date().toISOString().slice(0, 10),
+    note?: string
+  ): { ok: boolean; errorCode?: string; updatedLease?: RealEstateLease } => {
+    const existing = latestRef.current.leases.find((l) => l.id === leaseId);
+    if (!existing) return { ok: false, errorCode: 'RE_LEASE_NOT_FOUND' };
+    const res = applyLeaseIndexation(existing, ratePercent, asOfDate, note);
+    if (!res.ok || !res.updatedLease) return res;
+    const scoped = withBranch(res.updatedLease);
+    updateLease(scoped);
+    void realEstateService.applyLeaseIndexationRpc({
+      leaseId: scoped.id,
+      ratePercent,
+      asOfDate,
+      note,
+    }).catch(() => {});
+    return { ok: true, updatedLease: scoped };
+  };
+
+  const recordPartialRentPayment = (params: {
+    quittanceId: string;
+    paymentAmountDzd: number;
+    paymentMethod: RentalQuittanceRecord['paymentMethod'];
+    quittanceNumber?: string;
+  }) => {
+    const existing = latestRef.current.quittances.find((q) => q.id === params.quittanceId);
+    if (!existing) return { ok: false, errorCode: 'RE_QUITTANCE_NOT_FOUND' };
+    const amountDue = existing.amountDueDzd ?? Number(existing.rentAmountDzd || 0) + Number(existing.chargesDzd || 0);
+    const prevPaid = existing.paidAmountDzd ?? existing.totalCollectedDzd ?? 0;
+    const calc = allocatePartialRentPayment({
+      amountDueDzd: amountDue,
+      previouslyPaidDzd: prevPaid,
+      previousSeq: existing.partialPaymentSeq || 0,
+      paymentAmountDzd: params.paymentAmountDzd,
+      paymentMethod: params.paymentMethod,
+    });
+    if (!calc.ok) return calc;
+
+    const updated: RentalQuittanceRecord = withBranch({
+      ...existing,
+      amountDueDzd: amountDue,
+      paidAmountDzd: calc.totalPaidDzd,
+      remainingDueDzd: calc.remainingDueDzd,
+      isPartial: calc.isPartial,
+      paymentStatus: calc.paymentStatus,
+      partialPaymentSeq: calc.partialPaymentSeq,
+      paymentMethod: params.paymentMethod,
+      timbreFiscalDzd: Number(existing.timbreFiscalDzd || 0) + calc.timbreFiscalDzd,
+      totalCollectedDzd: Number(existing.totalCollectedDzd || 0) + calc.totalCollectedWithTimbreDzd,
+      paymentDate: new Date().toISOString().slice(0, 10),
+    });
+    setQuittances((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
+    void realEstateService.recordPartialRentPaymentRpc({
+      scheduleId: updated.id,
+      paymentDzd: calc.appliedPaymentDzd,
+      paymentMethod: params.paymentMethod,
+      timbreFiscalDzd: calc.timbreFiscalDzd,
+      quittanceNumber: params.quittanceNumber || updated.quittanceNumber,
+    }).catch(() => {});
+    return { ...calc, updatedQuittance: updated };
+  };
+
+  const addSaleDeal = (deal: RealEstateSaleDeal) => {
+    const scoped = withBranch(deal);
+    setSaleDeals((prev) => [scoped, ...prev]);
+    void realEstateService.upsertSaleDeal(scoped).catch(() => {});
+  };
+
+  const updateSaleDeal = (deal: RealEstateSaleDeal) => {
+    const scoped = withBranch(deal);
+    setSaleDeals((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
+    void realEstateService.upsertSaleDeal(scoped).catch(() => {});
+  };
+
+  const advanceSaleDealStage = (dealId: string, nextStage: RealEstateSaleStage) => {
+    const existing = latestRef.current.saleDeals.find((d) => d.id === dealId);
+    if (!existing) return { ok: false, errorCode: 'RE_SALE_DEAL_NOT_FOUND' };
+    const res = transitionSaleDealStage(existing, nextStage);
+    if (!res.ok || !res.updatedDeal) return res;
+    const scoped = withBranch(res.updatedDeal);
+    setSaleDeals((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
+    void realEstateService.upsertSaleDeal(scoped).catch(() => {});
+    return { ok: true, updatedDeal: scoped };
+  };
+
+  const addOwnerLedgerEntry = (entry: RealEstateOwnerLedgerEntry) => {
+    const scoped = withBranch(entry);
+    setOwnerLedger((prev) => [scoped, ...prev]);
+    void realEstateService.upsertOwnerLedgerEntry(scoped).catch(() => {});
+  };
+
+  const recordOwnerPayout = (params: {
+    ownerName: string;
+    propertyTitle: string;
+    propertyId?: string;
+    leaseId?: string;
+    amountDzd: number;
+    reference?: string;
+    unifiedPaymentId?: string;
+    journalEntryId?: string;
+    notes?: string;
+  }) => {
+    const nowIso = new Date().toISOString();
+    const entry: RealEstateOwnerLedgerEntry = withBranch({
+      id: `led_${Date.now()}_${ownerLedger.length + 1}`,
+      accountId: currentAccountId || 'acc_01',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || 'staff_01',
+      leaseId: params.leaseId,
+      propertyId: params.propertyId,
+      ownerName: params.ownerName,
+      propertyTitle: params.propertyTitle,
+      entryType: 'Payout',
+      amountDzd: Math.max(0, Number(params.amountDzd) || 0),
+      entryDate: nowIso.slice(0, 10),
+      reference: params.reference || formatRealEstateSequentialCode('QTC', ownerLedger.map((e) => e.reference)),
+      unifiedPaymentId: params.unifiedPaymentId,
+      journalEntryId: params.journalEntryId,
+      notes: params.notes,
+      createdAt: nowIso,
+    });
+    addOwnerLedgerEntry(entry);
+    return entry;
+  };
+
+  const addMaintenanceTicket = (ticket: RealEstateMaintenanceTicket) => {
+    const scoped = withBranch(ticket);
+    let finalTicket = scoped;
+    const debitEntry = createMaintenanceOwnerDebitEntry(scoped);
+    if (debitEntry) {
+      const scopedLedger = withBranch(debitEntry);
+      finalTicket = { ...scoped, ownerLedgerEntryId: scopedLedger.id };
+      setOwnerLedger((prev) => [scopedLedger, ...prev]);
+      void realEstateService.upsertOwnerLedgerEntry(scopedLedger).catch(() => {});
+    }
+    setMaintenanceTickets((prev) => [finalTicket, ...prev]);
+    void realEstateService.upsertMaintenanceTicket(finalTicket).catch(() => {});
+  };
+
+  const updateMaintenanceTicket = (ticket: RealEstateMaintenanceTicket) => {
+    let scoped = withBranch(ticket);
+    if (scoped.chargeTarget === 'Owner' && !scoped.ownerLedgerEntryId && (scoped.actualCostDzd > 0 || scoped.estimatedCostDzd > 0)) {
+      const debitEntry = createMaintenanceOwnerDebitEntry(scoped);
+      if (debitEntry) {
+        const scopedLedger = withBranch(debitEntry);
+        scoped = { ...scoped, ownerLedgerEntryId: scopedLedger.id };
+        setOwnerLedger((prev) => [scopedLedger, ...prev.filter((l) => l.id !== scopedLedger.id)]);
+        void realEstateService.upsertOwnerLedgerEntry(scopedLedger).catch(() => {});
+      }
+    }
+    setMaintenanceTickets((prev) => prev.map((t) => (t.id === scoped.id ? scoped : t)));
+    void realEstateService.upsertMaintenanceTicket(scoped).catch(() => {});
+  };
+
+  const addSyndicBuilding = (b: SyndicBuilding) => {
+    const scoped = withBranch(b);
+    setSyndicBuildings((prev) => [scoped, ...prev.filter((x) => x.id !== scoped.id)]);
+    void realEstateService.upsertSyndicBuilding(scoped).catch(() => {});
+  };
+
+  const issueSyndicFundCall = (call: SyndicFundCall) => {
+    const scoped = withBranch(call);
+    setSyndicFundCalls((prev) => [scoped, ...prev.filter((x) => x.id !== scoped.id)]);
+    void realEstateService.upsertSyndicFundCall(scoped).catch(() => {});
+  };
+
+  const recordSyndicAssembly = (a: SyndicAssembly) => {
+    const scoped = withBranch(a);
+    setSyndicAssemblies((prev) => [scoped, ...prev.filter((x) => x.id !== scoped.id)]);
+    void realEstateService.upsertSyndicAssembly(scoped).catch(() => {});
+  };
+
+  const addDevProgram = (p: DevProgram) => {
+    const scoped = withBranch(p);
+    setDevPrograms((prev) => [scoped, ...prev.filter((x) => x.id !== scoped.id)]);
+    void realEstateService.upsertDevProgram(scoped).catch(() => {});
+  };
+
+  const saveDevLot = (lot: DevLot) => {
+    const scoped = withBranch(lot);
+    setDevLots((prev) => {
+      const exists = prev.some((x) => x.id === scoped.id);
+      return exists ? prev.map((x) => (x.id === scoped.id ? scoped : x)) : [scoped, ...prev];
+    });
+    void realEstateService.upsertDevLot(scoped).catch(() => {});
+  };
+
+  const saveStudentBed = (bed: StudentHousingBed) => {
+    const scoped = withBranch(bed);
+    setStudentBeds((prev) => {
+      const exists = prev.some((x) => x.id === scoped.id);
+      return exists ? prev.map((x) => (x.id === scoped.id ? scoped : x)) : [scoped, ...prev];
+    });
+    void realEstateService.upsertStudentBed(scoped).catch(() => {});
+  };
+
+  const saveVacationStay = (stay: VacationRentalStay): { ok: boolean; errorCode?: string; stay?: VacationRentalStay } => {
+    const overlap = checkVacationStayOverlap(latestRef.current.vacationStays, {
+      id: stay.id,
+      propertyId: stay.propertyId,
+      checkInDate: stay.checkInDate,
+      checkOutDate: stay.checkOutDate,
+      status: stay.status,
+    });
+    if (!overlap.ok) return overlap;
+    const scoped = withBranch({ ...stay, nightsCount: overlap.nightsCount });
+    setVacationStays((prev) => {
+      const exists = prev.some((x) => x.id === scoped.id);
+      return exists ? prev.map((x) => (x.id === scoped.id ? scoped : x)) : [scoped, ...prev];
+    });
+    void realEstateService.upsertVacationStay(scoped).catch(() => {});
+    return { ok: true, stay: scoped };
+  };
+
   // Reset active branch to empty state
   const resetToDemoSeeds = () => {
     const snap = cloneSnapshot(latestRef.current);
@@ -1548,6 +1922,16 @@ export const useRealEstateData = () => {
     setVisits((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setInspections((prev) => prev.filter((i) => !belongsToActiveBranch(i)));
     setBuyers((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setSaleDeals((prev) => prev.filter((d) => !belongsToActiveBranch(d)));
+    setOwnerLedger((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setMaintenanceTickets((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
+    setSyndicBuildings((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setSyndicFundCalls((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setSyndicAssemblies((prev) => prev.filter((a) => !belongsToActiveBranch(a)));
+    setDevPrograms((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setDevLots((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setStudentBeds((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setVacationStays((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
 
     registerUndoEntry({
       vertical: 'real_estate',
@@ -1568,6 +1952,16 @@ export const useRealEstateData = () => {
         setVisits(s.visits);
         setInspections(s.inspections);
         setBuyers(s.buyers);
+        setSaleDeals(s.saleDeals);
+        setOwnerLedger(s.ownerLedger);
+        setMaintenanceTickets(s.maintenanceTickets);
+        setSyndicBuildings(s.syndicBuildings);
+        setSyndicFundCalls(s.syndicFundCalls);
+        setSyndicAssemblies(s.syndicAssemblies);
+        setDevPrograms(s.devPrograms);
+        setDevLots(s.devLots);
+        setStudentBeds(s.studentBeds);
+        setVacationStays(s.vacationStays);
       },
     });
   };
@@ -1579,6 +1973,16 @@ export const useRealEstateData = () => {
   const scopedVisits = useMemo(() => visits.filter(belongsToActiveBranch), [visits, belongsToActiveBranch]);
   const scopedInspections = useMemo(() => inspections.filter(belongsToActiveBranch), [inspections, belongsToActiveBranch]);
   const scopedBuyers = useMemo(() => buyers.filter(belongsToActiveBranch), [buyers, belongsToActiveBranch]);
+  const scopedSaleDeals = useMemo(() => saleDeals.filter(belongsToActiveBranch), [saleDeals, belongsToActiveBranch]);
+  const scopedOwnerLedger = useMemo(() => ownerLedger.filter(belongsToActiveBranch), [ownerLedger, belongsToActiveBranch]);
+  const scopedMaintenanceTickets = useMemo(() => maintenanceTickets.filter(belongsToActiveBranch), [maintenanceTickets, belongsToActiveBranch]);
+  const scopedSyndicBuildings = useMemo(() => syndicBuildings.filter(belongsToActiveBranch), [syndicBuildings, belongsToActiveBranch]);
+  const scopedSyndicFundCalls = useMemo(() => syndicFundCalls.filter(belongsToActiveBranch), [syndicFundCalls, belongsToActiveBranch]);
+  const scopedSyndicAssemblies = useMemo(() => syndicAssemblies.filter(belongsToActiveBranch), [syndicAssemblies, belongsToActiveBranch]);
+  const scopedDevPrograms = useMemo(() => devPrograms.filter(belongsToActiveBranch), [devPrograms, belongsToActiveBranch]);
+  const scopedDevLots = useMemo(() => devLots.filter(belongsToActiveBranch), [devLots, belongsToActiveBranch]);
+  const scopedStudentBeds = useMemo(() => studentBeds.filter(belongsToActiveBranch), [studentBeds, belongsToActiveBranch]);
+  const scopedVacationStays = useMemo(() => vacationStays.filter(belongsToActiveBranch), [vacationStays, belongsToActiveBranch]);
 
   return {
     properties: scopedProperties,
@@ -1588,6 +1992,16 @@ export const useRealEstateData = () => {
     visits: scopedVisits,
     inspections: scopedInspections,
     buyers: scopedBuyers,
+    saleDeals: scopedSaleDeals,
+    ownerLedger: scopedOwnerLedger,
+    maintenanceTickets: scopedMaintenanceTickets,
+    syndicBuildings: scopedSyndicBuildings,
+    syndicFundCalls: scopedSyndicFundCalls,
+    syndicAssemblies: scopedSyndicAssemblies,
+    devPrograms: scopedDevPrograms,
+    devLots: scopedDevLots,
+    studentBeds: scopedStudentBeds,
+    vacationStays: scopedVacationStays,
     addProperty,
     updateProperty,
     deleteProperty,
@@ -1597,11 +2011,28 @@ export const useRealEstateData = () => {
     addLease,
     updateLease,
     deleteLease,
+    renewLease,
+    indexLeaseRent,
     addQuittance,
+    recordPartialRentPayment,
     addVisit,
     addInspection,
     validateInspection,
     addBuyer,
+    addSaleDeal,
+    updateSaleDeal,
+    advanceSaleDealStage,
+    addOwnerLedgerEntry,
+    recordOwnerPayout,
+    addMaintenanceTicket,
+    updateMaintenanceTicket,
+    addSyndicBuilding,
+    issueSyndicFundCall,
+    recordSyndicAssembly,
+    addDevProgram,
+    saveDevLot,
+    saveStudentBed,
+    saveVacationStay,
     resetToDemoSeeds,
   };
 };

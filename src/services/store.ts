@@ -263,6 +263,7 @@ import {
   PosOpticalPrescription,
   PosSelectedModifier,
   GarageTechCommission,
+  RealEstateAgentCommission,
 } from '../types/index';
 import type { VehicleAsset } from '../components/screens/garage/garageData';
 import {
@@ -981,6 +982,7 @@ interface AppState {
   tradingDeliveryRounds: TradingDeliveryRound[];
   tradingRepCommissions: TradingRepCommission[];
   garageTechCommissions: GarageTechCommission[];
+  realEstateAgentCommissions: RealEstateAgentCommission[];
   // Phase 2 Shared Horizontal Foundations (6.1, 6.2 & 6.3)
   unifiedDocuments: UnifiedDocument[];
   unifiedPayments: UnifiedPayment[];
@@ -1253,6 +1255,7 @@ const DEFAULT_STATE: AppState = {
   tradingDeliveryRounds: INITIAL_TRADING_DELIVERY_ROUNDS,
   tradingRepCommissions: INITIAL_TRADING_REP_COMMISSIONS,
   garageTechCommissions: [],
+  realEstateAgentCommissions: [],
   unifiedDocuments: [],
   unifiedPayments: [],
   scfAccounts: [],
@@ -1401,6 +1404,7 @@ function backfillTraceability(state: AppState): AppState {
     tradingDeliveryRounds: (state.tradingDeliveryRounds || []).map(patch),
     tradingRepCommissions: (state.tradingRepCommissions || []).map(patch),
     garageTechCommissions: (state.garageTechCommissions || []).map(patch),
+    realEstateAgentCommissions: (state.realEstateAgentCommissions || []).map(patch),
   };
 }
 
@@ -1611,6 +1615,9 @@ let globalState: AppState = backfillTraceability((() => {
           tradingDeliveryRounds: Array.isArray(parsed.tradingDeliveryRounds) ? parsed.tradingDeliveryRounds : INITIAL_TRADING_DELIVERY_ROUNDS,
           tradingRepCommissions: Array.isArray(parsed.tradingRepCommissions) ? parsed.tradingRepCommissions : INITIAL_TRADING_REP_COMMISSIONS,
           garageTechCommissions: Array.isArray(parsed.garageTechCommissions) ? parsed.garageTechCommissions : [],
+          realEstateAgentCommissions: Array.isArray(parsed.realEstateAgentCommissions)
+            ? parsed.realEstateAgentCommissions
+            : [],
           unifiedDocuments: Array.isArray(parsed.unifiedDocuments) ? parsed.unifiedDocuments : [],
           unifiedPayments: Array.isArray(parsed.unifiedPayments) ? parsed.unifiedPayments : [],
           scfAccounts: Array.isArray(parsed.scfAccounts) ? parsed.scfAccounts : [],
@@ -2477,6 +2484,11 @@ export const selectCurrentGarageTechCommissionsFromState = createBranchSelector<
   (s) => s.garageTechCommissions,
   (c, b) => c.branchId === b
 );
+export const selectCurrentRealEstateAgentCommissionsFromState =
+  createBranchSelector<RealEstateAgentCommission>(
+    (s) => s.realEstateAgentCommissions,
+    (c, b) => c.branchId === b
+  );
 export const selectCurrentUnifiedDocumentsFromState = createBranchSelector<UnifiedDocument>(
   (s) => s.unifiedDocuments,
   (d, b) => d.branchId === b
@@ -10159,6 +10171,16 @@ function createAtriumActions() {
         (sum, c) => sum + centimesToDzd(c.commissionCentimes),
         0
       );
+      const postedRealEstateCommissions = (globalState.realEstateAgentCommissions || []).filter(
+        (c) =>
+          c.agentStaffId === member.id &&
+          c.status === 'posted_to_payroll' &&
+          (!c.payrollRunId || c.payrollRunId === runId)
+      );
+      const postedRealEstateCommDzd = postedRealEstateCommissions.reduce(
+        (sum, c) => sum + centimesToDzd(c.agentShareCentimes),
+        0
+      );
       const baseServiceComm = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
       const coachingCommission = baseServiceComm + postedCommissionDzd;
       const primesCotisables = [
@@ -10173,6 +10195,9 @@ function createAtriumActions() {
           : []),
         ...(postedGarageCommDzd > 0
           ? [{ label: 'Commissions Atelier Mécanique', amount: Math.round(postedGarageCommDzd) }]
+          : []),
+        ...(postedRealEstateCommDzd > 0
+          ? [{ label: 'Commissions Négociateurs Immo', amount: Math.round(postedRealEstateCommDzd) }]
           : []),
       ];
 
@@ -10285,6 +10310,11 @@ function createAtriumActions() {
         ? { ...c, payrollRunId: runId }
         : c
     );
+    const boundRealEstateAgentCommissions = (globalState.realEstateAgentCommissions || []).map((c) =>
+      c.status === 'posted_to_payroll' && !c.payrollRunId && staffPoolIds.has(c.agentStaffId)
+        ? { ...c, payrollRunId: runId }
+        : c
+    );
 
     globalState = {
       ...globalState,
@@ -10294,6 +10324,7 @@ function createAtriumActions() {
       eduVacataireLogs: boundVacataireLogs,
       tradingRepCommissions: boundTradingRepCommissions,
       garageTechCommissions: boundGarageTechCommissions,
+      realEstateAgentCommissions: boundRealEstateAgentCommissions,
     };
     notify();
 
@@ -24677,6 +24708,86 @@ function createAtriumActions() {
     return updatedList;
   };
 
+  const recordRealEstateAgentCommission = (
+    record: RealEstateAgentCommission
+  ): RealEstateAgentCommission => {
+    const before = captureStoreSlices(['realEstateAgentCommissions']);
+    const existing = globalState.realEstateAgentCommissions || [];
+    const existsIdx = existing.findIndex((c) => c.id === record.id);
+    const nextList =
+      existsIdx >= 0
+        ? existing.map((c, i) => (i === existsIdx ? record : c))
+        : [record, ...existing];
+    globalState = {
+      ...globalState,
+      realEstateAgentCommissions: nextList,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      realEstateService.upsertAgentCommission(record).catch(() => {});
+    }
+    const after = captureStoreSlices(['realEstateAgentCommissions']);
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      summary: ul(
+        `Agent commission recorded for ${record.agentName}`,
+        `Commission négociateur enregistrée pour ${record.agentName}`,
+        `تم تسجيل عمولة الوكيل ${record.agentName}`
+      ),
+      entityLabel: record.referenceNumber,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return record;
+  };
+
+  const postRealEstateCommissionsToPayroll = (
+    commissionIds: string[],
+    payrollRunId?: string
+  ): RealEstateAgentCommission[] => {
+    const idSet = new Set(commissionIds);
+    const updatedList: RealEstateAgentCommission[] = [];
+    const nextAll = (globalState.realEstateAgentCommissions || []).map((c) => {
+      if (!idSet.has(c.id) || c.status === 'posted_to_payroll') return c;
+      const next: RealEstateAgentCommission = {
+        ...c,
+        status: 'posted_to_payroll',
+        payrollRunId: payrollRunId || c.payrollRunId,
+        updatedAt: new Date().toISOString(),
+      };
+      updatedList.push(next);
+      return next;
+    });
+    if (updatedList.length === 0) return [];
+    const before = captureStoreSlices(['realEstateAgentCommissions']);
+    globalState = {
+      ...globalState,
+      realEstateAgentCommissions: nextAll,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      for (const item of updatedList) {
+        realEstateService.upsertAgentCommission(item).catch(() => {});
+      }
+    }
+    const after = captureStoreSlices(['realEstateAgentCommissions']);
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'status',
+      summary: ul(
+        `Posted ${updatedList.length} agent commission(s) to payroll`,
+        `${updatedList.length} commission(s) immobilier transférée(s) en paie`,
+        `تم ترحيل ${updatedList.length} عمولات عقارية للرواتب`
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+    return updatedList;
+  };
+
   const resetTradingMockData = () => {
     const keys: (keyof AppState)[] = [
       'b2bClients',
@@ -33296,6 +33407,8 @@ function createAtriumActions() {
     generateBiReportSnapshot,
     recordGarageTechCommission,
     postGarageCommissionsToPayroll,
+    recordRealEstateAgentCommission,
+    postRealEstateCommissionsToPayroll,
   };
 }
 
@@ -33408,6 +33521,7 @@ export function useAtriumStore() {
   const currentTradingDeliveryRounds = selectCurrentTradingDeliveryRoundsFromState(state);
   const currentTradingRepCommissions = selectCurrentTradingRepCommissionsFromState(state);
   const currentGarageTechCommissions = selectCurrentGarageTechCommissionsFromState(state);
+  const currentRealEstateAgentCommissions = selectCurrentRealEstateAgentCommissionsFromState(state);
   const currentUnifiedDocuments = selectCurrentUnifiedDocumentsFromState(state);
   const currentUnifiedPayments = selectCurrentUnifiedPaymentsFromState(state);
   const currentScfAccounts = selectCurrentScfAccountsFromState(state);
@@ -33586,6 +33700,7 @@ export function useAtriumStore() {
     tradingDeliveryRounds: currentTradingDeliveryRounds,
     tradingRepCommissions: currentTradingRepCommissions,
     garageTechCommissions: currentGarageTechCommissions,
+    realEstateAgentCommissions: currentRealEstateAgentCommissions,
     unifiedDocuments: currentUnifiedDocuments,
     allUnifiedDocuments: state.unifiedDocuments || [],
     unifiedPayments: currentUnifiedPayments,

@@ -728,7 +728,56 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS is_locked_invoiced');
     expect(downSql).toContain('DROP COLUMN IF EXISTS vehicle_type');
   });
+
+  it('verifies Phase 3 Step 11 (7.11) real_estate depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280011_phase3_real_estate_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280011_phase3_real_estate_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain("'quittance'");
+    expect(sql).toContain("'re_mandate'");
+    expect(sql).toContain("'re_lease'");
+    expect(sql).toContain("'re_fund_call'");
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS primary_split_bps');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS indexation_history');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS gps_status');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_maintenance_tickets');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_agent_commissions');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_syndic_buildings');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_syndic_fund_calls');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_syndic_assemblies');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_dev_programs');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_dev_lots');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_student_beds');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.re_vacation_stays');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_re_exclusive_mandate_overlap(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.fn_guard_re_vacation_stay_overlap(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.re_record_partial_rent_payment(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.re_apply_lease_indexation(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.re_apply_lease_indexation(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.re_record_partial_rent_payment(');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_guard_re_vacation_stay_overlap');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_re_vacation_stay_overlap()');
+    expect(downSql).toContain('DROP TRIGGER IF EXISTS trg_guard_re_exclusive_mandate_overlap');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.fn_guard_re_exclusive_mandate_overlap()');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_vacation_stays');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_student_beds');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_dev_lots');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_dev_programs');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_syndic_assemblies');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_syndic_fund_calls');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_syndic_buildings');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_agent_commissions');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.re_maintenance_tickets');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS gps_status');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS indexation_history');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS primary_split_bps');
+  });
 });
+
 
 
 

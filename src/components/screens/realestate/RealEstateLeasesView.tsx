@@ -7,6 +7,11 @@ import {
   ArrowRight,
   MapPin,
   Eye,
+  Bell,
+  RefreshCw,
+  TrendingUp,
+  Wallet,
+  X,
 } from 'lucide-react';
 import {
   showToast,
@@ -17,14 +22,18 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
-import { RealEstateLease } from '../../../types';
+import { RealEstateLease, RentalQuittanceRecord } from '../../../types';
 import { useRealEstateData } from './realEstateData';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { QuittanceModal } from './QuittanceModal';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -62,11 +71,23 @@ export const RealEstateLeasesView: React.FC<any> = () => {
     }),
     shallowEqualObjects
   );
-  const { retryCloudSync } = useAtriumActions();
+  const { retryCloudSync, runReminderEngineScan } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { leases, properties, quittances, addLease, updateLease, deleteLease, addQuittance } = useRealEstateData();
+  const {
+    leases,
+    mandates,
+    properties,
+    quittances,
+    addLease,
+    updateLease,
+    deleteLease,
+    renewLease,
+    indexLeaseRent,
+    addQuittance,
+    recordPartialRentPayment,
+  } = useRealEstateData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -85,6 +106,13 @@ export const RealEstateLeasesView: React.FC<any> = () => {
   const [isLeaseModalOpen, setIsLeaseModalOpen] = useState(false);
   const [isQuittanceModalOpen, setIsQuittanceModalOpen] = useState(false);
   const [leaseForQuittance, setLeaseForQuittance] = useState<RealEstateLease | null>(null);
+  const [leaseForIndexation, setLeaseForIndexation] = useState<RealEstateLease | null>(null);
+  const [indexRatePct, setIndexRatePct] = useState('5');
+  const [indexDate, setIndexDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [indexNote, setIndexNote] = useState('');
+  const [quittanceForPartial, setQuittanceForPartial] = useState<RentalQuittanceRecord | null>(null);
+  const [partialAmountDzd, setPartialAmountDzd] = useState('');
+  const [partialMethod, setPartialMethod] = useState<RentalQuittanceRecord['paymentMethod']>('BaridiMob');
 
   const [selectedLease, setSelectedLease] = useState<RealEstateLease | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -254,7 +282,21 @@ export const RealEstateLeasesView: React.FC<any> = () => {
     setIsQuittanceModalOpen(true);
   }, []);
 
-  const handleRenewLease = useCallback(
+  const handleExtendLease = useCallback(
+    (l: RealEstateLease) => {
+      const renewed = renewLease(l.id, 12);
+      if (renewed) {
+        if (selectedLease?.id === l.id) setSelectedLease(renewed);
+        showToast(
+          isAr ? `تم تمديد العقد لمدة 12 شهراً (${renewed.endDate})` : isEn ? `Lease renewed 12 months until ${renewed.endDate}` : `Bail reconduit 12 mois jusqu'au ${renewed.endDate}`,
+          'success'
+        );
+      }
+    },
+    [renewLease, selectedLease?.id, isAr, isEn]
+  );
+
+  const handleTerminateLease = useCallback(
     (l: RealEstateLease) => {
       const nextStatus: RealEstateLease['status'] = l.status === 'Active' ? 'Terminated' : 'Active';
       const updated: RealEstateLease = { ...l, status: nextStatus };
@@ -263,6 +305,57 @@ export const RealEstateLeasesView: React.FC<any> = () => {
     },
     [updateLease, selectedLease?.id]
   );
+
+  const handleOpenIndexation = useCallback((l: RealEstateLease) => {
+    setLeaseForIndexation(l);
+    setIndexRatePct(String(l.indexationRatePercent || 5));
+    setIndexDate(new Date().toISOString().slice(0, 10));
+    setIndexNote('');
+  }, []);
+
+  const handleApplyIndexation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leaseForIndexation) return;
+    const rate = parseFloat(indexRatePct) || 0;
+    const res = indexLeaseRent(leaseForIndexation.id, rate, indexDate, indexNote);
+    if (!res.ok) {
+      const msg =
+        res.errorCode === 'RE_INDEXATION_DATE_NOT_REACHED'
+          ? isAr ? 'لم يحن تاريخ المراجعة بعد' : isEn ? 'Next indexation date not reached yet' : `Date d'indexation prévue le ${leaseForIndexation.nextIndexationDate} non atteinte.`
+          : res.errorCode === 'RE_LEASE_INDEXATION_DISABLED'
+          ? isAr ? 'مراجعة الإيجار غير مفعلة لهذا العقد' : isEn ? 'Indexation disabled on this lease' : 'Indexation désactivée sur ce bail.'
+          : isAr ? 'نسبة أو حالة عقد غير صالحة' : isEn ? 'Invalid rate or inactive lease' : 'Taux invalide ou bail clôturé.';
+      showToast(msg, 'warning');
+      return;
+    }
+    if (res.updatedLease && selectedLease?.id === res.updatedLease.id) {
+      setSelectedLease(res.updatedLease);
+    }
+    setLeaseForIndexation(null);
+    showToast(isAr ? 'تم تطبيق مراجعة الإيجار بنجاح' : isEn ? 'Rent indexation applied' : 'Indexation du loyer appliquée', 'success');
+  };
+
+  const handleSubmitPartialPay = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quittanceForPartial) return;
+    const amt = parseFloat(partialAmountDzd) || 0;
+    const res = recordPartialRentPayment({
+      quittanceId: quittanceForPartial.id,
+      paymentAmountDzd: amt,
+      paymentMethod: partialMethod,
+    });
+    if (!res.ok || !('isPartial' in res)) {
+      showToast(isAr ? 'المبلغ غير صالح' : isEn ? 'Invalid partial payment amount' : 'Montant de versement invalide.', 'warning');
+      return;
+    }
+    setQuittanceForPartial(null);
+    showToast(
+      res.isPartial
+        ? isAr ? `تم تحصيل دفعة جزئية (المتبقي: ${formatMoney(res.remainingDueDzd, language)})` : `Encaissement partiel enregistré (reste dû: ${formatMoney(res.remainingDueDzd, language)})`
+        : isAr ? 'تم تسديد القسط بالكامل' : 'Échéance soldée intégralement',
+      'success'
+    );
+  };
 
   const handleSelectLease = useCallback((l: RealEstateLease, openerEl?: HTMLElement | null) => {
     setSelectedLease(l);
@@ -489,6 +582,17 @@ export const RealEstateLeasesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Key size={22} />}
         title={isAr ? 'العقود' : isEn ? 'Leases' : 'Baux Locatifs'}
+        secondaryActions={
+          <AtriumButton
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={<Bell size={14} />}
+            onClick={() => runReminderEngineScan({ externalSources: { leases, mandates }, showSummaryToast: true })}
+          >
+            {isAr ? 'تذكير الإيجارات' : isEn ? 'Rent Reminders' : 'Rappels Loyers'}
+          </AtriumButton>
+        }
         primaryAction={{
           label: isAr ? 'تحرير عقد كراء' : isEn ? 'New Lease' : 'Nouveau Bail',
           onClick: () => setIsLeaseModalOpen(true),
@@ -610,12 +714,21 @@ export const RealEstateLeasesView: React.FC<any> = () => {
               },
             },
             {
-              id: 'renew',
-              label: isAr ? 'تجديد/إنهاء' : 'Statut',
+              id: 'extend',
+              label: isAr ? 'تمديد 12 شهراً' : isEn ? 'Renew 12M' : 'Reconduire 12M',
+              icon: <RefreshCw size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleExtendLease(l);
+              },
+            },
+            {
+              id: 'terminate',
+              label: l.status === 'Active' ? (isAr ? 'فسخ' : 'Clôturer') : (isAr ? 'تفعيل' : 'Réactiver'),
               icon: <ArrowRight size={14} />,
               onClick: (e) => {
                 e.stopPropagation();
-                handleRenewLease(l);
+                handleTerminateLease(l);
               },
             },
             {
@@ -636,10 +749,16 @@ export const RealEstateLeasesView: React.FC<any> = () => {
               onClick: () => handleEmitReceipt(l),
             },
             {
-              id: 'renew',
-              label: isAr ? 'تجديد/إنهاء' : 'Reconduire/Résilier',
-              icon: <ArrowRight size={14} />,
-              onClick: () => handleRenewLease(l),
+              id: 'extend',
+              label: isAr ? 'تمديد 12 شهراً' : isEn ? 'Renew 12 Months' : 'Reconduire 12M',
+              icon: <RefreshCw size={14} />,
+              onClick: () => handleExtendLease(l),
+            },
+            {
+              id: 'index',
+              label: isAr ? 'مراجعة الإيجار' : isEn ? 'Index Rent' : 'Indexer Loyer',
+              icon: <TrendingUp size={14} />,
+              onClick: () => handleOpenIndexation(l),
             },
           ]}
           emptyTitle={isAr ? 'لا توجد عقود كراء' : 'Aucun bail trouvé'}
@@ -714,10 +833,22 @@ export const RealEstateLeasesView: React.FC<any> = () => {
                       onClick: () => handleEmitReceipt(lease),
                     },
                     {
-                      id: 'renew',
-                      label: lease.status === 'Active' ? 'Clôturer' : 'Réactiver',
+                      id: 'extend',
+                      label: isAr ? 'تمديد 12ش' : 'Reconduire 12M',
+                      icon: <RefreshCw size={16} />,
+                      onClick: () => handleExtendLease(lease),
+                    },
+                    {
+                      id: 'index',
+                      label: isAr ? 'مراجعة' : 'Indexer',
+                      icon: <TrendingUp size={16} />,
+                      onClick: () => handleOpenIndexation(lease),
+                    },
+                    {
+                      id: 'terminate',
+                      label: lease.status === 'Active' ? (isAr ? 'فسخ' : 'Clôturer') : (isAr ? 'تفعيل' : 'Réactiver'),
                       icon: <ArrowRight size={16} />,
-                      onClick: () => handleRenewLease(lease),
+                      onClick: () => handleTerminateLease(lease),
                     },
                     {
                       id: 'pin',
@@ -789,14 +920,35 @@ export const RealEstateLeasesView: React.FC<any> = () => {
                     ) : (
                       <InspectorCard>
                         {leaseReceipts.map((q, idx) => (
-                          <InspectorListItem
-                            key={q.id}
-                            title={`${q.quittanceNumber} · Mois ${q.periodMonth}/${q.periodYear}`}
-                            subtitle={`${q.paymentDate} · Timbre ${formatMoney(q.timbreFiscalDzd, language)}`}
-                            metaRight={formatMoney(q.totalCollectedDzd, language)}
-                            badge={{ label: q.paymentMethod, tone: 'ok' }}
-                            isLast={idx === leaseReceipts.length - 1}
-                          />
+                          <div key={q.id} className="space-y-1">
+                            <InspectorListItem
+                              title={`${q.quittanceNumber} · Mois ${q.periodMonth}/${q.periodYear}`}
+                              subtitle={`${q.paymentDate} · Timbre ${formatMoney(q.timbreFiscalDzd, language)}${q.remainingDueDzd && q.remainingDueDzd > 0 ? ` · Reste ${formatMoney(q.remainingDueDzd, language)}` : ''}`}
+                              metaRight={formatMoney(q.totalCollectedDzd, language)}
+                              badge={{
+                                label: q.paymentStatus === 'Partial' ? `Partiel · ${q.paymentMethod}` : q.paymentMethod,
+                                tone: q.paymentStatus === 'Partial' ? 'warn' : 'ok',
+                              }}
+                              isLast={idx === leaseReceipts.length - 1 && q.paymentStatus !== 'Partial'}
+                            />
+                            {q.paymentStatus === 'Partial' && (q.remainingDueDzd || 0) > 0 && (
+                              <div className="px-3 pb-2 flex justify-end">
+                                <AtriumButton
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  icon={<Wallet size={13} />}
+                                  onClick={() => {
+                                    setQuittanceForPartial(q);
+                                    setPartialAmountDzd(String(q.remainingDueDzd || 0));
+                                    setPartialMethod(q.paymentMethod || 'BaridiMob');
+                                  }}
+                                >
+                                  {isAr ? 'تحصيل الباقي' : isEn ? 'Collect Balance' : 'Encaisser Reliquat'}
+                                </AtriumButton>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </InspectorCard>
                     )}
@@ -820,6 +972,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         isOpen={isLeaseModalOpen}
         onClose={() => setIsLeaseModalOpen(false)}
         properties={properties}
+        existingLeases={leases}
         onSave={(newLease) => {
           addLease(newLease);
           setSelectedLease(newLease);
@@ -835,12 +988,124 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         }}
         leases={leases}
         selectedLease={leaseForQuittance || selectedLease}
+        existingQuittances={quittances}
         onSave={(newQ) => {
           addQuittance(newQ);
           setIsQuittanceModalOpen(false);
           setLeaseForQuittance(null);
         }}
       />
+
+      <KineticModalShell
+        isOpen={Boolean(leaseForIndexation)}
+        onClose={() => setLeaseForIndexation(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h2 className="t-card font-semibold text-black dark:text-white">
+              {isAr ? 'مراجعة / تعديل الإيجار' : isEn ? 'Rent Indexation' : 'Révision / Indexation du Loyer'}
+            </h2>
+            <button type="button" onClick={() => setLeaseForIndexation(null)} className="p-1 text-black/55 hover:text-black dark:text-white/55 dark:hover:text-white cursor-pointer">
+              <X size={18} />
+            </button>
+          </div>
+          {leaseForIndexation && (
+            <form onSubmit={handleApplyIndexation} className="space-y-3 t-cap">
+              <p className="text-black/70 dark:text-white/75">
+                {leaseForIndexation.propertyTitle} · {formatMoney(leaseForIndexation.monthlyRentDzd, language)}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  type="number"
+                  step={0.5}
+                  label={isAr ? 'نسبة الزيادة (%)' : 'Taux Indexation (%)'}
+                  value={indexRatePct}
+                  onChange={setIndexRatePct}
+                  required
+                />
+                <LabelInput
+                  type="date"
+                  label={isAr ? 'تاريخ التطبيق' : "Date d'application"}
+                  value={indexDate}
+                  onChange={setIndexDate}
+                  required
+                />
+              </div>
+              <LabelInput
+                label={isAr ? 'ملاحظة / المرجع' : 'Note / Clause'}
+                value={indexNote}
+                onChange={setIndexNote}
+                placeholder="Révision annuelle convenue"
+              />
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setLeaseForIndexation(null)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary" size="sm">
+                  {isAr ? 'تطبيق المراجعة' : 'Appliquer Révision'}
+                </AtriumButton>
+              </div>
+            </form>
+          )}
+        </div>
+      </KineticModalShell>
+
+      <KineticModalShell
+        isOpen={Boolean(quittanceForPartial)}
+        onClose={() => setQuittanceForPartial(null)}
+        maxWidthClass="max-w-md"
+        zIndexClass="z-50"
+        scrimClassName="bg-black/60"
+      >
+        <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+          <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
+            <h2 className="t-card font-semibold text-black dark:text-white">
+              {isAr ? 'تحصيل دفعة إيجار متبقية' : isEn ? 'Collect Partial Rent Balance' : 'Encaisser Reliquat de Loyer'}
+            </h2>
+            <button type="button" onClick={() => setQuittanceForPartial(null)} className="p-1 text-black/55 hover:text-black dark:text-white/55 dark:hover:text-white cursor-pointer">
+              <X size={18} />
+            </button>
+          </div>
+          {quittanceForPartial && (
+            <form onSubmit={handleSubmitPartialPay} className="space-y-3 t-cap">
+              <p className="text-black/70 dark:text-white/75">
+                {quittanceForPartial.quittanceNumber} · {isAr ? 'المتبقي:' : 'Reste dû:'} {formatMoney(quittanceForPartial.remainingDueDzd || 0, language)}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  type="number"
+                  label={isAr ? 'المبلغ المحصل (دج)' : 'Montant Encaissé (DA)'}
+                  value={partialAmountDzd}
+                  onChange={setPartialAmountDzd}
+                  required
+                />
+                <LabelSelect
+                  label={isAr ? 'طريقة الدفع' : 'Mode de Règlement'}
+                  value={partialMethod}
+                  onChange={(v) => setPartialMethod(v as RentalQuittanceRecord['paymentMethod'])}
+                  options={[
+                    { value: 'BaridiMob', label: 'BaridiMob' },
+                    { value: 'Virement', label: 'Virement' },
+                    { value: 'Cheque', label: 'Chèque' },
+                    { value: 'Cash', label: 'Espèces (Timbre)' },
+                  ]}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setQuittanceForPartial(null)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary" size="sm">
+                  {isAr ? 'تأكيد التحصيل' : 'Valider Versement'}
+                </AtriumButton>
+              </div>
+            </form>
+          )}
+        </div>
+      </KineticModalShell>
     </div>
   );
 };

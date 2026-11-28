@@ -2616,7 +2616,162 @@ BEGIN
   END IF;
 END $$;
 
+-- ============================================================================
+-- 29. PHASE 3 STEP 11 (7.11 real_estate): RLS, Exclusive Mandate Guard,
+--     Vacation Overlap Guard, Partial Rent & Lease Indexation RPC Tests
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  v_user_a uuid := 'aaaaaaaa-1111-1111-1111-111111111111';
+  v_user_b uuid := 'bbbbbbbb-1111-1111-1111-111111111111';
+  v_biz_a uuid := '11111111-1111-1111-1111-111111111111';
+  v_br_a  uuid := '11111111-1111-1111-1111-111111111112';
+  v_prop_id uuid := gen_random_uuid();
+  v_mnd1_id uuid := gen_random_uuid();
+  v_mnd2_id uuid := gen_random_uuid();
+  v_lease_id uuid := gen_random_uuid();
+  v_sched_id uuid := gen_random_uuid();
+  v_ticket_id uuid := gen_random_uuid();
+  v_stay1_id uuid := gen_random_uuid();
+  v_stay2_id uuid := gen_random_uuid();
+  v_stay3_id uuid := gen_random_uuid();
+  v_count int;
+  v_blocked boolean;
+  v_sched_status text;
+  v_rem numeric;
+  v_rent numeric;
+BEGIN
+  INSERT INTO public.re_properties (
+    id, account_id, business_id, branch_id, reference_code, title, property_type, transaction_type, wilaya, price_dzd
+  ) VALUES (
+    v_prop_id, v_acc_a, v_biz_a, v_br_a, 'RE-TEST-01', 'F4 Hydra Test', 'Apartment', 'Sale', '16 Alger', 42000000
+  );
+
+  INSERT INTO public.re_mandates (
+    id, account_id, business_id, branch_id, mandate_number, property_id, property_title, owner_name,
+    mandate_type, commission_percent, start_date, end_date, status, is_exclusive
+  ) VALUES (
+    v_mnd1_id, v_acc_a, v_biz_a, v_br_a, 'MND-2026-00001', v_prop_id, 'F4 Hydra Test', 'Kamel B.',
+    'Exclusif', 2.5, '2026-01-01', '2026-06-30', 'Active', true
+  );
+
+  -- Overlapping active exclusive mandate MUST fail
+  v_blocked := false;
+  BEGIN
+    INSERT INTO public.re_mandates (
+      id, account_id, business_id, branch_id, mandate_number, property_id, property_title, owner_name,
+      mandate_type, commission_percent, start_date, end_date, status, is_exclusive
+    ) VALUES (
+      v_mnd2_id, v_acc_a, v_biz_a, v_br_a, 'MND-2026-00002', v_prop_id, 'F4 Hydra Test', 'Kamel B.',
+      'Exclusif', 2.5, '2026-03-01', '2026-09-01', 'Active', true
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected overlapping exclusive mandate on same property to fail';
+  END IF;
+
+  INSERT INTO public.re_leases (
+    id, account_id, business_id, branch_id, lease_number, property_id, property_title, tenant_name,
+    monthly_rent_dzd, start_date, end_date, status, indexation_frequency, next_indexation_date
+  ) VALUES (
+    v_lease_id, v_acc_a, v_biz_a, v_br_a, 'BAIL-2026-00001', v_prop_id, 'F4 Hydra Test', 'Sofiane M.',
+    100000, '2025-01-01', '2027-01-01', 'Active', 'Annual', '2026-06-01'
+  );
+
+  INSERT INTO public.re_rent_schedules (
+    id, account_id, business_id, branch_id, lease_id, period_label, due_date, amount_dzd, paid_amount_dzd, remaining_due_dzd, status
+  ) VALUES (
+    v_sched_id, v_acc_a, v_biz_a, v_br_a, v_lease_id, '2026-05', '2026-05-05', 100000, 0, 100000, 'Due'
+  );
+
+  INSERT INTO public.re_maintenance_tickets (
+    id, account_id, business_id, branch_id, ticket_number, property_id, property_title, owner_name, title, estimated_cost_dzd
+  ) VALUES (
+    v_ticket_id, v_acc_a, v_biz_a, v_br_a, 'MTK-2026-00001', v_prop_id, 'F4 Hydra Test', 'Kamel B.', 'Fuite chaudière', 12000
+  );
+
+  INSERT INTO public.re_vacation_stays (
+    id, account_id, business_id, branch_id, stay_code, property_id, property_title, guest_name, guest_phone,
+    check_in_date, check_out_date, nights_count, nightly_rate_dzd, total_amount_dzd, status
+  ) VALUES (
+    v_stay1_id, v_acc_a, v_biz_a, v_br_a, 'STAY-2026-001', v_prop_id, 'F4 Hydra Test', 'Guest 1', '0550111222',
+    '2026-07-10', '2026-07-15', 5, 18000, 90000, 'Confirmed'
+  );
+
+  -- Overlapping vacation stay MUST fail, whereas adjacent [2026-07-15, 2026-07-18) MUST succeed
+  v_blocked := false;
+  BEGIN
+    INSERT INTO public.re_vacation_stays (
+      id, account_id, business_id, branch_id, stay_code, property_id, property_title, guest_name, guest_phone,
+      check_in_date, check_out_date, nights_count, nightly_rate_dzd, total_amount_dzd, status
+    ) VALUES (
+      v_stay2_id, v_acc_a, v_biz_a, v_br_a, 'STAY-2026-002', v_prop_id, 'F4 Hydra Test', 'Guest 2', '0550111333',
+      '2026-07-12', '2026-07-16', 4, 18000, 72000, 'Confirmed'
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected overlapping vacation stay to fail';
+  END IF;
+
+  INSERT INTO public.re_vacation_stays (
+    id, account_id, business_id, branch_id, stay_code, property_id, property_title, guest_name, guest_phone,
+    check_in_date, check_out_date, nights_count, nightly_rate_dzd, total_amount_dzd, status
+  ) VALUES (
+    v_stay3_id, v_acc_a, v_biz_a, v_br_a, 'STAY-2026-003', v_prop_id, 'F4 Hydra Test', 'Guest 3', '0550111444',
+    '2026-07-15', '2026-07-18', 3, 18000, 54000, 'Confirmed'
+  );
+
+  -- Tenant B isolation check on re_maintenance_tickets
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.re_maintenance_tickets WHERE id = v_ticket_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read re_maintenance_tickets'; END IF;
+  RESET ROLE;
+
+  -- Tenant A partial rent payment + lease indexation RPC checks
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  PERFORM public.re_record_partial_rent_payment(v_sched_id, 60000, 'Cash', 600, 'QTC-2026-00001');
+  SELECT status, remaining_due_dzd INTO v_sched_status, v_rem FROM public.re_rent_schedules WHERE id = v_sched_id;
+  IF v_sched_status <> 'Partial' OR v_rem <> 40000 THEN
+    RAISE EXCEPTION 'Expected Partial status with 40000 remaining, got status=% rem=%', v_sched_status, v_rem;
+  END IF;
+
+  PERFORM public.re_record_partial_rent_payment(v_sched_id, 40000, 'Virement', 0, 'QTC-2026-00002');
+  SELECT status, remaining_due_dzd INTO v_sched_status, v_rem FROM public.re_rent_schedules WHERE id = v_sched_id;
+  IF v_sched_status <> 'Paid' OR v_rem <> 0 THEN
+    RAISE EXCEPTION 'Expected Paid status with 0 remaining, got status=% rem=%', v_sched_status, v_rem;
+  END IF;
+
+  -- Indexation before next_indexation_date MUST fail
+  v_blocked := false;
+  BEGIN
+    PERFORM public.re_apply_lease_indexation(v_lease_id, 5, '2026-05-01', 'Too early');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected early lease indexation before next_indexation_date to fail';
+  END IF;
+
+  -- Indexation on/after next_indexation_date MUST succeed and adjust rent to 105000
+  PERFORM public.re_apply_lease_indexation(v_lease_id, 5, '2026-06-05', 'Indexation annuelle');
+  RESET ROLE;
+
+  SELECT monthly_rent_dzd INTO v_rent FROM public.re_leases WHERE id = v_lease_id;
+  IF v_rent <> 105000 THEN
+    RAISE EXCEPTION 'Expected monthly_rent_dzd=105000 after 5%% indexation, got %', v_rent;
+  END IF;
+END $$;
+
 ROLLBACK;
+
 
 
 

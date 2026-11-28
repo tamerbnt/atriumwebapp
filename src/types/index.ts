@@ -3340,6 +3340,14 @@ export type PropertyLegalTitleType =
   | 'Cession_OPGI_EPLF'
   | 'Papier_Timbre_Coutume';
 
+export interface RealEstatePortalSync {
+  ouedkniss?: boolean;
+  lkeria?: boolean;
+  mubawab?: boolean;
+  atriumPortal?: boolean;
+  lastSyncedAt?: string;
+}
+
 export interface RealEstateProperty {
   id: string;
   accountId: string;
@@ -3357,9 +3365,10 @@ export interface RealEstateProperty {
   ownerName: string;
   ownerPhone: string;
   ownerNationalId?: string;
+  crmPartyId?: string;
   status: 'Available' | 'Rented' | 'Sold' | 'UnderMaintenance';
   amenities?: string[];
-  
+
   // Cadastral Title Passport (Algerian Legal Standard)
   legalTitleType?: PropertyLegalTitleType;
   hasLivretFoncier?: boolean;
@@ -3374,13 +3383,15 @@ export interface RealEstateProperty {
   isEligibleBankMortgage?: boolean;
   isIndivision?: boolean;
   fridhaNumber?: string;
-  
+
   // Mandate Binding
   mandateId?: string;
   mandateNumber?: string;
-  
+
+  // Media & Portal Syndication Readiness
   photoUrls?: string[];
   featuredPhotoUrl?: string;
+  portalSync?: RealEstatePortalSync;
   version?: number;
   createdAt: string;
 }
@@ -3401,23 +3412,27 @@ export interface RealEstateMandate {
   branchId: string;
   staffId: string;
   negotiatorName?: string;
-  
-  mandateNumber: string; // e.g. "MND-2026-HYD-000142" (Sequential Décret 09-18)
+  secondaryStaffId?: string;
+  secondaryNegotiatorName?: string;
+  primarySplitBps?: number; // Default 10000 when sole agent
+  secondarySplitBps?: number; // primarySplitBps + secondarySplitBps = 10000
+
+  mandateNumber: string; // Sequential Décret 09-18 (MND-YYYY-NNNNN)
   mandateType: MandateType;
   status: MandateStatus;
-  
+
   propertyId: string;
   propertyTitle: string;
   propertyAddress: string;
   propertyType: string;
   listingType: 'Sale' | 'Rental';
-  
+
   ownerFullName: string;
   ownerPhone: string;
   ownerNationalId: string;
   ownerIdIssueDate?: string;
   ownerIdIssueDaira?: string;
-  
+
   askingPriceDzd: number;
   minimumAcceptablePriceDzd: number;
   commissionCalculationMode: 'DecreeTranches' | 'FlatPercent' | 'FixedAmount';
@@ -3426,7 +3441,7 @@ export interface RealEstateMandate {
   commissionEstimatedHtDzd: number;
   commissionEstimatedTtcDzd: number;
   commissionPayer: 'Seller' | 'Buyer' | 'Split50_50';
-  
+
   startDate: string;
   endDate: string;
   renewalCount: number;
@@ -3436,6 +3451,14 @@ export interface RealEstateMandate {
   version?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface LeaseIndexationHistoryEntry {
+  appliedAt: string;
+  previousRentDzd: number;
+  newRentDzd: number;
+  ratePercent: number;
+  note?: string;
 }
 
 export interface RealEstateLease {
@@ -3450,6 +3473,7 @@ export interface RealEstateLease {
   tenantName: string;
   tenantPhone: string;
   tenantNationalId?: string;
+  crmPartyId?: string;
   ownerName?: string;
   ownerPhone?: string;
   startDate: string;
@@ -3463,6 +3487,11 @@ export interface RealEstateLease {
   paymentFrequency?: 'Monthly' | 'Quarterly' | 'Biannual' | 'Yearly' | 'Annual' | string;
   lastPaymentDate?: string;
   arrearsDzd?: number;
+  renewalCount?: number;
+  indexationRatePercent?: number;
+  indexationFrequency?: 'Annual' | 'Biennial' | 'None';
+  nextIndexationDate?: string;
+  indexationHistory?: LeaseIndexationHistoryEntry[];
   status: 'Active' | 'Expired' | 'Terminated';
   version?: number;
   createdAt?: string;
@@ -3474,36 +3503,47 @@ export interface RentalQuittanceRecord {
   businessId: string;
   branchId: string;
   staffId: string;
-  
+
   quittanceNumber: string; // e.g. "QTC-2026-00389"
   leaseId: string;
   propertyId?: string;
   propertyTitle: string;
   tenantName: string;
   ownerName: string;
-  
+
   periodMonth: number;
   periodYear: number;
-  
+
   rentAmountDzd: number;
   chargesDzd: number;
+  amountDueDzd?: number;
+  paidAmountDzd?: number;
+  remainingDueDzd?: number;
+  isPartial?: boolean;
+  partialPaymentSeq?: number;
+  paymentStatus?: 'Due' | 'Partial' | 'Paid' | 'Overdue';
   paymentMethod: 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob';
-  
-  timbreFiscalDzd: number; // Article 317 Code du Timbre
+
+  timbreFiscalDzd: number; // Article 317 Code du Timbre (calculated on cash portion paid)
   totalCollectedDzd: number;
-  
+
   agencyCommissionFeeDzd: number;
   agencyCommissionTvaDzd: number;
   netDisbursedToOwnerDzd: number;
   isDisbursedToOwner: boolean;
   disbursementDate?: string;
-  
+  unifiedDocumentId?: string;
+  unifiedPaymentId?: string;
+  journalEntryId?: string;
+
   paymentDate: string;
   cashierStaffName: string;
   notes?: string;
   version?: number;
   createdAt: string;
 }
+
+export type VisitGpsStatus = 'captured' | 'denied' | 'unavailable' | 'timeout';
 
 export interface BonDeVisiteRecord {
   id: string;
@@ -3512,27 +3552,28 @@ export interface BonDeVisiteRecord {
   branchId: string;
   staffId: string;
   negotiatorName: string;
-  
+
   propertyId: string;
   propertyTitle: string;
   propertyAddress: string;
-  
+
   clientFullName: string;
   clientPhone: string;
   clientNationalId: string;
-  
+
   visitTimestamp: string;
+  gpsStatus?: VisitGpsStatus;
   gpsLatitude?: number;
   gpsLongitude?: number;
   gpsAccuracyMeters?: number;
-  
+
   signatureSvgData: string;
   signedOffline: boolean;
-  
+
   clientImpression?: 'Interested' | 'NeedsNegotiation' | 'PriceTooHigh' | 'Unfavorable' | 'OfferSubmitted';
   clientFeedbackNotes?: string;
   counterOfferDzd?: number;
-  
+
   whatsappConfirmationSent: boolean;
   version?: number;
   createdAt: string;
@@ -3585,6 +3626,7 @@ export interface BuyerDemandProfile {
   clientFullName: string;
   clientPhone: string;
   clientEmail?: string;
+  crmPartyId?: string;
   targetWilaya: string;
   targetCommune?: string;
   propertyType: 'Apartment' | 'Villa' | 'Commercial' | 'Office' | 'Land';
@@ -3597,6 +3639,307 @@ export interface BuyerDemandProfile {
   notes?: string;
   version?: number;
   createdAt: string;
+}
+
+export type RealEstateSaleStage = 'Offer' | 'Promesse' | 'Notaire' | 'Enregistrement' | 'Acte' | 'Finalisé';
+
+export interface RealEstateSaleClosingChecklist {
+  livretFoncierVerified: boolean;
+  certificatNegatifValid: boolean;
+  quitusFiscalCleared: boolean;
+  mainleveeBankCleared: boolean;
+  notaryActSigned: boolean;
+}
+
+export interface RealEstateSaleDeal {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  dealNumber: string;
+  propertyId: string;
+  propertyTitle: string;
+  buyerName: string;
+  buyerPhone?: string;
+  sellerName: string;
+  sellerPhone?: string;
+  mandateId?: string;
+  mandateNumber?: string;
+  primaryAgentStaffId?: string;
+  primaryAgentName?: string;
+  secondaryAgentStaffId?: string;
+  secondaryAgentName?: string;
+  primarySplitBps: number;
+  secondarySplitBps: number;
+  salePriceDzd: number;
+  commissionHtDzd: number;
+  commissionTvaDzd: number;
+  commissionTtcDzd: number;
+  depositPaidDzd: number;
+  notaryName?: string;
+  notaryStudyWilaya?: string;
+  stage: RealEstateSaleStage;
+  closingChecklist: RealEstateSaleClosingChecklist;
+  closingDate?: string;
+  unifiedDocumentId?: string;
+  unifiedPaymentId?: string;
+  journalEntryId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RealEstateOwnerLedgerEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  leaseId?: string;
+  propertyId?: string;
+  ownerName: string;
+  propertyTitle?: string;
+  entryType: 'RentCredit' | 'AgencyFee' | 'MaintenanceDebit' | 'Payout';
+  amountDzd: number;
+  entryDate: string;
+  reference: string;
+  unifiedPaymentId?: string;
+  journalEntryId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+}
+
+export interface RealEstateMaintenanceTicket {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ticketNumber: string;
+  propertyId: string;
+  propertyTitle: string;
+  leaseId?: string;
+  ownerName: string;
+  tenantName?: string;
+  category: 'Plumbing' | 'Electrical' | 'Hvac' | 'Elevator' | 'Structural' | 'General';
+  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  title: string;
+  description?: string;
+  vendorName?: string;
+  vendorPhone?: string;
+  estimatedCostDzd: number;
+  actualCostDzd: number;
+  chargeTarget: 'Owner' | 'Tenant' | 'Agency';
+  ownerLedgerEntryId?: string;
+  status: 'Open' | 'Assigned' | 'InProgress' | 'Resolved' | 'Closed';
+  reportedAt: string;
+  resolvedAt?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RealEstateAgentCommission {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  agentStaffId: string;
+  agentName: string;
+  roleType: 'primary' | 'secondary' | 'listing' | 'selling';
+  sourceType: 'SaleDeal' | 'Lease' | 'Manual';
+  sourceId?: string;
+  referenceNumber: string;
+  periodMonth: string;
+  grossCommissionCentimes: number;
+  splitBps: number;
+  agentShareCentimes: number;
+  agentShareDzd: number;
+  status: 'pending' | 'posted_to_payroll' | 'cancelled';
+  payrollRunId?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SyndicBuilding {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  buildingCode: string;
+  name: string;
+  address: string;
+  wilaya: string;
+  totalLots: number;
+  totalTantiemes: number;
+  reserveFundDzd: number;
+  managerName?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SyndicFundCallAllocation {
+  lotNumber: string;
+  ownerName: string;
+  tantiemes: number;
+  amountCentimes: number;
+  amountDzd: number;
+  paidDzd: number;
+  status: 'Due' | 'Partial' | 'Paid';
+}
+
+export interface SyndicFundCall {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  buildingId: string;
+  buildingName: string;
+  callNumber: string;
+  quarterLabel: string;
+  dueDate: string;
+  totalBudgetDzd: number;
+  totalTantiemes: number;
+  allocations: SyndicFundCallAllocation[];
+  collectedDzd: number;
+  status: 'Draft' | 'Issued' | 'Partial' | 'Closed';
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SyndicAssembly {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  buildingId: string;
+  buildingName: string;
+  title: string;
+  assemblyType: 'AGO' | 'AGE';
+  meetingDate: string;
+  presentTantiemes: number;
+  representedTantiemes: number;
+  totalTantiemes: number;
+  quorumPercent: number;
+  quorumReached: boolean;
+  resolutionsSummary?: string;
+  status: 'Scheduled' | 'Held' | 'Adjourned';
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DevProgram {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  programCode: string;
+  name: string;
+  wilaya: string;
+  commune?: string;
+  promoterName: string;
+  fgciGuaranteeRef?: string;
+  deliveryQuarter: string;
+  totalUnits: number;
+  status: 'Planning' | 'Foundation' | 'Structure' | 'Finishing' | 'Delivered';
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DevVefaMilestone {
+  code: 'RESERVATION' | 'FONDATIONS' | 'GROS_OEUVRE' | 'CLOS_COUVERT' | 'LIVRAISON' | string;
+  label: string;
+  percentBps: number; // out of 10000 total
+  amountDzd: number;
+  dueDate?: string;
+  status: 'Pending' | 'Called' | 'Paid';
+  paidAt?: string;
+}
+
+export interface DevLot {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  programId: string;
+  programName: string;
+  lotCode: string;
+  typology: 'F2' | 'F3' | 'F4' | 'F5' | 'Duplex' | 'Local';
+  floorNumber: number;
+  surfaceM2: number;
+  priceDzd: number;
+  buyerName?: string;
+  buyerPhone?: string;
+  milestones: DevVefaMilestone[];
+  paidTotalDzd: number;
+  status: 'Available' | 'Reserved' | 'VefaSigned' | 'Delivered';
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StudentHousingBed {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  residenceName: string;
+  roomCode: string;
+  bedCode: string;
+  semesterLabel: string;
+  monthlyRateDzd: number;
+  semesterDepositDzd: number;
+  depositPaid: boolean;
+  studentName?: string;
+  studentPhone?: string;
+  universityName?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  status: 'Vacant' | 'Occupied' | 'Reserved' | 'Maintenance';
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VacationRentalStay {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  stayCode: string;
+  propertyId: string;
+  propertyTitle: string;
+  guestName: string;
+  guestPhone: string;
+  checkInDate: string; // YYYY-MM-DD (half-open start)
+  checkOutDate: string; // YYYY-MM-DD (half-open end)
+  nightsCount: number;
+  nightlyRateDzd: number;
+  cleaningFeeDzd: number;
+  totalAmountDzd: number;
+  depositDzd: number;
+  cleaningStatus: 'Pending' | 'InProgress' | 'CleanReady';
+  status: 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
+  notes?: string;
+  version?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ==========================================

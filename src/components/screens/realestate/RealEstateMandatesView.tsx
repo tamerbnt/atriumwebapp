@@ -16,11 +16,13 @@ import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { useRealEstateData } from './realEstateData';
 import { RealEstateMandate } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
+import { evaluateMandateExpiryStatus } from '../../../utils/realEstateDepth';
 import {
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentStaffFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
@@ -49,13 +51,14 @@ import {
 } from '../../ui/kinetic';
 
 export const RealEstateMandatesView: React.FC<any> = () => {
-  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const { language, currentBranch, branches, isSyncing, networkMode, staffList } = useAtriumSelector(
     (s) => ({
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
+      staffList: selectCurrentStaffFromState(s),
     }),
     shallowEqualObjects
   );
@@ -92,8 +95,14 @@ export const RealEstateMandatesView: React.FC<any> = () => {
     return mandates.find((m) => m.id === selectedMandate.id) || selectedMandate;
   }, [selectedMandate, mandates]);
 
-  const activeCount = useMemo(() => mandates.filter((m) => m.status === 'Active').length, [mandates]);
-  const expiringCount = useMemo(() => mandates.filter((m) => m.status === 'Expiring').length, [mandates]);
+  const activeCount = useMemo(
+    () => mandates.filter((m) => evaluateMandateExpiryStatus(m).derivedStatus === 'Active').length,
+    [mandates]
+  );
+  const expiringCount = useMemo(
+    () => mandates.filter((m) => evaluateMandateExpiryStatus(m).derivedStatus === 'Expiring').length,
+    [mandates]
+  );
   const exclusiveCount = useMemo(() => mandates.filter((m) => m.isExclusive).length, [mandates]);
   const totalVolumeDzd = useMemo(() => mandates.reduce((sum, m) => sum + m.askingPriceDzd, 0), [mandates]);
 
@@ -130,8 +139,9 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 
   const filteredMandates = useMemo(() => {
     return mandates.filter((m) => {
-      if (statusFilter === 'active' && m.status !== 'Active') return false;
-      if (statusFilter === 'expiring' && m.status !== 'Expiring') return false;
+      const expiryInfo = evaluateMandateExpiryStatus(m);
+      if (statusFilter === 'active' && expiryInfo.derivedStatus !== 'Active') return false;
+      if (statusFilter === 'expiring' && expiryInfo.derivedStatus !== 'Expiring') return false;
       if (statusFilter === 'exclusive' && !m.isExclusive) return false;
       if (listingFilter !== 'All' && m.listingType !== listingFilter) return false;
       if (branchFilter !== 'All') {
@@ -419,25 +429,33 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         key: 'validity',
         header: isAr ? 'المدة والصلاحية' : 'Validité',
         width: '1.6*',
-        renderCell: (m) => (
-          <div className="t-cap">
-            <div className="text-black dark:text-white flex items-center gap-1 tabular-nums">
-              <Calendar className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
-              <span>{m.endDate}</span>
+        renderCell: (m) => {
+          const exp = evaluateMandateExpiryStatus(m);
+          return (
+            <div className="t-cap">
+              <div className="text-black dark:text-white flex items-center gap-1 tabular-nums">
+                <Calendar className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
+                <span>{m.endDate}</span>
+              </div>
+              {exp.derivedStatus === 'Expired' ? (
+                <span className="t-small font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 mt-0.5">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>{isAr ? 'منتهية' : 'Expiré'}</span>
+                </span>
+              ) : exp.derivedStatus === 'Expiring' ? (
+                <span className="t-small font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5 tabular-nums">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>{isAr ? `تنتهي خلال ${exp.daysRemaining} يوم` : `Expire ${exp.daysRemaining}j`}</span>
+                </span>
+              ) : (
+                <span className="t-cap text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>{isAr ? 'سارية' : 'Valide'}</span>
+                </span>
+              )}
             </div>
-            {m.status === 'Expiring' ? (
-              <span className="t-small font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
-                <AlertTriangle className="w-3 h-3" />
-                <span>Expire &lt;15j</span>
-              </span>
-            ) : (
-              <span className="t-cap text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
-                <CheckCircle className="w-3 h-3" />
-                <span>Valide</span>
-              </span>
-            )}
-          </div>
-        ),
+          );
+        },
       },
     ],
     [branchesById, currentBranch, language, isAr, isEn]
@@ -567,7 +585,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
           onDelete={handleDelete}
           getRowMeta={(m): Partial<KineticRowData> => {
             const bInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
-            const isExpiring = m.status === 'Expiring';
+            const exp = evaluateMandateExpiryStatus(m);
+            const isExpiring = exp.derivedStatus === 'Expiring' || exp.derivedStatus === 'Expired';
             return {
               title: `${m.mandateNumber} · ${m.propertyTitle}`,
               subline: `${m.ownerFullName} · ${m.ownerPhone}`,
@@ -578,7 +597,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
               branchName: bInfo.name,
               branchCode: bInfo.code,
               isPinned: pinnedIds.has(m.id),
-              statusLabel: isExpiring ? 'Expire <15j' : 'Actif',
+              statusLabel: exp.derivedStatus === 'Expired' ? 'Expiré' : exp.derivedStatus === 'Expiring' ? `Expire ${exp.daysRemaining}j` : 'Actif',
               statusVariant: isExpiring ? 'warning' : 'active',
               metricPrimary: formatMoney(m.askingPriceDzd, language),
               metricSecondary: `Hon: ${formatMoney(m.commissionEstimatedTtcDzd, language)}`,
@@ -738,7 +757,25 @@ export const RealEstateMandatesView: React.FC<any> = () => {
                     label: isAr ? 'طباعة العقد' : 'Imprimer',
                     icon: <Printer size={16} />,
                     onClick: () => {
-                      if (typeof window !== 'undefined') window.print();
+                      setMandatePrintPage({
+                        id: m.id,
+                        title: `${isAr ? 'عقد الوكالة العقارية' : 'Mandat Immobilier'} — ${m.mandateNumber}`,
+                        subtitle: `${m.propertyTitle} · ${m.ownerFullName}`,
+                        badgeText: m.isExclusive ? 'Exclusif' : 'Simple',
+                        sections: [
+                          {
+                            rows: [
+                              { label: isAr ? 'الموكل' : 'Mandant', value: m.ownerFullName },
+                              { label: isAr ? 'الهاتف' : 'Téléphone', value: m.ownerPhone || '—' },
+                              { label: isAr ? 'السعر المطلوب' : 'Prix Demandé', value: formatMoney(m.askingPriceDzd, language) },
+                              { label: isAr ? 'الأتعاب المقدرة' : 'Honoraires TTC', value: formatMoney(m.commissionEstimatedTtcDzd, language) },
+                              { label: isAr ? 'الصلاحية' : 'Échéance', value: m.endDate },
+                            ],
+                          },
+                        ],
+                        signatureLeft: isAr ? 'توقيع الموكل' : 'Signature Mandant',
+                        signatureRight: isAr ? 'ختم الوكالة' : 'Cachet Agence',
+                      });
                     },
                   },
                 ]}
@@ -759,7 +796,15 @@ export const RealEstateMandatesView: React.FC<any> = () => {
                     <InspectorKeyValue label={isAr ? 'العقار' : 'Bien'} value={m.propertyTitle} mono={false} />
                     <InspectorKeyValue label={isAr ? 'العنوان' : 'Adresse'} value={m.propertyAddress} mono={false} />
                     <InspectorKeyValue label={isAr ? 'الصلاحية' : 'Validité'} value={`${m.startDate} → ${m.endDate}`} />
-                    <InspectorKeyValue label={isAr ? 'التجديدات' : 'Avenants'} value={`${m.renewalCount} avenant(s)`} isLast />
+                    <InspectorKeyValue label={isAr ? 'التجديدات' : 'Avenants'} value={`${m.renewalCount} avenant(s)`} isLast={!m.secondaryNegotiatorName} />
+                    {m.secondaryNegotiatorName && (
+                      <InspectorKeyValue
+                        label={isAr ? 'شريك العمولة' : 'Co-Négociateur'}
+                        value={`${m.secondaryNegotiatorName} (${((m.primarySplitBps ?? 10000) / 100).toFixed(0)}% / ${((m.secondarySplitBps ?? 0) / 100).toFixed(0)}%)`}
+                        mono={false}
+                        isLast
+                      />
+                    )}
                   </InspectorCard>
                 </InspectorSection>
               </>
@@ -806,6 +851,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         onClose={() => setIsMandateModalOpen(false)}
         onSave={(newMnd) => addMandate(newMnd)}
         properties={properties}
+        existingMandates={mandates}
+        staffList={staffList}
       />
 
       <PrintSheetModal

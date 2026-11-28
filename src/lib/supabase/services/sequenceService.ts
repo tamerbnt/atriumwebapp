@@ -7,7 +7,11 @@ export type ServerSequenceDocType =
   | 'deposit_receipt'
   | 'payroll_run'
   | 'ncr'
-  | 'inspection';
+  | 'inspection'
+  | 'quittance'
+  | 're_mandate'
+  | 're_lease'
+  | 're_fund_call';
 
 export type DeviceBlockDocType = 'walk_in_ticket' | 'deposit_receipt';
 
@@ -49,6 +53,10 @@ const DOC_PREFIX: Record<string, string> = {
   payroll_run: 'PAY',
   ncr: 'NCR',
   inspection: 'INSP',
+  quittance: 'QTC',
+  re_mandate: 'MND',
+  re_lease: 'BAIL',
+  re_fund_call: 'APP',
 };
 
 export function formatSequenceNumber(docType: ServerSequenceDocType, fiscalYear: number, seqNumber: number): string {
