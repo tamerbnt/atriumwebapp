@@ -228,6 +228,17 @@ const TABLE_REPLAY_PRIORITY: Record<string, number> = {
   trading_price_lists: 20,
   trading_delivery_rounds: 32,
   trading_rep_commissions: 42,
+  medical_staff: 16,
+  medical_departments: 17,
+  medical_patients: 20,
+  medical_consumables: 22,
+  medical_ngap_acts: 22,
+  medical_appointments: 32,
+  medical_consultations: 36,
+  medical_chifa_bordereaux: 40,
+  medical_invoices: 42,
+  medical_doctor_payouts: 45,
+  medical_cash_closures: 46,
   immutable_audit_logs: 50,
 };
 
@@ -580,6 +591,12 @@ function getItemReplayPriority(item: OfflineMutationItem): number {
     if (item.fn === 'edu_transfer_student_cohort_atomic') return 410;
     if (item.fn === 'edu_reissue_or_revoke_certificate') return 425;
     if (item.fn === 'edu_post_vacataire_hours_to_payroll') return 435;
+    if (item.fn === 'medical_upsert_appointment_atomic') return 325;
+    if (item.fn === 'medical_consume_supply_fefo') return 380;
+    if (item.fn === 'medical_transmit_chifa_bordereau') return 415;
+    if (item.fn === 'medical_settle_chifa_bordereau') return 420;
+    if (item.fn === 'medical_issue_practitioner_payout') return 455;
+    if (item.fn === 'medical_close_daily_cash') return 465;
     if (item.fn === 'record_bi_report_snapshot') return 520;
     if (item.fn === 'log_sensitive_read_event') return 500;
   }

@@ -2971,6 +2971,7 @@ export interface MedicalPatient {
   hasChifa100PercentAld?: boolean; // 100% ALD exoneration
   emergencyContact?: string;
   emergencyPhone?: string;
+  crmPartyId?: string;
   notes?: string;
   vitalsHistory?: BiometricVitalsPoint[];
   version?: number;
@@ -3014,6 +3015,8 @@ export interface MedicalConsultation {
   insuranceShareDzd: number;
   isPaid: boolean;
   paymentMethod?: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect';
+  unifiedDocumentId?: string;
+  journalEntryId?: string;
   notes?: string;
   version?: number;
   createdAt: string;
@@ -3065,6 +3068,8 @@ export interface MedicalPrescription {
   items: MedicalPrescriptionItem[];
   qrCodeHash: string;
   isSigned?: boolean;
+  allergyOverrideConfirmed?: boolean;
+  allergyOverrideReason?: string;
   doctorConfig?: Partial<DoctorOrdonnanceConfig>;
   notes?: string;
   version?: number;
@@ -3150,6 +3155,14 @@ export interface ChifaClaimRecord {
   version?: number;
 }
 
+export interface MedicalConsumableLot {
+  lotNumber: string;
+  expiryDate?: string;
+  quantity: number;
+  receivedAt?: string;
+  unitCostDzd?: number;
+}
+
 export interface ClinicConsumableItem {
   id: string;
   itemCode?: string;
@@ -3161,7 +3174,57 @@ export interface ClinicConsumableItem {
   reorderThresholdUnits?: number;
   unit: string;
   unitCostDzd: number;
+  lots?: MedicalConsumableLot[];
+  lotNumber?: string;
+  expiryDate?: string;
   version?: number;
+}
+
+export interface MedicalDoctorPayout {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  practitionerId: string;
+  practitionerRef?: string;
+  practitionerName: string;
+  periodMonth: string;
+  consultationsCount: number;
+  grossTurnoverCentimes: number;
+  commissionRateBps: number;
+  doctorPayoutCentimes: number;
+  polyclinicShareCentimes: number;
+  status: 'pending' | 'draft' | 'issued' | 'paid' | 'posted_to_payroll' | string;
+  payrollRunId?: string;
+  journalEntryId?: string;
+  issuedAt?: string;
+  notes?: string;
+  version?: number;
+}
+
+export interface MedicalChifaBordereau {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  bordereauNumber: string;
+  periodMonth: string;
+  cnasCenterCode: string;
+  status: 'Draft' | 'Transmitted' | 'Reimbursed' | 'Settled' | 'Rejected' | string;
+  claimsCount: number;
+  totalFeeCentimes: number;
+  totalCnasCentimes: number;
+  totalCopayCentimes: number;
+  claimIds: string[];
+  transmittedAt?: string;
+  reimbursedAt?: string;
+  settlementReference?: string;
+  unifiedPaymentId?: string;
+  journalEntryId?: string;
+  notes?: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DailyCashClosure {
@@ -3186,6 +3249,7 @@ export interface DailyCashClosure {
   actualPhysicalCashCountedDzd?: number;
   actualCashInDrawerDzd?: number;
   totalBaridiMobDzd?: number;
+  totalCardDzd?: number;
   totalChifaVouchersDzd?: number;
   totalTimbreAccruedDzd?: number;
   discrepancyDzd: number;

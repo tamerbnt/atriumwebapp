@@ -16,6 +16,12 @@ import { Button } from '@/atrium/core';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useMedicalData } from './medicalData';
 import { KineticModalShell } from '../../ui/kinetic';
+import {
+  NGAP_ACT_DEFINITIONS,
+  NgapActDefinition,
+  computeNgapFeeSplit,
+  validateClinicalVitalsBp,
+} from '../../../utils/medicalDepth';
 
 interface MedicalConsultationModalProps {
   isOpen: boolean;
@@ -44,13 +50,15 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
     }),
     shallowEqualObjects
   );
-  const { practitioners, getNextAvailableGeneralist, depleteForAct } = useMedicalData();
+  const { practitioners, getNextAvailableGeneralist, depleteForAct, ngapActs } = useMedicalData();
   const effectivePatients = patient
     ? (patients.some((p) => p.id === patient.id) ? patients : [patient, ...patients])
     : patients;
+  const availableActs = ngapActs && ngapActs.length > 0 ? ngapActs : NGAP_ACT_DEFINITIONS;
   const initialPatientId = patient?.id || preselectedPatientId || (effectivePatients[0]?.id || '');
   const [patientId, setPatientId] = useState(initialPatientId);
   const [doctorId, setDoctorId] = useState<string>('auto');
+  const [ngapCode, setNgapCode] = useState<NgapActDefinition['code']>('C');
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [bp, setBp] = useState('');
   const [temp, setTemp] = useState('');
@@ -58,14 +66,21 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   const [heartRate, setHeartRate] = useState('');
   const [urgency, setUrgency] = useState<'Normal' | 'Prioritaire' | 'Urgence'>('Normal');
   const [diagnosis, setDiagnosis] = useState('');
-  const [fee, setFee] = useState('');
-  const [copay, setCopay] = useState('');
+  const [fee, setFee] = useState('2500');
+  const [copay, setCopay] = useState('500');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
-    setPatientId(patient?.id || preselectedPatientId || effectivePatients[0]?.id || '');
+    const nextPatId = patient?.id || preselectedPatientId || effectivePatients[0]?.id || '';
+    const patObj = effectivePatients.find((p) => p.id === nextPatId) || patient;
+    const split = computeNgapFeeSplit({
+      ngapCode: 'C',
+      hasChifa100PercentAld: Boolean(patObj?.hasChifa100PercentAld),
+    });
+    setPatientId(nextPatId);
     setDoctorId('auto');
+    setNgapCode('C');
     setChiefComplaint('');
     setBp('');
     setTemp('');
@@ -73,10 +88,22 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
     setHeartRate('');
     setUrgency('Normal');
     setDiagnosis('');
-    setFee('');
-    setCopay('');
+    setFee(String(split.totalFeeDzd));
+    setCopay(String(split.copayDzd));
     setErrorMessage('');
   }, [isOpen, patient, preselectedPatientId]);
+
+  const applyNgapAndPatientSplit = (nextPatId: string, nextNgap: NgapActDefinition['code']) => {
+    const patObj = effectivePatients.find((p) => p.id === nextPatId) || patient;
+    const matchedAct = availableActs.find((a) => a.code === nextNgap);
+    const split = computeNgapFeeSplit({
+      ngapCode: nextNgap,
+      customFeeDzd: matchedAct?.conventionFeeDzd,
+      hasChifa100PercentAld: Boolean(patObj?.hasChifa100PercentAld),
+    });
+    setFee(String(split.totalFeeDzd));
+    setCopay(String(split.copayDzd));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,20 +114,16 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       return;
     }
 
-    // Strict Inverted Blood Pressure Validation (P_sys > P_dia)
-    if (bp.includes('/')) {
-      const parts = bp.split('/');
-      const sys = parseFloat(parts[0]?.trim());
-      const dia = parseFloat(parts[1]?.trim());
-      if (!isNaN(sys) && !isNaN(dia)) {
-        if (sys <= dia) {
-          setErrorMessage(
-            language === 'ar'
-              ? `خطأ سريري: ضغط الدم الانقباضي (${sys}) يجب أن يكون أكبر قطعاً من الانبساطي (${dia})`
-              : `Erreur clinique : La tension systolique (${sys}) doit être strictement supérieure à la diastolique (${dia}) mmHg`
-          );
-          return;
-        }
+    // Strict Clinical Blood Pressure Validation (P_sys > P_dia)
+    if (bp.trim()) {
+      const bpValidation = validateClinicalVitalsBp(bp);
+      if (!bpValidation.isValid) {
+        setErrorMessage(
+          language === 'ar' && bpValidation.systolic != null && bpValidation.diastolic != null
+            ? `خطأ سريري: ضغط الدم الانقباضي (${bpValidation.systolic}) يجب أن يكون أكبر قطعاً من الانبساطي (${bpValidation.diastolic})`
+            : bpValidation.errorMessage || 'Tension artérielle invalide'
+        );
+        return;
       }
     }
 
@@ -138,6 +161,9 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       businessId: currentBusiness?.id || pat.businessId || currentBranch?.businessId || '',
       branchId: activeBranchId,
       staffId: assignedDoc?.id || currentUser?.id || '',
+      doctorName: assignedDoc?.fullName || assignedDoc?.name || 'Dr. Polyclinique',
+      doctorSpecialty: assignedDoc?.specialty,
+      cabinetRoom: assignedDoc?.roomNumber || assignedDoc?.cabinetRoom,
       patientId: pat.id,
       patientName: pat.fullName,
       consultationDate: new Date().toISOString(),
@@ -150,10 +176,13 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       },
       diagnosis: diagnosis || 'Examen clinique en cours',
       status: 'InWaitingQueue',
+      urgencyLevel: urgency,
+      ngapCode,
       consultationFeeDzd: feeNum,
       copayAmountDzd: copayNum,
       insuranceShareDzd: Math.max(0, feeNum - copayNum),
       isPaid: false,
+      paymentMethod: copayNum === 0 && feeNum > 0 ? 'ChifaDirect' : 'Cash',
       ticketNumber: `T-${Math.floor(Math.random() * 80) + 101}`,
       notes: urgency !== 'Normal' ? `Priorité: ${urgency}` : undefined,
       createdAt: new Date().toISOString(),
@@ -174,12 +203,14 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
         toastType: 'success',
       },
       () => {
-        depleteForAct('C');
+        depleteForAct(ngapCode);
         onSave(created);
       }
     );
     onClose();
   };
+
+  const selectedPatObj = effectivePatients.find((p) => p.id === patientId) || patient;
 
   const patientOptions = effectivePatients.map((p) => ({
     value: p.id,
@@ -230,26 +261,56 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
               corner={12}
               label={language === 'ar' ? 'المريض' : 'Patient'}
               value={patientId}
-              onChange={setPatientId}
+              onChange={(val) => {
+                setPatientId(val);
+                applyNgapAndPatientSplit(val, ngapCode);
+              }}
               options={patientOptions}
             />
 
-            <LabelSelect
-              field="doctorId"
-              width="100%"
-              height={40}
-              corner={12}
-              label={language === 'ar' ? 'الطبيب المعالج / التوجيه' : 'Médecin / Affectation Cabinet'}
-              value={doctorId}
-              onChange={setDoctorId}
-              options={[
-                { value: 'auto', label: '⭐ Premier Généraliste Disponible (Attente la plus courte)' },
-                ...practitioners.map((p) => ({
-                  value: p.id,
-                  label: `${p.fullName} (${p.specialty} · ${p.roomNumber})`,
-                })),
-              ]}
-            />
+            {selectedPatObj?.hasChifa100PercentAld && (
+              <div data-sq="ctl" data-sq-border="none" className="px-3 py-2 bg-purple-500/10 text-purple-700 dark:text-purple-300 t-cap font-semibold">
+                {language === 'ar'
+                  ? 'إعفاء 100% أمراض مزمنة ALD — حصة المريض 0 دج'
+                  : 'Exonération Chifa 100% ALD — Ticket modérateur à 0 DZD'}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelSelect
+                field="doctorId"
+                width="100%"
+                height={40}
+                corner={12}
+                label={language === 'ar' ? 'الطبيب المعالج / التوجيه' : 'Médecin / Affectation Cabinet'}
+                value={doctorId}
+                onChange={setDoctorId}
+                options={[
+                  { value: 'auto', label: '⭐ Premier Généraliste Disponible (Attente la plus courte)' },
+                  ...practitioners.map((p) => ({
+                    value: p.id,
+                    label: `${p.fullName} (${p.specialty} · ${p.roomNumber})`,
+                  })),
+                ]}
+              />
+              <LabelSelect
+                field="ngapCode"
+                width="100%"
+                height={40}
+                corner={12}
+                label={language === 'ar' ? 'رمز العمل الطبي NGAP' : 'Acte NGAP / Cotation'}
+                value={ngapCode}
+                onChange={(val) => {
+                  const code = val as NgapActDefinition['code'];
+                  setNgapCode(code);
+                  applyNgapAndPatientSplit(patientId, code);
+                }}
+                options={availableActs.map((a) => ({
+                  value: a.code,
+                  label: `${a.code} — ${a.label} (${a.conventionFeeDzd} DA)`,
+                }))}
+              />
+            </div>
 
             {/* Urgency Level Triage */}
             <div data-sq="card" data-sq-border="none" className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">

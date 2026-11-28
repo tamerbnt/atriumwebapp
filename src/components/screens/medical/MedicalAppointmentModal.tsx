@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   X,
   Calendar,
-  Clock,
-  User,
-  Phone,
   Check,
   AlertTriangle,
-  Stethoscope,
 } from 'lucide-react';
 import { MedicalAppointmentSlot, MedicalPractitioner, MedicalPatient } from '../../../types';
 import { Button } from '@/atrium/core';
@@ -16,90 +12,122 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { KineticModalShell } from '../../ui/kinetic';
+import { evaluateAppointmentConflict } from '../../../utils/medicalDepth';
 
 interface MedicalAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   practitioners: MedicalPractitioner[];
   patients: MedicalPatient[];
-  onSaveAppointment: (slot: MedicalAppointmentSlot) => void;
+  onSaveAppointment: (
+    slot: MedicalAppointmentSlot
+  ) => void | { ok: boolean; errorMessage?: string };
   existingAppointments?: MedicalAppointmentSlot[];
   initialDoctorId?: string;
   initialDate?: string;
   initialTime?: string;
 }
 
+export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = ({
+  isOpen,
+  onClose,
+  practitioners,
+  patients,
+  onSaveAppointment,
+  existingAppointments = [],
+  initialDoctorId,
+  initialDate,
+  initialTime,
+}) => {
+  const [doctorId, setDoctorId] = React.useState(initialDoctorId || practitioners[0]?.id || 'doc_01');
+  const [selectedPatientId, setSelectedPatientId] = React.useState('');
+  const [patientName, setPatientName] = React.useState('');
+  const [patientPhone, setPatientPhone] = React.useState('');
+  const [date, setDate] = React.useState(initialDate || new Date().toISOString().slice(0, 10));
+  const [startTime, setStartTime] = React.useState(initialTime || '09:00');
+  const [durationMinutes, setDurationMinutes] = React.useState(30);
+  const [reason, setReason] = React.useState('Consultation de suivi');
+  const [urgency, setUrgency] = React.useState<'Normal' | 'Prioritaire'>('Normal');
+  const [isEmergencyBypass, setIsEmergencyBypass] = React.useState(false);
+  const [emergencyBypassReason, setEmergencyBypassReason] = React.useState('');
+  const [errorMsg, setErrorMsg] = React.useState('');
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setDoctorId(initialDoctorId || practitioners[0]?.id || 'doc_01');
+    setSelectedPatientId('');
+    setPatientName('');
+    setPatientPhone('');
+    setDate(initialDate || new Date().toISOString().slice(0, 10));
+    setStartTime(initialTime || '09:00');
+    setDurationMinutes(30);
+    setReason('Consultation de suivi');
+    setUrgency('Normal');
+    setIsEmergencyBypass(false);
+    setEmergencyBypassReason('');
+    setErrorMsg('');
+  }, [isOpen, initialDoctorId, initialDate, initialTime, practitioners]);
 
-export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = ({ isOpen, onClose, practitioners, patients, onSaveAppointment, existingAppointments = [], initialDoctorId, initialDate, initialTime }) => {
-	const [doctorId, setDoctorId] = React.useState(initialDoctorId || practitioners[0]?.id || "doc_01");
-	const [selectedPatientId, setSelectedPatientId] = React.useState("");
-	const [patientName, setPatientName] = React.useState("");
-	const [patientPhone, setPatientPhone] = React.useState("");
-	const [date, setDate] = React.useState(initialDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10));
-	const [startTime, setStartTime] = React.useState(initialTime || "09:00");
-	const [durationMinutes, setDurationMinutes] = React.useState(30);
-	const [reason, setReason] = React.useState("Consultation de suivi");
-	const [urgency, setUrgency] = React.useState<'Normal' | 'Prioritaire'>("Normal");
-	const [isEmergencyBypass, setIsEmergencyBypass] = React.useState(false);
-	const [emergencyBypassReason, setEmergencyBypassReason] = React.useState("");
-	const [errorMsg, setErrorMsg] = React.useState("");
-	const handlePatientSelect = (pId: string) => {
-		setSelectedPatientId(pId);
-		if (pId) {
-			const found = patients.find((p: any) => p.id === pId);
-			if (found) {
-				setPatientName(found.fullName);
-				setPatientPhone(found.phone);
-			}
-		}
-	};
-	const toMinutes = (timeStr: any) => {
-		const [h, m] = timeStr.split(":").map(Number);
-		return (h || 0) * 60 + (m || 0);
-	};
-	const handleSubmit = (e: any) => {
-		e.preventDefault();
-		if (!patientName.trim()) {
-			setErrorMsg("Veuillez renseigner le nom du patient.");
-			return;
-		}
-		const doctor = practitioners.find((p: any) => p.id === doctorId);
-		const newStart = toMinutes(startTime);
-		const newEnd = newStart + durationMinutes;
-		const conflictingSlot = existingAppointments.find((apt: any) => {
-			if (apt.date !== date || apt.doctorId !== doctorId) return false;
-			if (apt.status === "Cancelled" || apt.status === "NoShow") return false;
-			const aptStart = toMinutes(apt.startTime);
-			const aptEnd = aptStart + (apt.durationMinutes || 30);
-			return Math.max(newStart, aptStart) < Math.min(newEnd, aptEnd);
-		});
-		if (conflictingSlot && !isEmergencyBypass) {
-			setErrorMsg(`Conflit d'horaire détecté : ${doctor?.fullName || "Le médecin"} a déjà un rendez-vous avec ${conflictingSlot.patientName} de ${conflictingSlot.startTime} à ${Math.floor((toMinutes(conflictingSlot.startTime) + (conflictingSlot.durationMinutes || 30)) / 60).toString().padStart(2, "0")}:${((toMinutes(conflictingSlot.startTime) + (conflictingSlot.durationMinutes || 30)) % 60).toString().padStart(2, "0")}. Cochez "Sur-réservation d'urgence" ci-dessous pour forcer l'ajout.`);
-			return;
-		}
-		if (conflictingSlot && isEmergencyBypass && !emergencyBypassReason.trim()) {
-			setErrorMsg("Veuillez renseigner un motif clinique justifiant la sur-réservation d'urgence.");
-			return;
-		}
-		onSaveAppointment({
-			id: `apt_${Date.now()}`,
-			doctorId,
-			doctorName: doctor?.fullName || "Dr. Praticien",
-			patientId: selectedPatientId || void 0,
-			patientName: patientName.trim(),
-			patientPhone: patientPhone.trim(),
-			date,
-			startTime,
-			durationMinutes,
-			reason: reason.trim(),
-			status: "Booked",
-			urgency,
-			isEmergencyBypass,
-			emergencyBypassReason: isEmergencyBypass ? emergencyBypassReason.trim() : void 0
-		});
-		onClose();
-	};
+  const handlePatientSelect = (pId: string) => {
+    setSelectedPatientId(pId);
+    if (pId) {
+      const found = patients.find((p) => p.id === pId);
+      if (found) {
+        setPatientName(found.fullName);
+        setPatientPhone(found.phone);
+      }
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (!patientName.trim()) {
+      setErrorMsg('Veuillez renseigner le nom du patient.');
+      return;
+    }
+    const doctor = practitioners.find((p) => p.id === doctorId);
+    const conflict = evaluateAppointmentConflict({
+      doctorId,
+      doctorName: doctor?.fullName,
+      date,
+      startTime,
+      durationMinutes,
+      existingAppointments,
+      isEmergencyBypass,
+      emergencyBypassReason,
+    });
+    if (!conflict.ok) {
+      setErrorMsg(
+        conflict.errorCode === 'MEDICAL_APPOINTMENT_OVERLAP'
+          ? `${conflict.errorMessage} Cochez "Sur-réservation d'urgence" ci-dessous pour forcer l'ajout.`
+          : conflict.errorMessage || "Conflit d'horaire détecté."
+      );
+      return;
+    }
+
+    const res = onSaveAppointment({
+      id: `apt_${Date.now()}`,
+      doctorId,
+      doctorName: doctor?.fullName || 'Dr. Praticien',
+      patientId: selectedPatientId || undefined,
+      patientName: patientName.trim(),
+      patientPhone: patientPhone.trim(),
+      date,
+      startTime,
+      durationMinutes,
+      reason: reason.trim(),
+      status: 'Booked',
+      urgency,
+      isEmergencyBypass,
+      emergencyBypassReason: isEmergencyBypass ? emergencyBypassReason.trim() : undefined,
+    });
+    if (res && typeof res === 'object' && res.ok === false) {
+      setErrorMsg(res.errorMessage || "Impossible d'enregistrer ce rendez-vous.");
+      return;
+    }
+    onClose();
+  };
 	return (
 		<KineticModalShell
 			isOpen={isOpen}

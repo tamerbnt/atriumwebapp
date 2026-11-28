@@ -363,7 +363,11 @@ export const CATEGORY_TABLE_MAP: Record<BusinessCategory, string[]> = {
     'medical_appointments',
     'medical_consultations',
     'medical_consumables',
+    'medical_ngap_acts',
+    'medical_chifa_bordereaux',
     'medical_invoices',
+    'medical_doctor_payouts',
+    'medical_cash_closures',
   ],
   auto_garage: [
     'garage_staff',

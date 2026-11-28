@@ -12,6 +12,7 @@ import { MedicalPatient } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { Button } from '@/atrium/core';
 import { KineticModalShell, useRetainedModalValue } from '../../ui/kinetic';
 
@@ -40,6 +41,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   );
   const [fullName, setFullName] = useState(patientToEdit?.fullName || '');
   const [nationalId, setNationalId] = useState(patientToEdit?.nationalId || '');
+  const [chifaCardNumber, setChifaCardNumber] = useState(patientToEdit?.chifaCardNumber || '');
+  const [socialSecurityNumber, setSocialSecurityNumber] = useState(patientToEdit?.socialSecurityNumber || '');
+  const [hasChifa100PercentAld, setHasChifa100PercentAld] = useState(Boolean(patientToEdit?.hasChifa100PercentAld));
   const [phone, setPhone] = useState(patientToEdit?.phone || '');
   const [dob, setDob] = useState(patientToEdit?.dateOfBirth || '1990-01-01');
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>(patientToEdit?.gender || 'Male');
@@ -56,6 +60,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
     if (!isOpen) return;
     setFullName(patientToEdit?.fullName || '');
     setNationalId(patientToEdit?.nationalId || '');
+    setChifaCardNumber(patientToEdit?.chifaCardNumber || '');
+    setSocialSecurityNumber(patientToEdit?.socialSecurityNumber || '');
+    setHasChifa100PercentAld(Boolean(patientToEdit?.hasChifa100PercentAld));
     setPhone(patientToEdit?.phone || '');
     setDob(patientToEdit?.dateOfBirth || '1990-01-01');
     setGender(patientToEdit?.gender || 'Male');
@@ -91,6 +98,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
     }
 
     const savedPatient: MedicalPatient = {
+      ...(patientToEdit || {}),
       id: patientToEdit ? patientToEdit.id : `pat_${Date.now()}`,
       accountId: activeAccountId,
       businessId: patientToEdit?.businessId || currentBusiness?.id || currentBranch?.businessId || '',
@@ -98,6 +106,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
       staffId: patientToEdit?.staffId || currentUser?.id || '',
       fullName: fullName.trim(),
       nationalId: nationalId.trim() || undefined,
+      chifaCardNumber: chifaCardNumber.trim() || undefined,
+      socialSecurityNumber: socialSecurityNumber.trim() || undefined,
+      hasChifa100PercentAld,
       phone: phone.trim(),
       gender,
       dateOfBirth: dob,
@@ -204,10 +215,55 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
                 width="100%"
                 height={40}
                 corner={12}
-                label={language === 'ar' ? 'رقم التعريف الوطني / الشفاء' : 'N° Carte Chifa / NIN'}
+                label={language === 'ar' ? 'رقم التعريف الوطني (NIN)' : 'N° Identification Nationale (NIN)'}
                 value={nationalId}
                 onChange={setNationalId}
                 placeholder="198816..."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <LabelInput
+                field="chifaCardNumber"
+                width="100%"
+                height={40}
+                corner={12}
+                label={language === 'ar' ? 'رقم بطاقة الشفاء' : 'N° Carte Chifa'}
+                value={chifaCardNumber}
+                onChange={setChifaCardNumber}
+                placeholder="CHIFA-16-..."
+              />
+              <LabelInput
+                field="socialSecurityNumber"
+                width="100%"
+                height={40}
+                corner={12}
+                label={language === 'ar' ? 'رقم الضمان الاجتماعي NSS' : 'N° Sécurité Sociale (NSS)'}
+                value={socialSecurityNumber}
+                onChange={setSocialSecurityNumber}
+                placeholder="881601002345 12"
+              />
+            </div>
+
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="flex items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]"
+            >
+              <div>
+                <span className="t-small font-semibold text-black dark:text-white block">
+                  {language === 'ar' ? 'تغطية 100% (مرض مزمن ALD)' : 'Exonération 100% ALD (CNAS / Chifa)'}
+                </span>
+                <span className="t-cap text-black/55 dark:text-white/55">
+                  {language === 'ar'
+                    ? 'تطبيق حصة المريض 0 دج تلقائياً في الفوترة'
+                    : 'Ticket modérateur patient automatiquement fixé à 0 DZD'}
+                </span>
+              </div>
+              <LiveSwitch
+                checked={hasChifa100PercentAld}
+                onCheckedChange={setHasChifa100PercentAld}
+                aria-label="Exonération 100% ALD"
               />
             </div>
 
@@ -310,7 +366,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
               {language === 'ar' ? 'إلغاء' : 'Annuler'}
             </Button>
             <Button type="submit" tone="accent" size={40} leading={<UserPlus size={14} />}>
-              {language === 'ar' ? 'حفظ الملف الطبي' : 'Créer le Dossier'}
+              {displayPatientToEdit
+                ? (language === 'ar' ? 'تحديث الملف الطبي' : 'Enregistrer Modifications')
+                : (language === 'ar' ? 'حفظ الملف الطبي' : 'Créer le Dossier')}
             </Button>
           </div>
         </form>

@@ -13,6 +13,7 @@ import {
   Activity,
 } from 'lucide-react';
 import {
+  atriumActions,
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
@@ -21,6 +22,7 @@ import {
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient } from '../../../types';
+import { validateSystolicDiastolic } from '../../../utils/medicalDepth';
 import { useMedicalData } from './medicalData';
 import { MedicalPatientModal } from './MedicalPatientModal';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
@@ -880,6 +882,44 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           icon: <Pin size={15} />,
                           onClick: () => handleTogglePin(patient.id),
                         },
+                        {
+                          id: 'crm-link',
+                          label: patient.crmPartyId
+                            ? isAr
+                              ? 'مرتبط بـ CRM ✓'
+                              : 'Lié CRM ✓'
+                            : isAr
+                            ? 'ربط بالعملاء CRM'
+                            : 'Sync CRM',
+                          icon: <UserCheck size={15} />,
+                          onClick: () => {
+                            const res = atriumActions.ensurePartyForEntity({
+                              businessId: patient.businessId,
+                              branchId: patient.branchId,
+                              sourceVertical: 'medical_clinic',
+                              entityType: 'patient',
+                              entityId: patient.id,
+                              partyKind: 'person',
+                              displayName: patient.fullName,
+                              phone: patient.phone,
+                            });
+                            if (res?.party?.id) {
+                              const updated: MedicalPatient = {
+                                ...patient,
+                                crmPartyId: res.party.id,
+                              };
+                              updatePatient(updated);
+                              setInspectedPatient(updated);
+                              showToast({
+                                type: 'success',
+                                title: isAr ? 'الربط بالعملاء CRM' : 'Répertoire Unifié CRM',
+                                message: isAr
+                                  ? `تم ربط المريض ${patient.fullName} بدليل الأطراف الموحد`
+                                  : `Dossier patient ${patient.fullName} synchronisé avec le CRM unifié`,
+                              });
+                            }
+                          },
+                        },
                       ]}
                     />
                   </InspectorSection>
@@ -901,8 +941,20 @@ export const MedicalPatientsView: React.FC<any> = () => {
                       />
                       <InspectorKeyValue
                         label={isAr ? 'بطاقة الشفاء / الهوية' : 'NSS / Chifa'}
-                        value={patient.nationalId || patient.chifaCardNumber || 'N/A'}
+                        value={patient.chifaCardNumber || patient.socialSecurityNumber || patient.nationalId || 'N/A'}
                         mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'نظام التغطية' : 'Couverture CNAS'}
+                        value={
+                          patient.hasChifa100PercentAld
+                            ? isAr
+                              ? '100% أمراض مزمنة ALD'
+                              : '100% ALD Exonéré (0 DZD TM)'
+                            : isAr
+                            ? '80% النظام القياسي'
+                            : '80% Régime Standard'
+                        }
                       />
                       <InspectorKeyValue
                         label={isAr ? 'فصيلة الدم' : 'Groupe sanguin'}
@@ -1290,13 +1342,14 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                   });
                                   return;
                                 }
-                                if (sysVal <= diaVal) {
+                                const bpCheck = validateSystolicDiastolic(sysVal, diaVal);
+                                if (!bpCheck.isValid) {
                                   showToast({
                                     type: 'error',
                                     title: isAr ? 'خطأ سريري' : 'Erreur Clinique',
                                     message: isAr
                                       ? 'يجب أن يكون الضغط الانقباضي أعلى من الانبساطي'
-                                      : `La tension systolique (${sysVal}) doit être strictement supérieure à la diastolique (${diaVal}) mmHg`,
+                                      : bpCheck.errorMessage || `La tension systolique (${sysVal}) doit être strictement supérieure à la diastolique (${diaVal}) mmHg`,
                                   });
                                   return;
                                 }

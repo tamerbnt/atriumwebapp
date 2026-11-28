@@ -11,8 +11,14 @@ import {
   ChifaClaimRecord,
   ClinicConsumableItem,
   DailyCashClosure,
+  MedicalChifaBordereau,
+  MedicalDoctorPayout,
 } from '../../../types';
-import { useAtriumSelector } from '../../../services/store';
+import {
+  atriumActions,
+  showToast,
+  useAtriumSelector,
+} from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import {
   cloneSnapshot,
@@ -28,6 +34,18 @@ import {
   runWithConcurrency,
 } from '../../../lib/supabase/index';
 import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
+import {
+  NgapActDefinition,
+  NGAP_ACT_DEFINITIONS,
+  aggregatePractitionerTurnovers,
+  buildChifaBordereauBatch,
+  buildChifaSettlementScfDraft,
+  buildDoctorPayoutScfDraft,
+  consumeConsumableFefo,
+  evaluateAppointmentConflict,
+  getNgapActDefinition,
+  restockConsumableLot,
+} from '../../../utils/medicalDepth';
 
 function mergeMedicalById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -770,12 +788,109 @@ export const INITIAL_CHIFA_CLAIMS: ChifaClaimRecord[] = [
 ];
 
 export const INITIAL_CONSUMABLES: ClinicConsumableItem[] = [
-  { id: 'c_01', itemCode: 'CON_02', name: 'Seringues stériles 5ml à usage unique', category: 'Injection', currentStock: 240, currentStockUnits: 240, minStockAlert: 50, reorderThresholdUnits: 50, unit: 'Unités', unitCostDzd: 25 },
-  { id: 'c_02', itemCode: 'CON_01', name: 'Gants d\'examen stériles (Boîte de 100)', category: 'Hygiène & Protection', currentStock: 18, currentStockUnits: 18, minStockAlert: 5, reorderThresholdUnits: 5, unit: 'Boîtes', unitCostDzd: 1200 },
-  { id: 'c_03', itemCode: 'CON_03', name: 'Sérum physiologique 0.9% 500ml', category: 'Injection', currentStock: 45, currentStockUnits: 45, minStockAlert: 15, reorderThresholdUnits: 15, unit: 'Flacons', unitCostDzd: 150 },
-  { id: 'c_04', itemCode: 'CON_06', name: 'Kit de suture stérile jetable', category: 'Pansement & Suture', currentStock: 32, currentStockUnits: 32, minStockAlert: 10, reorderThresholdUnits: 10, unit: 'Kits', unitCostDzd: 650 },
-  { id: 'c_05', itemCode: 'CON_04', name: 'Électrodes adhésives ECG (Paquet 50)', category: 'Diagnostics Rapides', currentStock: 14, currentStockUnits: 14, minStockAlert: 4, reorderThresholdUnits: 4, unit: 'Paquets', unitCostDzd: 850 },
-  { id: 'c_06', itemCode: 'CON_05', name: 'Gel échographique hypoallergénique 5L', category: 'Diagnostics Rapides', currentStock: 6, currentStockUnits: 6, minStockAlert: 2, reorderThresholdUnits: 2, unit: 'Bidons', unitCostDzd: 2200 },
+  {
+    id: 'c_01',
+    itemCode: 'CON_02',
+    name: 'Seringues stériles 5ml à usage unique',
+    category: 'Injection',
+    currentStock: 240,
+    currentStockUnits: 240,
+    minStockAlert: 50,
+    reorderThresholdUnits: 50,
+    unit: 'Unités',
+    unitCostDzd: 25,
+    lotNumber: 'LOT-SRG-26A',
+    expiryDate: '2027-06-30',
+    lots: [
+      { lotNumber: 'LOT-SRG-26A', expiryDate: '2027-06-30', quantity: 140, receivedAt: '2026-01-15', unitCostDzd: 25 },
+      { lotNumber: 'LOT-SRG-26B', expiryDate: '2027-12-31', quantity: 100, receivedAt: '2026-04-01', unitCostDzd: 25 },
+    ],
+  },
+  {
+    id: 'c_02',
+    itemCode: 'CON_01',
+    name: 'Gants d\'examen stériles (Boîte de 100)',
+    category: 'Hygiène & Protection',
+    currentStock: 18,
+    currentStockUnits: 18,
+    minStockAlert: 5,
+    reorderThresholdUnits: 5,
+    unit: 'Boîtes',
+    unitCostDzd: 1200,
+    lotNumber: 'LOT-GNT-26A',
+    expiryDate: '2027-09-30',
+    lots: [
+      { lotNumber: 'LOT-GNT-26A', expiryDate: '2027-09-30', quantity: 18, receivedAt: '2026-02-10', unitCostDzd: 1200 },
+    ],
+  },
+  {
+    id: 'c_03',
+    itemCode: 'CON_03',
+    name: 'Sérum physiologique 0.9% 500ml',
+    category: 'Injection',
+    currentStock: 45,
+    currentStockUnits: 45,
+    minStockAlert: 15,
+    reorderThresholdUnits: 15,
+    unit: 'Flacons',
+    unitCostDzd: 150,
+    lotNumber: 'LOT-PHY-26C',
+    expiryDate: '2027-04-15',
+    lots: [
+      { lotNumber: 'LOT-PHY-26C', expiryDate: '2027-04-15', quantity: 45, receivedAt: '2026-03-01', unitCostDzd: 150 },
+    ],
+  },
+  {
+    id: 'c_04',
+    itemCode: 'CON_06',
+    name: 'Kit de suture stérile jetable',
+    category: 'Pansement & Suture',
+    currentStock: 32,
+    currentStockUnits: 32,
+    minStockAlert: 10,
+    reorderThresholdUnits: 10,
+    unit: 'Kits',
+    unitCostDzd: 650,
+    lotNumber: 'LOT-SUT-26B',
+    expiryDate: '2028-01-31',
+    lots: [
+      { lotNumber: 'LOT-SUT-26B', expiryDate: '2028-01-31', quantity: 32, receivedAt: '2026-02-20', unitCostDzd: 650 },
+    ],
+  },
+  {
+    id: 'c_05',
+    itemCode: 'CON_04',
+    name: 'Électrodes adhésives ECG (Paquet 50)',
+    category: 'Diagnostics Rapides',
+    currentStock: 14,
+    currentStockUnits: 14,
+    minStockAlert: 4,
+    reorderThresholdUnits: 4,
+    unit: 'Paquets',
+    unitCostDzd: 850,
+    lotNumber: 'LOT-ECG-26A',
+    expiryDate: '2027-05-30',
+    lots: [
+      { lotNumber: 'LOT-ECG-26A', expiryDate: '2027-05-30', quantity: 14, receivedAt: '2026-01-25', unitCostDzd: 850 },
+    ],
+  },
+  {
+    id: 'c_06',
+    itemCode: 'CON_05',
+    name: 'Gel échographique hypoallergénique 5L',
+    category: 'Diagnostics Rapides',
+    currentStock: 6,
+    currentStockUnits: 6,
+    minStockAlert: 2,
+    reorderThresholdUnits: 2,
+    unit: 'Bidons',
+    unitCostDzd: 2200,
+    lotNumber: 'LOT-GEL-26A',
+    expiryDate: '2027-08-31',
+    lots: [
+      { lotNumber: 'LOT-GEL-26A', expiryDate: '2027-08-31', quantity: 6, receivedAt: '2026-03-10', unitCostDzd: 2200 },
+    ],
+  },
 ];
 
 export const INITIAL_CASH_CLOSURES: DailyCashClosure[] = [
@@ -799,6 +914,7 @@ export const useMedicalData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const storeStaff = useAtriumSelector((s) => s.staff);
   const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_medical_main';
   const medCtx = useMemo(
@@ -926,6 +1042,34 @@ export const useMedicalData = () => {
     }
   });
 
+  const [chifaBordereaux, setChifaBordereaux] = useState<MedicalChifaBordereau[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_medical_bordereaux_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [doctorPayouts, setDoctorPayouts] = useState<MedicalDoctorPayout[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_medical_doctor_payouts_v2');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [ngapActs, setNgapActs] = useState<NgapActDefinition[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_medical_ngap_acts_v2');
+      const parsed = saved ? JSON.parse(saved) : null;
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...NGAP_ACT_DEFINITIONS];
+    } catch {
+      return [...NGAP_ACT_DEFINITIONS];
+    }
+  });
+
   // Persistent storage effects (idle-deferred, skip initial mount)
   useIdlePersist('atrium_medical_practitioners_v2', practitioners);
   useIdlePersist('atrium_medical_doctor_configs_v2', doctorConfigs);
@@ -938,6 +1082,9 @@ export const useMedicalData = () => {
   useIdlePersist('atrium_medical_chifa_v2', chifaClaims);
   useIdlePersist('atrium_medical_consumables_v2', consumables);
   useIdlePersist('atrium_medical_cash_closures_v2', cashClosures);
+  useIdlePersist('atrium_medical_bordereaux_v2', chifaBordereaux);
+  useIdlePersist('atrium_medical_doctor_payouts_v2', doctorPayouts);
+  useIdlePersist('atrium_medical_ngap_acts_v2', ngapActs);
 
   // Hydrate medical vertical state from Supabase when configured
   useEffect(() => {
@@ -958,6 +1105,9 @@ export const useMedicalData = () => {
         remoteChifa,
         remoteConsumables,
         remoteClosures,
+        remoteBordereaux,
+        remoteDoctorPayouts,
+        remoteNgapActs,
       ] = await runWithConcurrency(
         [
           () => medicalService.fetchPractitioners(activeBranchId),
@@ -971,6 +1121,9 @@ export const useMedicalData = () => {
           () => medicalService.fetchChifaClaims(activeBranchId),
           () => medicalService.fetchConsumables(activeBranchId),
           () => medicalService.fetchCashClosures(activeBranchId),
+          () => medicalService.fetchChifaBordereaux(activeBranchId),
+          () => medicalService.fetchDoctorPayouts(activeBranchId),
+          () => medicalService.fetchNgapActs(activeBranchId),
         ],
         4
       );
@@ -1009,6 +1162,15 @@ export const useMedicalData = () => {
       if (Array.isArray(remoteClosures) && remoteClosures.length > 0) {
         setCashClosures((prev) => mergeMedicalById(prev, remoteClosures as DailyCashClosure[]));
       }
+      if (Array.isArray(remoteBordereaux) && remoteBordereaux.length > 0) {
+        setChifaBordereaux((prev) => mergeMedicalById(prev, remoteBordereaux as MedicalChifaBordereau[]));
+      }
+      if (Array.isArray(remoteDoctorPayouts) && remoteDoctorPayouts.length > 0) {
+        setDoctorPayouts((prev) => mergeMedicalById(prev, remoteDoctorPayouts as MedicalDoctorPayout[]));
+      }
+      if (Array.isArray(remoteNgapActs) && remoteNgapActs.length > 0) {
+        setNgapActs(remoteNgapActs as NgapActDefinition[]);
+      }
     });
 
     return () => {
@@ -1028,6 +1190,10 @@ export const useMedicalData = () => {
       'medical_consultations',
       'medical_consumables',
       'medical_invoices',
+      'medical_chifa_bordereaux',
+      'medical_doctor_payouts',
+      'medical_cash_closures',
+      'medical_ngap_acts',
     ];
 
     return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
@@ -1048,6 +1214,9 @@ export const useMedicalData = () => {
       prune('medical_consumables', setConsumables);
       prune('medical_invoices', setChifaClaims);
       prune('medical_invoices', setCashClosures);
+      prune('medical_cash_closures', setCashClosures);
+      prune('medical_chifa_bordereaux', setChifaBordereaux);
+      prune('medical_doctor_payouts', setDoctorPayouts);
 
       const changedSet = new Set(changedTables);
       const tasks: Array<() => Promise<void>> = [];
@@ -1135,6 +1304,38 @@ export const useMedicalData = () => {
             }
           }
         );
+      }
+      if (changedSet.has('medical_chifa_bordereaux')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchChifaBordereaux(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setChifaBordereaux((prev) => mergeMedicalById(prev, rows as MedicalChifaBordereau[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_doctor_payouts')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchDoctorPayouts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setDoctorPayouts((prev) => mergeMedicalById(prev, rows as MedicalDoctorPayout[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_cash_closures')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchCashClosures(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setCashClosures((prev) => mergeMedicalById(prev, rows as DailyCashClosure[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_ngap_acts')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchNgapActs(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setNgapActs(rows as NgapActDefinition[]);
+          }
+        });
       }
 
       if (tasks.length > 0) {
@@ -1228,6 +1429,34 @@ export const useMedicalData = () => {
             }
           }
         );
+      } else if (evt.table === 'medical_chifa_bordereaux') {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchChifaBordereaux(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setChifaBordereaux((prev) => mergeMedicalById(prev, rows as MedicalChifaBordereau[]));
+          }
+        });
+      } else if (evt.table === 'medical_doctor_payouts') {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchDoctorPayouts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setDoctorPayouts((prev) => mergeMedicalById(prev, rows as MedicalDoctorPayout[]));
+          }
+        });
+      } else if (evt.table === 'medical_cash_closures') {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchCashClosures(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setCashClosures((prev) => mergeMedicalById(prev, rows as DailyCashClosure[]));
+          }
+        });
+      } else if (evt.table === 'medical_ngap_acts') {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchNgapActs(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setNgapActs(rows as NgapActDefinition[]);
+          }
+        });
       }
 
       if (tasks.length > 0) {
@@ -1265,6 +1494,9 @@ export const useMedicalData = () => {
     chifaClaims,
     consumables,
     cashClosures,
+    chifaBordereaux,
+    doctorPayouts,
+    ngapActs,
     isEmergencyAlarmActive,
   });
   latestRef.current = {
@@ -1279,6 +1511,9 @@ export const useMedicalData = () => {
     chifaClaims,
     consumables,
     cashClosures,
+    chifaBordereaux,
+    doctorPayouts,
+    ngapActs,
     isEmergencyAlarmActive,
   };
 
@@ -1562,6 +1797,33 @@ export const useMedicalData = () => {
 
   const addAppointment = (apt: MedicalAppointmentSlot) => {
     const scoped = withBranch(apt);
+    const conflict = evaluateAppointmentConflict({
+      doctorId: scoped.doctorId,
+      doctorName: scoped.doctorName,
+      date: scoped.date,
+      startTime: scoped.startTime,
+      durationMinutes: scoped.durationMinutes,
+      existingAppointments: latestRef.current.appointments.filter(belongsToActiveBranch),
+      isEmergencyBypass: scoped.isEmergencyBypass,
+      emergencyBypassReason: scoped.emergencyBypassReason,
+    });
+    if (!conflict.ok) {
+      showToast({
+        type: 'error',
+        title: pickLocalizedText(language, {
+          fr: 'Conflit de rendez-vous',
+          en: 'Appointment Conflict',
+          ar: 'تعارض في الموعد',
+        }),
+        message: conflict.errorMessage || 'Créneau déjà occupé',
+      });
+      return {
+        ok: false as const,
+        errorCode: conflict.errorCode,
+        errorMessage: conflict.errorMessage,
+      };
+    }
+
     const snap = cloneSnapshot(scoped);
     setAppointments((prev) => [...prev, scoped]);
     void medicalService.upsertAppointment(scoped, medCtx).catch(() => {});
@@ -1590,6 +1852,8 @@ export const useMedicalData = () => {
           .catch(() => {});
       },
     });
+
+    return { ok: true as const, slot: scoped };
   };
 
   const updateAppointmentStatus = (id: string, status: MedicalAppointmentSlot['status']) => {
@@ -1892,44 +2156,78 @@ export const useMedicalData = () => {
     });
   };
 
-  const applyDepleteConsumable = (itemCode: string, quantity: number) => {
+  const applyDepleteConsumable = (
+    itemCode: string,
+    quantity: number,
+    referenceDate?: string
+  ) => {
     const existing = latestRef.current.consumables.find(
+      (item) => (item.itemCode === itemCode || item.id === itemCode) && belongsToActiveBranch(item)
+    ) || latestRef.current.consumables.find(
       (item) => item.itemCode === itemCode || item.id === itemCode
     );
     if (!existing) {
       return {
+        ok: false as const,
+        errorCode: 'MEDICAL_CONSUMABLE_NOT_FOUND',
+        errorMessage: `Consommable introuvable (${itemCode}).`,
         matchedPrev: null as ClinicConsumableItem | null,
         matchedNext: null as ClinicConsumableItem | null,
       };
     }
-    const matchedPrev = cloneSnapshot(existing);
-    const prevQty = existing.currentStockUnits ?? existing.currentStock ?? 0;
-    const newQty = Math.max(0, prevQty - quantity);
-    const matchedNext: ClinicConsumableItem = cloneSnapshot({
-      ...existing,
-      currentStock: newQty,
-      currentStockUnits: newQty,
+    const fefo = consumeConsumableFefo({
+      item: existing,
+      quantity,
+      referenceDate,
     });
+    if (!fefo.ok || !fefo.updatedItem) {
+      return {
+        ok: false as const,
+        errorCode: fefo.errorCode,
+        errorMessage: fefo.errorMessage,
+        matchedPrev: null as ClinicConsumableItem | null,
+        matchedNext: null as ClinicConsumableItem | null,
+      };
+    }
+
+    const matchedPrev = cloneSnapshot(existing);
+    const matchedNext = cloneSnapshot(withBranch(fefo.updatedItem));
     setConsumables((prev) =>
-      prev.map((item) => {
-        if (item.itemCode === itemCode || item.id === itemCode) {
-          const itemPrevQty = item.currentStockUnits ?? item.currentStock ?? 0;
-          const itemNewQty = Math.max(0, itemPrevQty - quantity);
-          return { ...item, currentStock: itemNewQty, currentStockUnits: itemNewQty };
-        }
-        return item;
-      })
+      prev.map((item) => (item.id === existing.id ? matchedNext : item))
     );
-    void medicalService.upsertConsumable(matchedNext, medCtx).catch(() => {});
+    void medicalService
+      .consumeSupplyFefo(existing.id, quantity, referenceDate, existing.version)
+      .catch(() => {});
+
     return {
+      ok: true as const,
+      deductedLots: fefo.deductedLots || [],
       matchedPrev: matchedPrev as ClinicConsumableItem | null,
       matchedNext: matchedNext as ClinicConsumableItem | null,
     };
   };
 
-  const depleteConsumable = (itemCode: string, quantity: number) => {
-    const { matchedPrev: prevSnap, matchedNext } = applyDepleteConsumable(itemCode, quantity);
+  const depleteConsumable = (itemCode: string, quantity: number, referenceDate?: string) => {
+    const res = applyDepleteConsumable(itemCode, quantity, referenceDate);
+    if (!res.ok) {
+      showToast({
+        type: 'error',
+        title: pickLocalizedText(language, {
+          fr: 'Sortie FEFO bloquée',
+          en: 'FEFO Depletion Blocked',
+          ar: 'تم حظر صرف المستلزم',
+        }),
+        message: res.errorMessage || 'Stock indisponible',
+      });
+      return {
+        ok: false as const,
+        errorCode: res.errorCode,
+        errorMessage: res.errorMessage,
+      };
+    }
 
+    const prevSnap = res.matchedPrev;
+    const matchedNext = res.matchedNext;
     if (prevSnap && matchedNext) {
       const nextSnap = matchedNext;
       registerUndoEntry({
@@ -1939,8 +2237,8 @@ export const useMedicalData = () => {
         branchId: activeBranchId,
         entityLabel: prevSnap.name,
         summary: pickLocalizedText(language, {
-          fr: `Sortie consommable ${prevSnap.name} (-${quantity})`,
-          en: `Consumable depleted: ${prevSnap.name} (-${quantity})`,
+          fr: `Sortie FEFO ${prevSnap.name} (-${quantity})`,
+          en: `FEFO depleted: ${prevSnap.name} (-${quantity})`,
           ar: `تم خصم ${prevSnap.name} (-${quantity})`,
         }),
         undo: () => {
@@ -1955,30 +2253,38 @@ export const useMedicalData = () => {
         },
       });
     }
+    return {
+      ok: true as const,
+      deductedLots: res.deductedLots,
+    };
   };
 
-  const restockConsumable = (itemCode: string, quantity: number) => {
+  const restockConsumable = (
+    itemCode: string,
+    quantity: number,
+    options?: { lotNumber?: string; expiryDate?: string; receivedAt?: string }
+  ) => {
     const existing = latestRef.current.consumables.find(
+      (item) => (item.itemCode === itemCode || item.id === itemCode) && belongsToActiveBranch(item)
+    ) || latestRef.current.consumables.find(
       (item) => item.itemCode === itemCode || item.id === itemCode
     );
-    if (!existing) return;
+    if (!existing) return { ok: false as const };
     const prevSnap = cloneSnapshot(existing);
-    const prevQty = existing.currentStockUnits ?? existing.currentStock ?? 0;
-    const newQty = prevQty + quantity;
-    const capturedNext: ClinicConsumableItem = cloneSnapshot({
-      ...existing,
-      currentStock: newQty,
-      currentStockUnits: newQty,
-    });
-    setConsumables((prev) =>
-      prev.map((item) => {
-        if (item.itemCode === itemCode || item.id === itemCode) {
-          const itemPrevQty = item.currentStockUnits ?? item.currentStock ?? 0;
-          const itemNewQty = itemPrevQty + quantity;
-          return { ...item, currentStock: itemNewQty, currentStockUnits: itemNewQty };
-        }
-        return item;
+    const defaultLot = `LOT-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`;
+    const defaultExpiry = new Date(Date.now() + 365 * 86_400_000).toISOString().slice(0, 10);
+    const updatedItem = withBranch(
+      restockConsumableLot({
+        item: existing,
+        quantity,
+        lotNumber: options?.lotNumber?.trim() || defaultLot,
+        expiryDate: options?.expiryDate?.trim() || defaultExpiry,
+        receivedAt: options?.receivedAt,
       })
+    );
+    const capturedNext = cloneSnapshot(updatedItem);
+    setConsumables((prev) =>
+      prev.map((item) => (item.id === existing.id ? updatedItem : item))
     );
     void medicalService.upsertConsumable(capturedNext, medCtx).catch(() => {});
 
@@ -2004,23 +2310,42 @@ export const useMedicalData = () => {
         void medicalService.upsertConsumable(nextCopy, medCtx).catch(() => {});
       },
     });
+    return { ok: true as const, item: capturedNext };
   };
 
-  const depleteForAct = (actCode: string) => {
+  const depleteForAct = (actCode: string, referenceDate?: string) => {
     const prevConsumables = cloneSnapshot(latestRef.current.consumables);
-    if (actCode === 'C' || actCode === 'CS') {
-      applyDepleteConsumable('CON_01', 1);
-    } else if (actCode === 'K') {
-      applyDepleteConsumable('CON_01', 1);
-      applyDepleteConsumable('CON_02', 1);
-      applyDepleteConsumable('CON_03', 1);
-    } else if (actCode === 'KE') {
-      applyDepleteConsumable('CON_05', 1);
-    } else if (actCode === 'ECG') {
-      applyDepleteConsumable('CON_04', 6);
-    } else {
-      return;
+    const customAct = latestRef.current.ngapActs.find((a) => a.code === actCode);
+    const actDef = customAct || getNgapActDefinition(actCode);
+    const depletedItems: ClinicConsumableItem[] = [];
+    const blockedErrors: string[] = [];
+
+    actDef.linkedConsumables.forEach((req) => {
+      const exists = prevConsumables.some(
+        (item) => item.itemCode === req.itemCode || item.id === req.itemCode
+      );
+      if (!exists) return;
+      const res = applyDepleteConsumable(req.itemCode, req.quantity, referenceDate);
+      if (res.ok && res.matchedNext) {
+        depletedItems.push(res.matchedNext);
+      } else if (!res.ok && res.errorMessage) {
+        blockedErrors.push(res.errorMessage);
+      }
+    });
+
+    if (blockedErrors.length > 0) {
+      showToast({
+        type: 'warning',
+        title: pickLocalizedText(language, {
+          fr: 'Alerte consommables FEFO',
+          en: 'FEFO Supply Warning',
+          ar: 'تنبيه مخزون المستلزمات',
+        }),
+        message: blockedErrors[0],
+      });
     }
+
+    if (depletedItems.length === 0) return;
 
     registerUndoEntry({
       vertical: 'medical_clinic',
@@ -2029,8 +2354,8 @@ export const useMedicalData = () => {
       branchId: activeBranchId,
       entityLabel: actCode,
       summary: pickLocalizedText(language, {
-        fr: `Consommables déduits pour acte ${actCode}`,
-        en: `Consumables deducted for act ${actCode}`,
+        fr: `Consommables FEFO déduits pour acte ${actCode}`,
+        en: `FEFO consumables deducted for act ${actCode}`,
         ar: `تم خصم المستلزمات للعمل الطبي ${actCode}`,
       }),
       undo: () => {
@@ -2041,6 +2366,352 @@ export const useMedicalData = () => {
         });
       },
     });
+  };
+
+  const transmitChifaBordereau = (params?: {
+    periodMonth?: string;
+    cnasCenterCode?: string;
+    claimIds?: string[];
+  }) => {
+    const branchClaims = latestRef.current.chifaClaims.filter(belongsToActiveBranch);
+    const targetClaims =
+      params?.claimIds && params.claimIds.length > 0
+        ? branchClaims.filter((c) => params.claimIds!.includes(c.id))
+        : branchClaims.filter(
+            (c) => !(c.isTransmitted ?? c.status === 'Submitted') && c.status !== 'Reimbursed'
+          );
+
+    const batchRes = buildChifaBordereauBatch({
+      accountId: medCtx.accountId || 'acc_01',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      claims: targetClaims,
+      periodMonth: params?.periodMonth,
+      cnasCenterCode: params?.cnasCenterCode,
+      transmitted: true,
+    });
+
+    if (!batchRes.ok || !batchRes.bordereau) {
+      const msg =
+        targetClaims.length === 0 && branchClaims.length > 0
+          ? pickLocalizedText(language, {
+              fr: 'Toutes les fiches Chifa actives ont déjà été télétransmises.',
+              en: 'All active Chifa claims have already been transmitted.',
+              ar: 'تم إرسال جميع ملفات شفاء النشطة مسبقاً.',
+            })
+          : batchRes.errorMessage || 'Aucune fiche Chifa à télétransmettre.';
+      showToast({
+        type: 'warning',
+        title: 'Télétransmission CNAS',
+        message: msg,
+      });
+      return {
+        ok: false as const,
+        errorCode: batchRes.errorCode || 'MEDICAL_BORDEREAU_EMPTY',
+        errorMessage: msg,
+      };
+    }
+
+    const bordereau = batchRes.bordereau;
+    const prevClaimsSnap = cloneSnapshot(targetClaims);
+    const transmittedDate = new Date().toISOString().slice(0, 10);
+    const claimIdSet = new Set(bordereau.claimIds);
+    const updatedClaims = targetClaims.map((cl) => ({
+      ...cl,
+      status: 'Submitted' as const,
+      isTransmitted: true,
+      submissionDate: cl.submissionDate || transmittedDate,
+      batchNumber: bordereau.bordereauNumber,
+      bordereauNumber: bordereau.bordereauNumber,
+    }));
+
+    setChifaBordereaux((prev) => [bordereau, ...prev]);
+    setChifaClaims((prev) =>
+      prev.map((cl) => {
+        if (!claimIdSet.has(cl.id)) return cl;
+        return updatedClaims.find((u) => u.id === cl.id) || cl;
+      })
+    );
+
+    void medicalService.transmitChifaBordereau(bordereau).catch(() => {});
+    updatedClaims.forEach((cl) => {
+      void medicalService.upsertChifaClaim(cl, medCtx).catch(() => {});
+    });
+
+    showToast({
+      type: 'success',
+      title: 'Télétransmission CNAS',
+      message: pickLocalizedText(language, {
+        fr: `Bordereau ${bordereau.bordereauNumber} transmis (${bordereau.claimsCount} dossiers).`,
+        en: `Bordereau ${bordereau.bordereauNumber} transmitted (${bordereau.claimsCount} claims).`,
+        ar: `تم إرسال جدول ${bordereau.bordereauNumber} (${bordereau.claimsCount} ملفات).`,
+      }),
+    });
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: bordereau.bordereauNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Bordereau Chifa ${bordereau.bordereauNumber} télétransmis`,
+        en: `Chifa bordereau ${bordereau.bordereauNumber} transmitted`,
+        ar: `تم إرسال جدول شفاء ${bordereau.bordereauNumber}`,
+      }),
+      undo: () => {
+        const prevClaims = cloneSnapshot(prevClaimsSnap);
+        setChifaBordereaux((prev) => prev.filter((b) => b.id !== bordereau.id));
+        setChifaClaims((prev) =>
+          prev.map((cl) => prevClaims.find((p) => p.id === cl.id) || cl)
+        );
+        void syncCoordinator
+          .softDeleteRow('medical_chifa_bordereaux', bordereau.id, currentStaffId)
+          .catch(() => {});
+        prevClaims.forEach((cl) => {
+          void medicalService.upsertChifaClaim(cl, medCtx).catch(() => {});
+        });
+      },
+      redo: () => {
+        setChifaBordereaux((prev) =>
+          prev.some((b) => b.id === bordereau.id) ? prev : [bordereau, ...prev]
+        );
+        setChifaClaims((prev) =>
+          prev.map((cl) => updatedClaims.find((u) => u.id === cl.id) || cl)
+        );
+        void medicalService.transmitChifaBordereau(bordereau).catch(() => {});
+        updatedClaims.forEach((cl) => {
+          void medicalService.upsertChifaClaim(cl, medCtx).catch(() => {});
+        });
+      },
+    });
+
+    return { ok: true as const, bordereau };
+  };
+
+  const settleChifaBordereau = (bordereauId: string, settlementReference?: string) => {
+    const existing = latestRef.current.chifaBordereaux.find((b) => b.id === bordereauId);
+    if (!existing) {
+      return { ok: false as const, errorMessage: 'Bordereau introuvable.' };
+    }
+    if (existing.status === 'Reimbursed' || existing.status === 'Settled') {
+      return { ok: false as const, errorMessage: 'Bordereau déjà encaissé.' };
+    }
+
+    const prevSnap = cloneSnapshot(existing);
+    const ref = settlementReference?.trim() || `VIR-CNAS-${existing.bordereauNumber}`;
+    const settledAt = new Date().toISOString();
+    let updated: MedicalChifaBordereau = {
+      ...existing,
+      status: 'Reimbursed',
+      reimbursedAt: settledAt,
+      settlementReference: ref,
+      updatedAt: settledAt,
+    };
+
+    const scfDraft = buildChifaSettlementScfDraft({
+      bordereau: updated,
+      settlementDate: settledAt.slice(0, 10),
+      settlementReference: ref,
+    });
+    const scfRes =
+      updated.totalCnasCentimes > 0 && medCtx.businessId && activeBranchId
+        ? atriumActions.postManualJournalEntry({
+            ...scfDraft,
+            silentSuccessToast: true,
+          })
+        : { ok: false as const, entry: undefined };
+
+    if (scfRes.ok && scfRes.entry) {
+      updated = { ...updated, journalEntryId: scfRes.entry.id };
+    }
+
+    const claimIdSet = new Set(updated.claimIds || []);
+    const prevClaimsSnap = cloneSnapshot(
+      latestRef.current.chifaClaims.filter((c) => claimIdSet.has(c.id))
+    );
+
+    setChifaBordereaux((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+    setChifaClaims((prev) =>
+      prev.map((c) =>
+        claimIdSet.has(c.id) ? { ...c, status: 'Reimbursed', isTransmitted: true } : c
+      )
+    );
+
+    void medicalService
+      .settleChifaBordereau({
+        bordereauId: updated.id,
+        settlementReference: ref,
+        journalEntryId: updated.journalEntryId,
+        expectedVersion: existing.version,
+      })
+      .catch(() => {});
+
+    prevClaimsSnap.forEach((cl) => {
+      void medicalService
+        .upsertChifaClaim({ ...cl, status: 'Reimbursed', isTransmitted: true }, medCtx)
+        .catch(() => {});
+    });
+
+    showToast({
+      type: 'success',
+      title: 'Remboursement CNAS Encaissé',
+      message: pickLocalizedText(language, {
+        fr: `Virement CNAS enregistré (${ref}) · Écriture SCF 512000/411000 comptabilisée.`,
+        en: `CNAS settlement recorded (${ref}) · SCF entry 512000/411000 posted.`,
+        ar: `تم تحصيل تحويل الصندوق الوطني للتأمينات (${ref}).`,
+      }),
+    });
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'status',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: updated.bordereauNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Règlement CNAS ${updated.bordereauNumber} encaissé`,
+        en: `CNAS bordereau ${updated.bordereauNumber} settled`,
+        ar: `تم تحصيل جدول شفاء ${updated.bordereauNumber}`,
+      }),
+      undo: () => {
+        setChifaBordereaux((prev) => prev.map((b) => (b.id === prevSnap.id ? prevSnap : b)));
+        setChifaClaims((prev) =>
+          prev.map((c) => prevClaimsSnap.find((p) => p.id === c.id) || c)
+        );
+      },
+      redo: () => {
+        setChifaBordereaux((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+        setChifaClaims((prev) =>
+          prev.map((c) =>
+            claimIdSet.has(c.id) ? { ...c, status: 'Reimbursed', isTransmitted: true } : c
+          )
+        );
+      },
+    });
+
+    return {
+      ok: true as const,
+      bordereau: updated,
+      journalEntryId: scfRes.entry?.id,
+    };
+  };
+
+  const issueDoctorPayout = (params: {
+    practitionerId: string;
+    periodMonth?: string;
+    paymentMethod?: 'bank_transfer' | 'cash';
+    notes?: string;
+  }) => {
+    const doc =
+      latestRef.current.practitioners.find((p) => p.id === params.practitionerId) ||
+      scopedPractitioners.find((p) => p.id === params.practitionerId);
+    if (!doc) {
+      return { ok: false as const, errorMessage: 'Praticien introuvable.' };
+    }
+
+    const branchConsults = latestRef.current.consultations.filter(belongsToActiveBranch);
+    const branchPayouts = latestRef.current.doctorPayouts.filter(belongsToActiveBranch);
+    const [summary] = aggregatePractitionerTurnovers({
+      practitioners: [doc],
+      consultations: branchConsults,
+      payouts: branchPayouts,
+      periodMonth: params.periodMonth,
+    });
+
+    if (!summary || summary.pendingPayoutCentimes <= 0) {
+      const msg = pickLocalizedText(language, {
+        fr: `Aucun solde d'honoraires à régler pour ${doc.fullName}.`,
+        en: `No pending practitioner payout due for ${doc.fullName}.`,
+        ar: `لا توجد مستحقات معلقة للطبيب ${doc.fullName}.`,
+      });
+      showToast({
+        type: 'warning',
+        title: 'Rétrocession Honoraires',
+        message: msg,
+      });
+      return { ok: false as const, errorMessage: msg };
+    }
+
+    const nowIso = new Date().toISOString();
+    let payout: MedicalDoctorPayout = {
+      id: `pay_${Date.now()}_${doc.id}`,
+      accountId: medCtx.accountId || 'acc_01',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      practitionerId: doc.id,
+      practitionerRef: doc.id,
+      practitionerName: doc.fullName || doc.name || 'Dr. Praticien',
+      periodMonth: summary.periodMonth,
+      consultationsCount: summary.consultationsCount,
+      grossTurnoverCentimes: summary.grossTurnoverCentimes,
+      commissionRateBps: Math.round(summary.commissionRatePercent * 100),
+      doctorPayoutCentimes: summary.pendingPayoutCentimes,
+      polyclinicShareCentimes: summary.polyclinicShareCentimes,
+      status: 'issued',
+      issuedAt: nowIso,
+      notes: params.notes,
+    };
+
+    const scfDraft = buildDoctorPayoutScfDraft({
+      payout,
+      paymentMethod: params.paymentMethod || 'bank_transfer',
+    });
+    const scfRes =
+      medCtx.businessId && activeBranchId
+        ? atriumActions.postManualJournalEntry({
+            ...scfDraft,
+            silentSuccessToast: true,
+          })
+        : { ok: false as const, entry: undefined };
+
+    if (scfRes.ok && scfRes.entry) {
+      payout = { ...payout, journalEntryId: scfRes.entry.id };
+    }
+
+    const payoutSnap = cloneSnapshot(payout);
+    setDoctorPayouts((prev) => [payout, ...prev]);
+    void medicalService.issuePractitionerPayout(payout, medCtx).catch(() => {});
+
+    showToast({
+      type: 'success',
+      title: 'Règlement Honoraires Émis',
+      message: pickLocalizedText(language, {
+        fr: `Rétrocession de ${(payout.doctorPayoutCentimes / 100).toLocaleString()} DZD émise pour ${payout.practitionerName}.`,
+        en: `Payout of ${(payout.doctorPayoutCentimes / 100).toLocaleString()} DZD issued for ${payout.practitionerName}.`,
+        ar: `تم صرف مستحقات ${(payout.doctorPayoutCentimes / 100).toLocaleString()} دج للطبيب ${payout.practitionerName}.`,
+      }),
+    });
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: payout.practitionerName,
+      summary: pickLocalizedText(language, {
+        fr: `Règlement honoraires ${payout.practitionerName} émis`,
+        en: `Practitioner payout ${payout.practitionerName} issued`,
+        ar: `تم إصدار مستحقات ${payout.practitionerName}`,
+      }),
+      undo: () => {
+        setDoctorPayouts((prev) => prev.filter((p) => p.id !== payoutSnap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_doctor_payouts', payoutSnap.id, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(payoutSnap);
+        setDoctorPayouts((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void medicalService.issuePractitionerPayout(re, medCtx).catch(() => {});
+      },
+    });
+
+    return {
+      ok: true as const,
+      payout,
+      journalEntryId: scfRes.entry?.id,
+    };
   };
 
   const deleteConsumable = (id: string) => {
@@ -2076,7 +2747,70 @@ export const useMedicalData = () => {
     }
   };
 
-  const scopedPractitioners = useMemo(() => practitioners.filter(belongsToActiveBranch), [practitioners, belongsToActiveBranch]);
+  const staffPractitioners = useMemo<MedicalPractitioner[]>(() => {
+    const palette = ['#0D9488', '#d4522f', '#2563EB', '#9333EA', '#D97706'];
+    return (storeStaff || [])
+      .filter((member) => {
+        if (!member || member.status === 'Terminated' || member.isActive === false) return false;
+        const memberBranch = member.branchId || member.facilityId;
+        if (memberBranch && memberBranch !== activeBranchId) return false;
+        const roleText = String(member.role || '').toLowerCase();
+        const isClinicalRole =
+          roleText.includes('doctor') ||
+          roleText.includes('médecin') ||
+          roleText.includes('medecin') ||
+          roleText.includes('specialist') ||
+          roleText.includes('praticien') ||
+          roleText.includes('dentist') ||
+          roleText.includes('surgeon') ||
+          roleText.includes('généraliste') ||
+          roleText.includes('cardiolog') ||
+          roleText.includes('pédiatr') ||
+          roleText.includes('gynéco');
+        return isClinicalRole || Boolean(member.medicalSpecialty) || Boolean(member.orderRegistrationNumber);
+      })
+      .map((member, idx) => ({
+        id: member.id,
+        fullName: member.fullName,
+        specialty: member.medicalSpecialty || member.technicalSpecialty || String(member.role || 'Médecin'),
+        department: 'Cabinet Médical',
+        licenseNumber: member.orderRegistrationNumber || 'CNOM-EN-COURS',
+        roomNumber: `Cabinet ${idx + 1}`,
+        phone: member.phoneNumber || '',
+        email: member.email || '',
+        commissionRatePercent:
+          typeof member.serviceCommissionRate === 'number' && member.serviceCommissionRate > 0
+            ? member.serviceCommissionRate
+            : 70,
+        color: palette[idx % palette.length],
+        isAvailable: member.status !== 'OnLeave' && member.status !== 'Suspended',
+        branchId: member.branchId || member.facilityId || activeBranchId,
+      }));
+  }, [storeStaff, activeBranchId]);
+
+  const scopedPractitioners = useMemo(() => {
+    const branchDoctors = practitioners.filter((p) => {
+      const rec = p as { branchId?: string; facilityId?: string };
+      return !rec.branchId && !rec.facilityId ? true : belongsToActiveBranch(p);
+    });
+    const mergedMap = new Map<string, MedicalPractitioner>();
+    const seenNames = new Set<string>();
+    staffPractitioners.forEach((doc) => {
+      mergedMap.set(doc.id, doc);
+      if (doc.fullName) seenNames.add(doc.fullName.trim().toLowerCase());
+    });
+    branchDoctors.forEach((doc) => {
+      const rec = doc as { branchId?: string; facilityId?: string };
+      const normName = (doc.fullName || '').trim().toLowerCase();
+      if (!rec.branchId && !rec.facilityId && normName && seenNames.has(normName)) {
+        return;
+      }
+      if (!mergedMap.has(doc.id)) {
+        mergedMap.set(doc.id, doc);
+      }
+    });
+    return Array.from(mergedMap.values());
+  }, [practitioners, staffPractitioners, belongsToActiveBranch]);
   const scopedPatients = useMemo(() => patients.filter(belongsToActiveBranch), [patients, belongsToActiveBranch]);
   const scopedConsultations = useMemo(() => consultations.filter(belongsToActiveBranch), [consultations, belongsToActiveBranch]);
   const scopedAppointments = useMemo(() => appointments.filter(belongsToActiveBranch), [appointments, belongsToActiveBranch]);
@@ -2086,6 +2820,8 @@ export const useMedicalData = () => {
   const scopedChifaClaims = useMemo(() => chifaClaims.filter(belongsToActiveBranch), [chifaClaims, belongsToActiveBranch]);
   const scopedConsumables = useMemo(() => consumables.filter(belongsToActiveBranch), [consumables, belongsToActiveBranch]);
   const scopedCashClosures = useMemo(() => cashClosures.filter(belongsToActiveBranch), [cashClosures, belongsToActiveBranch]);
+  const scopedChifaBordereaux = useMemo(() => chifaBordereaux.filter(belongsToActiveBranch), [chifaBordereaux, belongsToActiveBranch]);
+  const scopedDoctorPayouts = useMemo(() => doctorPayouts.filter(belongsToActiveBranch), [doctorPayouts, belongsToActiveBranch]);
 
   const getNextAvailableGeneralist = (): MedicalPractitioner | null => {
     const generalists = scopedPractitioners.filter(
@@ -2119,6 +2855,9 @@ export const useMedicalData = () => {
     setChifaClaims((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setConsumables((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setCashClosures((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setChifaBordereaux((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setDoctorPayouts((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setNgapActs([...NGAP_ACT_DEFINITIONS]);
     setIsEmergencyAlarmActive(false);
 
     registerUndoEntry({
@@ -2144,6 +2883,9 @@ export const useMedicalData = () => {
         setChifaClaims(s.chifaClaims);
         setConsumables(s.consumables);
         setCashClosures(s.cashClosures);
+        setChifaBordereaux(s.chifaBordereaux);
+        setDoctorPayouts(s.doctorPayouts);
+        setNgapActs(s.ngapActs);
         setIsEmergencyAlarmActive(s.isEmergencyAlarmActive);
       },
     });
@@ -2177,6 +2919,12 @@ export const useMedicalData = () => {
     addCertificate,
     chifaClaims: scopedChifaClaims,
     addChifaClaim,
+    chifaBordereaux: scopedChifaBordereaux,
+    transmitChifaBordereau,
+    settleChifaBordereau,
+    doctorPayouts: scopedDoctorPayouts,
+    issueDoctorPayout,
+    ngapActs,
     consumables: scopedConsumables,
     depleteConsumable,
     restockConsumable,

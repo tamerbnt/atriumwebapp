@@ -29,7 +29,13 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
-import { t } from '../../../utils/i18n';
+import { centimesToDzd } from '../../../utils/money';
+import {
+  aggregatePractitionerTurnovers,
+  evaluateConsumableExpiryAlerts,
+  getNormalizedConsumableLots,
+  reconcileMedicalDailyCash,
+} from '../../../utils/medicalDepth';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -87,6 +93,11 @@ export const MedicalBillingView: React.FC<any> = () => {
     markConsultationPaid,
     practitioners,
     chifaClaims,
+    chifaBordereaux,
+    transmitChifaBordereau,
+    settleChifaBordereau,
+    doctorPayouts,
+    issueDoctorPayout,
     dailyClosures,
     addDailyClosure,
     consumables,
@@ -119,11 +130,13 @@ export const MedicalBillingView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeInspectorTab, setActiveInspectorTab] = useState<string>('decompte');
 
-  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Dahabia' | 'BaridiMob'>('Cash');
   const [countedCash, setCountedCash] = useState('');
   const [closureNotes, setClosureNotes] = useState('');
   const [cnasPrintPages, setCnasPrintPages] = useState<PrintSheetPage[] | null>(null);
   const [cnasPrintTitle, setCnasPrintTitle] = useState('Bordereau Chifa / CNAS');
+  const [restockLotById, setRestockLotById] = useState<Record<string, string>>({});
+  const [restockExpiryById, setRestockExpiryById] = useState<Record<string, string>>({});
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -231,15 +244,34 @@ export const MedicalBillingView: React.FC<any> = () => {
     () => consultations.reduce((acc, c) => acc + c.insuranceShareDzd, 0),
     [consultations]
   );
-  const expectedCashTotal = useMemo(
+  const dailyCashSummary = useMemo(() => {
+    const parsedCounted = parseFloat(countedCash.trim());
+    return reconcileMedicalDailyCash({
+      consultations,
+      countedCashDzd:
+        countedCash.trim() !== '' && Number.isFinite(parsedCounted)
+          ? parsedCounted
+          : undefined,
+    });
+  }, [consultations, countedCash]);
+
+  const expectedCashTotal = dailyCashSummary.expectedCashDzd;
+
+  const practitionerTurnovers = useMemo(
     () =>
-      consultations
-        .filter((c) => c.isPaid)
-        .reduce((acc, c) => acc + (c.copayAmountDzd || c.consultationFeeDzd * 0.2), 0),
-    [consultations]
+      aggregatePractitionerTurnovers({
+        practitioners,
+        consultations,
+        payouts: doctorPayouts,
+      }),
+    [practitioners, consultations, doctorPayouts]
   );
 
   const totalClaimsCount = chifaClaims.length;
+  const totalClaimsFeeDzd = chifaClaims.reduce(
+    (acc, cl) => acc + Number(cl.totalAmountDzd || 0),
+    0
+  );
   const totalCnasShare = chifaClaims.reduce(
     (acc, cl) => acc + (cl.cnasShareDzd ?? cl.chifaShareDzd ?? 0),
     0
@@ -249,7 +281,7 @@ export const MedicalBillingView: React.FC<any> = () => {
     0
   );
   const transmittedCount = chifaClaims.filter(
-    (cl) => cl.isTransmitted ?? cl.status === 'Submitted'
+    (cl) => (cl.isTransmitted ?? cl.status === 'Submitted') || cl.status === 'Reimbursed'
   ).length;
 
   const handleTogglePin = useCallback(
@@ -318,10 +350,16 @@ export const MedicalBillingView: React.FC<any> = () => {
 
   const handlePay = useCallback(
     (c: MedicalConsultation) => {
-      markConsultationPaid(c.id);
-      setInspectedConsultation({ ...c, isPaid: true });
+      const normalizedMethod: 'Cash' | 'BaridiMob' | 'Card' =
+        paymentMethod === 'BaridiMob'
+          ? 'BaridiMob'
+          : paymentMethod === 'Dahabia'
+          ? 'Card'
+          : 'Cash';
+      markConsultationPaid(c.id, normalizedMethod);
+      setInspectedConsultation({ ...c, isPaid: true, paymentMethod: normalizedMethod });
     },
-    [markConsultationPaid]
+    [markConsultationPaid, paymentMethod]
   );
 
   const handlePrintReceipt = useCallback(
@@ -337,13 +375,7 @@ export const MedicalBillingView: React.FC<any> = () => {
   );
 
   const handleTransmitBordereau = () => {
-    showToast({
-      type: 'success',
-      title: 'Télétransmission CNAS',
-      message: isAr
-        ? 'تم إرسال الجدول الإلكتروني للضمان الاجتماعي CNAS بنجاح'
-        : 'Télétransmission du bordereau CNAS/Chifa réussie avec accusé de réception',
-    });
+    transmitChifaBordereau();
   };
 
   const handleSaveCashClosure = () => {
@@ -361,15 +393,29 @@ export const MedicalBillingView: React.FC<any> = () => {
       });
       return;
     }
-    const diff = counted - expectedCashTotal;
+    const recon = reconcileMedicalDailyCash({
+      consultations,
+      countedCashDzd: counted,
+    });
+    const todayIso = new Date().toISOString().slice(0, 10);
     const closure = {
       id: `closure_${Date.now()}`,
-      date: new Date().toISOString().slice(0, 10),
-      closedBySecretary: currentUser?.fullName || (isAr ? 'الأمانة' : isFr ? 'Secrétariat' : 'Front Desk'),
-      totalConsultationsCount: consultations.length,
-      expectedCashDzd: expectedCashTotal,
+      date: todayIso,
+      closureDate: todayIso,
+      closedByStaffName:
+        currentUser?.fullName || (isAr ? 'الأمانة' : isFr ? 'Secrétariat' : 'Front Desk'),
+      closedBySecretary:
+        currentUser?.fullName || (isAr ? 'الأمانة' : isFr ? 'Secrétariat' : 'Front Desk'),
+      totalConsultationsCount: recon.paidConsultationsCount,
+      expectedCashDzd: recon.expectedCashDzd,
       countedCashDzd: counted,
-      discrepancyDzd: diff,
+      totalCashCollectedDzd: centimesToDzd(recon.totalCashCollectedCentimes),
+      totalBaridiMobDzd: centimesToDzd(recon.totalBaridiMobCentimes),
+      totalCardDzd: centimesToDzd(recon.totalCardCentimes),
+      totalChifaVouchersDzd: centimesToDzd(recon.totalChifaVouchersCentimes),
+      discrepancyDzd: recon.discrepancyDzd,
+      status: recon.status,
+      isClosed: true,
       notes: closureNotes.trim(),
       verifiedAt: new Date().toLocaleTimeString(),
     };
@@ -921,7 +967,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     Total Honoraires NGAP
                   </span>
                   <div className="t-dialog font-semibold tabular-nums text-black dark:text-white mt-1">
-                    {formatMoney(totalClaimsCount * 2800, 'DZD')}
+                    {formatMoney(totalClaimsFeeDzd, 'DZD')}
                   </div>
                   <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                     Tarifs conventionnels
@@ -955,6 +1001,59 @@ export const MedicalBillingView: React.FC<any> = () => {
                 </div>
               </div>
             </div>
+
+            {chifaBordereaux.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {chifaBordereaux.map((b) => {
+                  const isSettled = b.status === 'Reimbursed' || b.status === 'Settled';
+                  return (
+                    <div key={b.id} className="sq-elev-card">
+                      <div data-sq="card" data-sq-border="none" className="p-4 bg-white dark:bg-[#22201E] space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold t-small text-black dark:text-white tabular-nums">
+                            {b.bordereauNumber}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-[var(--r-check,6px)] t-cap font-semibold ${
+                              isSettled
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                            }`}
+                          >
+                            {isSettled ? 'Remboursé CNAS ✓' : 'Transmis · En attente virement'}
+                          </span>
+                        </div>
+                        <div className="t-cap text-black/60 dark:text-white/65 tabular-nums flex items-center justify-between">
+                          <span>{b.claimsCount} dossier(s) · Centre {b.cnasCenterCode}</span>
+                          <strong className="text-blue-600 dark:text-blue-400">
+                            {formatMoney(centimesToDzd(b.totalCnasCentimes), 'DZD')}
+                          </strong>
+                        </div>
+                        {isSettled ? (
+                          <div className="t-cap text-emerald-700 dark:text-emerald-300 tabular-nums">
+                            Réf: {b.settlementReference || b.bordereauNumber}
+                            {b.journalEntryId ? ' · SCF 512000/411000 ✓' : ''}
+                          </div>
+                        ) : (
+                          <div className="pt-1 flex justify-end">
+                            <button
+                              type="button"
+                              data-no-liquid="true"
+                              data-sq="ctl-sm"
+                              data-sq-border="none"
+                              onClick={() => settleChifaBordereau(b.id)}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold t-small cursor-pointer transition-colors"
+                            >
+                              Encaisser Virement CNAS
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             <ScreenCollectionToolbar
               title={isAr ? 'كشوفات CNAS / Chifa' : 'Fiches de Télétransmission Chifa'}
@@ -1257,13 +1356,17 @@ export const MedicalBillingView: React.FC<any> = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {practitioners.map((doc) => {
+              {practitionerTurnovers.map((row) => {
+                const doc = row.practitioner;
                 const docName = doc.fullName || doc.name || 'Dr. Praticien';
                 const docRoom = doc.roomNumber || doc.cabinetRoom || 'Cabinet 1';
-                const docShare = doc.commissionRatePercent ?? doc.commissionPercent ?? 70;
-                const grossTurnover = 125000;
-                const doctorPayout = (grossTurnover * docShare) / 100;
-                const polyclinicRetention = grossTurnover - doctorPayout;
+                const docShare = row.commissionRatePercent;
+                const grossTurnover = centimesToDzd(row.grossTurnoverCentimes);
+                const doctorPayout = centimesToDzd(row.doctorPayoutCentimes);
+                const polyclinicRetention = centimesToDzd(row.polyclinicShareCentimes);
+                const alreadyPaidDzd = centimesToDzd(row.alreadyPaidCentimes);
+                const pendingDzd = centimesToDzd(row.pendingPayoutCentimes);
+                const canIssue = row.pendingPayoutCentimes > 0;
                 return (
                   <div key={doc.id} className="sq-elev-card">
                     <div
@@ -1277,7 +1380,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                             {docName}
                           </h3>
                           <p className="t-cap text-black/55 dark:text-white/55 truncate">
-                            {doc.specialty}
+                            {doc.specialty} · {row.consultationsCount} acte(s)
                           </p>
                         </div>
                         <span className="px-2 py-1 rounded-full bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small tabular-nums shrink-0">
@@ -1299,6 +1402,12 @@ export const MedicalBillingView: React.FC<any> = () => {
                           <span>Quote-part Polyclinique:</span>
                           <span>{formatMoney(polyclinicRetention, 'DZD')}</span>
                         </div>
+                        <div className="flex justify-between text-black/65 dark:text-white/70 t-cap border-t border-[var(--atr-divider)] pt-1.5">
+                          <span>Déjà réglé / Reste à payer:</span>
+                          <span className="font-semibold">
+                            {formatMoney(alreadyPaidDzd, 'DZD')} / {formatMoney(pendingDzd, 'DZD')}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between pt-1">
                         <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
@@ -1306,15 +1415,22 @@ export const MedicalBillingView: React.FC<any> = () => {
                         </span>
                         <button
                           type="button"
-                          disabled
-                          title={t('feature_not_available_phase2', language)}
+                          disabled={!canIssue}
                           data-no-liquid="true"
                           data-sq="ctl-sm"
                           data-sq-border="none"
-                          onClick={() => {}}
-                          className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small transition-colors opacity-45 cursor-not-allowed"
+                          onClick={() => issueDoctorPayout({ practitionerId: doc.id })}
+                          className={`px-2.5 py-1 font-semibold t-small transition-colors ${
+                            canIssue
+                              ? 'bg-[var(--brand-fill,#C9461F)] hover:bg-[#b0674b] text-white cursor-pointer'
+                              : 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/50 dark:text-white/50 cursor-not-allowed'
+                          }`}
                         >
-                          Émettre Règlement
+                          {canIssue
+                            ? 'Émettre Règlement'
+                            : alreadyPaidDzd > 0
+                            ? 'Réglé ✓'
+                            : 'Aucun solde'}
                         </button>
                       </div>
                     </div>
@@ -1336,6 +1452,32 @@ export const MedicalBillingView: React.FC<any> = () => {
               </h2>
               <ListAdvancedMenuButton language={language} />
             </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+                <span className="t-cap text-black/55 dark:text-white/55 block">Espèces Attendues</span>
+                <strong className="t-label font-semibold tabular-nums text-black dark:text-white">
+                  {formatMoney(centimesToDzd(dailyCashSummary.totalCashCollectedCentimes), 'DZD')}
+                </strong>
+              </div>
+              <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+                <span className="t-cap text-black/55 dark:text-white/55 block">BaridiMob</span>
+                <strong className="t-label font-semibold tabular-nums text-black dark:text-white">
+                  {formatMoney(centimesToDzd(dailyCashSummary.totalBaridiMobCentimes), 'DZD')}
+                </strong>
+              </div>
+              <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+                <span className="t-cap text-black/55 dark:text-white/55 block">Carte / Dahabia</span>
+                <strong className="t-label font-semibold tabular-nums text-black dark:text-white">
+                  {formatMoney(centimesToDzd(dailyCashSummary.totalCardCentimes), 'DZD')}
+                </strong>
+              </div>
+              <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
+                <span className="t-cap text-black/55 dark:text-white/55 block">Tiers-Payant Chifa</span>
+                <strong className="t-label font-semibold tabular-nums text-blue-600 dark:text-blue-400">
+                  {formatMoney(centimesToDzd(dailyCashSummary.totalChifaVouchersCentimes), 'DZD')}
+                </strong>
+              </div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="sq-elev-card">
                 <div data-sq="card" data-sq-border="none" className="p-4 bg-white dark:bg-[#22201E] space-y-4 t-cap">
@@ -1351,7 +1493,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                         {formatMoney(expectedCashTotal, 'DZD')}
                       </div>
                       <span className="t-cap text-black/55 dark:text-white/55">
-                        Base tickets modérateurs encaissés
+                        {dailyCashSummary.paidConsultationsCount} consultation(s) réglée(s)
                       </span>
                     </div>
                     <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
@@ -1502,6 +1644,10 @@ export const MedicalBillingView: React.FC<any> = () => {
                 const threshold = item.reorderThresholdUnits ?? item.minStockAlert ?? 10;
                 const isCritical = currentStock <= threshold;
                 const code = item.itemCode ?? item.id;
+                const expiryInfo = evaluateConsumableExpiryAlerts(item);
+                const lotsList = getNormalizedConsumableLots(item);
+                const lotInput = restockLotById[item.id] ?? '';
+                const expiryInput = restockExpiryById[item.id] ?? '';
                 return (
                   <div key={item.id} className="sq-elev-card">
                     <div
@@ -1518,20 +1664,28 @@ export const MedicalBillingView: React.FC<any> = () => {
                             {item.name}
                           </h4>
                         </div>
-                        {isCritical ? (
+                        {expiryInfo.expiredStockUnits > 0 ? (
+                          <span className="t-small font-semibold px-2 py-1 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                            Lot Périmé ({expiryInfo.expiredStockUnits})
+                          </span>
+                        ) : expiryInfo.expiringSoonLots.length > 0 ? (
+                          <span className="t-small font-semibold px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300">
+                            DLC Proche
+                          </span>
+                        ) : isCritical ? (
                           <span className="t-small font-semibold px-2 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 animate-pulse">
                             Seuil Critique
                           </span>
                         ) : (
                           <span className="t-small font-semibold px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-                            Stock Optimal
+                            Stock FEFO OK
                           </span>
                         )}
                       </div>
                       <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap">
                         <div>
                           <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
-                            Stock Actuel
+                            Stock Valide FEFO
                           </span>
                           <div className="flex items-baseline gap-1 mt-0.5">
                             <span
@@ -1539,7 +1693,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                                 isCritical ? 'text-rose-600' : 'text-black dark:text-white'
                               }`}
                             >
-                              {currentStock}
+                              {expiryInfo.validStockUnits}
                             </span>
                             <span className="t-cap text-black/55 dark:text-white/55">
                               {item.unit}
@@ -1548,17 +1702,50 @@ export const MedicalBillingView: React.FC<any> = () => {
                         </div>
                         <div>
                           <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
-                            Seuil d&apos;Alerte
+                            DLC Prochaine / Seuil
                           </span>
-                          <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="t-dialog font-semibold tabular-nums text-black/55 dark:text-white/55">
-                              {threshold}
+                          <div className="flex items-baseline gap-1.5 mt-0.5 tabular-nums">
+                            <span className="t-small font-semibold text-black/75 dark:text-white/80">
+                              {expiryInfo.nearestValidExpiryDate || '—'}
                             </span>
                             <span className="t-cap text-black/55 dark:text-white/55">
-                              {item.unit}
+                              (min {threshold})
                             </span>
                           </div>
                         </div>
+                      </div>
+                      {lotsList.length > 0 && (
+                        <div className="t-cap text-black/60 dark:text-white/65 tabular-nums flex flex-wrap gap-1.5">
+                          {lotsList.slice(0, 3).map((lot, idx) => (
+                            <span
+                              key={`${lot.lotNumber}-${idx}`}
+                              className="px-2 py-0.5 bg-[#F5F1EC] dark:bg-[#2B2825] rounded-[var(--r-check,6px)]"
+                            >
+                              {lot.lotNumber}: {lot.quantity} ({lot.expiryDate || 'N/A'})
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          aria-label={`Numéro de lot ${item.name}`}
+                          placeholder="Lot réappro..."
+                          value={lotInput}
+                          onChange={(e) =>
+                            setRestockLotById((prev) => ({ ...prev, [item.id]: e.target.value }))
+                          }
+                          className="w-full px-2.5 py-1.5 t-cap bg-[#F5F1EC] dark:bg-[#191716] rounded-[var(--r-ctl-sm,10px)] text-black dark:text-white outline-none"
+                        />
+                        <input
+                          type="date"
+                          aria-label={`Date d'expiration ${item.name}`}
+                          value={expiryInput}
+                          onChange={(e) =>
+                            setRestockExpiryById((prev) => ({ ...prev, [item.id]: e.target.value }))
+                          }
+                          className="w-full px-2.5 py-1.5 t-cap bg-[#F5F1EC] dark:bg-[#191716] rounded-[var(--r-ctl-sm,10px)] text-black dark:text-white outline-none tabular-nums"
+                        />
                       </div>
                       <div className="w-full bg-[#F3EDE7] dark:bg-[#2B2825] h-1.5 rounded-full overflow-hidden">
                         <div
@@ -1583,9 +1770,9 @@ export const MedicalBillingView: React.FC<any> = () => {
                             depleteConsumable(code, 1);
                           }}
                           className="px-2 py-1 t-cap bg-[#F5F1EC] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
-                          title="Déduire manuellement pour un acte"
+                          title="Déduire selon priorité FEFO"
                         >
-                          -1 Unité
+                          -1 FEFO
                         </button>
                         <button
                           type="button"
@@ -1593,7 +1780,12 @@ export const MedicalBillingView: React.FC<any> = () => {
                           data-sq="ctl-sm"
                           data-sq-border="none"
                           onClick={() => {
-                            restockConsumable(code, 50);
+                            restockConsumable(code, 50, {
+                              lotNumber: lotInput || undefined,
+                              expiryDate: expiryInput || undefined,
+                            });
+                            setRestockLotById((prev) => ({ ...prev, [item.id]: '' }));
+                            setRestockExpiryById((prev) => ({ ...prev, [item.id]: '' }));
                           }}
                           className="px-2.5 py-1 t-small bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                         >
@@ -1709,12 +1901,12 @@ export const MedicalBillingView: React.FC<any> = () => {
                     />
                     <InspectorKeyValue
                       label={isAr ? 'حصة المريض' : 'Ticket Modérateur (Part Patient)'}
-                      value={formatMoney(consultation.copayAmountDzd || 600, 'DZD')}
+                      value={formatMoney(consultation.copayAmountDzd ?? 0, 'DZD')}
                       mono
                     />
                     <InspectorKeyValue
                       label={isAr ? 'تغطية CNAS / Chifa' : 'Prise en charge CNAS/CASNOS'}
-                      value={formatMoney(consultation.insuranceShareDzd || 2400, 'DZD')}
+                      value={formatMoney(consultation.insuranceShareDzd ?? 0, 'DZD')}
                       mono
                     />
                     <InspectorKeyValue
@@ -1730,7 +1922,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   index={2}
                 >
                   <div className="grid grid-cols-3 gap-2">
-                    {['Cash', 'Dahabia', 'BaridiMob'].map((method) => (
+                    {(['Cash', 'Dahabia', 'BaridiMob'] as const).map((method) => (
                       <button
                         key={method}
                         type="button"

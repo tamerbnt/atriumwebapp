@@ -1127,12 +1127,12 @@ export const MedicalQueueView: React.FC<any> = () => {
                         />
                         <InspectorKeyValue
                           label="Ticket modérateur patient"
-                          value={formatMoney(cons.copayAmountDzd || 600, 'DZD')}
+                          value={formatMoney(cons.copayAmountDzd ?? 0, 'DZD')}
                           mono
                         />
                         <InspectorKeyValue
                           label="Prise en charge CNAS/Chifa"
-                          value={formatMoney(cons.insuranceShareDzd || 2400, 'DZD')}
+                          value={formatMoney(cons.insuranceShareDzd ?? 0, 'DZD')}
                           mono
                         />
                         <InspectorKeyValue

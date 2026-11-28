@@ -24,6 +24,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LabelTextarea } from '../../ui/LabelTextarea';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { MedicalCertificateRecord } from '../../../types';
+import { computeArretDeTravailSchedule } from '../../../utils/medicalDepth';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -127,6 +128,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
   const [clinicalFindings, setClinicalFindings] = useState(
     'Examen clinique compatible avec un repos médical strict.'
   );
+  const [certFormError, setCertFormError] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -224,20 +226,25 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
   const handleCreateCertificate = (e: React.FormEvent) => {
     e.preventDefault();
+    setCertFormError('');
     const patient = patients.find((p) => p.id === selectedPatientId);
     const doctor = practitioners.find((p) => p.id === selectedDoctorId);
-    let durationDays = 1;
-    let resumptionDate = '';
+    let durationDays: number | undefined;
+    let resumptionDate: string | undefined;
     if (certType === 'ArretDeTravail') {
-      const s = new Date(startDate);
-      const end = new Date(endDate);
-      const diffTime = Math.abs(end.getTime() - s.getTime());
-      durationDays = Math.ceil(diffTime / 864e5) + 1;
-      const r = new Date(end);
-      r.setDate(r.getDate() + 1);
-      if (r.getDay() === 5) r.setDate(r.getDate() + 2);
-      else if (r.getDay() === 6) r.setDate(r.getDate() + 1);
-      resumptionDate = r.toISOString().slice(0, 10);
+      const schedule = computeArretDeTravailSchedule(startDate, endDate);
+      if (!schedule.ok) {
+        const msg = schedule.errorMessage || "Dates d'arrêt de travail invalides.";
+        setCertFormError(msg);
+        showToast({
+          type: 'error',
+          title: isAr ? 'خطأ في التواريخ' : 'Plage de dates invalide',
+          message: msg,
+        });
+        return;
+      }
+      durationDays = schedule.durationDays;
+      resumptionDate = schedule.resumptionDate;
     }
     const newCert: MedicalCertificateRecord = {
       id: `cert_${Date.now()}`,
@@ -264,6 +271,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
       isSigned: true,
     };
     addCertificate(newCert);
+    setCertFormError('');
     setIsCreateModalOpen(false);
     setInspectedCert(newCert);
   };
@@ -936,7 +944,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       label="Date de Début de l'Arrêt"
                       type="date"
                       value={startDate}
-                      onChange={setStartDate}
+                      onChange={(v) => {
+                        setStartDate(v);
+                        setCertFormError('');
+                      }}
                       required
                     />
                     <LabelInput
@@ -947,17 +958,31 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       label="Date de Fin (Inclus)"
                       type="date"
                       value={endDate}
-                      onChange={setEndDate}
+                      onChange={(v) => {
+                        setEndDate(v);
+                        setCertFormError('');
+                      }}
                       required
                     />
                   </div>
+                  {certFormError && (
+                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-rose-500/10 text-rose-600 dark:text-rose-400 t-cap font-semibold flex items-center gap-2">
+                      <AlertTriangle size={14} className="shrink-0" />
+                      <span>{certFormError}</span>
+                    </div>
+                  )}
                   {(() => {
-                    const diffDays =
-                      Math.ceil(
-                        Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime()) /
-                          864e5
-                      ) + 1;
-                    if (diffDays > 30) {
+                    const schedule = computeArretDeTravailSchedule(startDate, endDate);
+                    if (!schedule.ok) {
+                      return (
+                        <div data-sq="ctl" data-sq-border="none" className="p-3 bg-rose-500/10 text-rose-600 dark:text-rose-400 t-cap font-medium flex items-center gap-2">
+                          <AlertTriangle size={14} className="shrink-0" />
+                          <span>{schedule.errorMessage}</span>
+                        </div>
+                      );
+                    }
+                    const diffDays = schedule.durationDays || 1;
+                    if (schedule.requiresCnasControlCommission) {
                       return (
                         <div data-sq="ctl" data-sq-border="none" className="p-3 bg-amber-500/10 text-amber-800 dark:text-amber-300 t-cap space-y-1 animate-in fade-in">
                           <div className="flex items-center gap-2 font-semibold">
@@ -970,14 +995,16 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                           <p className="t-cap leading-relaxed">
                             Les arrêts de travail de plus de 30 jours consécutifs requièrent une
                             convocation et validation préalable de la commission médicale du contrôle
-                            de la sécurité sociale (Art. 17 Loi 83-11).
+                            de la sécurité sociale (Art. 17 Loi 83-11). Reprise prévue :{' '}
+                            <strong className="tabular-nums">{schedule.resumptionDate}</strong>.
                           </p>
                         </div>
                       );
                     }
                     return (
                       <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
-                        Durée calculée de l&apos;arrêt : <strong>{diffDays} jour(s)</strong>
+                        Durée calculée : <strong>{diffDays} jour(s)</strong> · Reprise du travail :{' '}
+                        <strong>{schedule.resumptionDate}</strong>
                       </div>
                     );
                   })()}

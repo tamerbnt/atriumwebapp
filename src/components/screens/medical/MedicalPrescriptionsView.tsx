@@ -24,6 +24,7 @@ import {
 } from '../../../services/store';
 import { MedicalPrescription, DoctorOrdonnanceConfig } from '../../../types';
 import { useMedicalData, NGAP_ACTS } from './medicalData';
+import { evaluatePrescriptionAllergySafety } from '../../../utils/medicalDepth';
 import { Button } from '@/atrium/core';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -129,6 +130,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
   ]);
   const [compNotes, setCompNotes] = useState('');
   const [overrideConfirmed, setOverrideConfirmed] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
+
+  React.useEffect(() => {
+    if (!isComposerOpen) return;
+    if (!compPatientId && patients[0]?.id) {
+      setCompPatientId(patients[0].id);
+    }
+    if ((!compDoctorId || compDoctorId === 'dr_01') && practitioners[0]?.id) {
+      setCompDoctorId(practitioners[0].id);
+    }
+  }, [isComposerOpen, compPatientId, compDoctorId, patients, practitioners]);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -146,58 +158,24 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
     return map;
   }, [prescriptions, branchesById, currentBranch, language]);
 
-  const checkDrugAllergy = (drugName: string, patientAllergies: string[]) => {
-    const lowerDrug = drugName.toLowerCase();
-    for (const allergy of patientAllergies) {
-      const lowerAllergy = allergy.toLowerCase();
-      if (
-        (lowerAllergy.includes('pénicilline') || lowerAllergy.includes('penicilline')) &&
-        (lowerDrug.includes('amoxicilline') ||
-          lowerDrug.includes('augmentin') ||
-          lowerDrug.includes('clamoxyl') ||
-          lowerDrug.includes('ampicilline'))
-      ) {
-        return `Contre-indication majeure : Patient allergique à la ${allergy}. Risque de choc anaphylactique avec ${drugName}.`;
-      }
-      if (
-        lowerAllergy.includes('aspirine') &&
-        (lowerDrug.includes('aspirin') ||
-          lowerDrug.includes('aspégic') ||
-          lowerDrug.includes('kardegic') ||
-          lowerDrug.includes('acide acétylsalicylique'))
-      ) {
-        return `Contre-indication : Patient allergique à l'${allergy}. Prescription déconseillée.`;
-      }
-      if (
-        (lowerAllergy.includes('ains') || lowerAllergy.includes('anti-inflammatoire')) &&
-        (lowerDrug.includes('ibuprofène') ||
-          lowerDrug.includes('voltarène') ||
-          lowerDrug.includes('kétoprofène') ||
-          lowerDrug.includes('bi-profenid'))
-      ) {
-        return `Contre-indication : Allergie aux AINS déclarée.`;
-      }
-      if (lowerDrug.includes(lowerAllergy)) {
-        return `Alerte allergie déclarée pour : ${allergy}.`;
-      }
-    }
-    return null;
-  };
-
   const selectedPatientForComp = useMemo(
     () => patients.find((p) => p.id === compPatientId),
     [patients, compPatientId]
   );
 
-  const allergyAlerts = useMemo(() => {
-    if (!selectedPatientForComp?.allergies) return [];
-    const alerts: string[] = [];
-    compItems.forEach((it) => {
-      const warning = checkDrugAllergy(it.drugName, selectedPatientForComp.allergies || []);
-      if (warning) alerts.push(warning);
-    });
-    return alerts;
-  }, [selectedPatientForComp, compItems]);
+  const safetyEval = useMemo(
+    () =>
+      evaluatePrescriptionAllergySafety({
+        items: compItems,
+        patientAllergies: selectedPatientForComp?.allergies || [],
+        overrideConfirmed,
+        overrideReason,
+      }),
+    [compItems, selectedPatientForComp, overrideConfirmed, overrideReason]
+  );
+
+  const allergyAlerts = safetyEval.alerts;
+  const duplicateWarnings = safetyEval.warnings;
 
   const recentCount = useMemo(
     () =>
@@ -355,19 +333,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
       });
       return;
     }
-    if (allergyAlerts.length > 0 && !overrideConfirmed) {
+    if (!safetyEval.ok) {
       showToast({
         type: 'error',
-        title: 'Contre-indication',
-        message: 'Veuillez valider le déblocage médical de sécurité contre-indication',
-      });
-      return;
-    }
-    if (compItems.length === 0) {
-      showToast({
-        type: 'error',
-        title: 'Prescription vide',
-        message: 'Veuillez prescrire au moins une spécialité',
+        title:
+          safetyEval.errorCode === 'MEDICAL_ALLERGY_OVERRIDE_REQUIRED' ||
+          safetyEval.errorCode === 'MEDICAL_ALLERGY_REASON_REQUIRED'
+            ? 'Contre-indication'
+            : 'Prescription invalide',
+        message:
+          safetyEval.errorMessage ||
+          'Veuillez vérifier les lignes et contre-indications de la prescription.',
       });
       return;
     }
@@ -375,17 +351,26 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
     const newRx: MedicalPrescription = {
       id: `rx_${Date.now()}`,
       branchId: currentBranch?.id || selectedPatientForComp.branchId || 'br_main',
+      staffId: doc?.id || compDoctorId,
+      doctorName: doc ? doc.fullName || doc.name || 'Dr. Praticien' : 'Dr. Amine Benali',
+      doctorSpecialty: doc?.specialty,
       patientId: selectedPatientForComp.id,
       patientName: selectedPatientForComp.fullName,
       prescriptionDate: new Date().toISOString().slice(0, 10),
       items: compItems,
       notes: compNotes || undefined,
       qrCodeHash: `ALG-ORD-${Math.floor(1e5 + Math.random() * 9e5)}`,
+      isSigned: true,
+      allergyOverrideConfirmed: allergyAlerts.length > 0 ? overrideConfirmed : false,
+      allergyOverrideReason:
+        allergyAlerts.length > 0 && overrideConfirmed ? overrideReason.trim() : undefined,
       prescribingDoctorId: compDoctorId,
-      prescribingDoctorName: doc ? doc.fullName || doc.name || 'Dr. Praticien' : 'Dr. Amina Benali',
+      prescribingDoctorName: doc ? doc.fullName || doc.name || 'Dr. Praticien' : 'Dr. Amine Benali',
     };
     addPrescription(newRx);
     setInspectedRx(newRx);
+    setOverrideConfirmed(false);
+    setOverrideReason('');
     setIsComposerOpen(false);
   };
 
@@ -1444,6 +1429,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     onChange={(val) => {
                       setCompPatientId(val);
                       setOverrideConfirmed(false);
+                      setOverrideReason('');
                     }}
                     options={patients.map((p) => ({
                       value: p.id,
@@ -1483,6 +1469,20 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 </div>
               )}
 
+              {duplicateWarnings.length > 0 && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.5)] text-amber-800 dark:text-amber-300 t-cap space-y-1"
+                >
+                  {duplicateWarnings.map((w, i) => (
+                    <div key={i} className="font-medium">
+                      {w}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {allergyAlerts.length > 0 && (
                 <div
                   data-sq="ctl"
@@ -1508,10 +1508,28 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     </span>
                     <LiveSwitch
                       checked={overrideConfirmed}
-                      onCheckedChange={setOverrideConfirmed}
+                      onCheckedChange={(checked) => {
+                        setOverrideConfirmed(checked);
+                        if (!checked) setOverrideReason('');
+                      }}
                       aria-label="Confirmation médecin"
                     />
                   </div>
+                  {overrideConfirmed && (
+                    <div className="pt-2">
+                      <LabelInput
+                        field="allergyOverrideReason"
+                        width="100%"
+                        height={40}
+                        corner={12}
+                        label="Justification clinique de la dérogation (obligatoire)"
+                        value={overrideReason}
+                        onChange={setOverrideReason}
+                        placeholder="ex: Protocole de désensibilisation hospitalière ou urgence vitale..."
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
