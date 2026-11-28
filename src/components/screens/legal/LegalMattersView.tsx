@@ -20,6 +20,7 @@ import {
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LegalMatter, NotaryDeed } from '../../../types';
+import { LegalCabinetRoleKey, filterMattersByRole, buildLegalPortalTokenAndUrl } from '../../../utils/legalDepth';
 import { useLegalData } from './legalData';
 import { LegalMatterModal } from './LegalMatterModal';
 import { NotaryDeedModal } from '../../modals/NotaryDeedModal';
@@ -76,6 +77,7 @@ export const LegalMattersView: React.FC<any> = () => {
   const isNotary = activeLegalRole === 'notaire_titulaire';
 
   const {
+    entities,
     matters,
     notaryDeeds,
     addMatter,
@@ -83,6 +85,11 @@ export const LegalMattersView: React.FC<any> = () => {
     deleteMatter,
     addNotaryDeed,
   } = useLegalData();
+
+  const roleScopedMatters = useMemo(
+    () => filterMattersByRole(matters, activeLegalRole as LegalCabinetRoleKey),
+    [matters, activeLegalRole]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('All');
@@ -112,15 +119,15 @@ export const LegalMattersView: React.FC<any> = () => {
 
   const activeMatter = useMemo(() => {
     if (!selectedMatter) return null;
-    return matters.find((m) => m.id === selectedMatter.id) || selectedMatter;
-  }, [selectedMatter, matters]);
+    return roleScopedMatters.find((m) => m.id === selectedMatter.id) || null;
+  }, [selectedMatter, roleScopedMatters]);
 
   const activeDeed = useMemo(() => {
     if (!selectedDeed) return null;
     return notaryDeeds.find((d) => d.id === selectedDeed.id) || selectedDeed;
   }, [selectedDeed, notaryDeeds]);
 
-  const activeDataset = isNotary ? notaryDeeds : matters;
+  const activeDataset = isNotary ? notaryDeeds : roleScopedMatters;
 
   const branchCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -201,7 +208,7 @@ export const LegalMattersView: React.FC<any> = () => {
 
   const filteredMatters = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    const filtered = matters.filter((m) => {
+    const filtered = roleScopedMatters.filter((m) => {
       if (filterCategory !== 'All' && m.category !== filterCategory) return false;
       if (kpiStatusFilter === 'Active' && m.status !== 'Active') return false;
       if (kpiStatusFilter === 'PendingHearing' && m.status !== 'PendingHearing') return false;
@@ -233,7 +240,7 @@ export const LegalMattersView: React.FC<any> = () => {
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [
-    matters,
+    roleScopedMatters,
     filterCategory,
     kpiStatusFilter,
     branchFilter,
@@ -915,9 +922,9 @@ export const LegalMattersView: React.FC<any> = () => {
     0
   );
 
-  const activeMattersCount = matters.filter((m) => m.status === 'Active').length;
-  const pendingHearingCount = matters.filter((m) => m.status === 'PendingHearing').length;
-  const totalCarpaTrust = matters.reduce((acc, m) => acc + (m.trustEscrowBalanceDzd || 0), 0);
+  const activeMattersCount = roleScopedMatters.filter((m) => m.status === 'Active').length;
+  const pendingHearingCount = roleScopedMatters.filter((m) => m.status === 'PendingHearing').length;
+  const totalCarpaTrust = roleScopedMatters.reduce((acc, m) => acc + (m.trustEscrowBalanceDzd || 0), 0);
 
   const headerTitle = isNotary
     ? isAr
@@ -1014,7 +1021,7 @@ export const LegalMattersView: React.FC<any> = () => {
           }}
           darkCard={{
             label: isAr ? 'رصيد حساب الحراسة CARPA' : 'Fonds Séquestres CARPA',
-            badgeCount: matters.length,
+            badgeCount: roleScopedMatters.length,
             badgePrefix: '',
             badgeSuffix: isAr ? 'ملفات' : 'dossiers',
             valueCount: totalCarpaTrust,
@@ -1532,8 +1539,36 @@ export const LegalMattersView: React.FC<any> = () => {
                     <InspectorKeyValue
                       label={isAr ? 'الأتعاب' : 'Honoraires'}
                       value={formatMoney(m.retainerAmountDzd, language)}
-                      isLast
                     />
+                    <InspectorKeyValue
+                      label={isAr ? 'مستوى السرية' : 'Confidentialité'}
+                      value={m.confidentialityLevel || 'Internal'}
+                      tone={m.confidentialityLevel === 'SecretDefense' || m.confidentialityLevel === 'Restricted' ? 'warn' : 'ok'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'فحص تضارب المصالح' : 'Conflit d’Intérêts'}
+                      value={
+                        m.conflictStatus === 'overridden'
+                          ? `${isAr ? 'تجاوز مبرر:' : 'Dérogation :'} ${m.conflictOverrideReason || '—'}`
+                          : isAr
+                          ? 'خالي من التضارب'
+                          : 'Aucun conflit détecté'
+                      }
+                      tone={m.conflictStatus === 'overridden' ? 'warn' : 'ok'}
+                      mono={false}
+                      isLast={!m.portalEnabled}
+                    />
+                    {m.portalEnabled && (
+                      <InspectorKeyValue
+                        label={isAr ? 'رابط بوابة الموكل' : 'Portail Client (Lecture seule)'}
+                        value={buildLegalPortalTokenAndUrl(m.id, m.matterNumber).url}
+                        copyText={buildLegalPortalTokenAndUrl(m.id, m.matterNumber).url}
+                        onCopied={() => showToast(isAr ? 'تم نسخ رابط الموكل' : 'Lien portail copié', 'info')}
+                        tone="accent"
+                        isLast
+                      />
+                    )}
                   </InspectorCard>
                 </InspectorSection>
 
@@ -1569,6 +1604,9 @@ export const LegalMattersView: React.FC<any> = () => {
         onClose={() => setIsMatterModalOpen(false)}
         onSave={matterToEdit ? updateMatter : addMatter}
         matterToEdit={matterToEdit}
+        existingMatters={matters}
+        existingClients={entities}
+        existingDeeds={notaryDeeds}
       />
 
       <NotaryDeedModal

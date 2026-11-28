@@ -4388,6 +4388,13 @@ export interface MfgCuttingPlan {
 // ==========================================
 // CATEGORY 13: LEGAL & ACCOUNTING CABINETS
 // ==========================================
+export type LegalConfidentialityLevel =
+  | 'PublicClient'
+  | 'Internal'
+  | 'Restricted'
+  | 'SecretDefense'
+  | 'NotarialMinute';
+
 export interface LegalMatter {
   id: string;
   accountId: string;
@@ -4413,6 +4420,14 @@ export interface LegalMatter {
   nextHearingDate?: string;
   cpcaDeadlineId?: string;
   notes?: string;
+  confidentialityLevel?: LegalConfidentialityLevel;
+  allowedRoles?: string[];
+  conflictStatus?: 'clear' | 'warning' | 'conflict' | 'overridden';
+  conflictCheckedAt?: string;
+  conflictOverrideReason?: string;
+  clientPortalToken?: string;
+  portalEnabled?: boolean;
+  isArbitration?: boolean;
   version?: number;
   createdAt: string;
 }
@@ -4443,6 +4458,10 @@ export interface LegalHearing {
   isCompleted?: boolean;
   nextDate?: string;
   status?: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled' | string;
+  originalRequestedDate?: string;
+  autoShiftedReason?: string;
+  reminderSentAt?: string;
+  reminderChannel?: string;
   version?: number;
   createdAt?: string;
 }
@@ -4528,10 +4547,14 @@ export interface EscrowAccount {
   matterReference: string;
   clientName: string;
   beneficiaryName: string;
+  bankAccountRef?: string;
+  bankStatementBalanceDzd?: number;
   totalDepositedDzd: number;
   totalDisbursedDzd: number;
   currentBalanceDzd: number;
   isLocked: boolean;
+  releasePinHash?: string;
+  reconciledAt?: string;
   cadastralClearanceProof?: {
     volume: string;
     number: string;
@@ -4620,6 +4643,214 @@ export interface LegalClientEntity {
   version?: number;
   createdAt: string;
 }
+
+export interface LegalTimeEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  matterId?: string;
+  matterNumber?: string;
+  clientName?: string;
+  counselName: string;
+  activityType: 'consultation' | 'audience' | 'redaction' | 'recherche' | 'negociation' | 'audit';
+  description: string;
+  durationMinutes: number;
+  hourlyRateDzd: number;
+  tvaRate: 0 | 9 | 19;
+  amountHtCentimes: number;
+  isBillable: boolean;
+  isBilled: boolean;
+  invoiceId?: string;
+  billedAt?: string;
+  entryDate: string;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalFeeInvoice {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  invoiceNumber: string;
+  matterId?: string;
+  matterNumber?: string;
+  clientId?: string;
+  clientName: string;
+  feesHtDzd: number;
+  disbursementsDzd: number;
+  tvaRate: 0 | 9 | 19;
+  tvaDzd: number;
+  timbreDzd: number;
+  totalTtcDzd: number;
+  totalTtcCentimes: number;
+  paidAmountDzd: number;
+  status: 'Draft' | 'Sent' | 'Partial' | 'Paid';
+  issueDate: string;
+  dueDate?: string;
+  timeEntryIds: string[];
+  lineItems: Array<{
+    entryId: string;
+    description: string;
+    durationMinutes: number;
+    hourlyRateDzd: number;
+    amountHtDzd: number;
+  }>;
+  unifiedDocumentId?: string;
+  notes?: string;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalHolidayEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  holidayDate: string;
+  label: string;
+  labelAr?: string;
+  holidayKind: 'fixed' | 'islamic' | 'judicial' | 'custom';
+  isActive: boolean;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalDocTemplate {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  code: string;
+  title: string;
+  titleAr?: string;
+  templateType: 'mise_en_demeure' | 'requete' | 'conclusions' | 'procuration' | 'bail' | 'quittance' | 'custom';
+  bodyTemplate: string;
+  variables: string[];
+  isSystem?: boolean;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalSignedDocument {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId?: string;
+  matterId?: string;
+  matterReference?: string;
+  vaultCode?: string;
+  title: string;
+  docCategory: string;
+  roleScope: 'avocat' | 'notaire' | 'comptable' | 'secretaire';
+  vaultStatus: 'OriginalScanned' | 'Confidential' | 'MinuteOfficielle' | 'DossierAudit' | 'PieceClient';
+  confidentialityLevel: LegalConfidentialityLevel;
+  fileUrl?: string;
+  storageBucket?: string;
+  storagePath?: string;
+  sha256Hash?: string;
+  fileSizeBytes?: number;
+  mimeType?: string;
+  officialSealNumber?: string;
+  cadastralVolume?: string;
+  cadastralNumber?: string;
+  templateId?: string;
+  renderedBody?: string;
+  signatureSvg?: string;
+  signedByName?: string;
+  signedAt?: string;
+  isPortalShared?: boolean;
+  depositDate?: string;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalBailiffAct {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  actNumber: string;
+  matterId?: string;
+  matterNumber?: string;
+  actKind: 'signification' | 'constat' | 'commandement' | 'saisie_execution' | 'expulsion';
+  bailiffName: string;
+  recipientName: string;
+  serviceMode: 'a_personne' | 'a_domicile' | 'mairie' | 'parquet' | 'refus';
+  serviceDate: string;
+  linkedCpcaDeadlineId?: string;
+  pvSummary?: string;
+  status: 'draft' | 'served' | 'pv_logged' | 'returned_unserved';
+  feeCentimes: number;
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalArbitrationMilestone {
+  id: string;
+  label: string;
+  targetDate: string;
+  completedDate?: string;
+  status: 'pending' | 'in_progress' | 'done';
+}
+
+export interface LegalArbitrationTimeline {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  caseCode: string;
+  matterId?: string;
+  matterNumber?: string;
+  arbitrationSeat: string;
+  rulesFramework: string;
+  tribunalChair?: string;
+  claimantName: string;
+  respondentName: string;
+  amountInDisputeCentimes: number;
+  phase: string;
+  milestones: LegalArbitrationMilestone[];
+  awardDueDate?: string;
+  status: 'active' | 'suspended' | 'award_rendered' | 'exequatur' | 'closed';
+  version?: number;
+  createdAt: string;
+}
+
+export interface LegalClientLedgerBook {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  dossierCode: string;
+  clientId?: string;
+  clientName: string;
+  clientNif?: string;
+  fiscalRegime: 'Reel' | 'IFU' | 'Liberal';
+  fiscalPeriod: string;
+  tvaCollecteeCentimes: number;
+  tvaDeductibleCentimes: number;
+  creditTvaAnterieurCentimes: number;
+  tvaNetDueCentimes: number;
+  tapBaseCentimes: number;
+  irgSalairesCentimes: number;
+  ibsAcompteCentimes: number;
+  timbreFiscalCentimes: number;
+  totalG50DueCentimes: number;
+  trialBalanceJson: Array<{ accountNumber: string; label: string; debitDzd: number; creditDzd: number }>;
+  g50Status: 'draft' | 'validated' | 'filed_dgi' | 'paid';
+  liasseReady: boolean;
+  filedAt?: string;
+  version?: number;
+  createdAt: string;
+}
+
 
 
 // ==========================================

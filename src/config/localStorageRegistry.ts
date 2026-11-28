@@ -235,6 +235,13 @@ export const LOCAL_STORAGE_REGISTRY: readonly LocalStorageKeyEntry[] = [
   { key: 'atrium_realestate_dev_lots_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate VEFA lots cache' },
   { key: 'atrium_realestate_student_beds_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate student housing beds cache' },
   { key: 'atrium_realestate_vacation_stays_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 11 real_estate vacation stays cache' },
+  { key: 'atrium_legal_time_entries_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal billable time entries cache synced to legal_time_entries' },
+  { key: 'atrium_legal_fee_invoices_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal fee invoices cache synced to legal_invoices' },
+  { key: 'atrium_legal_holidays_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal judicial/religious holiday calendar cache' },
+  { key: 'atrium_legal_doc_templates_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal document templates cache' },
+  { key: 'atrium_legal_bailiff_acts_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal bailiff acts cache synced to legal_bailiff_acts' },
+  { key: 'atrium_legal_arbitration_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal arbitration timelines cache synced to legal_arbitration_timelines' },
+  { key: 'atrium_legal_client_ledgers_v2', scope: 'vertical_cache', preserveOnCacheReset: false, notes: 'Step 13 legal multi-client accounting G50/Liasse ledgers cache' },
 ];
 
 export const REGISTERED_LOCAL_STORAGE_KEYS = new Set(LOCAL_STORAGE_REGISTRY.map((e) => e.key));

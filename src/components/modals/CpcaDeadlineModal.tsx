@@ -20,12 +20,13 @@ import {
   CPCARecourseType,
   DomicileCategory,
 } from '../../utils/legalRules';
-import { CPCADeadline, LegalMatter } from '../../types';
+import { CPCADeadline, LegalHolidayEntry, LegalMatter } from '../../types';
 
 interface CpcaDeadlineModalProps {
   isOpen: boolean;
   onClose: () => void;
   matters: LegalMatter[];
+  holidays?: LegalHolidayEntry[];
   onSaveDeadline: (deadline: CPCADeadline) => void;
 }
 
@@ -33,6 +34,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
   isOpen,
   onClose,
   matters,
+  holidays = [],
   onSaveDeadline,
 }) => {
   const { language, networkMode } = useAtriumSelector(
@@ -65,14 +67,19 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
     setNotes('');
   }, [isOpen]);
 
+  const activeHolidayDates = React.useMemo(
+    () => (holidays || []).filter((h) => h.isActive !== false).map((h) => h.holidayDate),
+    [holidays]
+  );
+
   // Live preview calculation
   const preview = React.useMemo(() => {
     try {
-      return calculateCPCADeadline(notificationDate, recourseType, domicileCategory);
+      return calculateCPCADeadline(notificationDate, recourseType, domicileCategory, activeHolidayDates);
     } catch {
       return null;
     }
-  }, [notificationDate, recourseType, domicileCategory]);
+  }, [notificationDate, recourseType, domicileCategory, activeHolidayDates]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

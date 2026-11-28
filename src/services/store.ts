@@ -23403,7 +23403,7 @@ function createAtriumActions() {
 
     const newDoc: CommercialDocument = {
       ...sourceDoc,
-      id: `cdoc_${Date.now()}`,
+      id: `cdoc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       type: targetType,
       docNumber,
       date: new Date().toISOString().split('T')[0],

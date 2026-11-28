@@ -11,16 +11,24 @@ import {
   MapPin,
   Eye,
   Trash2,
+  FileSignature,
 } from 'lucide-react';
 import {
   useAtriumSelector,
   useAtriumActions,
   shallowEqualObjects,
+  selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
 import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { localizeStatus } from '../../../utils/rules';
+import { computeSha256Hex } from '../../../utils/legalDepth';
+import { legalService } from '../../../lib/supabase';
+import { useLegalData } from './legalData';
+import { PrintSheetModal } from '../../modals/PrintSheetModal';
+import { LegalTemplatesAndSignModal } from './LegalTemplatesAndSignModal';
+import type { LegalConfidentialityLevel, LegalSignedDocument } from '../../../types';
 import { t } from '../../../utils/i18n';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -65,6 +73,12 @@ interface VaultItem {
   cadastralVolume?: string;
   cadastralNumber?: string;
   officialSealNumber?: string;
+  sha256Hash?: string;
+  signatureSvg?: string;
+  signedByName?: string;
+  confidentialityLevel?: LegalConfidentialityLevel;
+  fileUrl?: string;
+  renderedBody?: string;
 }
 
 const extractStr = (v: unknown): string => {
@@ -79,17 +93,23 @@ const extractStr = (v: unknown): string => {
 
 export const LegalVaultView: React.FC<any> = () => {
   const {
+    account,
     language,
     activeLegalRole,
+    currentBusiness,
     currentBranch,
+    currentUser,
     branches,
     isSyncing,
     networkMode,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       activeLegalRole: s.activeLegalRole,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
       branches: s.branches,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode,
@@ -97,6 +117,7 @@ export const LegalVaultView: React.FC<any> = () => {
     shallowEqualObjects
   );
   const { retryCloudSync } = useAtriumActions();
+  const { matters, docTemplates } = useLegalData();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -134,6 +155,9 @@ export const LegalVaultView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('piece');
   const [inspectorNotes, setInspectorNotes] = useState('');
+  const [isStudioModalOpen, setIsStudioModalOpen] = useState(false);
+  const [isBordereauPrintOpen, setIsBordereauPrintOpen] = useState(false);
+  const [sealPrintItem, setSealPrintItem] = useState<VaultItem | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -322,18 +346,23 @@ export const LegalVaultView: React.FC<any> = () => {
       isFilingOnly && status !== 'PieceClient' && status !== 'OriginalScanned'
         ? 'PieceClient'
         : status;
+    const depositDate = vaultToEdit?.depositDate || new Date().toISOString().split('T')[0];
+    const computedHash =
+      vaultToEdit?.sha256Hash ||
+      computeSha256Hex(`${code.trim()}|${title.trim()}|${matterReference.trim()}|${category.trim()}|${depositDate}`);
     const payload: VaultItem = {
       id: vaultToEdit?.id || `v_${Date.now()}`,
       code: code.trim(),
       title: title.trim(),
       matterReference: matterReference.trim(),
       category: category.trim(),
-      depositDate: vaultToEdit?.depositDate || new Date().toISOString().split('T')[0],
+      depositDate,
       status: safeStatus,
       roleScope: targetScope,
       branchId: vaultToEdit?.branchId || currentBranch?.id || 'branch_legal_main',
       officialSealNumber:
         vaultToEdit?.officialSealNumber || `SEAL-${Math.floor(1000 + Math.random() * 9000)}`,
+      sha256Hash: computedHash,
     };
     if (vaultToEdit) {
       const prevItems = cloneSnapshot(vaultItems);
@@ -546,14 +575,40 @@ export const LegalVaultView: React.FC<any> = () => {
   );
 
   const handleExportBordereau = () => {
-    showToast(
-      isAr
-        ? 'تم توليد جدول إرسال المستندات الرسمي'
-        : 'Génération du Bordereau de Communication contradictoire des pièces',
-      'success'
-    );
-    window.print();
+    setIsBordereauPrintOpen(true);
   };
+
+  const handleSealSignedDocument = useCallback(
+    (signedDoc: LegalSignedDocument) => {
+      void legalService.upsertSignedVaultDocument(signedDoc);
+      const resolvedHash =
+        signedDoc.sha256Hash ||
+        computeSha256Hex(signedDoc.renderedBody || signedDoc.title || signedDoc.id);
+      const mapped: VaultItem = {
+        id: signedDoc.id,
+        code: signedDoc.vaultCode || `SEAL-${signedDoc.id.slice(-6).toUpperCase()}`,
+        title: signedDoc.title,
+        matterReference: signedDoc.matterReference || '—',
+        category: signedDoc.docCategory,
+        depositDate: signedDoc.depositDate || new Date().toISOString().split('T')[0],
+        status: signedDoc.vaultStatus,
+        roleScope: signedDoc.roleScope,
+        branchId: signedDoc.branchId,
+        officialSealNumber:
+          signedDoc.officialSealNumber || `SEAL-${resolvedHash.slice(0, 8).toUpperCase()}`,
+        sha256Hash: resolvedHash,
+        signatureSvg: signedDoc.signatureSvg,
+        signedByName: signedDoc.signedByName,
+        confidentialityLevel: signedDoc.confidentialityLevel,
+        fileUrl: signedDoc.fileUrl,
+        renderedBody: signedDoc.renderedBody,
+      };
+      const updated = [mapped, ...vaultItems];
+      saveVault(updated);
+      setSelectedItem(mapped);
+    },
+    [vaultItems, saveVault]
+  );
 
   const roleMetadata = useMemo(() => {
     if (targetScope === 'notaire') {
@@ -827,14 +882,28 @@ export const LegalVaultView: React.FC<any> = () => {
         icon={targetScope === 'notaire' ? <Scroll size={22} /> : <Lock size={22} />}
         title={roleMetadata.title}
         secondaryActions={
-          <AtriumButton
-            variant="ghost"
-            size="sm"
-            onClick={handleExportBordereau}
-            icon={<Download size={14} />}
-          >
-            {isAr ? 'جدول الإرسال' : 'Bordereau'}
-          </AtriumButton>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!isFilingOnly && (
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                onClick={() => setIsStudioModalOpen(true)}
+                icon={<FileSignature size={14} />}
+                className="whitespace-nowrap shrink-0"
+              >
+                {isAr ? 'النماذج والتوقيع' : isEn ? 'Templates & Sign' : 'Modèles & Signature'}
+              </AtriumButton>
+            )}
+            <AtriumButton
+              variant="ghost"
+              size="sm"
+              onClick={handleExportBordereau}
+              icon={<Download size={14} />}
+              className="whitespace-nowrap shrink-0"
+            >
+              {isAr ? 'جدول الإرسال' : 'Bordereau'}
+            </AtriumButton>
+          </div>
         }
         primaryAction={{
           label:
@@ -1108,13 +1177,7 @@ export const LegalVaultView: React.FC<any> = () => {
                   <InspectorWideButton
                     label={isAr ? 'طباعة نسخة مع الختم الرسمي' : 'Imprimer avec Cachet Légal'}
                     icon={<Printer size={14} />}
-                    onClick={() => {
-                      showToast(
-                        isAr ? 'طباعة شهادة المطابقة والختم' : "Certificat d'authenticité imprimé",
-                        'success'
-                      );
-                      window.print();
-                    }}
+                    onClick={() => setSealPrintItem(item)}
                   />
                 </InspectorSection>
               </>
@@ -1122,6 +1185,9 @@ export const LegalVaultView: React.FC<any> = () => {
           }
 
           if (tab === 'hash') {
+            const itemDigest =
+              item.sha256Hash ||
+              computeSha256Hex(`${item.code}|${item.title}|${item.matterReference}|${item.depositDate}`);
             return (
               <>
                 <InspectorSection index={0} title="SHA-256 Cryptographique">
@@ -1133,10 +1199,17 @@ export const LegalVaultView: React.FC<any> = () => {
                     />
                     <InspectorKeyValue
                       label="Empreinte"
-                      value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                      copyText="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                      value={itemDigest}
+                      copyText={itemDigest}
                       onCopied={() => showToast('Empreinte SHA-256 copiée', 'info')}
                     />
+                    {item.signedByName && (
+                      <InspectorKeyValue
+                        label={isAr ? 'الموقّع' : 'Signataire'}
+                        value={item.signedByName}
+                        mono={false}
+                      />
+                    )}
                     <InspectorKeyValue
                       label="Recevabilité"
                       value="Certifié conforme"
@@ -1362,6 +1435,96 @@ export const LegalVaultView: React.FC<any> = () => {
           </form>
         </div>
       </KineticModalShell>
+
+      <LegalTemplatesAndSignModal
+        isOpen={isStudioModalOpen}
+        onClose={() => setIsStudioModalOpen(false)}
+        language={language}
+        accountId={currentBranch?.accountId || account?.id || 'acc_legal'}
+        businessId={currentBusiness?.id || currentBranch?.businessId || 'biz_legal'}
+        branchId={currentBranch?.id || 'branch_legal_main'}
+        staffId={currentUser?.id || 'staff_01'}
+        activeRoleScope={targetScope}
+        matters={matters}
+        templates={docTemplates}
+        onSealVaultDocument={handleSealSignedDocument}
+      />
+
+      <PrintSheetModal
+        isOpen={isBordereauPrintOpen}
+        onClose={() => setIsBordereauPrintOpen(false)}
+        language={language}
+        format="a4"
+        title={isAr ? 'جدول إرسال المستندات الرسمي' : 'Bordereau de Communication de Pièces'}
+        subtitle={`${roleMetadata.title} · ${filteredItems.length} ${isAr ? 'وثيقة' : 'pièces'}`}
+        pages={[
+          {
+            id: 'bordereau-vault',
+            title: isAr ? 'جدول تبليغ وإيداع الوثائق' : 'BORDEREAU DE COMMUNICATION CONTRADICTOIRE',
+            subtitle: `${roleMetadata.badge} · ${new Date().toISOString().split('T')[0]}`,
+            badgeText: `${filteredItems.length} pièces`,
+            sections: [
+              {
+                heading: isAr ? 'قائمة الوثائق المشفرة' : 'Inventaire des Pièces Scellées',
+                rows: filteredItems.map((it) => ({
+                  label: `${it.code} · ${it.title} (${it.matterReference})`,
+                  value: `${it.depositDate} · SHA ${(
+                    it.sha256Hash ||
+                    computeSha256Hex(`${it.code}|${it.title}|${it.matterReference}|${it.depositDate}`)
+                  ).slice(0, 12)}…`,
+                })),
+              },
+            ],
+            signatureLeft: isAr ? 'أمانة / محامي الإيداع' : 'Cabinet Déposant',
+            signatureRight: isAr ? 'تأشيرة الاستلام' : 'Visa Récépissé',
+          },
+        ]}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(sealPrintItem)}
+        onClose={() => setSealPrintItem(null)}
+        language={language}
+        format="a4"
+        title={isAr ? 'شهادة مطابقة وختم رقمي SHA-256' : "Certificat d'Authenticité & Cachet Légal"}
+        subtitle={sealPrintItem ? `${sealPrintItem.code} · ${sealPrintItem.title}` : undefined}
+        pages={
+          sealPrintItem
+            ? [
+                {
+                  id: sealPrintItem.id,
+                  title: isAr ? `شهادة إيداع — ${sealPrintItem.code}` : `ATTESTATION DE SCELLAGE — ${sealPrintItem.code}`,
+                  subtitle: `${sealPrintItem.title} · Dossier ${sealPrintItem.matterReference}`,
+                  badgeText: sealPrintItem.officialSealNumber || 'SHA-256',
+                  sections: [
+                    {
+                      heading: isAr ? 'بيانات الوثيقة والبصمة' : 'Identification & Empreinte Probatoire',
+                      rows: [
+                        { label: 'Code Pièce', value: sealPrintItem.code },
+                        { label: 'Dossier', value: sealPrintItem.matterReference },
+                        { label: 'Catégorie', value: sealPrintItem.category },
+                        { label: 'Date Dépôt', value: sealPrintItem.depositDate },
+                        {
+                          label: 'Empreinte SHA-256',
+                          value:
+                            sealPrintItem.sha256Hash ||
+                            computeSha256Hex(
+                              `${sealPrintItem.code}|${sealPrintItem.title}|${sealPrintItem.matterReference}|${sealPrintItem.depositDate}`
+                            ),
+                        },
+                        ...(sealPrintItem.signedByName
+                          ? [{ label: 'Signataire', value: sealPrintItem.signedByName }]
+                          : []),
+                      ],
+                    },
+                  ],
+                  signatureLeft: isAr ? 'الختم الرسمي للمكتب' : 'Cachet du Cabinet / Étude',
+                  signatureRight: isAr ? 'توقيع الموثق / المحامي' : 'Signature Certifiée',
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 };

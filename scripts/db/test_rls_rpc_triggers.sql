@@ -2921,7 +2921,217 @@ BEGIN
   RESET ROLE;
 END $$;
 
+-- ============================================================================
+-- 31. PHASE 3 STEP 13 (7.13 legal_accounting): Escrow Guarded Release,
+--     CPCA Holiday Recalc, Time Entry Fee Invoice Double-Bill Prevention, & Isolation
+-- ============================================================================
+DO $$
+DECLARE
+  v_acc_a uuid;
+  v_acc_b uuid;
+  v_biz_a uuid;
+  v_biz_b uuid;
+  v_br_a uuid;
+  v_br_b uuid;
+  v_user_a uuid := '00000000-0000-0000-0000-000000001011'::uuid;
+  v_user_b uuid := '00000000-0000-0000-0000-000000001012'::uuid;
+  v_matter_id uuid := gen_random_uuid();
+  v_dl_id uuid := gen_random_uuid();
+  v_te_id uuid := gen_random_uuid();
+  v_escrow_id uuid := gen_random_uuid();
+  v_hol_id uuid := gen_random_uuid();
+  v_tpl_id uuid := gen_random_uuid();
+  v_bailiff_id uuid := gen_random_uuid();
+  v_arb_id uuid := gen_random_uuid();
+  v_ledger_id uuid := gen_random_uuid();
+  v_inv_res jsonb;
+  v_esc_res jsonb;
+  v_recalc_res jsonb;
+  v_blocked boolean;
+  v_count int;
+  v_due date;
+  v_bal bigint;
+  v_billed boolean;
+BEGIN
+  SELECT id INTO v_acc_a FROM public.accounts ORDER BY created_at ASC LIMIT 1;
+  SELECT id INTO v_acc_b FROM public.accounts WHERE id <> v_acc_a ORDER BY created_at ASC LIMIT 1;
+  IF v_acc_a IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Legal Test A', 'legal-a@atrium.test') RETURNING id INTO v_acc_a;
+  END IF;
+  IF v_acc_b IS NULL THEN
+    INSERT INTO public.accounts (name, email) VALUES ('Legal Test B', 'legal-b@atrium.test') RETURNING id INTO v_acc_b;
+  END IF;
+
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_a, 'Cabinet Maître Benali Test', 'legal_accounting') RETURNING id INTO v_biz_a;
+  INSERT INTO public.businesses (account_id, name, vertical)
+  VALUES (v_acc_b, 'Étude Concurrent Test', 'legal_accounting') RETURNING id INTO v_biz_b;
+
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_a, v_biz_a, 'Cabinet Alger Centre', true) RETURNING id INTO v_br_a;
+  INSERT INTO public.branches (account_id, business_id, name, is_main)
+  VALUES (v_acc_b, v_biz_b, 'Cabinet Oran', true) RETURNING id INTO v_br_b;
+
+  INSERT INTO public.staff (account_id, business_id, branch_id, auth_user_id, full_name, role, status)
+  VALUES
+    (v_acc_a, v_biz_a, v_br_a, v_user_a, 'Maître Benali A', 'admin', 'active'),
+    (v_acc_b, v_biz_b, v_br_b, v_user_b, 'Maître Oran B', 'admin', 'active');
+
+  INSERT INTO public.legal_matters (
+    id, account_id, business_id, branch_id, matter_number, title, client_name, opposing_party, confidentiality_level
+  ) VALUES (
+    v_matter_id, v_acc_a, v_biz_a, v_br_a, 'DOS-2026-991', 'Litige Commercial SARL Atlas', 'SARL Atlas', 'EURL Horizon', 'Restricted'
+  );
+
+  INSERT INTO public.legal_holiday_calendars (
+    id, account_id, business_id, branch_id, holiday_date, label, holiday_kind, is_active
+  ) VALUES (
+    v_hol_id, v_acc_a, v_biz_a, v_br_a, '2026-06-15'::date, 'Aïd Test', 'islamic', true
+  );
+
+  INSERT INTO public.legal_deadlines (
+    id, account_id, business_id, branch_id, matter_id, title, deadline_type, due_date, is_forclusion_critical
+  ) VALUES (
+    v_dl_id, v_acc_a, v_biz_a, v_br_a, v_matter_id, 'Délai Appel Civil', 'Appel', '2026-06-15'::date, true
+  );
+
+  INSERT INTO public.legal_time_entries (
+    id, account_id, business_id, branch_id, matter_id, matter_number, client_name, counsel_name, description, duration_minutes, hourly_rate_dzd, is_billable, is_billed, entry_kind, amount_ht_centimes
+  ) VALUES (
+    v_te_id, v_acc_a, v_biz_a, v_br_a, v_matter_id, 'DOS-2026-991', 'SARL Atlas', 'Maître Benali A', 'Rédaction conclusions', 120, 8000, true, false, 'time', 1600000
+  );
+
+  INSERT INTO public.legal_escrow_accounts (
+    id, account_id, business_id, branch_id, matter_id, matter_reference, client_name, beneficiary_name, total_deposited_centimes, current_balance_centimes, is_locked, release_pin_hash
+  ) VALUES (
+    v_escrow_id, v_acc_a, v_biz_a, v_br_a, v_matter_id, 'DOS-2026-991', 'SARL Atlas', 'Vendeur Test', 50000000, 50000000, true, 'pin-hash-991'
+  );
+
+  INSERT INTO public.legal_doc_templates (
+    id, account_id, business_id, branch_id, code, title, template_type, body_template, variables
+  ) VALUES (
+    v_tpl_id, v_acc_a, v_biz_a, v_br_a, 'TPL-2026-00001', 'Mise en demeure', 'mise_en_demeure', 'Client {{client_name}}', ARRAY['client_name']
+  );
+
+  INSERT INTO public.legal_bailiff_acts (
+    id, account_id, business_id, branch_id, act_number, matter_id, matter_number, act_kind, bailiff_name, recipient_name
+  ) VALUES (
+    v_bailiff_id, v_acc_a, v_biz_a, v_br_a, 'HUI-2026-00001', v_matter_id, 'DOS-2026-991', 'signification', 'Me Kaci Huissier', 'EURL Horizon'
+  );
+
+  INSERT INTO public.legal_arbitration_timelines (
+    id, account_id, business_id, branch_id, case_code, matter_id, matter_number, claimant_name, respondent_name, amount_in_dispute_centimes
+  ) VALUES (
+    v_arb_id, v_acc_a, v_biz_a, v_br_a, 'ARB-2026-00001', v_matter_id, 'DOS-2026-991', 'SARL Atlas', 'EURL Horizon', 120000000
+  );
+
+  INSERT INTO public.legal_client_ledgers (
+    id, account_id, business_id, branch_id, dossier_code, client_name, fiscal_period, tva_collectee_centimes, tva_deductible_centimes, tva_net_due_centimes, total_g50_due_centimes
+  ) VALUES (
+    v_ledger_id, v_acc_a, v_biz_a, v_br_a, 'EXP-2026-00001', 'SARL Atlas', '2026-06', 190000, 50000, 140000, 140000
+  );
+
+  -- Tenant B isolation across all 6 new 7.13 tables
+  PERFORM set_config('request.jwt.claim.sub', v_user_b::text, true);
+  SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO v_count FROM public.legal_holiday_calendars WHERE id = v_hol_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_holiday_calendars'; END IF;
+  SELECT count(*) INTO v_count FROM public.legal_escrow_accounts WHERE id = v_escrow_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_escrow_accounts'; END IF;
+  SELECT count(*) INTO v_count FROM public.legal_doc_templates WHERE id = v_tpl_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_doc_templates'; END IF;
+  SELECT count(*) INTO v_count FROM public.legal_bailiff_acts WHERE id = v_bailiff_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_bailiff_acts'; END IF;
+  SELECT count(*) INTO v_count FROM public.legal_arbitration_timelines WHERE id = v_arb_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_arbitration_timelines'; END IF;
+  SELECT count(*) INTO v_count FROM public.legal_client_ledgers WHERE id = v_ledger_id;
+  IF v_count <> 0 THEN RAISE EXCEPTION 'Tenant B unexpectedly read legal_client_ledgers'; END IF;
+  RESET ROLE;
+
+  -- Tenant A RPC tests
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  SET LOCAL ROLE authenticated;
+
+  -- 1. Escrow release MUST block without cadastral clearance
+  v_blocked := false;
+  BEGIN
+    PERFORM public.legal_release_escrow_guarded(v_escrow_id, 10000000, 'pin-hash-991', NULL, true, 'Maître Benali A', 'Sans cadastre');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected escrow release without cadastre to fail';
+  END IF;
+
+  -- Record cadastre then verify wrong PIN fails
+  UPDATE public.legal_escrow_accounts
+  SET cadastral_volume = 'Vol 42', cadastral_number = '118', cadastral_recorded_at = CURRENT_DATE
+  WHERE id = v_escrow_id;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.legal_release_escrow_guarded(v_escrow_id, 10000000, 'wrong-pin', NULL, true, 'Maître Benali A', 'Mauvais PIN');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected escrow release with wrong PIN to fail';
+  END IF;
+
+  -- Excess payout MUST fail
+  v_blocked := false;
+  BEGIN
+    PERFORM public.legal_release_escrow_guarded(v_escrow_id, 99000000, 'pin-hash-991', NULL, true, 'Maître Benali A', 'Montant excessif');
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected excess escrow payout to fail';
+  END IF;
+
+  -- Valid release succeeds & decrements balance
+  v_esc_res := public.legal_release_escrow_guarded(v_escrow_id, 20000000, 'pin-hash-991', NULL, true, 'Maître Benali A', 'Déblocage valide');
+  v_bal := (v_esc_res->>'remaining_balance_centimes')::bigint;
+  IF v_bal <> 30000000 THEN
+    RAISE EXCEPTION 'Expected remaining escrow balance 30000000 centimes, got %', v_bal;
+  END IF;
+
+  -- 2. Holiday recalculation shifts 2026-06-15 to 2026-06-16
+  v_recalc_res := public.legal_recalculate_deadlines_on_holidays(v_br_a, ARRAY['2026-06-15'::date]);
+  SELECT due_date INTO v_due FROM public.legal_deadlines WHERE id = v_dl_id;
+  IF v_due <> '2026-06-16'::date THEN
+    RAISE EXCEPTION 'Expected holiday deadline recalc to 2026-06-16, got %', v_due;
+  END IF;
+
+  -- 3. Generate HNR fee invoice from unbilled time entry & block double billing
+  v_inv_res := public.legal_generate_fee_invoice_from_time_entries(
+    v_biz_a, v_br_a, v_matter_id, 'SARL Atlas', ARRAY[v_te_id], 19, 0, 'virement'
+  );
+  IF NOT (v_inv_res->>'invoice_number') LIKE 'HNR-%' THEN
+    RAISE EXCEPTION 'Expected HNR invoice number prefix, got %', v_inv_res->>'invoice_number';
+  END IF;
+  SELECT is_billed INTO v_billed FROM public.legal_time_entries WHERE id = v_te_id;
+  IF NOT v_billed THEN
+    RAISE EXCEPTION 'Expected time entry to be marked is_billed=true';
+  END IF;
+
+  v_blocked := false;
+  BEGIN
+    PERFORM public.legal_generate_fee_invoice_from_time_entries(
+      v_biz_a, v_br_a, v_matter_id, 'SARL Atlas', ARRAY[v_te_id], 19, 0, 'virement'
+    );
+  EXCEPTION WHEN OTHERS THEN
+    v_blocked := true;
+  END;
+  IF NOT v_blocked THEN
+    RAISE EXCEPTION 'Expected double-billing of billed time entry to fail';
+  END IF;
+
+  RESET ROLE;
+END $$;
+
 ROLLBACK;
+
 
 
 

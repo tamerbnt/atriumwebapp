@@ -9,8 +9,23 @@ import {
   CashReceipt,
   DailyCashClosure,
   LegalClientEntity,
+  LegalTimeEntry,
+  LegalFeeInvoice,
+  LegalHolidayEntry,
+  LegalDocTemplate,
+  LegalBailiffAct,
+  LegalArbitrationTimeline,
+  LegalClientLedgerBook,
 } from '../../../types';
 import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317Stamp } from '../../../utils/legalRules';
+import {
+  DEFAULT_ALGERIAN_HOLIDAY_CALENDAR,
+  DEFAULT_LEGAL_DOC_TEMPLATES,
+  buildFeeInvoiceFromTimeEntries,
+  recalculateDeadlinesWithHolidays,
+  validateEscrowGuardedRelease,
+  createDefaultArbitrationMilestones,
+} from '../../../utils/legalDepth';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
@@ -627,6 +642,90 @@ export const useLegalData = () => {
     }
   });
 
+  const [timeEntries, setTimeEntries] = useState<LegalTimeEntry[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_time_entries_v2');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [feeInvoices, setFeeInvoices] = useState<LegalFeeInvoice[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_fee_invoices_v2');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [holidays, setHolidays] = useState<LegalHolidayEntry[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_holidays_v2');
+      if (s) return JSON.parse(s);
+    } catch {
+      // ignore
+    }
+    const nowIso = new Date().toISOString();
+    return DEFAULT_ALGERIAN_HOLIDAY_CALENDAR.map((h, idx) => ({
+      id: `hol_dz_${idx + 1}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      holidayDate: h.holidayDate,
+      label: h.label,
+      labelAr: h.labelAr,
+      holidayKind: h.holidayKind,
+      isActive: true,
+      createdAt: nowIso,
+    }));
+  });
+
+  const [docTemplates, setDocTemplates] = useState<LegalDocTemplate[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_doc_templates_v2');
+      if (s) return JSON.parse(s);
+    } catch {
+      // ignore
+    }
+    const nowIso = new Date().toISOString();
+    return DEFAULT_LEGAL_DOC_TEMPLATES.map((tpl) => ({
+      ...tpl,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      createdAt: nowIso,
+    }));
+  });
+
+  const [bailiffActs, setBailiffActs] = useState<LegalBailiffAct[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_bailiff_acts_v2');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [arbitrationTimelines, setArbitrationTimelines] = useState<LegalArbitrationTimeline[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_arbitration_v2');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [clientLedgers, setClientLedgers] = useState<LegalClientLedgerBook[]>(() => {
+    try {
+      const s = localStorage.getItem('atrium_legal_client_ledgers_v2');
+      return s ? JSON.parse(s) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Local storage auto-sync (idle-deferred)
   useIdlePersist('atrium_legal_entities', entities);
   useIdlePersist('atrium_legal_matters', matters);
@@ -637,6 +736,13 @@ export const useLegalData = () => {
   useIdlePersist('atrium_legal_scf_entries', scfEntries);
   useIdlePersist('atrium_legal_cash_receipts', cashReceipts);
   useIdlePersist('atrium_legal_daily_closure', dailyClosure);
+  useIdlePersist('atrium_legal_time_entries_v2', timeEntries);
+  useIdlePersist('atrium_legal_fee_invoices_v2', feeInvoices);
+  useIdlePersist('atrium_legal_holidays_v2', holidays);
+  useIdlePersist('atrium_legal_doc_templates_v2', docTemplates);
+  useIdlePersist('atrium_legal_bailiff_acts_v2', bailiffActs);
+  useIdlePersist('atrium_legal_arbitration_v2', arbitrationTimelines);
+  useIdlePersist('atrium_legal_client_ledgers_v2', clientLedgers);
 
   // Hydrate Legal & Notary workspace from Supabase when configured
   useEffect(() => {
@@ -653,6 +759,12 @@ export const useLegalData = () => {
         remoteDeeds,
         remoteScfEntries,
         remoteReceipts,
+        remoteTimeEntries,
+        remoteFeeInvoices,
+        remoteHolidays,
+        remoteBailiffActs,
+        remoteArbitration,
+        remoteLedgers,
       ] = await runWithConcurrency(
         [
           () => legalService.fetchClients(activeBranchId),
@@ -662,6 +774,12 @@ export const useLegalData = () => {
           () => legalService.fetchNotaryDeeds(activeBranchId),
           () => legalService.fetchScfEntries(activeBranchId),
           () => legalService.fetchCashReceipts(activeBranchId),
+          () => legalService.fetchTimeEntries(activeBranchId),
+          () => legalService.fetchFeeInvoices(activeBranchId),
+          () => legalService.fetchHolidays(activeBranchId),
+          () => legalService.fetchBailiffActs(activeBranchId),
+          () => legalService.fetchArbitrationTimelines(activeBranchId),
+          () => legalService.fetchClientLedgers(activeBranchId),
         ],
         4
       );
@@ -673,6 +791,12 @@ export const useLegalData = () => {
       if (remoteDeeds.length > 0) setNotaryDeeds((prev) => mergeLegalById(prev, remoteDeeds as NotaryDeed[]));
       if (remoteScfEntries.length > 0) setScfEntries((prev) => mergeLegalById(prev, remoteScfEntries as SCFJournalEntry[]));
       if (remoteReceipts.length > 0) setCashReceipts((prev) => mergeLegalById(prev, remoteReceipts as CashReceipt[]));
+      if (remoteTimeEntries.length > 0) setTimeEntries((prev) => mergeLegalById(prev, remoteTimeEntries as LegalTimeEntry[]));
+      if (remoteFeeInvoices.length > 0) setFeeInvoices((prev) => mergeLegalById(prev, remoteFeeInvoices as LegalFeeInvoice[]));
+      if (remoteHolidays.length > 0) setHolidays((prev) => mergeLegalById(prev, remoteHolidays as LegalHolidayEntry[]));
+      if (remoteBailiffActs.length > 0) setBailiffActs((prev) => mergeLegalById(prev, remoteBailiffActs as LegalBailiffAct[]));
+      if (remoteArbitration.length > 0) setArbitrationTimelines((prev) => mergeLegalById(prev, remoteArbitration as LegalArbitrationTimeline[]));
+      if (remoteLedgers.length > 0) setClientLedgers((prev) => mergeLegalById(prev, remoteLedgers as LegalClientLedgerBook[]));
     });
 
     return () => {
@@ -690,7 +814,12 @@ export const useLegalData = () => {
       'legal_deadlines',
       'legal_documents',
       'legal_time_entries',
+      'legal_invoices',
       'legal_cash_receipts',
+      'legal_holiday_calendars',
+      'legal_bailiff_acts',
+      'legal_arbitration_timelines',
+      'legal_client_ledgers',
     ];
 
     return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
@@ -1415,6 +1544,291 @@ export const useLegalData = () => {
     });
   };
 
+  const addTimeEntry = (entry: LegalTimeEntry) => {
+    const scoped = withBranch(entry);
+    const snap = cloneSnapshot(scoped);
+    setTimeEntries((prev) => [scoped, ...prev]);
+    void legalService.upsertTimeEntry(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.description,
+      summary: pickLocalizedText(language, {
+        fr: `Temps facturable enregistré (${scoped.durationMinutes} min)`,
+        en: `Billable time logged (${scoped.durationMinutes} min)`,
+        ar: `تم تسجيل وقت عمل (${scoped.durationMinutes} د)`,
+      }),
+      undo: () => {
+        setTimeEntries((prev) => prev.filter((t) => t.id !== snap.id));
+        void legalService.deleteTimeEntry(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setTimeEntries((prev) => (prev.some((t) => t.id === re.id) ? prev : [re, ...prev]));
+        void legalService.upsertTimeEntry(re).catch(() => {});
+      },
+    });
+  };
+
+  const deleteTimeEntry = (id: string) => {
+    const existing = timeEntries.find((t) => t.id === id);
+    if (!existing) return;
+    const snap = cloneSnapshot(existing);
+    setTimeEntries((prev) => prev.filter((t) => t.id !== id));
+    void legalService.deleteTimeEntry(id, currentStaffId).catch(() => {});
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'delete',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: snap.description,
+      summary: pickLocalizedText(language, {
+        fr: `Saisie de temps supprimée`,
+        en: `Time entry deleted`,
+        ar: `تم حذف سجل الوقت`,
+      }),
+      undo: () => {
+        const re = cloneSnapshot(snap);
+        setTimeEntries((prev) => [re, ...prev]);
+        void legalService.upsertTimeEntry(re).catch(() => {});
+      },
+    });
+  };
+
+  const generateFeeInvoiceFromEntries = (params: {
+    selectedIds: string[];
+    matterId?: string;
+    matterNumber?: string;
+    clientId?: string;
+    clientName: string;
+    tvaRate: 0 | 9 | 19;
+    disbursementDzd?: number;
+    paymentMethod?: 'especes' | 'cheque' | 'virement' | 'baridimob';
+    notes?: string;
+  }) => {
+    const selectedEntries = timeEntries.filter(
+      (e) => belongsToActiveBranch(e) && params.selectedIds.includes(e.id)
+    );
+    const nextIdx = feeInvoices.filter(belongsToActiveBranch).length + 1;
+    const invoiceNumber = `HNR-${new Date().getFullYear()}-${String(nextIdx).padStart(5, '0')}`;
+
+    const built = buildFeeInvoiceFromTimeEntries({
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      matterId: params.matterId,
+      matterNumber: params.matterNumber,
+      clientId: params.clientId,
+      clientName: params.clientName,
+      selectedEntries,
+      tvaRate: params.tvaRate,
+      disbursementDzd: params.disbursementDzd,
+      paymentMethod: params.paymentMethod,
+      invoiceNumber,
+      notes: params.notes,
+    });
+
+    if (!built.ok) {
+      return built;
+    }
+
+    const updatedMap = new Map(built.updatedTimeEntries.map((u) => [u.id, u]));
+    setTimeEntries((prev) => prev.map((t) => updatedMap.get(t.id) || t));
+    setFeeInvoices((prev) => [built.invoice, ...prev]);
+
+    void legalService.upsertFeeInvoice(built.invoice).catch(() => {});
+    built.updatedTimeEntries.forEach((te) => {
+      void legalService.upsertTimeEntry(te).catch(() => {});
+    });
+
+    return built;
+  };
+
+  const addHoliday = (entry: Omit<LegalHolidayEntry, 'id' | 'accountId' | 'businessId' | 'branchId' | 'createdAt'>) => {
+    const newHoliday = withBranch<LegalHolidayEntry>({
+      ...entry,
+      id: `hol_${Date.now().toString(36)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      createdAt: new Date().toISOString(),
+    });
+    setHolidays((prev) => [newHoliday, ...prev]);
+    void legalService.upsertHoliday(newHoliday).catch(() => {});
+    return newHoliday;
+  };
+
+  const deleteHoliday = (id: string) => {
+    setHolidays((prev) => prev.filter((h) => h.id !== id));
+    void legalService.deleteHoliday(id, currentStaffId).catch(() => {});
+  };
+
+  const recalculateDeadlinesByHolidays = () => {
+    const branchHolidays = holidays.filter((h) => belongsToActiveBranch(h) && h.isActive);
+    const activeDates = branchHolidays.map((h) => h.holidayDate);
+    const result = recalculateDeadlinesWithHolidays(
+      deadlines.filter(belongsToActiveBranch),
+      branchHolidays
+    );
+    if (result.recalculatedCount > 0) {
+      const updatedMap = new Map(result.updated.map((u) => [u.id, u]));
+      setDeadlines((prev) => prev.map((d) => updatedMap.get(d.id) || d));
+      result.updated.forEach((d) => {
+        void legalService.upsertCpcaDeadline(d).catch(() => {});
+      });
+    }
+    void legalService.recalculateDeadlinesOnHolidaysRpc(activeBranchId, activeDates).catch(() => {});
+    return result.recalculatedCount;
+  };
+
+  const executeGuardedEscrowRelease = (params: {
+    escrowId: string;
+    payoutAmountDzd: number;
+    pinEntered: string;
+    actorName: string;
+    notes?: string;
+    requireCadastre?: boolean;
+  }): { ok: boolean; reason?: string; escrow?: EscrowAccount } => {
+    const account = escrowAccounts.find((a) => a.id === params.escrowId);
+    if (!account) {
+      return { ok: false, reason: 'Compte séquestre introuvable.' };
+    }
+    const validation = validateEscrowGuardedRelease({
+      account,
+      payoutAmountDzd: params.payoutAmountDzd,
+      pinEntered: params.pinEntered,
+      requireCadastre: params.requireCadastre ?? true,
+    });
+    if (!validation.allowed) {
+      return { ok: false, reason: validation.reason };
+    }
+
+    const newBalance = Math.max(0, account.currentBalanceDzd - params.payoutAmountDzd);
+    const updated: EscrowAccount = {
+      ...account,
+      totalDisbursedDzd: account.totalDisbursedDzd + params.payoutAmountDzd,
+      currentBalanceDzd: newBalance,
+      isLocked: newBalance > 0,
+      transactions: [
+        {
+          id: `tx_${Date.now().toString(36)}`,
+          escrowAccountId: account.id,
+          date: new Date().toISOString().split('T')[0],
+          type: 'seller_final_payout',
+          amountDzd: params.payoutAmountDzd,
+          paymentMode: 'virement_bancaire',
+          bankReference: `VIR-ESC-${Date.now().toString().slice(-6)}`,
+          authorizedByStaff: params.actorName,
+          notes: params.notes || 'Déblocage contrôlé CARPA',
+        },
+        ...account.transactions,
+      ],
+      version: (account.version || 1) + 1,
+    };
+
+    updateEscrowAccount(updated);
+    void legalService.upsertEscrowLedger(updated).catch(() => {});
+    void legalService
+      .releaseEscrowGuardedRpc({
+        escrowId: account.id,
+        payoutDzd: params.payoutAmountDzd,
+        pinEntered: params.pinEntered,
+        requiredPinHash: account.releasePinHash,
+        requireCadastre: params.requireCadastre ?? true,
+        actorName: params.actorName,
+        notes: params.notes,
+      })
+      .catch(() => {});
+
+    return { ok: true, escrow: updated };
+  };
+
+  const addDocTemplate = (tpl: Omit<LegalDocTemplate, 'id' | 'accountId' | 'businessId' | 'branchId' | 'createdAt'>) => {
+    const created = withBranch<LegalDocTemplate>({
+      ...tpl,
+      id: `tpl_${Date.now().toString(36)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      createdAt: new Date().toISOString(),
+    });
+    setDocTemplates((prev) => [created, ...prev]);
+    void legalService.upsertDocTemplate(created).catch(() => {});
+    return created;
+  };
+
+  const addBailiffAct = (act: LegalBailiffAct) => {
+    const scoped = withBranch(act);
+    setBailiffActs((prev) => [scoped, ...prev]);
+    void legalService.upsertBailiffAct(scoped).catch(() => {});
+  };
+
+  const updateBailiffAct = (act: LegalBailiffAct) => {
+    const scoped = withBranch(act);
+    setBailiffActs((prev) => prev.map((a) => (a.id === scoped.id ? scoped : a)));
+    void legalService.upsertBailiffAct(scoped).catch(() => {});
+  };
+
+  const addArbitrationTimeline = (params: {
+    matterId?: string;
+    matterNumber?: string;
+    arbitrationSeat: string;
+    rulesFramework: string;
+    tribunalChair?: string;
+    claimantName: string;
+    respondentName: string;
+    amountInDisputeDzd: number;
+    startDate: string;
+  }) => {
+    const nextIdx = arbitrationTimelines.filter(belongsToActiveBranch).length + 1;
+    const created = withBranch<LegalArbitrationTimeline>({
+      id: `arb_${Date.now().toString(36)}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      staffId: currentStaffId || '',
+      caseCode: `ARB-${new Date().getFullYear()}-${String(nextIdx).padStart(5, '0')}`,
+      matterId: params.matterId,
+      matterNumber: params.matterNumber,
+      arbitrationSeat: params.arbitrationSeat,
+      rulesFramework: params.rulesFramework,
+      tribunalChair: params.tribunalChair,
+      claimantName: params.claimantName,
+      respondentName: params.respondentName,
+      amountInDisputeCentimes: Math.round((Number(params.amountInDisputeDzd) || 0) * 100),
+      phase: 'Constitution du Tribunal',
+      milestones: createDefaultArbitrationMilestones(params.startDate),
+      status: 'active',
+      version: 1,
+      createdAt: new Date().toISOString(),
+    });
+    setArbitrationTimelines((prev) => [created, ...prev]);
+    void legalService.upsertArbitrationTimeline(created).catch(() => {});
+    return created;
+  };
+
+  const updateArbitrationTimeline = (arb: LegalArbitrationTimeline) => {
+    const scoped = withBranch(arb);
+    setArbitrationTimelines((prev) => prev.map((a) => (a.id === scoped.id ? scoped : a)));
+    void legalService.upsertArbitrationTimeline(scoped).catch(() => {});
+  };
+
+  const addClientLedger = (book: LegalClientLedgerBook) => {
+    const scoped = withBranch(book);
+    setClientLedgers((prev) => [scoped, ...prev]);
+    void legalService.upsertClientLedger(scoped).catch(() => {});
+  };
+
+  const updateClientLedger = (book: LegalClientLedgerBook) => {
+    const scoped = withBranch(book);
+    setClientLedgers((prev) => prev.map((b) => (b.id === scoped.id ? scoped : b)));
+    void legalService.upsertClientLedger(scoped).catch(() => {});
+  };
+
   const scopedEntities = useMemo(() => entities.filter(belongsToActiveBranch), [entities, belongsToActiveBranch]);
   const scopedMatters = useMemo(() => matters.filter(belongsToActiveBranch), [matters, belongsToActiveBranch]);
   const scopedHearings = useMemo(() => hearings.filter(belongsToActiveBranch), [hearings, belongsToActiveBranch]);
@@ -1423,6 +1837,40 @@ export const useLegalData = () => {
   const scopedEscrowAccounts = useMemo(() => escrowAccounts.filter(belongsToActiveBranch), [escrowAccounts, belongsToActiveBranch]);
   const scopedScfEntries = useMemo(() => scfEntries.filter(belongsToActiveBranch), [scfEntries, belongsToActiveBranch]);
   const scopedCashReceipts = useMemo(() => cashReceipts.filter(belongsToActiveBranch), [cashReceipts, belongsToActiveBranch]);
+  const scopedTimeEntries = useMemo(() => timeEntries.filter(belongsToActiveBranch), [timeEntries, belongsToActiveBranch]);
+  const scopedFeeInvoices = useMemo(() => feeInvoices.filter(belongsToActiveBranch), [feeInvoices, belongsToActiveBranch]);
+  const scopedHolidays = useMemo(() => {
+    const filtered = holidays.filter(belongsToActiveBranch);
+    if (filtered.length > 0) return filtered;
+    const nowIso = new Date().toISOString();
+    return DEFAULT_ALGERIAN_HOLIDAY_CALENDAR.map((h, idx) => ({
+      id: `hol_dz_${activeBranchId}_${idx + 1}`,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      holidayDate: h.holidayDate,
+      label: h.label,
+      labelAr: h.labelAr,
+      holidayKind: h.holidayKind,
+      isActive: true,
+      createdAt: nowIso,
+    }));
+  }, [holidays, belongsToActiveBranch, activeBranchId, activeBusinessId, currentAccountId]);
+  const scopedDocTemplates = useMemo(() => {
+    const filtered = docTemplates.filter(belongsToActiveBranch);
+    if (filtered.length > 0) return filtered;
+    const nowIso = new Date().toISOString();
+    return DEFAULT_LEGAL_DOC_TEMPLATES.map((tpl) => ({
+      ...tpl,
+      accountId: currentAccountId || '',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      createdAt: nowIso,
+    }));
+  }, [docTemplates, belongsToActiveBranch, activeBranchId, activeBusinessId, currentAccountId]);
+  const scopedBailiffActs = useMemo(() => bailiffActs.filter(belongsToActiveBranch), [bailiffActs, belongsToActiveBranch]);
+  const scopedArbitrationTimelines = useMemo(() => arbitrationTimelines.filter(belongsToActiveBranch), [arbitrationTimelines, belongsToActiveBranch]);
+  const scopedClientLedgers = useMemo(() => clientLedgers.filter(belongsToActiveBranch), [clientLedgers, belongsToActiveBranch]);
 
   return {
     entities: scopedEntities,
@@ -1433,6 +1881,13 @@ export const useLegalData = () => {
     escrowAccounts: scopedEscrowAccounts,
     scfEntries: scopedScfEntries,
     cashReceipts: scopedCashReceipts,
+    timeEntries: scopedTimeEntries,
+    feeInvoices: scopedFeeInvoices,
+    holidays: scopedHolidays,
+    docTemplates: scopedDocTemplates,
+    bailiffActs: scopedBailiffActs,
+    arbitrationTimelines: scopedArbitrationTimelines,
+    clientLedgers: scopedClientLedgers,
     dailyClosure,
     addEntity,
     addMatter,
@@ -1446,9 +1901,24 @@ export const useLegalData = () => {
     addNotaryDeed,
     updateNotaryDeed,
     updateEscrowAccount,
+    executeGuardedEscrowRelease,
     addSCFEntry,
     addCashReceipt,
     updateDailyClosure,
+    addTimeEntry,
+    deleteTimeEntry,
+    generateFeeInvoiceFromEntries,
+    addHoliday,
+    deleteHoliday,
+    recalculateDeadlinesByHolidays,
+    addDocTemplate,
+    addBailiffAct,
+    updateBailiffAct,
+    addArbitrationTimeline,
+    updateArbitrationTimeline,
+    addClientLedger,
+    updateClientLedger,
     resetLegalMockData,
   };
 };
+

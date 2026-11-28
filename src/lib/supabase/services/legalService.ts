@@ -10,7 +10,16 @@ import type {
   SCFJournalEntry,
   CashReceipt,
   LegalClientEntity,
+  LegalTimeEntry,
+  LegalFeeInvoice,
+  LegalHolidayEntry,
+  LegalDocTemplate,
+  LegalSignedDocument,
+  LegalBailiffAct,
+  LegalArbitrationTimeline,
+  LegalClientLedgerBook,
 } from '../../../types/index';
+import { computeSha256Hex, validateVaultUploadFile } from '../../../utils/legalDepth';
 
 type DbMatterStatus = 'Open' | 'Instruction' | 'Hearing' | 'Deliberation' | 'Appeal' | 'Closed' | 'Archived';
 type DbHearingStatus = 'Scheduled' | 'Postponed' | 'Held' | 'JudgmentRendered';
@@ -160,7 +169,7 @@ export const legalService = {
         let query = (client as any)
           .from('legal_matters')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, matter_number, title, practice_area, client_name, opposing_party, jurisdiction, lead_counsel_name, agreed_fee_dzd, notes, version, created_at'
+            'id, account_id, business_id, branch_id, staff_id, matter_number, title, practice_area, client_name, opposing_party, jurisdiction, lead_counsel_name, agreed_fee_dzd, notes, confidentiality_level, allowed_roles, conflict_status, conflict_checked_at, conflict_override_reason, client_portal_token, portal_enabled, is_arbitration, version, created_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -199,6 +208,14 @@ export const legalService = {
           nextHearingDate: meta.nextHearingDate,
           cpcaDeadlineId: meta.cpcaDeadlineId,
           notes: plain || undefined,
+          confidentialityLevel: row.confidentiality_level || meta.confidentialityLevel || 'Internal',
+          allowedRoles: Array.isArray(row.allowed_roles) ? row.allowed_roles : meta.allowedRoles,
+          conflictStatus: row.conflict_status || meta.conflictStatus || 'clear',
+          conflictCheckedAt: row.conflict_checked_at || meta.conflictCheckedAt,
+          conflictOverrideReason: row.conflict_override_reason || meta.conflictOverrideReason,
+          clientPortalToken: row.client_portal_token || meta.clientPortalToken,
+          portalEnabled: row.portal_enabled ?? Boolean(meta.portalEnabled),
+          isArbitration: row.is_arbitration ?? Boolean(meta.isArbitration),
           version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
@@ -230,6 +247,14 @@ export const legalService = {
       agreed_fee_dzd: Number(matter.retainerAmountDzd || 0),
       status: toDbMatterStatus(matter.status),
       opened_date: matter.createdAt ? matter.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+      confidentiality_level: matter.confidentialityLevel || 'Internal',
+      allowed_roles: matter.allowedRoles || ['avocat_associe', 'notaire_titulaire', 'expert_comptable'],
+      conflict_status: matter.conflictStatus || 'clear',
+      conflict_checked_at: matter.conflictCheckedAt || null,
+      conflict_override_reason: matter.conflictOverrideReason || null,
+      client_portal_token: matter.clientPortalToken || null,
+      portal_enabled: Boolean(matter.portalEnabled),
+      is_arbitration: Boolean(matter.isArbitration),
       notes: packMeta(matter.notes, {
         uiStatus: matter.status,
         titleAr: matter.titleAr,
@@ -266,7 +291,7 @@ export const legalService = {
         let query = (client as any)
           .from('legal_hearings')
           .select(
-            'id, account_id, business_id, branch_id, staff_id, matter_id, matter_title, hearing_at, court_name, chamber, outcome_notes, status, version, created_at'
+            'id, account_id, business_id, branch_id, staff_id, matter_id, matter_title, hearing_at, court_name, chamber, outcome_notes, status, original_requested_date, auto_shifted_reason, reminder_sent_at, reminder_channel, version, created_at'
           )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
@@ -307,6 +332,10 @@ export const legalService = {
           isCompleted: Boolean(meta.isCompleted),
           nextDate: meta.nextDate,
           status: meta.uiStatus || row.status,
+          originalRequestedDate: row.original_requested_date || meta.originalRequestedDate,
+          autoShiftedReason: row.auto_shifted_reason || meta.autoShiftedReason,
+          reminderSentAt: row.reminder_sent_at || meta.reminderSentAt,
+          reminderChannel: row.reminder_channel || meta.reminderChannel,
           version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
@@ -333,6 +362,10 @@ export const legalService = {
       hearing_at: `${hearing.hearingDate || new Date().toISOString().split('T')[0]}T${hearing.hearingTime || '09:00'}:00Z`,
       counsel_name: hearing.presidingJudge || hearing.benchJudge || null,
       status: toDbHearingStatus(hearing.status),
+      original_requested_date: hearing.originalRequestedDate || null,
+      auto_shifted_reason: hearing.autoShiftedReason || null,
+      reminder_sent_at: hearing.reminderSentAt || null,
+      reminder_channel: hearing.reminderChannel || null,
       outcome_notes: packMeta(hearing.outcomeNotes, {
         uiStatus: hearing.status,
         matterNumber: hearing.matterNumber,
@@ -599,6 +632,7 @@ export const legalService = {
       ...trace,
       matter_id: defaultMatterId ? toValidUuid(defaultMatterId) : null,
       counsel_name: entry.entryNumber,
+      entry_kind: 'scf_journal',
       description: packMeta(entry.libelle, { scfEntry: entry }),
       duration_minutes: 60,
       hourly_rate_dzd: Number(entry.totalDebitDzd || 0),
@@ -610,6 +644,189 @@ export const legalService = {
       expectedVersion: entry.version,
       entityType: 'SCFJournalEntry',
       entityLabel: entry.entryNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchTimeEntries(branchId: string, updatedAfter?: string | null): Promise<LegalTimeEntry[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_time_entries')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, matter_id, matter_number, client_name, counsel_name, activity_type, description, duration_minutes, hourly_rate_dzd, tva_rate, amount_ht_centimes, is_billable, is_billed, invoice_id, billed_at, entry_date, entry_kind, version, created_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .eq('entry_kind', 'time')
+          .not('description', 'ilike', '__atrium_legal__:%')
+          .is('deleted_at', null)
+          .order('entry_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+
+      return data.map((row: any): LegalTimeEntry => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || 'staff_01',
+        matterId: row.matter_id || undefined,
+        matterNumber: row.matter_number || undefined,
+        clientName: row.client_name || undefined,
+        counselName: row.counsel_name || 'Maître',
+        activityType: (row.activity_type || 'consultation') as LegalTimeEntry['activityType'],
+        description: row.description,
+        durationMinutes: Number(row.duration_minutes || 0),
+        hourlyRateDzd: Number(row.hourly_rate_dzd || 0),
+        tvaRate: (Number(row.tva_rate ?? 19) as LegalTimeEntry['tvaRate']),
+        amountHtCentimes: Number(row.amount_ht_centimes || 0),
+        isBillable: Boolean(row.is_billable),
+        isBilled: Boolean(row.is_billed),
+        invoiceId: row.invoice_id || undefined,
+        billedAt: row.billed_at || undefined,
+        entryDate: row.entry_date,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertTimeEntry(entry: LegalTimeEntry): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: entry.accountId,
+      businessId: entry.businessId,
+      branchId: entry.branchId,
+      staffId: entry.staffId,
+    });
+    const payload = {
+      id: toValidUuid(entry.id),
+      ...trace,
+      matter_id: entry.matterId ? toValidUuid(entry.matterId) : null,
+      matter_number: entry.matterNumber || null,
+      client_name: entry.clientName || null,
+      counsel_name: entry.counselName,
+      entry_kind: 'time',
+      activity_type: entry.activityType || 'consultation',
+      description: entry.description,
+      duration_minutes: Math.round(entry.durationMinutes),
+      hourly_rate_dzd: Number(entry.hourlyRateDzd || 0),
+      tva_rate: Number(entry.tvaRate ?? 19),
+      amount_ht_centimes: Math.round(entry.amountHtCentimes || 0),
+      is_billable: Boolean(entry.isBillable),
+      is_billed: Boolean(entry.isBilled),
+      invoice_id: entry.invoiceId ? toValidUuid(entry.invoiceId) : null,
+      billed_at: entry.billedAt || null,
+      entry_date: entry.entryDate,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_time_entries', payload, {
+      expectedVersion: entry.version,
+      entityType: 'LegalTimeEntry',
+      entityLabel: entry.description,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchFeeInvoices(branchId: string, updatedAfter?: string | null): Promise<LegalFeeInvoice[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_invoices')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, invoice_number, matter_id, matter_number, client_id, client_name, fees_ht_dzd, disbursements_dzd, tva_rate, tva_dzd, timbre_dzd, total_ttc_dzd, total_ttc_centimes, paid_amount_dzd, status, issue_date, due_date, line_items, time_entry_ids, unified_document_id, notes, version, created_at'
+          )
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('issue_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
+
+      return data.map((row: any): LegalFeeInvoice => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || 'staff_01',
+        invoiceNumber: row.invoice_number,
+        matterId: row.matter_id || undefined,
+        matterNumber: row.matter_number || undefined,
+        clientId: row.client_id || undefined,
+        clientName: row.client_name,
+        feesHtDzd: Number(row.fees_ht_dzd || 0),
+        disbursementsDzd: Number(row.disbursements_dzd || 0),
+        tvaRate: (Number(row.tva_rate ?? 19) as LegalFeeInvoice['tvaRate']),
+        tvaDzd: Number(row.tva_dzd || 0),
+        timbreDzd: Number(row.timbre_dzd || 0),
+        totalTtcDzd: Number(row.total_ttc_dzd || 0),
+        totalTtcCentimes: Number(row.total_ttc_centimes || Math.round(Number(row.total_ttc_dzd || 0) * 100)),
+        paidAmountDzd: Number(row.paid_amount_dzd || 0),
+        status: row.status || 'Sent',
+        issueDate: row.issue_date,
+        dueDate: row.due_date || undefined,
+        timeEntryIds: Array.isArray(row.time_entry_ids) ? row.time_entry_ids : [],
+        lineItems: Array.isArray(row.line_items) ? row.line_items : [],
+        unifiedDocumentId: row.unified_document_id || undefined,
+        notes: row.notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertFeeInvoice(invoice: LegalFeeInvoice): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: invoice.accountId,
+      businessId: invoice.businessId,
+      branchId: invoice.branchId,
+      staffId: invoice.staffId,
+    });
+    const payload = {
+      id: toValidUuid(invoice.id),
+      ...trace,
+      invoice_number: invoice.invoiceNumber,
+      matter_id: invoice.matterId ? toValidUuid(invoice.matterId) : null,
+      matter_number: invoice.matterNumber || null,
+      client_id: invoice.clientId ? toValidUuid(invoice.clientId) : null,
+      client_name: invoice.clientName,
+      fees_ht_dzd: Number(invoice.feesHtDzd || 0),
+      disbursements_dzd: Number(invoice.disbursementsDzd || 0),
+      tva_rate: Number(invoice.tvaRate ?? 19),
+      tva_dzd: Number(invoice.tvaDzd || 0),
+      timbre_dzd: Number(invoice.timbreDzd || 0),
+      total_ttc_dzd: Number(invoice.totalTtcDzd || 0),
+      total_ttc_centimes: Math.round(invoice.totalTtcCentimes || 0),
+      paid_amount_dzd: Number(invoice.paidAmountDzd || 0),
+      status: invoice.status,
+      issue_date: invoice.issueDate,
+      due_date: invoice.dueDate || null,
+      line_items: invoice.lineItems || [],
+      time_entry_ids: (invoice.timeEntryIds || []).map((id) => toValidUuid(id)),
+      unified_document_id: invoice.unifiedDocumentId ? toValidUuid(invoice.unifiedDocumentId) : null,
+      notes: invoice.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_invoices', payload, {
+      expectedVersion: invoice.version,
+      entityType: 'LegalFeeInvoice',
+      entityLabel: invoice.invoiceNumber,
       localData: payload,
     });
     return res.success;
@@ -722,6 +939,481 @@ export const legalService = {
 
   async deleteCashReceipt(id: string, deletedByStaffId?: string): Promise<boolean> {
     const res = await syncCoordinator.softDeleteRow('legal_cash_receipts', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteTimeEntry(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_time_entries', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchHolidays(branchId: string): Promise<LegalHolidayEntry[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('legal_holiday_calendars')
+          .select('id, account_id, business_id, branch_id, holiday_date, label, label_ar, holiday_kind, is_active, version, created_at')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('holiday_date', { ascending: true })
+          .range(from, to)
+      );
+      return data.map((row: any): LegalHolidayEntry => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        holidayDate: row.holiday_date,
+        label: row.label,
+        labelAr: row.label_ar || undefined,
+        holidayKind: row.holiday_kind || 'custom',
+        isActive: row.is_active ?? true,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertHoliday(entry: LegalHolidayEntry): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: entry.accountId,
+      businessId: entry.businessId,
+      branchId: entry.branchId,
+    });
+    const payload = {
+      id: toValidUuid(entry.id),
+      ...trace,
+      holiday_date: entry.holidayDate,
+      label: entry.label,
+      label_ar: entry.labelAr || null,
+      holiday_kind: entry.holidayKind,
+      is_active: entry.isActive,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_holiday_calendars', payload, {
+      expectedVersion: entry.version,
+      entityType: 'LegalHolidayEntry',
+      entityLabel: entry.label,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteHoliday(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_holiday_calendars', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async recalculateDeadlinesOnHolidaysRpc(branchId: string, holidayDates: string[]): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('legal_recalculate_deadlines_on_holidays', {
+      p_branch_id: toValidUuid(branchId),
+      p_holiday_dates: holidayDates,
+    });
+    return res.success;
+  },
+
+  async upsertEscrowLedger(escrow: EscrowAccount): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: escrow.accountId,
+      businessId: escrow.businessId,
+      branchId: escrow.branchId,
+      staffId: escrow.staffId,
+    });
+    const payload = {
+      id: toValidUuid(escrow.id),
+      ...trace,
+      matter_id: escrow.matterId ? toValidUuid(escrow.matterId) : null,
+      matter_reference: escrow.matterReference,
+      client_name: escrow.clientName,
+      beneficiary_name: escrow.beneficiaryName,
+      bank_account_ref: escrow.bankAccountRef || null,
+      bank_statement_balance_centimes: Math.round(
+        Number(escrow.bankStatementBalanceDzd ?? escrow.currentBalanceDzd ?? 0) * 100
+      ),
+      total_deposited_centimes: Math.round(Number(escrow.totalDepositedDzd || 0) * 100),
+      total_disbursed_centimes: Math.round(Number(escrow.totalDisbursedDzd || 0) * 100),
+      current_balance_centimes: Math.round(Number(escrow.currentBalanceDzd || 0) * 100),
+      is_locked: Boolean(escrow.isLocked),
+      cadastral_volume: escrow.cadastralClearanceProof?.volume || null,
+      cadastral_number: escrow.cadastralClearanceProof?.number || null,
+      cadastral_recorded_at: escrow.cadastralClearanceProof?.recordedAt || null,
+      release_pin_hash: escrow.releasePinHash || null,
+      reconciled_at: escrow.reconciledAt || null,
+      transactions: escrow.transactions || [],
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_escrow_accounts', payload, {
+      expectedVersion: escrow.version,
+      entityType: 'EscrowAccount',
+      entityLabel: escrow.matterReference,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async releaseEscrowGuardedRpc(params: {
+    escrowId: string;
+    payoutDzd: number;
+    pinEntered: string;
+    requiredPinHash?: string;
+    requireCadastre?: boolean;
+    actorName?: string;
+    notes?: string;
+  }): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('legal_release_escrow_guarded', {
+      p_escrow_id: toValidUuid(params.escrowId),
+      p_payout_centimes: Math.round(Number(params.payoutDzd || 0) * 100),
+      p_pin_entered: params.pinEntered,
+      p_required_pin: params.requiredPinHash || null,
+      p_require_cadastre: params.requireCadastre ?? true,
+      p_actor_name: params.actorName || 'Maître',
+      p_notes: params.notes || null,
+    });
+    return res.success;
+  },
+
+  async upsertDocTemplate(tpl: LegalDocTemplate): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: tpl.accountId,
+      businessId: tpl.businessId,
+      branchId: tpl.branchId,
+    });
+    const payload = {
+      id: toValidUuid(tpl.id),
+      ...trace,
+      code: tpl.code,
+      title: tpl.title,
+      title_ar: tpl.titleAr || null,
+      template_type: tpl.templateType,
+      body_template: tpl.bodyTemplate,
+      variables: tpl.variables || [],
+      is_system: Boolean(tpl.isSystem),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_doc_templates', payload, {
+      expectedVersion: tpl.version,
+      entityType: 'LegalDocTemplate',
+      entityLabel: tpl.title,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async uploadVaultDocumentFile(params: {
+    branchId: string;
+    file: File;
+  }): Promise<{ ok: boolean; sha256Hash?: string; storagePath?: string; fileUrl?: string; reason?: string }> {
+    const check = validateVaultUploadFile({
+      name: params.file.name,
+      size: params.file.size,
+      type: params.file.type,
+    });
+    if (!check.ok) {
+      return { ok: false, reason: check.reason };
+    }
+
+    const buf = new Uint8Array(await params.file.arrayBuffer());
+    const sha256Hash = computeSha256Hex(buf);
+    const safeName = params.file.name.replace(/[^a-zA-Z0-9._-]+/g, '_');
+    const storagePath = `${toValidUuid(params.branchId)}/${Date.now()}_${safeName}`;
+
+    const client = getSupabaseClient();
+    if (client?.storage) {
+      try {
+        const { error } = await client.storage.from('legal-vault').upload(storagePath, params.file, {
+          contentType: params.file.type || 'application/octet-stream',
+          upsert: false,
+        });
+        if (!error) {
+          return { ok: true, sha256Hash, storagePath, fileUrl: `storage://legal-vault/${storagePath}` };
+        }
+      } catch {
+        // Offline/unauthenticated preview fallback keeps verified SHA-256 metadata queued for sync
+      }
+    }
+    return {
+      ok: true,
+      sha256Hash,
+      storagePath,
+      fileUrl: `local-vault://${storagePath}`,
+    };
+  },
+
+  async upsertSignedVaultDocument(doc: LegalSignedDocument): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: doc.accountId,
+      businessId: doc.businessId,
+      branchId: doc.branchId,
+      staffId: doc.staffId,
+    });
+    const payload = {
+      id: toValidUuid(doc.id),
+      ...trace,
+      matter_id: doc.matterId ? toValidUuid(doc.matterId) : null,
+      matter_reference: doc.matterReference || null,
+      vault_code: doc.vaultCode || null,
+      title: doc.title,
+      doc_category: doc.docCategory,
+      role_scope: doc.roleScope,
+      vault_status: doc.vaultStatus,
+      confidentiality_level: doc.confidentialityLevel,
+      file_url: doc.fileUrl || null,
+      storage_bucket: doc.storageBucket || 'legal-vault',
+      storage_path: doc.storagePath || null,
+      sha256_hash: doc.sha256Hash || null,
+      file_size_bytes: doc.fileSizeBytes ?? null,
+      mime_type: doc.mimeType || null,
+      official_seal_number: doc.officialSealNumber || null,
+      cadastral_volume: doc.cadastralVolume || null,
+      cadastral_number: doc.cadastralNumber || null,
+      template_id: doc.templateId ? toValidUuid(doc.templateId) : null,
+      rendered_body: doc.renderedBody || null,
+      signature_svg: doc.signatureSvg || null,
+      signed_by_name: doc.signedByName || null,
+      signed_at: doc.signedAt || null,
+      is_portal_shared: Boolean(doc.isPortalShared),
+      deposit_date: doc.depositDate || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_documents', payload, {
+      expectedVersion: doc.version,
+      entityType: 'LegalSignedDocument',
+      entityLabel: doc.title,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchBailiffActs(branchId: string): Promise<LegalBailiffAct[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('legal_bailiff_acts')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('service_date', { ascending: false })
+          .range(from, to)
+      );
+      return data.map((row: any): LegalBailiffAct => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || 'staff_01',
+        actNumber: row.act_number,
+        matterId: row.matter_id || undefined,
+        matterNumber: row.matter_number || undefined,
+        actKind: row.act_kind,
+        bailiffName: row.bailiff_name,
+        recipientName: row.recipient_name,
+        serviceMode: row.service_mode,
+        serviceDate: row.service_date,
+        linkedCpcaDeadlineId: row.linked_cpca_deadline_id || undefined,
+        pvSummary: row.pv_summary || undefined,
+        status: row.status,
+        feeCentimes: Number(row.fee_centimes || 0),
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertBailiffAct(act: LegalBailiffAct): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: act.accountId,
+      businessId: act.businessId,
+      branchId: act.branchId,
+      staffId: act.staffId,
+    });
+    const payload = {
+      id: toValidUuid(act.id),
+      ...trace,
+      act_number: act.actNumber,
+      matter_id: act.matterId ? toValidUuid(act.matterId) : null,
+      matter_number: act.matterNumber || null,
+      act_kind: act.actKind,
+      bailiff_name: act.bailiffName,
+      recipient_name: act.recipientName,
+      service_mode: act.serviceMode,
+      service_date: act.serviceDate,
+      linked_cpca_deadline_id: act.linkedCpcaDeadlineId ? toValidUuid(act.linkedCpcaDeadlineId) : null,
+      pv_summary: act.pvSummary || null,
+      status: act.status,
+      fee_centimes: Math.round(act.feeCentimes || 0),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_bailiff_acts', payload, {
+      expectedVersion: act.version,
+      entityType: 'LegalBailiffAct',
+      entityLabel: act.actNumber,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchArbitrationTimelines(branchId: string): Promise<LegalArbitrationTimeline[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('legal_arbitration_timelines')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      );
+      return data.map((row: any): LegalArbitrationTimeline => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || 'staff_01',
+        caseCode: row.case_code,
+        matterId: row.matter_id || undefined,
+        matterNumber: row.matter_number || undefined,
+        arbitrationSeat: row.arbitration_seat,
+        rulesFramework: row.rules_framework,
+        tribunalChair: row.tribunal_chair || undefined,
+        claimantName: row.claimant_name,
+        respondentName: row.respondent_name,
+        amountInDisputeCentimes: Number(row.amount_in_dispute_centimes || 0),
+        phase: row.phase,
+        milestones: Array.isArray(row.milestones) ? row.milestones : [],
+        awardDueDate: row.award_due_date || undefined,
+        status: row.status,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertArbitrationTimeline(arb: LegalArbitrationTimeline): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: arb.accountId,
+      businessId: arb.businessId,
+      branchId: arb.branchId,
+      staffId: arb.staffId,
+    });
+    const payload = {
+      id: toValidUuid(arb.id),
+      ...trace,
+      case_code: arb.caseCode,
+      matter_id: arb.matterId ? toValidUuid(arb.matterId) : null,
+      matter_number: arb.matterNumber || null,
+      arbitration_seat: arb.arbitrationSeat,
+      rules_framework: arb.rulesFramework,
+      tribunal_chair: arb.tribunalChair || null,
+      claimant_name: arb.claimantName,
+      respondent_name: arb.respondentName,
+      amount_in_dispute_centimes: Math.round(arb.amountInDisputeCentimes || 0),
+      phase: arb.phase,
+      milestones: arb.milestones || [],
+      award_due_date: arb.awardDueDate || null,
+      status: arb.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_arbitration_timelines', payload, {
+      expectedVersion: arb.version,
+      entityType: 'LegalArbitrationTimeline',
+      entityLabel: arb.caseCode,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async fetchClientLedgers(branchId: string): Promise<LegalClientLedgerBook[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    try {
+      const data = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('legal_client_ledgers')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('fiscal_period', { ascending: false })
+          .range(from, to)
+      );
+      return data.map((row: any): LegalClientLedgerBook => ({
+        id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id || 'staff_01',
+        dossierCode: row.dossier_code,
+        clientId: row.client_id || undefined,
+        clientName: row.client_name,
+        clientNif: row.client_nif || undefined,
+        fiscalRegime: row.fiscal_regime || 'Reel',
+        fiscalPeriod: row.fiscal_period,
+        tvaCollecteeCentimes: Number(row.tva_collectee_centimes || 0),
+        tvaDeductibleCentimes: Number(row.tva_deductible_centimes || 0),
+        creditTvaAnterieurCentimes: Number(row.credit_tva_anterieur_centimes || 0),
+        tvaNetDueCentimes: Number(row.tva_net_due_centimes || 0),
+        tapBaseCentimes: Number(row.tap_base_centimes || 0),
+        irgSalairesCentimes: Number(row.irg_salaires_centimes || 0),
+        ibsAcompteCentimes: Number(row.ibs_acompte_centimes || 0),
+        timbreFiscalCentimes: Number(row.timbre_fiscal_centimes || 0),
+        totalG50DueCentimes: Number(row.total_g50_due_centimes || 0),
+        trialBalanceJson: Array.isArray(row.trial_balance_json) ? row.trial_balance_json : [],
+        g50Status: row.g50_status || 'draft',
+        liasseReady: Boolean(row.liasse_ready),
+        filedAt: row.filed_at || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
+        createdAt: row.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async upsertClientLedger(book: LegalClientLedgerBook): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: book.accountId,
+      businessId: book.businessId,
+      branchId: book.branchId,
+      staffId: book.staffId,
+    });
+    const payload = {
+      id: toValidUuid(book.id),
+      ...trace,
+      dossier_code: book.dossierCode,
+      client_id: book.clientId ? toValidUuid(book.clientId) : null,
+      client_name: book.clientName,
+      client_nif: book.clientNif || null,
+      fiscal_regime: book.fiscalRegime,
+      fiscal_period: book.fiscalPeriod,
+      tva_collectee_centimes: Math.round(book.tvaCollecteeCentimes || 0),
+      tva_deductible_centimes: Math.round(book.tvaDeductibleCentimes || 0),
+      credit_tva_anterieur_centimes: Math.round(book.creditTvaAnterieurCentimes || 0),
+      tva_net_due_centimes: Math.round(book.tvaNetDueCentimes || 0),
+      tap_base_centimes: Math.round(book.tapBaseCentimes || 0),
+      irg_salaires_centimes: Math.round(book.irgSalairesCentimes || 0),
+      ibs_acompte_centimes: Math.round(book.ibsAcompteCentimes || 0),
+      timbre_fiscal_centimes: Math.round(book.timbreFiscalCentimes || 0),
+      total_g50_due_centimes: Math.round(book.totalG50DueCentimes || 0),
+      trial_balance_json: book.trialBalanceJson || [],
+      g50_status: book.g50Status,
+      liasse_ready: Boolean(book.liasseReady),
+      filed_at: book.filedAt || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_client_ledgers', payload, {
+      expectedVersion: book.version,
+      entityType: 'LegalClientLedgerBook',
+      entityLabel: book.dossierCode,
+      localData: payload,
+    });
     return res.success;
   },
 };

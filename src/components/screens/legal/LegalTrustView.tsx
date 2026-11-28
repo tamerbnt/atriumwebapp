@@ -27,6 +27,8 @@ import {
 import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { useLegalData } from './legalData';
+import { LegalTimeBillingPanel } from './LegalTimeBillingPanel';
+import { LegalTradeSpecialtyPanel } from './LegalTradeSpecialtyPanel';
 import { ScfAccountingWorkspace } from '../../common/accounting/ScfAccountingWorkspace';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -39,12 +41,11 @@ import {
 } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
-  canReleaseEscrow,
   validateAndBalanceSCFEntry,
   calculateArticle317Stamp,
 } from '../../../utils/legalRules';
 import { CashClosureModal } from '../../modals/CashClosureModal';
-import { PrintSheetModal } from '../../modals/PrintSheetModal';
+import { PrintSheetModal, PrintSheetPage } from '../../modals/PrintSheetModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -129,6 +130,25 @@ export const LegalTrustView: React.FC<any> = () => {
     addCashReceipt,
     dailyClosure,
     updateDailyClosure,
+    timeEntries,
+    feeInvoices,
+    holidays,
+    bailiffActs,
+    arbitrationTimelines,
+    clientLedgers,
+    addTimeEntry,
+    deleteTimeEntry,
+    generateFeeInvoiceFromEntries,
+    executeGuardedEscrowRelease,
+    recalculateDeadlinesByHolidays,
+    addHoliday,
+    deleteHoliday,
+    addBailiffAct,
+    addArbitrationTimeline,
+    updateArbitrationTimeline,
+    addClientLedger,
+    updateClientLedger,
+    addCPCADeadline,
   } = useLegalData();
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -145,6 +165,11 @@ export const LegalTrustView: React.FC<any> = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [carpaMatterToPrint, setCarpaMatterToPrint] = useState<LegalMatter | null>(null);
+  const [customPrintSheet, setCustomPrintSheet] = useState<{
+    title: string;
+    subtitle?: string;
+    pages: PrintSheetPage[];
+  } | null>(null);
 
   const handleTogglePin = useCallback(
     (id: string) => {
@@ -286,43 +311,26 @@ export const LegalTrustView: React.FC<any> = () => {
     if (!activeEscrow) return;
     const amountToRelease =
       releaseAmount > 0 ? releaseAmount : activeEscrow.currentBalanceDzd;
-    const hasClearance = Boolean(activeEscrow.cadastralClearanceProof?.volume);
-    const validation = canReleaseEscrow(
-      activeEscrow.currentBalanceDzd,
-      amountToRelease,
-      hasClearance,
-      notaryPin,
-      '2026'
-    );
-    if (!validation.allowed) {
+    const res = executeGuardedEscrowRelease({
+      escrowId: activeEscrow.id,
+      payoutAmountDzd: amountToRelease,
+      pinEntered: notaryPin,
+      actorName: currentUser?.fullName || 'Maître Notaire Titulaire',
+    });
+    if (!res.ok) {
       showToast(
-        validation.reason || (isAr ? 'فشل فك الحراسة' : 'Déblocage refusé'),
+        res.reason || (isAr ? 'فشل فك الحراسة' : 'Déblocage refusé'),
         'error'
       );
       return;
     }
-    const newTx = {
-      id: `tx_${Date.now()}`,
-      escrowAccountId: activeEscrow.id,
-      date: new Date().toISOString().split('T')[0],
-      type: 'seller_final_payout' as const,
-      amountDzd: amountToRelease,
-      paymentMode: 'virement_bancaire' as const,
-      bankReference: `VIR-NOT-${Math.floor(1000 + Math.random() * 9000)}`,
-      authorizedByStaff: 'Me Notaire Titulaire',
-      notes: `Déblocage de séquestre post-publicité foncière (${activeEscrow.cadastralClearanceProof?.volume})`,
-    };
-    const newBalance = activeEscrow.currentBalanceDzd - amountToRelease;
-    const updated: EscrowAccount = {
-      ...activeEscrow,
-      currentBalanceDzd: newBalance,
-      totalDisbursedDzd: activeEscrow.totalDisbursedDzd + amountToRelease,
-      isLocked: newBalance > 0,
-      transactions: [newTx, ...activeEscrow.transactions],
-    };
-    updateEscrowAccount(updated);
-    setSelectedEscrow(updated);
+    if (res.escrow) setSelectedEscrow(res.escrow);
     setNotaryPin('');
+    setReleaseAmount(0);
+    showToast(
+      isAr ? 'تم فك الحراسة وإصدار أمر التحويل' : 'Séquestre débloqué et virement émis',
+      'success'
+    );
   };
 
   const handleSaveSCFEntry = (e: React.FormEvent) => {
@@ -473,7 +481,23 @@ export const LegalTrustView: React.FC<any> = () => {
         );
         return;
       }
-      const amount = matter.trustEscrowBalanceDzd;
+      const linkedEscrow = escrowAccounts.find(
+        (e) => e.matterId === matter.id || e.matterReference === matter.matterNumber
+      );
+      if (
+        linkedEscrow &&
+        (linkedEscrow.isLocked ||
+          !linkedEscrow.cadastralClearanceProof?.volume ||
+          !linkedEscrow.releasePinHash)
+      ) {
+        showToast(
+          isAr
+            ? 'الحساب مقفل: يرجى إتمام التحقق العقاري وتعيين رمز PIN قبل الإفراج'
+            : 'Compte séquestre verrouillé : complétez la publicité foncière et le code PIN dans le panneau CARPA/Notaire',
+          'error'
+        );
+        return;
+      }
       const updated: LegalMatter = {
         ...matter,
         trustEscrowBalanceDzd: 0,
@@ -481,7 +505,47 @@ export const LegalTrustView: React.FC<any> = () => {
       updateMatter(updated);
       if (selectedMatter?.id === matter.id) setSelectedMatter(updated);
     },
-    [isAr, selectedMatter, updateMatter]
+    [escrowAccounts, isAr, selectedMatter, updateMatter]
+  );
+
+  const openReceiptPrintSheet = useCallback(
+    (rc: CashReceipt) => {
+      setCustomPrintSheet({
+        title: isAr ? 'وصل قبض نقدي رسمي (المادة 317)' : 'Quittance Officielle & Timbre Fiscal Art. 317',
+        subtitle: `${rc.receiptNumber} · ${rc.clientName}`,
+        pages: [
+          {
+            id: rc.id,
+            title: isAr ? `وصل قبض رقم ${rc.receiptNumber}` : `QUITTANCE DE VERSEMENT N° ${rc.receiptNumber}`,
+            subtitle: rc.matterTitle,
+            badgeText: 'Art. 317 Encaissé',
+            sections: [
+              {
+                heading: isAr ? 'بيانات الموكل' : 'Identification du Payeur',
+                rows: [
+                  { label: isAr ? 'الموكل' : 'Reçu de', value: rc.clientName },
+                  { label: isAr ? 'الموضوع' : 'Objet', value: rc.matterTitle },
+                  { label: isAr ? 'أمين الصندوق' : 'Caissier', value: rc.cashierName },
+                  { label: 'Date', value: rc.createdAt.slice(0, 10) },
+                ],
+              },
+              {
+                heading: isAr ? 'التفصيل المالي' : 'Décompte Fiscal & Timbre',
+                rows: [
+                  { label: 'Montant HT', value: formatMoney(rc.totalHtDzd, language) },
+                  { label: 'TVA (19%)', value: formatMoney(rc.tvaDzd, language) },
+                  { label: 'Timbre Art. 317', value: `+${formatMoney(rc.timbreFiscalDzd, language)}` },
+                  { label: 'NET ENCAISSÉ', value: formatMoney(rc.netCollectedDzd, language) },
+                ],
+              },
+            ],
+            signatureLeft: isAr ? 'توقيع الموكل' : 'Signature Client',
+            signatureRight: isAr ? 'أمانة الصندوق والختم' : 'Visa & Cachet Caisse',
+          },
+        ],
+      });
+    },
+    [isAr, language]
   );
 
   const getEscrowRowMeta = useCallback(
@@ -732,10 +796,7 @@ export const LegalTrustView: React.FC<any> = () => {
         id: 'print',
         label: isAr ? 'طباعة' : 'Imprimer',
         icon: <Printer className="w-[15px] h-[15px]" />,
-        onClick: () => {
-          showToast(isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée', 'success');
-          window.print();
-        },
+        onClick: () => openReceiptPrintSheet(r),
       },
       {
         id: 'pin',
@@ -744,7 +805,7 @@ export const LegalTrustView: React.FC<any> = () => {
         onClick: () => handleTogglePin(r.id),
       },
     ],
-    [isAr, pinnedIds, handleTogglePin]
+    [isAr, pinnedIds, handleTogglePin, openReceiptPrintSheet]
   );
 
   const getReceiptDetailActions = useCallback(
@@ -771,10 +832,7 @@ export const LegalTrustView: React.FC<any> = () => {
         id: 'print',
         label: isAr ? 'طباعة' : 'Imprimer',
         icon: <Printer className="w-3.5 h-3.5" />,
-        onClick: () => {
-          showToast(isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée', 'success');
-          window.print();
-        },
+        onClick: () => openReceiptPrintSheet(r),
       },
       {
         id: 'pin',
@@ -783,7 +841,7 @@ export const LegalTrustView: React.FC<any> = () => {
         onClick: () => handleTogglePin(r.id),
       },
     ],
-    [isAr, pinnedIds, handleTogglePin]
+    [isAr, pinnedIds, handleTogglePin, openReceiptPrintSheet]
   );
 
   const getCarpaRowMeta = useCallback(
@@ -1124,14 +1182,32 @@ export const LegalTrustView: React.FC<any> = () => {
           secondaryActions={
             <AtriumButton
               variant="outline"
-              onClick={() => {
-                showToast(
-                  isAr ? 'طباعة كشف الودائع العقارية' : 'Relevé des comptes séquestres imprimé',
-                  'info'
-                );
-                window.print();
-              }}
+              onClick={() =>
+                setCustomPrintSheet({
+                  title: isAr ? 'كشف حسابات الودائع العقارية' : 'Registre des Comptes Séquestres Notariaux',
+                  subtitle: `${escrowAccounts.length} ${isAr ? 'حسابات' : 'mandats'}`,
+                  pages: [
+                    {
+                      id: 'notary-escrow-register',
+                      title: isAr ? 'سجل حسابات الحراسة العقارية' : 'REGISTRE DES SÉQUESTRES NOTARIAUX',
+                      subtitle: new Date().toISOString().split('T')[0],
+                      sections: [
+                        {
+                          heading: isAr ? 'أرصدة المودعين' : 'Mandats en Cours',
+                          rows: filteredEscrows.map((a) => ({
+                            label: `${a.matterReference} · ${a.clientName} ➔ ${a.beneficiaryName}`,
+                            value: `${formatMoney(a.currentBalanceDzd, language)} (${a.isLocked ? 'Verrouillé' : 'Libéré'})`,
+                          })),
+                        },
+                      ],
+                      signatureLeft: 'Maître Notaire Titulaire',
+                      signatureRight: 'Contrôle Chambre des Notaires',
+                    },
+                  ],
+                })
+              }
               icon={<Printer size={14} />}
+              className="whitespace-nowrap shrink-0"
             >
               {isAr ? 'طباعة السجل' : 'Imprimer Registre'}
             </AtriumButton>
@@ -1376,15 +1452,34 @@ export const LegalTrustView: React.FC<any> = () => {
                     <InspectorWideButton
                       label={isAr ? 'طباعة أمر التحويل' : 'Imprimer le Virement'}
                       icon={<Printer size={14} />}
-                      onClick={() => {
-                        showToast(
-                          isAr
-                            ? 'جاري طباعة أمر التحويل الرسمي'
-                            : 'Ordre de virement officiel imprimé',
-                          'info'
-                        );
-                        window.print();
-                      }}
+                      onClick={() =>
+                        setCustomPrintSheet({
+                          title: isAr ? 'أمر التحويل البنكي من حساب الودائع' : 'Ordre de Virement Séquestre',
+                          subtitle: `${esc.matterReference} · ${esc.beneficiaryName}`,
+                          pages: [
+                            {
+                              id: `virement-${esc.id}`,
+                              title: `ORDRE DE VIREMENT SÉQUESTRE — ${esc.matterReference}`,
+                              subtitle: `Bénéficiaire : ${esc.beneficiaryName}`,
+                              badgeText: esc.isLocked ? 'Verrouillé' : 'Libéré',
+                              sections: [
+                                {
+                                  heading: 'Détails du Virement Trésor',
+                                  rows: [
+                                    { label: "Donneur d'ordre", value: 'Maître Notaire Titulaire' },
+                                    { label: 'Compte débité', value: 'Trésor BNA 0010 0987 6543' },
+                                    { label: 'Bénéficiaire', value: esc.beneficiaryName },
+                                    { label: 'Montant', value: formatMoney(esc.currentBalanceDzd, language) },
+                                    { label: 'Motif', value: `Dossier ${esc.matterReference}` },
+                                  ],
+                                },
+                              ],
+                              signatureLeft: 'Maître Notaire Titulaire',
+                              signatureRight: 'Visa Banque / Trésor',
+                            },
+                          ],
+                        })
+                      }
                     />
                   </InspectorSection>
                 </>
@@ -1461,12 +1556,15 @@ export const LegalTrustView: React.FC<any> = () => {
                     data-sq-border="none"
                     className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
                   >
+                    {!esc.releasePinHash && (
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                        {isAr
+                          ? 'يرجى تعيين رمز PIN للموثق من لوحة CARPA والأعياد أدناه قبل الإفراج.'
+                          : 'Aucun PIN configuré — définissez le PIN titulaire dans le panneau CARPA & Jours Fériés ci-dessous avant le déblocage.'}
+                      </p>
+                    )}
                     <LabelInput
-                      label={
-                        isAr
-                          ? 'رمز الأمان PIN (الافتراضي: 2026)'
-                          : 'Code PIN Notaire (Défaut: 2026)'
-                      }
+                      label={isAr ? 'رمز الأمان PIN للموثق *' : 'Code PIN Notaire *'}
                       type="password"
                       placeholder="••••"
                       value={notaryPin}
@@ -1495,6 +1593,41 @@ export const LegalTrustView: React.FC<any> = () => {
               </>
             );
           }}
+        />
+
+        <LegalTradeSpecialtyPanel
+          language={language}
+          accountId={currentBranch?.accountId || account?.id || 'acc_legal'}
+          businessId={currentBusiness?.id || currentBranch?.businessId || 'biz_legal'}
+          branchId={currentBranch?.id || 'branch_legal_main'}
+          staffId={currentUser?.id || 'staff_01'}
+          activeLegalRole={activeLegalRole}
+          matters={matters}
+          escrowAccounts={escrowAccounts}
+          holidays={holidays}
+          bailiffActs={bailiffActs}
+          arbitrationTimelines={arbitrationTimelines}
+          clientLedgers={clientLedgers}
+          onAddClientLedger={addClientLedger}
+          onUpdateClientLedger={updateClientLedger}
+          onAddBailiffAct={addBailiffAct}
+          onAddCPCADeadline={addCPCADeadline}
+          onAddArbitrationTimeline={addArbitrationTimeline}
+          onUpdateArbitrationTimeline={updateArbitrationTimeline}
+          onUpdateEscrowAccount={updateEscrowAccount}
+          onAddHoliday={addHoliday}
+          onDeleteHoliday={deleteHoliday}
+          onRecalculateDeadlines={recalculateDeadlinesByHolidays}
+        />
+
+        <PrintSheetModal
+          isOpen={Boolean(customPrintSheet)}
+          onClose={() => setCustomPrintSheet(null)}
+          language={language}
+          format="a4"
+          title={customPrintSheet?.title || ''}
+          subtitle={customPrintSheet?.subtitle}
+          pages={customPrintSheet?.pages || []}
         />
       </div>
     );
@@ -2038,6 +2171,31 @@ export const LegalTrustView: React.FC<any> = () => {
             </form>
           </div>
         </KineticModalShell>
+
+        <LegalTradeSpecialtyPanel
+          language={language}
+          accountId={currentBranch?.accountId || account?.id || 'acc_legal'}
+          businessId={currentBusiness?.id || currentBranch?.businessId || 'biz_legal'}
+          branchId={currentBranch?.id || 'branch_legal_main'}
+          staffId={currentUser?.id || 'staff_01'}
+          activeLegalRole={activeLegalRole}
+          matters={matters}
+          escrowAccounts={escrowAccounts}
+          holidays={holidays}
+          bailiffActs={bailiffActs}
+          arbitrationTimelines={arbitrationTimelines}
+          clientLedgers={clientLedgers}
+          onAddClientLedger={addClientLedger}
+          onUpdateClientLedger={updateClientLedger}
+          onAddBailiffAct={addBailiffAct}
+          onAddCPCADeadline={addCPCADeadline}
+          onAddArbitrationTimeline={addArbitrationTimeline}
+          onUpdateArbitrationTimeline={updateArbitrationTimeline}
+          onUpdateEscrowAccount={updateEscrowAccount}
+          onAddHoliday={addHoliday}
+          onDeleteHoliday={deleteHoliday}
+          onRecalculateDeadlines={recalculateDeadlinesByHolidays}
+        />
       </div>
     );
   }
@@ -2361,13 +2519,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <InspectorWideButton
                       label={isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
                       icon={<Printer size={14} />}
-                      onClick={() => {
-                        showToast(
-                          isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée',
-                          'success'
-                        );
-                        window.print();
-                      }}
+                      onClick={() => openReceiptPrintSheet(rc)}
                     />
                   </InspectorSection>
                 </>
@@ -2394,13 +2546,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   <InspectorWideButton
                     label={isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
                     icon={<Printer size={14} />}
-                    onClick={() => {
-                      showToast(
-                        isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée',
-                        'success'
-                      );
-                      window.print();
-                    }}
+                    onClick={() => openReceiptPrintSheet(rc)}
                   />
                 </InspectorSection>
               </>
@@ -2522,6 +2668,16 @@ export const LegalTrustView: React.FC<any> = () => {
             updateDailyClosure(cl);
             setIsClosureModalOpen(false);
           }}
+        />
+
+        <PrintSheetModal
+          isOpen={Boolean(customPrintSheet)}
+          onClose={() => setCustomPrintSheet(null)}
+          language={language}
+          format="a4"
+          title={customPrintSheet?.title || ''}
+          subtitle={customPrintSheet?.subtitle}
+          pages={customPrintSheet?.pages || []}
         />
       </div>
     );
@@ -2672,14 +2828,32 @@ export const LegalTrustView: React.FC<any> = () => {
         secondaryActions={
           <AtriumButton
             variant="outline"
-            onClick={() => {
-              showToast(
-                isAr ? 'طباعة كشف حساب الودائع CARPA' : 'Relevé séquestre CARPA imprimé',
-                'info'
-              );
-              window.print();
-            }}
+            onClick={() =>
+              setCustomPrintSheet({
+                title: isAr ? 'كشف حساب الودائع CARPA' : 'Relevé Portefeuille Séquestre CARPA',
+                subtitle: `${filteredCarpaMatters.length} ${isAr ? 'ملفات' : 'dossiers'}`,
+                pages: [
+                  {
+                    id: 'carpa-portfolio',
+                    title: isAr ? 'كشف حسابات الودائع CARPA' : 'RELEVÉ DE PORTEFEUILLE SÉQUESTRE CARPA',
+                    subtitle: new Date().toISOString().split('T')[0],
+                    sections: [
+                      {
+                        heading: isAr ? 'وضعية الحسابات' : 'Situation des Comptes Mandants',
+                        rows: filteredCarpaMatters.map((m) => ({
+                          label: `${m.matterNumber} · ${m.clientName}`,
+                          value: `CARPA ${formatMoney(m.trustEscrowBalanceDzd || 0, language)} · Honoraires ${formatMoney(m.retainerAmountDzd, language)}`,
+                        })),
+                      },
+                    ],
+                    signatureLeft: 'Maître / Titulaire du Cabinet',
+                    signatureRight: "Contrôle Conseil de l'Ordre / CARPA",
+                  },
+                ],
+              })
+            }
             icon={<Printer size={14} />}
+            className="whitespace-nowrap shrink-0"
           >
             {isAr ? 'كشف CARPA' : 'Relevé CARPA'}
           </AtriumButton>
@@ -3005,6 +3179,56 @@ export const LegalTrustView: React.FC<any> = () => {
               ]
             : []
         }
+      />
+
+      <LegalTimeBillingPanel
+        language={language}
+        accountId={currentBranch?.accountId || account?.id || 'acc_legal'}
+        businessId={currentBusiness?.id || currentBranch?.businessId || 'biz_legal'}
+        branchId={currentBranch?.id || 'branch_legal_main'}
+        staffId={currentUser?.id || 'staff_01'}
+        staffName={currentUser?.fullName || 'Maître Avocat'}
+        matters={matters}
+        timeEntries={timeEntries}
+        feeInvoices={feeInvoices}
+        onAddTimeEntry={addTimeEntry}
+        onDeleteTimeEntry={deleteTimeEntry}
+        onGenerateFeeInvoice={generateFeeInvoiceFromEntries}
+      />
+
+      <LegalTradeSpecialtyPanel
+        language={language}
+        accountId={currentBranch?.accountId || account?.id || 'acc_legal'}
+        businessId={currentBusiness?.id || currentBranch?.businessId || 'biz_legal'}
+        branchId={currentBranch?.id || 'branch_legal_main'}
+        staffId={currentUser?.id || 'staff_01'}
+        activeLegalRole={activeLegalRole}
+        matters={matters}
+        escrowAccounts={escrowAccounts}
+        holidays={holidays}
+        bailiffActs={bailiffActs}
+        arbitrationTimelines={arbitrationTimelines}
+        clientLedgers={clientLedgers}
+        onAddClientLedger={addClientLedger}
+        onUpdateClientLedger={updateClientLedger}
+        onAddBailiffAct={addBailiffAct}
+        onAddCPCADeadline={addCPCADeadline}
+        onAddArbitrationTimeline={addArbitrationTimeline}
+        onUpdateArbitrationTimeline={updateArbitrationTimeline}
+        onUpdateEscrowAccount={updateEscrowAccount}
+        onAddHoliday={addHoliday}
+        onDeleteHoliday={deleteHoliday}
+        onRecalculateDeadlines={recalculateDeadlinesByHolidays}
+      />
+
+      <PrintSheetModal
+        isOpen={Boolean(customPrintSheet)}
+        onClose={() => setCustomPrintSheet(null)}
+        language={language}
+        format="a4"
+        title={customPrintSheet?.title || ''}
+        subtitle={customPrintSheet?.subtitle}
+        pages={customPrintSheet?.pages || []}
       />
     </div>
   );

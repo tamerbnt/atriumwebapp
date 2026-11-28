@@ -10,6 +10,9 @@ import {
   Check,
   ArrowRight,
   MapPin,
+  Bell,
+  RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -21,7 +24,11 @@ import {
 } from '../../../services/store';
 import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
-import { LegalHearing } from '../../../types';
+import { CrmParty, LegalHearing } from '../../../types';
+import {
+  prepareHearingOrDeadlineReminder,
+  validateOrShiftHearingDate,
+} from '../../../utils/legalDepth';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -96,13 +103,16 @@ export const LegalHearingsView: React.FC<any> = () => {
   const isEn = language === 'en';
 
   const {
+    entities,
     hearings,
     matters,
     deadlines,
+    holidays,
     addHearing,
     updateHearing,
     deleteHearing,
     addCPCADeadline,
+    recalculateDeadlinesByHolidays,
   } = useLegalData();
 
   const { showSkeleton, isTimedOut, retry } = useSkeletonLoading({
@@ -240,6 +250,11 @@ export const LegalHearingsView: React.FC<any> = () => {
   );
   const totalCompleted = useMemo(() => hearings.filter((h) => h.isCompleted).length, [hearings]);
 
+  const hearingDateCheck = useMemo(
+    () => validateOrShiftHearingDate(formHearingDate, holidays),
+    [formHearingDate, holidays]
+  );
+
   const handleCreateHearing = (e: React.FormEvent) => {
     e.preventDefault();
     const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
@@ -253,6 +268,7 @@ export const LegalHearingsView: React.FC<any> = () => {
       return;
     }
     const matter = matters.find((m) => m.id === formMatterId);
+    const check = validateOrShiftHearingDate(formHearingDate, holidays);
     const newH: LegalHearing = {
       id: `hear_${Date.now()}`,
       accountId: activeAccountId,
@@ -263,7 +279,9 @@ export const LegalHearingsView: React.FC<any> = () => {
       matterNumber: matter?.matterNumber || 'DOS-2026-AUTO',
       matterTitle: matter?.title || 'Dossier Contentieux',
       matterTitleAr: matter?.titleAr,
-      hearingDate: formHearingDate,
+      hearingDate: check.adjustedDate,
+      originalRequestedDate: check.wasShifted ? check.requestedDate : undefined,
+      autoShiftedReason: check.reason,
       hearingTime: formHearingTime,
       courtName: formCourtName,
       courtRoom: formCourtRoom,
@@ -277,6 +295,12 @@ export const LegalHearingsView: React.FC<any> = () => {
       status: 'Scheduled',
     };
     addHearing(newH);
+    if (check.wasShifted) {
+      showToast(
+        `${isAr ? 'تم ترحيل تاريخ الجلسة تلقائياً إلى' : 'Audience reportée automatiquement au'} ${check.adjustedDate} (${check.reason || ''})`,
+        'info'
+      );
+    }
     setIsNewHearingModalOpen(false);
   };
 
@@ -735,20 +759,39 @@ export const LegalHearingsView: React.FC<any> = () => {
       ? 'Hearings'
       : 'Audiences';
 
+  const handleBulkRecalcCpca = () => {
+    const updatedCount = recalculateDeadlinesByHolidays();
+    showToast(
+      `${updatedCount} ${isAr ? 'ميعاد CPCA تم تحديثه وفق العطل' : 'délai(s) CPCA recalculé(s) selon jours fériés'}`,
+      'success'
+    );
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <ScreenHeaderBar
         icon={<Scale size={22} />}
         title={screenTitle}
         secondaryActions={
-          <AtriumButton
-            variant="outline"
-            onClick={() => setIsCpcaModalOpen(true)}
-            className="flex items-center gap-2 t-cap"
-            icon={<Clock size={15} />}
-          >
-            <span>{isAr ? 'حساب ميعاد CPCA' : 'Calculer Délai CPCA'}</span>
-          </AtriumButton>
+          <div className="flex items-center gap-2 flex-wrap">
+            <AtriumButton
+              variant="ghost"
+              size="sm"
+              onClick={handleBulkRecalcCpca}
+              className="whitespace-nowrap shrink-0"
+              icon={<RefreshCw size={14} />}
+            >
+              <span>{isAr ? 'تحديث الآجال' : 'Recalculer CPCA'}</span>
+            </AtriumButton>
+            <AtriumButton
+              variant="outline"
+              onClick={() => setIsCpcaModalOpen(true)}
+              className="whitespace-nowrap shrink-0 t-cap"
+              icon={<Clock size={15} />}
+            >
+              <span>{isAr ? 'حساب ميعاد CPCA' : 'Calculer Délai CPCA'}</span>
+            </AtriumButton>
+          </div>
         }
         primaryAction={{
           label: isAr ? 'برمجة جلسة جديدة' : 'Nouvelle Audience',
@@ -1265,40 +1308,112 @@ export const LegalHearingsView: React.FC<any> = () => {
                 />
               </InspectorSection>
 
-              <InspectorSection index={1} title={isAr ? 'المحكمة والهيئة القضائية' : 'Juridiction & Siège'}>
-                <InspectorCard>
-                  <InspectorKeyValue
-                    label={isAr ? 'المحكمة' : 'Juridiction'}
-                    value={h.courtName}
-                    mono={false}
+                <InspectorSection index={1} title={isAr ? 'المحكمة والهيئة القضائية' : 'Juridiction & Siège'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المحكمة' : 'Juridiction'}
+                      value={h.courtName}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الغرفة والقاعة' : 'Chambre & Salle'}
+                      value={`${h.chamber || 'Chambre'} · ${h.courtRoom || 'Salle'}`}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'تاريخ وساعة النداء' : "Date & Heure d'Appel"}
+                      value={`${h.hearingDate} · ${h.hearingTime || '09:30'}`}
+                      tone="accent"
+                    />
+                    {h.autoShiftedReason && (
+                      <InspectorKeyValue
+                        label={isAr ? 'ترحيل تلقائي' : 'Report Jours Fériés / Week-end'}
+                        value={`${h.originalRequestedDate || ''} ➔ ${h.hearingDate} (${h.autoShiftedReason})`}
+                        tone="warn"
+                        mono={false}
+                      />
+                    )}
+                    <InspectorKeyValue
+                      label={isAr ? 'القاضي رئيس الجلسة' : 'Magistrat du Siège'}
+                      value={h.benchJudge || 'Président de Chambre'}
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'تجهيز تذكير الموكل (حماية الساعات الهادئة)' : 'Préparer Rappel Client (Heures Calmes)'}
+                    icon={<Bell size={14} />}
+                    onClick={() => {
+                      const linkedMatter = matters.find((m) => m.id === h.matterId);
+                      const clientEntity = entities.find(
+                        (ent) => ent.nameFr.toLowerCase() === (linkedMatter?.clientName || '').toLowerCase()
+                      );
+                      const phoneRaw = linkedMatter?.clientPhone || clientEntity?.phone || '0550000000';
+                      const digits = phoneRaw.replace(/\D+/g, '');
+                      const partyObj: CrmParty = {
+                        id: clientEntity?.id || `party_${h.id}`,
+                        accountId: h.accountId,
+                        businessId: h.businessId,
+                        displayName: linkedMatter?.clientName || clientEntity?.nameFr || h.matterNumber || 'Client',
+                        partyKind: clientEntity?.clientType === 'personne_morale' ? 'company' : 'person',
+                        phoneRaw,
+                        phoneE164: digits.startsWith('213') ? `+${digits}` : `+213${digits.replace(/^0/, '')}`,
+                        phoneValid: digits.length >= 9,
+                        email: clientEntity?.email,
+                        consentSms: true,
+                        consentWhatsapp: true,
+                        consentEmail: Boolean(clientEntity?.email),
+                        optOutAll: false,
+                        preferredLanguage: language,
+                        tags: ['legal'],
+                        createdAt: clientEntity?.createdAt || new Date().toISOString(),
+                        updatedAt: clientEntity?.createdAt || new Date().toISOString(),
+                      };
+                      const rem = prepareHearingOrDeadlineReminder({
+                        party: partyObj,
+                        channel: 'sms',
+                        subjectLabel: h.purpose || (isAr ? 'جلسة قضائية' : 'Audience'),
+                        targetDate: h.hearingDate,
+                        courtOrRef: `${h.courtName || 'Juridiction'} (${h.hearingTime || '09:30'})`,
+                        nowIso: new Date().toISOString(),
+                        quietHours: {
+                          enabled: true,
+                          startTime: '21:00',
+                          endTime: '08:00',
+                          timezone: 'Africa/Algiers',
+                        },
+                      });
+                      if (!rem.allowed) {
+                        showToast(
+                          rem.dispatchEvaluation.errorMessage ||
+                            rem.dispatchEvaluation.errorCode ||
+                            'Envoi bloqué par préférence client',
+                          'error'
+                        );
+                        return;
+                      }
+                      showToast(
+                        rem.queuedForAfterQuietHours
+                          ? `${isAr ? 'مجدول بعد الساعات الهادئة:' : 'Différé (heures calmes):'} ${rem.scheduledSendIso}`
+                          : `${isAr ? 'رسالة التذكير جاهزة:' : 'Rappel prêt :'} ${rem.renderedMessage}`,
+                        'info'
+                      );
+                    }}
                   />
-                  <InspectorKeyValue
-                    label={isAr ? 'الغرفة والقاعة' : 'Chambre & Salle'}
-                    value={`${h.chamber || 'Chambre'} · ${h.courtRoom || 'Salle'}`}
-                    mono={false}
-                  />
-                  <InspectorKeyValue
-                    label={isAr ? 'تاريخ وساعة النداء' : "Date & Heure d'Appel"}
-                    value={`${h.hearingDate} · ${h.hearingTime || '09:30'}`}
-                    tone="accent"
-                  />
-                  <InspectorKeyValue
-                    label={isAr ? 'القاضي رئيس الجلسة' : 'Magistrat du Siège'}
-                    value={h.benchJudge || 'Président de Chambre'}
-                    mono={false}
-                    isLast
-                  />
-                </InspectorCard>
-              </InspectorSection>
-            </>
-          );
-        }}
-      />
+                </InspectorSection>
+              </>
+            );
+          }}
+        />
 
       <CpcaDeadlineModal
         isOpen={isCpcaModalOpen}
         onClose={() => setIsCpcaModalOpen(false)}
         matters={matters}
+        holidays={holidays}
         onSaveDeadline={(dl) => {
           addCPCADeadline(dl);
         }}
@@ -1364,6 +1479,19 @@ export const LegalHearingsView: React.FC<any> = () => {
                 required
               />
             </div>
+            {hearingDateCheck.wasShifted && (
+              <div
+                data-sq="card"
+                className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-center gap-2"
+              >
+                <AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>
+                  {isAr
+                    ? `تاريخ عطلة (${hearingDateCheck.reason}) — سيتم ترحيل الجلسة تلقائياً إلى ${hearingDateCheck.adjustedDate}`
+                    : `Jour non ouvrable (${hearingDateCheck.reason}) — report automatique au ${hearingDateCheck.adjustedDate}`}
+                </span>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput

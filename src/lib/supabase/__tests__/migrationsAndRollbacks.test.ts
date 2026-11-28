@@ -822,7 +822,50 @@ describe('Migrations, Paired Rollbacks & Database Hardening Contracts', () => {
     expect(downSql).toContain('DROP COLUMN IF EXISTS pinned_bom_version');
     expect(downSql).toContain('DROP COLUMN IF EXISTS bom_family_id');
   });
+
+  it('verifies Phase 3 Step 13 (7.13) legal_accounting depth migration and rollback parity', () => {
+    const mPath = path.join(MIGRATIONS_DIR, '202611280013_phase3_legal_depth.sql');
+    const downPath = path.join(ROLLBACKS_DIR, '202611280013_phase3_legal_depth.down.sql');
+    const sql = fs.readFileSync(mPath, 'utf8');
+    const downSql = fs.readFileSync(downPath, 'utf8');
+
+    expect(sql).toContain("'legal_inv'");
+    expect(sql).toContain("'legal_bailiff'");
+    expect(sql).toContain("'legal_arb'");
+    expect(sql).toContain("'legal_tpl'");
+    expect(sql).toContain("'legal_ledger'");
+    expect(sql).toContain("'legal-vault'");
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS confidentiality_level');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS conflict_status');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS entry_kind');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS sha256_hash');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_holiday_calendars');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_escrow_accounts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_doc_templates');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_bailiff_acts');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_arbitration_timelines');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.legal_client_ledgers');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.legal_release_escrow_guarded(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.legal_recalculate_deadlines_on_holidays(');
+    expect(sql).toContain('CREATE OR REPLACE FUNCTION public.legal_generate_fee_invoice_from_time_entries(');
+    expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
+
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.legal_generate_fee_invoice_from_time_entries(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.legal_recalculate_deadlines_on_holidays(');
+    expect(downSql).toContain('DROP FUNCTION IF EXISTS public.legal_release_escrow_guarded(');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_client_ledgers');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_arbitration_timelines');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_bailiff_acts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_doc_templates');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_escrow_accounts');
+    expect(downSql).toContain('DROP TABLE IF EXISTS public.legal_holiday_calendars');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS sha256_hash');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS entry_kind');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS conflict_status');
+    expect(downSql).toContain('DROP COLUMN IF EXISTS confidentiality_level');
+  });
 });
+
 
 
 

@@ -48,6 +48,7 @@ export const LegalDashboardView: React.FC = () => {
   } = useDashboardShellState();
 
   const {
+    entities,
     matters,
     hearings,
     deadlines,
@@ -55,9 +56,9 @@ export const LegalDashboardView: React.FC = () => {
     escrowAccounts,
     cashReceipts,
     scfEntries,
+    holidays,
     addMatter,
     addCPCADeadline,
-    resetLegalMockData,
   } = useLegalData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
@@ -369,11 +370,15 @@ export const LegalDashboardView: React.FC = () => {
         isOpen={isMatterModalOpen}
         onClose={() => setIsMatterModalOpen(false)}
         onSave={addMatter}
+        existingMatters={matters || []}
+        existingClients={entities || []}
+        existingDeeds={notaryDeeds || []}
       />
       <CpcaDeadlineModal
         isOpen={isDeadlineModalOpen}
         onClose={() => setIsDeadlineModalOpen(false)}
         matters={matters || []}
+        holidays={holidays || []}
         onSaveDeadline={addCPCADeadline}
       />
     </DashboardBentoFrame>
